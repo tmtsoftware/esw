@@ -25,15 +25,6 @@ object GetRunningObsModesResponse {
   case class Failed(msg: String)                    extends SmFailure with GetRunningObsModesResponse
 }
 
-sealed trait CleanupResponse extends SmAkkaSerializable
-
-object CleanupResponse {
-  case object Success extends CleanupResponse
-
-  sealed trait Failure                                         extends SmFailure with CleanupResponse
-  case class FailedToShutdownSequencers(response: Set[String]) extends Failure
-}
-
 sealed trait StartSequencerResponse extends SmAkkaSerializable
 
 object StartSequencerResponse {
@@ -91,7 +82,7 @@ object ShutdownSequenceComponentResponse {
   sealed trait Failure extends SmFailure with ShutdownSequenceComponentResponse
 }
 
-sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure with CleanupResponse.Failure
+sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure
 
 object CommonFailure {
   case class ConfigurationMissing(obsMode: ObsMode) extends CommonFailure

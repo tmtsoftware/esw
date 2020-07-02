@@ -15,7 +15,7 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
-import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
+import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, Started}
 import esw.sm.api.protocol._
@@ -42,7 +42,7 @@ class SequenceManagerBehavior(
   private def idle(self: SelfRef): SMBehavior =
     receive[SequenceManagerIdleMsg](Idle) {
       case Configure(observingMode, replyTo)                 => configure(observingMode, self, replyTo)
-      case Cleanup(observingMode, replyTo)                   => cleanup(observingMode, self, replyTo)
+      case ShutdownObsModeSequencers(observingMode, replyTo) => shutdownObsModeSequencers(observingMode, self, replyTo)
       case StartSequencer(subsystem, observingMode, replyTo) => startSequencer(subsystem, observingMode, replyTo); Behaviors.same
       case ShutdownSequencer(subsystem, observingMode, replyTo) =>
         shutdownSequencer(subsystem, observingMode, replyTo); Behaviors.same
@@ -87,21 +87,26 @@ class SequenceManagerBehavior(
   private def configuring(self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior =
     receive[ConfigurationResponseInternal](Configuring)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
-  private def cleanup(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[CleanupResponse]): SMBehavior = {
-    val cleanupResponseF =
-      config
-        .sequencers(obsMode)
-        .map(sequencerUtil.shutdownSequencers(_, obsMode))
-        .getOrElse(Future.successful(ConfigurationMissing(obsMode)))
+  private def shutdownObsModeSequencers(
+      obsMode: ObsMode,
+      self: SelfRef,
+      replyTo: ActorRef[ShutdownAllSequencersResponse]
+  ): SMBehavior = {
+    val shutdownSequencersResponseF =
+      locationServiceUtil
+        .listAkkaLocationsBy(obsMode.name, Sequencer)
+        .flatMapToAdt(sequencerUtil.shutdownSequencers, e => LocationServiceError(e.msg))
 
-    cleanupResponseF.map(self ! CleanupResponseInternal(_))
-    cleaningUp(self, replyTo)
+    shutdownSequencersResponseF.map(self ! ShutdownObsModeSequencersResponseInternal(_))
+    shuttingDownObsModeSequencers(self, replyTo)
   }
 
-  // Clean up is in progress, waiting for CleanupResponseInternal message
+  // shutting down ObsMode Sequencers is in progress, waiting for CleanupResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def cleaningUp(self: SelfRef, replyTo: ActorRef[CleanupResponse]): SMBehavior =
-    receive[CleanupResponseInternal](CleaningUp)(msg => replyAndGoToIdle(self, replyTo, msg.res))
+  private def shuttingDownObsModeSequencers(self: SelfRef, replyTo: ActorRef[ShutdownAllSequencersResponse]): SMBehavior =
+    receive[ShutdownObsModeSequencersResponseInternal](ShuttingDownObsModeSequencers)(msg =>
+      replyAndGoToIdle(self, replyTo, msg.res)
+    )
 
   private def startSequencer(
       subsystem: Subsystem,

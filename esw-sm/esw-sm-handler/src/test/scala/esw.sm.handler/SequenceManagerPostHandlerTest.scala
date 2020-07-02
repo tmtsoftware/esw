@@ -55,12 +55,13 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return cleanup success for cleanup request | ESW-171" in {
-      when(sequenceManagerApi.cleanup(obsMode)).thenReturn(Future.successful(CleanupResponse.Success))
+    "return success for shutdownObsModeSequencers request | ESW-171" in {
+      when(sequenceManagerApi.shutdownObsModeSequencers(obsMode))
+        .thenReturn(Future.successful(ShutdownAllSequencersResponse.Success))
 
-      Post("/post-endpoint", Cleanup(obsMode).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).cleanup(obsMode)
-        responseAs[CleanupResponse] should ===(CleanupResponse.Success)
+      Post("/post-endpoint", ShutdownObsModeSequencers(obsMode).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownObsModeSequencers(obsMode)
+        responseAs[ShutdownAllSequencersResponse] should ===(ShutdownAllSequencersResponse.Success)
       }
     }
 

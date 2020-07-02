@@ -13,7 +13,6 @@ object SequenceManagerCodecs extends SequenceManagerCodecs
 trait SequenceManagerCodecs extends LocationCodecs with BasicCodecs with OcsCodecs {
   implicit lazy val configureResponseCodec: Codec[ConfigureResponse]                                 = deriveAllCodecs
   implicit lazy val getRunningObsModesResponseCodec: Codec[GetRunningObsModesResponse]               = deriveAllCodecs
-  implicit lazy val cleanupResponseCodec: Codec[CleanupResponse]                                     = deriveAllCodecs
   implicit lazy val startSequencerResponseCodec: Codec[StartSequencerResponse]                       = deriveAllCodecs
   implicit lazy val shutdownSequencerResponseCodec: Codec[ShutdownSequencerResponse]                 = deriveAllCodecs
   implicit lazy val spawnSequenceComponentResponseCodec: Codec[SpawnSequenceComponentResponse]       = deriveAllCodecs

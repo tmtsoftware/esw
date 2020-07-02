@@ -16,7 +16,8 @@ sealed trait SequenceManagerIdleMsg extends SequenceManagerRemoteMsg
 
 object SequenceManagerMsg {
   case class Configure(obsMode: ObsMode, replyTo: ActorRef[ConfigureResponse]) extends SequenceManagerIdleMsg
-  case class Cleanup(obsMode: ObsMode, replyTo: ActorRef[CleanupResponse])     extends SequenceManagerIdleMsg
+  case class ShutdownObsModeSequencers(obsMode: ObsMode, replyTo: ActorRef[ShutdownAllSequencersResponse])
+      extends SequenceManagerIdleMsg
   case class StartSequencer(subsystem: Subsystem, observingMode: ObsMode, replyTo: ActorRef[StartSequencerResponse])
       extends SequenceManagerIdleMsg
   case class ShutdownSequencer(
@@ -40,5 +41,6 @@ object SequenceManagerMsg {
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
 
   private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse) extends SequenceManagerInternalMsg
-  private[sm] case class CleanupResponseInternal(res: CleanupResponse)         extends SequenceManagerInternalMsg
+  private[sm] case class ShutdownObsModeSequencersResponseInternal(res: ShutdownAllSequencersResponse)
+      extends SequenceManagerInternalMsg
 }

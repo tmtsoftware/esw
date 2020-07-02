@@ -26,7 +26,8 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def configure(observingMode: ObsMode): Future[ConfigureResponse] =
     smRef ? (Configure(observingMode, _))
 
-  override def cleanup(observingMode: ObsMode): Future[CleanupResponse] = smRef ? (Cleanup(observingMode, _))
+  override def shutdownObsModeSequencers(observingMode: ObsMode): Future[ShutdownAllSequencersResponse] =
+    smRef ? (ShutdownObsModeSequencers(observingMode, _))
 
   override def getRunningObsModes: Future[GetRunningObsModesResponse] = smRef ? GetRunningObsModes
 

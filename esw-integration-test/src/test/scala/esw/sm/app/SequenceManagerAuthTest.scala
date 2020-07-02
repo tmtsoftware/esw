@@ -28,7 +28,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   private val table = Table[String, SequenceManagerApi => Future[Any]](
     ("Name", "Command"),
     ("configure", _.configure(IRIS_CAL)),
-    ("cleanup", _.cleanup(IRIS_CAL)),
+    ("cleanup", _.shutdownObsModeSequencers(IRIS_CAL)),
     ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
     ("stopSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
@@ -79,7 +79,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.configure(IRIS_CAL).futureValue shouldBe ConfigureResponse.Success(componentId)
 
       // configure obs mode
-      sequenceManagerApi.cleanup(IRIS_CAL).futureValue shouldBe CleanupResponse.Success
+      sequenceManagerApi.shutdownObsModeSequencers(IRIS_CAL).futureValue shouldBe ShutdownAllSequencersResponse.Success
     }
 
     "return 200 when start sequencer, restart sequencer and shutdown sequencer request has ESW_user role" in {

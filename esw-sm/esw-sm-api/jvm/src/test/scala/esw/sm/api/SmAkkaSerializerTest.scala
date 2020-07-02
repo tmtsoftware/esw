@@ -32,7 +32,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   "should use sm serializer for SequenceManagerRemoteMsg (de)serialization" in {
     val configureResponseRef                 = TestProbe[ConfigureResponse]().ref
     val getRunningModesResponseRef           = TestProbe[GetRunningObsModesResponse]().ref
-    val cleanupResponseRef                   = TestProbe[CleanupResponse]().ref
+    val shutdownAllSequencersResponseRef     = TestProbe[ShutdownAllSequencersResponse]().ref
     val getSmStateRef                        = TestProbe[SequenceManagerState]().ref
     val shutdownSequencerResponseRef         = TestProbe[ShutdownSequencerResponse]().ref
     val StartSequencerResponseRef            = TestProbe[StartSequencerResponse]().ref
@@ -45,7 +45,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "SequenceManagerRemoteMsg models",
       Configure(obsMode, configureResponseRef),
-      Cleanup(obsMode, cleanupResponseRef),
+      ShutdownObsModeSequencers(obsMode, shutdownAllSequencersResponseRef),
       GetRunningObsModes(getRunningModesResponseRef),
       GetSequenceManagerState(getSmStateRef),
       StartSequencer(ESW, obsMode, StartSequencerResponseRef),
@@ -82,25 +82,6 @@ class SmAkkaSerializerTest extends BaseTestSuite {
 
       val bytes = serializer.toBinary(configureResponse)
       serializer.fromBinary(bytes, Some(configureResponse.getClass)) shouldEqual configureResponse
-    }
-  }
-
-  "should use sm serializer for CleanupResponse (de)serialization" in {
-    val obsMode1 = ObsMode("IRIS_Darknight")
-
-    val testData = Table(
-      "Sequence Manager CleanupResponse models",
-      CleanupResponse.Success,
-      LocationServiceError("error"),
-      ConfigurationMissing(obsMode1)
-    )
-
-    forAll(testData) { cleanupResponse =>
-      val serializer = serialization.findSerializerFor(cleanupResponse)
-      serializer.getClass shouldBe classOf[SmAkkaSerializer]
-
-      val bytes = serializer.toBinary(cleanupResponse)
-      serializer.fromBinary(bytes, Some(cleanupResponse.getClass)) shouldEqual cleanupResponse
     }
   }
 
@@ -197,7 +178,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "Sequence Manager SequenceManagerState models",
       SequenceManagerState.Idle,
-      SequenceManagerState.CleaningUp,
+      SequenceManagerState.ShuttingDownObsModeSequencers,
       SequenceManagerState.Configuring
     )
 

@@ -36,15 +36,15 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return cleanup success for cleanup request" in {
-      val cleanupMsg = Cleanup(obsMode)
+      val shutdownObsModeSequencersMsg = ShutdownObsModeSequencers(obsMode)
       when(
-        postClient.requestResponse[CleanupResponse](argsEq(cleanupMsg))(
-          any[Decoder[CleanupResponse]](),
-          any[Encoder[CleanupResponse]]()
+        postClient.requestResponse[ShutdownAllSequencersResponse](argsEq(shutdownObsModeSequencersMsg))(
+          any[Decoder[ShutdownAllSequencersResponse]](),
+          any[Encoder[ShutdownAllSequencersResponse]]()
         )
-      ).thenReturn(Future.successful(CleanupResponse.Success))
+      ).thenReturn(Future.successful(ShutdownAllSequencersResponse.Success))
 
-      client.cleanup(obsMode).futureValue shouldBe CleanupResponse.Success
+      client.shutdownObsModeSequencers(obsMode).futureValue shouldBe ShutdownAllSequencersResponse.Success
     }
 
     "return start sequencer success for startSequencer request" in {

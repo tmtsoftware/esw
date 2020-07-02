@@ -121,40 +121,49 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "Cleanup" must {
+  "ShutdownObsModeSequencers" must {
 
-    "transition sm from Idle -> CleaningInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
-      when(sequencerUtil.shutdownSequencers(darknightSequencers, Darknight))
-        .thenReturn(future(1.seconds, CleanupResponse.Success))
+    "transition sm from Idle -> ShuttingdownObsModeSequencersInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
+      val eswLocation         = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, Darknight.name), Sequencer)), new URI("uri"))
+      val tcsLocation         = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, Darknight.name), Sequencer)), new URI("uri"))
+      val darknightSequencers = List(eswLocation, tcsLocation)
 
-      val cleanupProbe = TestProbe[CleanupResponse]()
+      when(locationServiceUtil.listAkkaLocationsBy(Darknight.name, Sequencer))
+        .thenReturn(Future.successful(Right(darknightSequencers)))
+      when(sequencerUtil.shutdownSequencers(darknightSequencers))
+        .thenReturn(future(1.seconds, ShutdownAllSequencersResponse.Success))
+
+      val responseProbe = TestProbe[ShutdownAllSequencersResponse]()
 
       assertState(Idle)
-      smRef ! Cleanup(Darknight, cleanupProbe.ref)
-      assertState(CleaningUp)
+      smRef ! ShutdownObsModeSequencers(Darknight, responseProbe.ref)
+      assertState(ShuttingDownObsModeSequencers)
       assertState(Idle)
 
-      cleanupProbe.expectMessage(CleanupResponse.Success)
-      verify(sequencerUtil).shutdownSequencers(darknightSequencers, Darknight)
+      responseProbe.expectMessage(ShutdownAllSequencersResponse.Success)
+      verify(locationServiceUtil).listAkkaLocationsBy(Darknight.name, Sequencer)
+      verify(sequencerUtil).shutdownSequencers(darknightSequencers)
     }
 
     "return fail if there is failure while stopping sequencers | ESW-166" in {
-      val failureMsg = "location service error"
-      when(sequencerUtil.shutdownSequencers(darknightSequencers, Darknight))
-        .thenReturn(Future.successful(CleanupResponse.FailedToShutdownSequencers(Set(failureMsg))))
+      val eswLocation         = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, Darknight.name), Sequencer)), new URI("uri"))
+      val tcsLocation         = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, Darknight.name), Sequencer)), new URI("uri"))
+      val darknightSequencers = List(eswLocation, tcsLocation)
+      val expectedFailure = ShutdownAllSequencersResponse.ShutdownFailure(
+        List(UnloadScriptError(Prefix(ESW, Darknight.name), "error in unloading script"))
+      )
 
-      val probe = TestProbe[CleanupResponse]()
-      smRef ! Cleanup(Darknight, probe.ref)
+      when(locationServiceUtil.listAkkaLocationsBy(Darknight.name, Sequencer))
+        .thenReturn(Future.successful(Right(darknightSequencers)))
+      when(sequencerUtil.shutdownSequencers(darknightSequencers))
+        .thenReturn(Future.successful(expectedFailure))
 
-      probe.expectMessage(CleanupResponse.FailedToShutdownSequencers(Set(failureMsg)))
-      verify(sequencerUtil).shutdownSequencers(darknightSequencers, Darknight)
-    }
+      val probe = TestProbe[ShutdownAllSequencersResponse]()
+      smRef ! ShutdownObsModeSequencers(Darknight, probe.ref)
 
-    "return ConfigurationMissing error when config for given obsMode is missing | ESW-166" in {
-      val probe = TestProbe[CleanupResponse]()
-      smRef ! Cleanup(RandomObsMode, probe.ref)
-
-      probe.expectMessage(ConfigurationMissing(RandomObsMode))
+      probe.expectMessage(expectedFailure)
+      verify(sequencerUtil).shutdownSequencers(darknightSequencers)
+      verify(locationServiceUtil).listAkkaLocationsBy(Darknight.name, Sequencer)
     }
   }
 

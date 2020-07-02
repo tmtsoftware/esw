@@ -79,10 +79,10 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     assertThatSeqCompIsLoadedWithScript(aoeswSeqCompPrefix)
 
     // *************** Cleanup for observing mode ********************
-    val cleanupResponse = sequenceManagerClient.cleanup(IRIS_CAL).futureValue
+    val response = sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
 
     // assert for Successful Cleanup
-    cleanupResponse should ===(CleanupResponse.Success)
+    response should ===(ShutdownAllSequencersResponse.Success)
 
     // ESW-166 verify all sequencers are stopped for the observing mode and seq comps are available
     assertThatSeqCompIsAvailable(eswSeqCompPrefix)
@@ -113,8 +113,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManagerClient.configure(WFOS_CAL).futureValue shouldBe a[ConfigureResponse.Success]
 
     // Test cleanup
-    sequenceManagerClient.cleanup(IRIS_CAL).futureValue
-    sequenceManagerClient.cleanup(WFOS_CAL).futureValue
+    sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
+    sequenceManagerClient.shutdownObsModeSequencers(WFOS_CAL).futureValue
   }
 
   "start sequencer on esw sequence component as fallback if subsystem sequence component is not available | ESW-164, ESW-171" in {
@@ -132,7 +132,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     seqCompRunningSequencer.prefix.subsystem shouldBe ESW
 
     //test cleanup
-    sequenceManagerClient.cleanup(IRIS_CAL)
+    sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL)
   }
 
   "throw exception if config file is missing | ESW-162, ESW-160, ESW-171" in {
