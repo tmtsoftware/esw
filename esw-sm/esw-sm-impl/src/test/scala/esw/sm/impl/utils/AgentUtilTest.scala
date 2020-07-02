@@ -8,8 +8,8 @@ import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
-import csw.prefix.models.{Prefix, Subsystem}
 import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.api.{Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.Timeouts
@@ -48,15 +48,18 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration))
     }
 
-    "return SequenceComponentApi after spawning sequence component for given prefix | ESW-337" in {
+    "return SequenceComponentApi after spawning sequence component for given name and agent prefix | ESW-337" in {
       val setup = new TestSetup()
       import setup._
+      val agentPrefix = Prefix(ESW, "primary")
 
       mockSpawnComponent(Spawned)
       when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration)))
         .thenReturn(futureRight(sequenceComponentLocation))
 
-      agentUtil.spawnSequenceComponentFor(ESW, Prefix(ESW, "seq_comp")).rightValue shouldBe a[SequenceComponentApi]
+      agentUtil
+        .spawnSequenceComponentFor(agentPrefix, "seq_comp")
+        .rightValue shouldBe a[SequenceComponentApi]
 
       verifySpawnSequenceComponentCalled()
       verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration))
@@ -92,7 +95,7 @@ class AgentUtilTest extends BaseTestSuite {
       val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
 
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
-        override private[sm] def getAgent(subsystem: Subsystem): Future[Either[EswLocationError, AgentClient]] =
+        override private[sm] def getRandomAgent(subsystem: Subsystem): Future[Either[EswLocationError, AgentClient]] =
           futureLeft(LocationNotFound("Error in agent"))
       }
 
@@ -100,7 +103,7 @@ class AgentUtilTest extends BaseTestSuite {
     }
   }
 
-  "getAgent" must {
+  "getRandomAgent" must {
     "return AgentClient associated to ESW machine | ESW-164" in {
       val locationServiceUtil = mock[LocationServiceUtil]
       val agentClient         = mock[AgentClient]
@@ -112,7 +115,7 @@ class AgentUtilTest extends BaseTestSuite {
         override private[utils] def makeAgent(prefix: Prefix) = Future.successful(agentClient)
       }
 
-      agentUtil.getAgent(ESW).rightValue should ===(agentClient)
+      agentUtil.getRandomAgent(ESW).rightValue should ===(agentClient)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
     }
 
@@ -121,7 +124,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureRight(List.empty))
 
       val agentUtil = new AgentUtil(locationServiceUtil)
-      agentUtil.getAgent(ESW).leftValue shouldBe a[LocationNotFound]
+      agentUtil.getRandomAgent(ESW).leftValue shouldBe a[LocationNotFound]
 
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
     }
@@ -132,9 +135,56 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureLeft(listingFailed))
 
       val agentUtil = new AgentUtil(locationServiceUtil)
-      agentUtil.getAgent(ESW).leftValue should ===(listingFailed)
+      agentUtil.getRandomAgent(ESW).leftValue should ===(listingFailed)
 
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
+    }
+  }
+
+  "getAgent" must {
+    "return AgentClient associated to ESW machine | ESW-337" in {
+      val locationServiceUtil = mock[LocationServiceUtil]
+      val agentClient         = mock[AgentClient]
+      val agentPrefix         = Prefix(ESW, "primary")
+      val connection          = AkkaConnection(ComponentId(agentPrefix, Machine))
+      val location            = AkkaLocation(connection, new URI("mock"))
+
+      when(locationServiceUtil.find(connection)).thenReturn(futureRight(location))
+
+      val agentUtil = new AgentUtil(locationServiceUtil) {
+        override private[utils] def makeAgent(prefix: Prefix) = Future.successful(agentClient)
+      }
+
+      agentUtil.getAgent(agentPrefix).rightValue should ===(agentClient)
+      verify(locationServiceUtil).find(connection)
+    }
+
+    "return LocationNotFound when location service find call returns LocationNotFound | ESW-337" in {
+      val locationServiceUtil = mock[LocationServiceUtil]
+      val agentPrefix         = Prefix(ESW, "primary")
+      val connection          = AkkaConnection(ComponentId(agentPrefix, Machine))
+      val locationNotFound    = LocationNotFound("location not found")
+
+      when(locationServiceUtil.find(connection)).thenReturn(futureLeft(locationNotFound))
+
+      val agentUtil = new AgentUtil(locationServiceUtil)
+      agentUtil.getAgent(agentPrefix).leftValue should ===(locationNotFound)
+
+      verify(locationServiceUtil).find(connection)
+    }
+
+    "return RegistrationListingFailed when location service find call returns RegistrationListingFailed | ESW-337" in {
+      val locationServiceUtil = mock[LocationServiceUtil]
+      val agentPrefix         = Prefix(ESW, "primary")
+      val connection          = AkkaConnection(ComponentId(agentPrefix, Machine))
+      val listingFailed       = RegistrationListingFailed("listing failed")
+
+      when(locationServiceUtil.find(connection)).thenReturn(futureLeft(listingFailed))
+
+      val agentUtil = new AgentUtil(locationServiceUtil)
+      agentUtil.getAgent(agentPrefix).leftValue should ===(listingFailed)
+
+      verify(locationServiceUtil).find(connection)
     }
   }
 
@@ -160,7 +210,10 @@ class AgentUtilTest extends BaseTestSuite {
     val agentClient: AgentClient                 = mock[AgentClient]
 
     val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
-      override private[sm] def getAgent(subsystem: Subsystem): Future[Either[EswLocationError, AgentClient]] =
+      override private[sm] def getRandomAgent(subsystem: Subsystem): Future[Either[EswLocationError, AgentClient]] =
+        Future.successful(Right(agentClient))
+
+      override private[sm] def getAgent(prefix: Prefix): Future[Either[EswLocationError, AgentClient]] =
         Future.successful(Right(agentClient))
     }
 

@@ -24,16 +24,15 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
-    spawnSequenceComponentFor(subsystem, sequenceComponentPrefix)
-  }
-
-  def spawnSequenceComponentFor(
-      subsystem: Subsystem,
-      sequenceComponentPrefix: Prefix
-  ): Future[Either[AgentError, SequenceComponentApi]] =
-    getAgent(subsystem)
+    getRandomAgent(subsystem)
       .mapLeft(error => LocationServiceError(error.msg))
       .flatMapE(spawnSeqComp(_, sequenceComponentPrefix))
+  }
+
+  def spawnSequenceComponentFor(agentPrefix: Prefix, seqCompName: String): Future[Either[AgentError, SequenceComponentApi]] =
+    getAgent(agentPrefix)
+      .mapLeft(error => LocationServiceError(error.msg))
+      .flatMapE(spawnSeqComp(_, Prefix(agentPrefix.subsystem, seqCompName)))
 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
@@ -43,15 +42,20 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
         case Failed(msg) => Future.successful(Left(AgentError.SpawnSequenceComponentFailed(msg)))
       }
 
-  private[utils] def getAgent(subsystem: Subsystem): Future[Either[EswLocationError, AgentClient]] =
+  private[utils] def getRandomAgent(subsystem: Subsystem): Future[Either[EswLocationError, AgentClient]] =
     locationServiceUtil
       .listAkkaLocationsBy(subsystem, Machine)
       // find subsystem agent randomly from list of subsystem agents (machines).
-      // If this ESW machine fails to spawn sequence component, in retry attempt randomly picking subsystem agent would help.
+      // If this subsystem machine fails to spawn sequence component, in retry attempt randomly picking subsystem agent would help.
       // if locations are empty then locations(Random.nextInt(locations.length)).prefix will throw exception,
       // it is handled in mapError block
       .flatMapRight(locations => makeAgent(locations(Random.nextInt(locations.length)).prefix))
       .mapError(_ => LocationNotFound(s"Could not find agent matching $subsystem"))
+
+  private[utils] def getAgent(prefix: Prefix): Future[Either[EswLocationError, AgentClient]] =
+    locationServiceUtil
+      .find(AkkaConnection(ComponentId(prefix, Machine)))
+      .flatMapRight(location => makeAgent(location.prefix))
 
   private[utils] def makeAgent(prefix: Prefix): Future[AgentClient] =
     AgentClient.make(prefix, locationServiceUtil.locationService)
