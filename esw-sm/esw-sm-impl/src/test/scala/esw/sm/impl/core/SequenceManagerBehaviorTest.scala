@@ -20,7 +20,6 @@ import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.ShutdownAllSequencersResponse.ShutdownFailure
-import esw.sm.api.protocol.ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure
 import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
@@ -329,7 +328,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "ShutdownSequenceComponent" must {
-    "return Success when sequence component is shut down | ESW-338" in {
+    "return Success when sequence component is shutdown | ESW-338" in {
       val prefix = Prefix(ESW, "primary")
 
       when(sequenceComponentUtil.shutdown(prefix)).thenReturn(future(1.seconds, ShutdownSequenceComponentResponse.Success))
@@ -342,27 +341,18 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequenceComponentUtil).shutdown(prefix)
     }
 
-    val errors = Table(
-      ("errorName", "error"),
-      ("LocationServiceError", LocationServiceError("location service error")),
-      (
-        "SpawnSequenceComponentFailed",
-        ShutdownSequenceComponentFailure(Prefix(ESW, "primary"), "shutdown sequence component failed")
-      )
-    )
+    "return LocationServiceError if LocationServiceError encountered while shutting down sequence component | ESW-338" in {
+      val prefix = Prefix(ESW, "primary")
 
-    forAll(errors) { (errorName, error) =>
-      s"return $errorName if $errorName encountered while shutting down sequence component | ESW-338" in {
-        val prefix = Prefix(ESW, "primary")
+      val error = LocationServiceError("location service error")
 
-        when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(error))
-        val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
+      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(error))
+      val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-        smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
-        shutdownSequenceComponentResponseProbe.expectMessage(error)
+      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
+      shutdownSequenceComponentResponseProbe.expectMessage(error)
 
-        verify(sequenceComponentUtil).shutdown(prefix)
-      }
+      verify(sequenceComponentUtil).shutdown(prefix)
     }
   }
 

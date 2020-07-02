@@ -13,7 +13,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.protocol.CleanupResponse.FailedToShutdownSequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -23,7 +23,6 @@ import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
 
-import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
@@ -73,7 +72,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMapToAdt(shutdownSequencers, e => LocationServiceError(e.msg))
 
   private def shutdownSequencers(sequencerLocations: List[AkkaLocation]): Future[ShutdownAllSequencersResponse] =
-    traverse(sequencerLocations)(location => unloadScript(location))
+    traverse(sequencerLocations)(unloadScript)
       .mapToAdt(_ => ShutdownAllSequencersResponse.Success, ShutdownAllSequencersResponse.ShutdownFailure)
 
   def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
@@ -108,17 +107,12 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(
-      sequenceLocation: AkkaLocation
+      sequencerLocation: AkkaLocation
   ): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
-    async {
-      val seqCompLoc      = await(createSequencerClient(sequenceLocation).getSequenceComponent)
-      val unloadScriptRes = await(sequenceComponentUtil.unloadScript(seqCompLoc))
-
-      unloadScriptRes match {
-        case Ok                   => Right(ShutdownSequencerResponse.Success)
-        case Unhandled(_, _, msg) => Left(UnloadScriptError(sequenceLocation.prefix, msg))
-      }
-    }.mapError(e => UnloadScriptError(sequenceLocation.prefix, e.getMessage))
+    createSequencerClient(sequencerLocation).getSequenceComponent
+      .flatMap(sequenceComponentUtil.unloadScript)
+      .map(_ => Right(ShutdownSequencerResponse.Success))
+      .mapError(e => UnloadScriptError(sequencerLocation.prefix, e.getMessage))
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)

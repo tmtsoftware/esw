@@ -285,7 +285,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     response should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)))
   }
 
-  "spawn sequence component for given machine and name and shutdown for given prefix | ESW-337, ESW-338" in {
+  "spawn sequence component on given machine with given name and shutdown for given prefix | ESW-337, ESW-338" in {
     val seqCompName         = "seq_comp"
     val seqCompPrefix       = Prefix(ESW, seqCompName)
     val expectedComponentId = ComponentId(seqCompPrefix, SequenceComponent)

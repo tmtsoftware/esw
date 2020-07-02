@@ -9,7 +9,7 @@ import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, RestartScript, Shutdown, UnloadScript}
 import esw.ocs.api.models.ObsMode
-import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, OkOrUnhandled, ScriptResponseOrUnhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
@@ -32,10 +32,10 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
   override def status: Future[GetStatusResponse] =
     (sequenceComponentRef ? GetStatus)(SequenceComponentApiTimeout.StatusTimeout, actorSystem.scheduler)
 
-  override def unloadScript(): Future[OkOrUnhandled] =
+  override def unloadScript(): Future[Ok.type] =
     (sequenceComponentRef ? UnloadScript)(SequenceComponentApiTimeout.UnloadScriptTimeout, actorSystem.scheduler)
 
-  override def shutdown(): Future[OkOrUnhandled] =
+  override def shutdown(): Future[Ok.type] =
     (sequenceComponentRef ? Shutdown)(SequenceComponentApiTimeout.ShutdownTimeout, actorSystem.scheduler)
 }
 

@@ -11,11 +11,9 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.protocol.SequenceComponentResponse
-import esw.ocs.api.protocol.SequenceComponentResponse.{OkOrUnhandled, ScriptResponseOrUnhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, OkOrUnhandled, ScriptResponseOrUnhandled}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure
 import esw.sm.api.protocol.{AgentError, ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}
 
 import scala.async.Async._
@@ -50,21 +48,13 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         case None => agentUtil.spawnSequenceComponentFor(ESW)
       }
 
-  def unloadScript(loc: AkkaLocation): Future[OkOrUnhandled] = createSequenceComponentImpl(loc).unloadScript()
+  def unloadScript(loc: AkkaLocation): Future[Ok.type] = createSequenceComponentImpl(loc).unloadScript()
 
   def shutdown(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
     locationServiceUtil
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
       .flatMapRight(createSequenceComponentImpl(_).shutdown())
-      .mapToAdt(
-        okOrUnhandledToShutdownSeqCompResponse(prefix),
-        error => LocationServiceError(error.msg)
-      )
-
-  private def okOrUnhandledToShutdownSeqCompResponse(prefix: Prefix): OkOrUnhandled => ShutdownSequenceComponentResponse = {
-    case SequenceComponentResponse.Ok                   => ShutdownSequenceComponentResponse.Success
-    case SequenceComponentResponse.Unhandled(_, _, msg) => ShutdownSequenceComponentFailure(prefix, msg)
-  }
+      .mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
   def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
 

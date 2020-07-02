@@ -181,8 +181,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "Sequence Manager ShutdownSequenceComponentResponse models",
       ShutdownSequenceComponentResponse.Success,
-      LocationServiceError("error"),
-      ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure(Prefix(ESW, "primary"), "error")
+      LocationServiceError("error")
     )
 
     forAll(testData) { shutdownSequencerResponse =>

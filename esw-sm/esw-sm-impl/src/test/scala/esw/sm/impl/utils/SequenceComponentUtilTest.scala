@@ -205,30 +205,6 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       verify(mockSeqCompImpl).shutdown()
     }
 
-    "return error when unload script returns error | ESW-338" in {
-      val mockSeqCompImpl = mock[SequenceComponentImpl]
-      val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
-        override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
-          mockSeqCompImpl
-      }
-      val prefixStr  = "ESW.primary"
-      val connection = AkkaConnection(ComponentId(Prefix(prefixStr), SequenceComponent))
-      when(locationServiceUtil.find(connection))
-        .thenReturn(Future.successful(Right(mockAkkaLocation(prefixStr))))
-      when(mockSeqCompImpl.shutdown())
-        .thenReturn(Future.successful(SequenceComponentResponse.Unhandled(SequenceComponentState.Idle, "UnloadScript")))
-
-      seqCompUtil.shutdown(Prefix(prefixStr)).futureValue should ===(
-        ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure(
-          Prefix(prefixStr),
-          s"Sequence Component can not accept 'UnloadScript' message in '${SequenceComponentState.Idle.entryName}'"
-        )
-      )
-
-      verify(locationServiceUtil).find(connection)
-      verify(mockSeqCompImpl).shutdown()
-    }
-
     "return error when location service returns error | ESW-338" in {
       val mockSeqCompImpl = mock[SequenceComponentImpl]
       val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {

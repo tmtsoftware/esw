@@ -15,35 +15,24 @@ sealed trait UnhandleableSequenceComponentMsg extends SequenceComponentMsg {
 
 sealed trait IdleStateSequenceComponentMsg    extends SequenceComponentMsg
 sealed trait RunningStateSequenceComponentMsg extends SequenceComponentMsg
+sealed trait CommonMsg                        extends IdleStateSequenceComponentMsg with RunningStateSequenceComponentMsg
 
 object SequenceComponentMsg {
+  final case class UnloadScript(replyTo: ActorRef[Ok.type]) extends SequenceComponentRemoteMsg with CommonMsg
+
+  final case class GetStatus(replyTo: ActorRef[GetStatusResponse]) extends SequenceComponentRemoteMsg with CommonMsg
+
+  final case class Shutdown(replyTo: ActorRef[Ok.type]) extends SequenceComponentRemoteMsg with CommonMsg
+
   final case class LoadScript(subsystem: Subsystem, observingMode: ObsMode, replyTo: ActorRef[ScriptResponseOrUnhandled])
       extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
       with IdleStateSequenceComponentMsg
-
-  final case class UnloadScript(replyTo: ActorRef[Ok.type])
-      extends SequenceComponentRemoteMsg
-      with IdleStateSequenceComponentMsg
-      with RunningStateSequenceComponentMsg
 
   final case class RestartScript(replyTo: ActorRef[ScriptResponseOrUnhandled])
       extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
       with RunningStateSequenceComponentMsg
 
-  final case class GetStatus(replyTo: ActorRef[GetStatusResponse])
-      extends SequenceComponentRemoteMsg
-      with IdleStateSequenceComponentMsg
-      with RunningStateSequenceComponentMsg
-
-  final case class Shutdown(replyTo: ActorRef[Ok.type])
-      extends SequenceComponentRemoteMsg
-      with IdleStateSequenceComponentMsg
-      with RunningStateSequenceComponentMsg
-
-  private[ocs] final case object Stop
-      extends SequenceComponentMsg
-      with IdleStateSequenceComponentMsg
-      with RunningStateSequenceComponentMsg
+  private[ocs] final case object Stop extends SequenceComponentMsg with CommonMsg
 }
