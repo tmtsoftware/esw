@@ -287,7 +287,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   "spawn sequence component for given machine and name and shutdown for given prefix | ESW-337, ESW-338" in {
     val seqCompName         = "seq_comp"
-    val machineName         = "primary"
+    val machine             = ComponentId(Prefix(ESW, "primary"), Machine)
     val seqCompPrefix       = Prefix(ESW, seqCompName)
     val expectedComponentId = ComponentId(seqCompPrefix, SequenceComponent)
 
@@ -304,7 +304,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
 
-    Await.result(sequenceManagerClient.spawnSequenceComponent(ESW, machineName, seqCompName), 1.minute) should ===(
+    Await.result(sequenceManagerClient.spawnSequenceComponent(machine, seqCompName), 1.minute) should ===(
       SpawnSequenceComponentResponse.Success(expectedComponentId)
     )
 
