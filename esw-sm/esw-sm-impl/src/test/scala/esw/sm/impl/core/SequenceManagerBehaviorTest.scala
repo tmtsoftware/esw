@@ -369,45 +369,45 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "SpawnSequenceComponent" must {
     "return Success with sequence component id when it is spawned | ESW-337" in {
       val seqCompName = "seq_comp"
-      val machine     = ComponentId(Prefix(ESW, "primary"), Machine)
+      val agent       = Prefix(ESW, "primary")
       val seqComp     = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
-      when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
+      when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
         .thenReturn(future(1.seconds, SpawnSequenceComponentResponse.Success(seqComp)))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
-      smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
+      smRef ! SpawnSequenceComponent(agent, seqCompName, spawnSequenceComponentProbe.ref)
       spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(seqComp))
 
-      verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
+      verify(sequenceComponentUtil).spawnSequenceComponent(agent, seqCompName)
     }
 
     "return LocationServiceError if location service gives error | ESW-337" in {
       val seqCompName = "seq_comp"
-      val machine     = ComponentId(Prefix(ESW, "primary"), Machine)
-      when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
+      val agent       = Prefix(ESW, "primary")
+      when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
         .thenReturn(future(1.seconds, LocationServiceError("location service error")))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
-      smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
+      smRef ! SpawnSequenceComponent(agent, seqCompName, spawnSequenceComponentProbe.ref)
       spawnSequenceComponentProbe.expectMessage(LocationServiceError("location service error"))
 
-      verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
+      verify(sequenceComponentUtil).spawnSequenceComponent(agent, seqCompName)
     }
 
     "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-337" in {
       val seqCompName = "seq_comp"
-      val machine     = ComponentId(Prefix(ESW, "primary"), Machine)
-      when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
+      val agent       = Prefix(ESW, "primary")
+      when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
         .thenReturn(future(1.seconds, SpawnSequenceComponentFailed("spawning failed")))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
-      smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
+      smRef ! SpawnSequenceComponent(agent, seqCompName, spawnSequenceComponentProbe.ref)
       spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentFailed("spawning failed"))
 
-      verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
+      verify(sequenceComponentUtil).spawnSequenceComponent(agent, seqCompName)
     }
   }
 

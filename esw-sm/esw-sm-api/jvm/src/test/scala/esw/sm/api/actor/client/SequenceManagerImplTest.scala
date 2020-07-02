@@ -86,8 +86,8 @@ class SequenceManagerImplTest extends BaseTestSuite {
     }
 
     "spawnSequenceComponent | ESW-337" in {
-      val machine = ComponentId(Prefix("tcs.primary"), ComponentType.Machine)
-      sequenceManager.spawnSequenceComponent(machine, "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
+      val agent = Prefix("tcs.primary")
+      sequenceManager.spawnSequenceComponent(agent, "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
     }
   }
 }

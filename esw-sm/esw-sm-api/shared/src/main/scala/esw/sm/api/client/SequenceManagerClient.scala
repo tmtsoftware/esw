@@ -1,6 +1,5 @@
 package esw.sm.api.client
 
-import csw.location.api.models.ComponentId
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
@@ -39,8 +38,8 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
     postClient.requestResponse[ShutdownAllSequencersResponse](ShutdownAllSequencers)
 
-  override def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse] =
-    postClient.requestResponse[SpawnSequenceComponentResponse](SpawnSequenceComponent(machine, name))
+  override def spawnSequenceComponent(agent: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
+    postClient.requestResponse[SpawnSequenceComponentResponse](SpawnSequenceComponent(agent, sequenceComponentName))
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
     postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownSequenceComponent(prefix))

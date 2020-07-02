@@ -56,36 +56,36 @@ class SequenceComponentUtilTest extends BaseTestSuite {
   "spawnSequenceComponent" must {
     "spawn new sequence component for given componentId and with given name | ESW-337" in {
       val seqCompName                                  = "seq_comp"
-      val componentId                                  = ComponentId(Prefix(TCS, "tcs.primary"), Machine)
-      val seqCompPrefix                                = Prefix(componentId.prefix.subsystem, seqCompName)
+      val agent                                        = Prefix(TCS, "tcs.primary")
+      val seqCompPrefix                                = Prefix(agent.subsystem, seqCompName)
       val seqComp                                      = ComponentId(seqCompPrefix, SequenceComponent)
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
 
       val sequenceComponentApi = mock[SequenceComponentImpl]
-      when(agentUtil.spawnSequenceComponentFor(componentId.prefix.subsystem, seqCompPrefix))
+      when(agentUtil.spawnSequenceComponentFor(agent.subsystem, seqCompPrefix))
         .thenReturn(futureRight(sequenceComponentApi))
 
-      sequenceComponentUtil.spawnSequenceComponent(componentId, seqCompName).futureValue should ===(
+      sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName).futureValue should ===(
         SpawnSequenceComponentResponse.Success(seqComp)
       )
 
-      verify(agentUtil).spawnSequenceComponentFor(componentId.prefix.subsystem, seqCompPrefix)
+      verify(agentUtil).spawnSequenceComponentFor(agent.subsystem, seqCompPrefix)
     }
 
     "return failure if agent fails to spawn sequence component | ESW-337" in {
-      val componentId                                  = ComponentId(Prefix(TCS, "tcs.primary"), Machine)
+      val agent                                        = Prefix(TCS, "tcs.primary")
       val seqCompName                                  = "seq_comp"
-      val seqCompPrefix                                = Prefix(componentId.prefix.subsystem, seqCompName)
+      val seqCompPrefix                                = Prefix(agent.subsystem, seqCompName)
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
 
-      when(agentUtil.spawnSequenceComponentFor(componentId.prefix.subsystem, seqCompPrefix))
+      when(agentUtil.spawnSequenceComponentFor(agent.subsystem, seqCompPrefix))
         .thenReturn(futureLeft(SpawnSequenceComponentFailed("spawn failed")))
 
-      sequenceComponentUtil.spawnSequenceComponent(componentId, seqCompName).futureValue should ===(
+      sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName).futureValue should ===(
         SpawnSequenceComponentFailed("spawn failed")
       )
 
-      verify(agentUtil).spawnSequenceComponentFor(componentId.prefix.subsystem, seqCompPrefix)
+      verify(agentUtil).spawnSequenceComponentFor(agent.subsystem, seqCompPrefix)
     }
   }
 

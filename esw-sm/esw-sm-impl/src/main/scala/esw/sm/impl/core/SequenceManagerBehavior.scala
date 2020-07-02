@@ -145,12 +145,8 @@ class SequenceManagerBehavior(
   private def shutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]): Future[Unit] =
     sequencerUtil.shutdownAllSequencers().map(replyTo ! _)
 
-  private def spawnSequenceComponent(
-      machine: ComponentId,
-      name: String,
-      replyTo: ActorRef[SpawnSequenceComponentResponse]
-  ): Future[Unit] = {
-    sequenceComponentUtil.spawnSequenceComponent(machine, name).map(replyTo ! _)
+  private def spawnSequenceComponent(agent: Prefix, name: String, replyTo: ActorRef[SpawnSequenceComponentResponse]) = {
+    sequenceComponentUtil.spawnSequenceComponent(agent, name).map(replyTo ! _)
   }
 
   private def shutdownSequenceComponent(
