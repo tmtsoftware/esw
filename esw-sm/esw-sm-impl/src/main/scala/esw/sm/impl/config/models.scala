@@ -3,12 +3,14 @@ package esw.sm.impl.config
 import csw.prefix.models.Subsystem
 import esw.ocs.api.models.ObsMode
 
-case class Resources(resources: Set[Subsystem]) {
+case class Resource(subsystem: Subsystem)
+
+case class Resources(resources: Set[Resource]) {
   private def conflictsWith(other: Resources): Boolean  = this.resources.exists(other.resources.contains)
   def conflictsWithAny(others: Set[Resources]): Boolean = others.exists(conflictsWith)
 }
 object Resources {
-  def apply(resources: Subsystem*): Resources = new Resources(resources.toSet)
+  def apply(resources: Resource*): Resources = new Resources(resources.toSet)
 }
 
 case class Sequencers(subsystems: List[Subsystem])

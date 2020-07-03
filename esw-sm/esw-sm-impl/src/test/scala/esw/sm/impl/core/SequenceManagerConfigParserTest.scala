@@ -18,10 +18,10 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
   private val actorSystem                   = ActorSystem(SpawnProtocol(), "test-system")
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  private val iris: Subsystem    = IRIS
-  private val tcs: Subsystem     = TCS
-  private val nfiraos: Subsystem = NFIRAOS
-  private val nscu: Subsystem    = Subsystem.NSCU
+  private val iris: Resource    = Resource(IRIS)
+  private val tcs: Resource     = Resource(TCS)
+  private val nfiraos: Resource = Resource(NFIRAOS)
+  private val nscu: Resource    = Resource(Subsystem.NSCU)
 
   "read" must {
     "read config from local file | ESW-162" in {

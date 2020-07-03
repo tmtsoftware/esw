@@ -1,6 +1,5 @@
 package esw.sm.impl.config
 
-import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem._
 import esw.ocs.api.models.ObsMode
 import org.scalactic.TypeCheckedTripleEquals
@@ -13,11 +12,11 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
   private val ClearSkies            = ObsMode("clearskies")
   private val SequencerStartRetries = 1
 
-  private val esw: Subsystem     = ESW
-  private val tcs: Subsystem     = TCS
-  private val aoesw: Subsystem   = AOESW
-  private val iris: Subsystem    = IRIS
-  private val nfiraos: Subsystem = NFIRAOS
+  private val esw: Resource     = Resource(ESW)
+  private val tcs: Resource     = Resource(TCS)
+  private val aoesw: Resource   = Resource(AOESW)
+  private val iris: Resource    = Resource(IRIS)
+  private val nfiraos: Resource = Resource(NFIRAOS)
 
   private val ConfigMap = Map(
     DarkNight  -> ObsModeConfig(Resources(esw, tcs), Sequencers(ESW, TCS)),

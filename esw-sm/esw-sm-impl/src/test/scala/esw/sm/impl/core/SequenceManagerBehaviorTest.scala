@@ -43,8 +43,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   private val clearskiesSequencers: Sequencers = Sequencers(ESW)
   private val config = SequenceManagerConfig(
     Map(
-      Darknight  -> ObsModeConfig(Resources(NSCU, TCS), darknightSequencers),
-      Clearskies -> ObsModeConfig(Resources(TCS, IRIS), clearskiesSequencers)
+      Darknight  -> ObsModeConfig(Resources(Resource(NSCU), Resource(TCS)), darknightSequencers),
+      Clearskies -> ObsModeConfig(Resources(Resource(TCS), Resource(IRIS)), clearskiesSequencers)
     ),
     sequencerStartRetries = 3
   )
