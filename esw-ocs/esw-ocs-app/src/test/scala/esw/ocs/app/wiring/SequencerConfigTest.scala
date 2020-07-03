@@ -42,24 +42,24 @@ class SequencerConfigTest extends BaseTestSuite {
       sequencerConfigs.prefix should ===(Prefix(TCS, "DarkNight"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
 
-      val lowerCaseObservingMode = obsMode.name.toLowerCase
+      val lowerCaseObsMode = obsMode.name.toLowerCase
       val exception = intercept[ScriptConfigurationMissingException] {
-        SequencerConfig.from(validConf, subsystem, ObsMode(lowerCaseObservingMode))
+        SequencerConfig.from(validConf, subsystem, ObsMode(lowerCaseObsMode))
       }
 
-      exception.getMessage should ===(s"Script configuration missing for [${subsystem.name}] with [$lowerCaseObservingMode]")
+      exception.getMessage should ===(s"Script configuration missing for [${subsystem.name}] with [$lowerCaseObsMode]")
 
-      val upperCaseObservingMode = obsMode.name.toUpperCase
+      val upperCaseObsMode = obsMode.name.toUpperCase
       val exception2 = intercept[ScriptConfigurationMissingException] {
-        SequencerConfig.from(validConf, subsystem, ObsMode(upperCaseObservingMode))
+        SequencerConfig.from(validConf, subsystem, ObsMode(upperCaseObsMode))
       }
 
-      exception2.getMessage should ===(s"Script configuration missing for [${subsystem.name}] with [$upperCaseObservingMode]")
+      exception2.getMessage should ===(s"Script configuration missing for [${subsystem.name}] with [$upperCaseObsMode]")
     }
 
     "throw ScriptConfigurationMissingException if script config is not provided for given subsystem and obsMode | ESW-103" in {
       val subsystem = Subsystem.CSW
-      val obsMode   = ObsMode("invalidObservingMode")
+      val obsMode   = ObsMode("invalidObsMode")
 
       val exception = intercept[ScriptConfigurationMissingException] {
         SequencerConfig.from(validConf, subsystem, obsMode)

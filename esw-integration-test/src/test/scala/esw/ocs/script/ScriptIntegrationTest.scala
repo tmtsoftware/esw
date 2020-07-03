@@ -34,14 +34,14 @@ import scala.concurrent.Future
 class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigServer) {
 
   // TestScript.kt
-  private val ocsSubsystem     = ESW
-  private val ocsObservingMode = ObsMode("darknight")
-  private val tcsSubsystem     = TCS
-  private val tcsObservingMode = ObsMode("darknight")
+  private val ocsSubsystem = ESW
+  private val ocsObsMode   = ObsMode("darknight")
+  private val tcsSubsystem = TCS
+  private val tcsObsMode   = ObsMode("darknight")
 
   // TestScript4.kts
   private val lgsfSubsystem                = LGSF
-  private val lgsfObservingMode            = ObsMode("darknight")
+  private val lgsfObsMode                  = ObsMode("darknight")
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
   private var ocsSequencer: SequencerApi   = _
   private var tcsSequencer: SequencerApi   = _
@@ -56,9 +56,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
   override def beforeEach(): Unit = {
     //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
-    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObservingMode)
-    tcsSequencer = spawnSequencerProxy(tcsSubsystem, tcsObservingMode)
-    lgsfSequencer = spawnSequencerProxy(lgsfSubsystem, lgsfObservingMode)
+    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
+    tcsSequencer = spawnSequencerProxy(tcsSubsystem, tcsObsMode)
+    lgsfSequencer = spawnSequencerProxy(lgsfSubsystem, lgsfObsMode)
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()

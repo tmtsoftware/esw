@@ -10,8 +10,8 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 
 class SequencerBehaviorIntegrationTest extends EswTestKit {
-  private val ocsSubsystem     = ESW
-  private val ocsObservingMode = ObsMode("darknight")
+  private val ocsSubsystem = ESW
+  private val ocsObsMode   = ObsMode("darknight")
 
   "Sequencer" must {
     "not receive sequence when already processing a sequence | ESW-145" in {
@@ -19,7 +19,7 @@ class SequencerBehaviorIntegrationTest extends EswTestKit {
       val submitResponseProbe       = TestProbe[SequencerSubmitResponse]()
       val loadSequenceResponseProbe = TestProbe[OkOrUnhandledResponse]()
       val sequence                  = Sequence(command)
-      val ocsSequencer              = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
+      val ocsSequencer              = spawnSequencerRef(ocsSubsystem, ocsObsMode)
 
       ocsSequencer ! SubmitSequenceInternal(sequence, submitResponseProbe.ref)
       Thread.sleep(1000)

@@ -46,10 +46,10 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     ocsSequencer = sequencerClient(subsystem, obsMode)
 
     // tcs sequencer, starts with TestScript3
-    val tcsSequencerId            = TCS
-    val tcsSequencerObservingMode = ObsMode("moonnight")
-    spawnSequencer(tcsSequencerId, tcsSequencerObservingMode)
-    tcsSequencer = sequencerClient(tcsSequencerId, tcsSequencerObservingMode)
+    val tcsSequencerId      = TCS
+    val tcsSequencerObsMode = ObsMode("moonnight")
+    spawnSequencer(tcsSequencerId, tcsSequencerObsMode)
+    tcsSequencer = sequencerClient(tcsSequencerId, tcsSequencerObsMode)
   }
 
   override protected def afterEach(): Unit = shutdownAllSequencers()
