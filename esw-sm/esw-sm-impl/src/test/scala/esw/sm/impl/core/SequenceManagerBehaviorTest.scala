@@ -217,7 +217,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     val policy = ShutdownSequencersPolicy.ObsModeSequencers(Darknight)
 
     "transition sm from Idle -> ShuttingdownObsModeSequencersInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
-      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
       val responseProbe = TestProbe[ShutdownSequencersResponse]()
 
