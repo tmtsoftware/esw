@@ -15,9 +15,8 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
-import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
+import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.protocol.ShutdownSequencersPolicy.{AllSequencers, ObsModeSequencers, SingleSequencer, SubsystemSequencers}
 import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, Started}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
@@ -90,24 +89,9 @@ class SequenceManagerBehavior(
       self: SelfRef,
       replyTo: ActorRef[ShutdownSequencersResponse]
   ): SMBehavior = {
-    shutdownSequencers(policy).map(self ! ShutdownObsModeSequencersResponseInternal(_))
+    sequencerUtil.shutdownSequencers(policy).map(self ! ShutdownObsModeSequencersResponseInternal(_))
     shuttingDownObsModeSequencers(self, replyTo)
   }
-
-  def shutdownSequencers(policy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
-    policy match {
-      case SingleSequencer(subsystem, obsMode) => sequencerUtil.shutdownSequencer(subsystem, obsMode).mapToAdt(identity, identity)
-      case SubsystemSequencers(subsystem)      => shutdownSequencers(getSubsystemSequencers(subsystem))
-      case ObsModeSequencers(obsMode)          => shutdownSequencers(getObsModeSequencers(obsMode))
-      case AllSequencers                       => sequencerUtil.shutdownAllSequencers()
-    }
-
-  private def getSubsystemSequencers(subsystem: Subsystem) = locationServiceUtil.listAkkaLocationsBy(subsystem, Sequencer)
-  private def getObsModeSequencers(obsMode: ObsMode)       = locationServiceUtil.listAkkaLocationsBy(obsMode.name, Sequencer)
-  private def getAllSequencers                             = locationServiceUtil.listAkkaLocationsBy(Sequencer)
-
-  private def shutdownSequencers(sequencers: Future[Either[RegistrationListingFailed, List[AkkaLocation]]]) =
-    sequencers.flatMapRight(sequencerUtil.shutdownSequencers).mapToAdt(identity, e => LocationServiceError(e.msg))
 
   // shutting down ObsMode Sequencers is in progress, waiting for CleanupResponseInternal message
   // Within this period, reject all the other messages except common messages
