@@ -61,7 +61,7 @@ jobs:
           sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Tests
-        run: sbt -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
