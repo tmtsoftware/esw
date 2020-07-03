@@ -54,32 +54,34 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def shutdownSequencers(policy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
     policy match {
-      case SingleSequencer(subsystem, obsMode) => shutdownSequencer(subsystem, obsMode).mapToAdt(identity, identity)
+      case SingleSequencer(subsystem, obsMode) => shutdownSequencer(subsystem, obsMode)
       case SubsystemSequencers(subsystem)      => shutdownSequencersAndHandleErrors(getSubsystemSequencers(subsystem))
       case ObsModeSequencers(obsMode)          => shutdownSequencersAndHandleErrors(getObsModeSequencers(obsMode))
       case AllSequencers                       => shutdownSequencersAndHandleErrors(getAllSequencers)
     }
 
-  private def getSubsystemSequencers(subsystem: Subsystem) = locationServiceUtil.listAkkaLocationsBy(subsystem, Sequencer)
-  private def getObsModeSequencers(obsMode: ObsMode)       = locationServiceUtil.listAkkaLocationsBy(obsMode.name, Sequencer)
-  private def getAllSequencers                             = locationServiceUtil.listAkkaLocationsBy(Sequencer)
-
-  private def shutdownSequencersAndHandleErrors(sequencers: Future[Either[RegistrationListingFailed, List[AkkaLocation]]]) =
-    sequencers.flatMapRight(unloadScripts).mapToAdt(identity, e => LocationServiceError(e.msg))
-
-  private def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode) =
-    locationServiceUtil
-      .findSequencer(subsystem, obsMode)
-      .flatMap {
-        case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
-        case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencersResponse.Success))
-        case Right(sequencerLoc)                            => unloadScript(sequencerLoc).mapLeft(error => ShutdownFailure(List(error)))
-      }
-
   def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
       .findSequencer(subSystem, obsMode)
       .flatMapToAdt(restartSequencer, e => LocationServiceError(e.msg))
+
+  private def getSubsystemSequencers(subsystem: Subsystem) = locationServiceUtil.listAkkaLocationsBy(subsystem, Sequencer)
+
+  private def getObsModeSequencers(obsMode: ObsMode) = locationServiceUtil.listAkkaLocationsBy(obsMode.name, Sequencer)
+
+  private def getAllSequencers = locationServiceUtil.listAkkaLocationsBy(Sequencer)
+
+  private def shutdownSequencersAndHandleErrors(sequencers: Future[Either[RegistrationListingFailed, List[AkkaLocation]]]) =
+    sequencers.flatMapRight(unloadScripts).mapToAdt(identity, e => LocationServiceError(e.msg))
+
+  private def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    locationServiceUtil
+      .findSequencer(subsystem, obsMode)
+      .flatMap {
+        case Left(listingFailed: RegistrationListingFailed) => Future.successful(LocationServiceError(listingFailed.msg))
+        case Left(LocationNotFound(_))                      => Future.successful(ShutdownSequencersResponse.Success)
+        case Right(sequencerLoc)                            => unloadScript(sequencerLoc).mapToAdt(identity, error => ShutdownFailure(List(error)))
+      }
 
   private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
     createSequencerClient(akkaLocation).getSequenceComponent
@@ -113,6 +115,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
 
-  private def traverse[T, L, R](i: List[T])(f: T => Future[Either[L, R]])   = Future.traverse(i)(f).map(_.sequence)
+  private def traverse[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = Future.traverse(i)(f).map(_.sequence)
+
   private def sequential[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = FutureUtils.sequential(i)(f).map(_.sequence)
 }
