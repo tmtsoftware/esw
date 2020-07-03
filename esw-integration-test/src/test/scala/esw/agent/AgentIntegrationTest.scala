@@ -25,7 +25,7 @@ class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
   private val irisSeqCompConnection    = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
   private val redisPrefix              = Prefix(s"esw.event_server")
   private val redisCompId              = ComponentId(redisPrefix, Service)
-  private val appVersion               = Some("d94b7c56e3")
+  private val appVersion               = Some("master-SNAPSHOT")
   private var agentPrefix: Prefix      = _
   private var agentClient: AgentClient = _
 
