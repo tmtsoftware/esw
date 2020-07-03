@@ -35,7 +35,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.getRunningObsModes.futureValue shouldBe GetRunningObsModesResponse.Success(Set(obsMode))
     }
 
-    "return cleanup success for cleanup request" in {
+    "return success for Shutdown Sequencers for ObsMode request" in {
       val shutdownObsModeSequencersMsg = ShutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownObsModeSequencersMsg))(

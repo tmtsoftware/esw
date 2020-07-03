@@ -17,7 +17,7 @@ trait SequenceManagerApi {
   def shutdownObsModeSequencers(observingMode: ObsMode): Future[ShutdownSequencersResponse]
   def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse]
   def shutdownAllSequencers(): Future[ShutdownSequencersResponse]
-  def shutdownSequencers(shutdownSequencersPolicy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse]
+  private[sm] def shutdownSequencers(shutdownSequencersPolicy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse]
 
   def spawnSequenceComponent(agent: Prefix, name: String): Future[SpawnSequenceComponentResponse]
   def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
