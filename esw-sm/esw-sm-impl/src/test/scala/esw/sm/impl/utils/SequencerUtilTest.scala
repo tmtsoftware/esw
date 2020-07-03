@@ -30,9 +30,17 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future, TimeoutException}
 
 class SequencerUtilTest extends BaseTestSuite {
-  implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
-  implicit val ec: ExecutionContext                       = system.executionContext
-  implicit val timeout: Timeout                           = 5.seconds
+  implicit private val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
+  implicit private val ec: ExecutionContext                       = system.executionContext
+  implicit private val timeout: Timeout                           = 5.seconds
+
+  private val setup = new TestSetup()
+  import setup._
+
+  override protected def afterEach(): Unit = {
+    super.afterEach()
+    reset(eswSeqCompApi, tcsSeqCompApi, locationServiceUtil, sequenceComponentUtil, eswSequencerApi, tcsSequencerApi)
+  }
 
   override def afterAll(): Unit = {
     system.terminate()
@@ -41,8 +49,12 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "startSequencers" must {
     "start all the given sequencers | ESW-178" in {
-      val setup = new TestSetup()
-      import setup._
+      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(Future.successful(Right(eswSeqCompApi)))
+      when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqCompApi)))
+      when(eswSeqCompApi.loadScript(ESW, darkNightObsMode))
+        .thenReturn(Future.successful(SequencerLocation(eswDarkNightSequencerLoc)))
+      when(tcsSeqCompApi.loadScript(TCS, darkNightObsMode))
+        .thenReturn(Future.successful(SequencerLocation(tcsDarkNightSequencerLoc)))
 
       // returns success with master sequencer location after starting all the sequencers
       sequencerUtil.startSequencers(darkNightObsMode, Sequencers(ESW, TCS), 3).futureValue should ===(
@@ -56,13 +68,11 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return all the errors caused while starting the sequencers  | ESW-178" in {
-      val setup = new TestSetup()
-      import setup._
-
       // unable to start sequence component error
       val seqCompErrorMsg              = "could not spawn SeqComp for ESW"
       val spawnSequenceComponentFailed = futureLeft(SpawnSequenceComponentFailed(seqCompErrorMsg))
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(spawnSequenceComponentFailed)
+      when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqCompApi)))
 
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS ${darkNightObsMode.name}"
@@ -88,8 +98,9 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "startSequencer" must {
     "start given sequencer | ESW-176" in {
-      val setup = new TestSetup()
-      import setup._
+      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(Future.successful(Right(eswSeqCompApi)))
+      when(eswSeqCompApi.loadScript(ESW, darkNightObsMode))
+        .thenReturn(Future.successful(SequencerLocation(eswDarkNightSequencerLoc)))
 
       sequencerUtil.startSequencer(ESW, darkNightObsMode, 3).rightValue should ===(eswDarkNightSequencerLoc)
 
@@ -98,9 +109,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return error caused is spawn sequence component fails | ESW-176" in {
-      val setup = new TestSetup()
-      import setup._
-
       val sequenceComponentFailedError = SpawnSequenceComponentFailed("could not spawn SeqComp for ESW")
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(futureLeft(sequenceComponentFailedError))
 
@@ -110,12 +118,11 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "retry if spawn sequence component fails | ESW-176" in {
-      val setup = new TestSetup()
-      import setup._
-
       val sequenceComponentFailedError = SpawnSequenceComponentFailed("could not spawn SeqComp for ESW")
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW))
         .thenReturn(futureLeft(sequenceComponentFailedError), futureRight(eswSeqCompApi))
+      when(eswSeqCompApi.loadScript(ESW, darkNightObsMode))
+        .thenReturn(Future.successful(SequencerLocation(eswDarkNightSequencerLoc)))
 
       sequencerUtil.startSequencer(ESW, darkNightObsMode, 3).rightValue should ===(eswDarkNightSequencerLoc)
 
@@ -123,9 +130,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "retry if any other error than load script error | ESW-176" in {
-      val setup = new TestSetup()
-      import setup._
-
       when(sequenceComponentUtil.getAvailableSequenceComponent(TCS))
         .thenReturn(futureRight(tcsSeqCompApi), futureRight(eswSeqCompApi))
 
@@ -144,12 +148,10 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return error caused if loading script returns error and do not retry | ESW-176" in {
-      val setup = new TestSetup()
-      import setup._
-
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS ${darkNightObsMode.name}"
       val scriptError    = Future.successful(ScriptError.LoadingScriptFailed(scriptErrorMsg))
+      when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqCompApi)))
       when(tcsSeqCompApi.loadScript(TCS, darkNightObsMode)).thenReturn(scriptError)
 
       sequencerUtil.startSequencer(TCS, darkNightObsMode, 3).leftValue should ===(LoadScriptError(scriptErrorMsg))
@@ -160,9 +162,6 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "restartSequencer" must {
     "restart given sequencer that is running | ESW-327" in {
-      val setup = new TestSetup()
-      import setup._
-
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary.name"), SequenceComponent)), URI.create(""))
       val eswSeqLoc = AkkaLocation(AkkaConnection(eswDarkNightSequencer), URI.create(""))
@@ -180,9 +179,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LoadScriptError error if restart fails with LoadingScriptFailed | ESW-327" in {
-      val setup = new TestSetup()
-      import setup._
-
       val errorMsg        = "loading script failed"
       val loadScriptError = LoadScriptError(errorMsg)
       val eswSeqCompLoc =
@@ -200,9 +196,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LocationServiceError error if restart fails | ESW-327" in {
-      val setup = new TestSetup()
-      import setup._
-
       val errorMsg = "location not found"
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNightObsMode.name), SequenceComponent)), URI.create(""))
@@ -217,9 +210,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LoadScriptError error if restart fails with Unhandled| ESW-327" in {
-      val setup = new TestSetup()
-      import setup._
-
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNightObsMode.name), SequenceComponent)), URI.create(""))
 
@@ -237,9 +227,6 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "ShutdownSequencersPolicy.SingleSequencer" must {
     "shutdown the given sequencer and return Done | ESW-326" in {
-      val setup = new TestSetup()
-      import setup._
-
       val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, darkNightObsMode)
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNightObsMode.name), SequenceComponent)), URI.create(""))
@@ -255,8 +242,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return Success even if sequencer is not running | ESW-326" in {
-      val setup = new TestSetup()
-      import setup._
       val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, darkNightObsMode)
       // mimic the exception thrown from LocationServiceUtil.findSequencer
       val findLocationFailed = futureLeft(LocationNotFound("location service error"))
@@ -269,8 +254,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return Failure response when location service returns RegistrationListingFailed error | ESW-326" in {
-      val setup = new TestSetup()
-      import setup._
       val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, darkNightObsMode)
       when(locationServiceUtil.findSequencer(ESW, darkNightObsMode))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
@@ -281,8 +264,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return Failure response when unload script future fails | ESW-326" in {
-      val setup = new TestSetup()
-      import setup._
       val prefix        = Prefix(ESW, darkNightObsMode.name)
       val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(prefix, SequenceComponent)), URI.create(""))
 
@@ -303,9 +284,6 @@ class SequencerUtilTest extends BaseTestSuite {
     val obsModeShutdownPolicy = ShutdownSequencersPolicy.SubsystemSequencers
 
     "stop all the sequencers running for specified subsystem | ESW-345" in {
-      val setup = new TestSetup()
-      import setup._
-
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, eswClearSkiesSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent)
@@ -322,9 +300,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-345" in {
-      val setup = new TestSetup()
-      import setup._
-
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
@@ -334,9 +309,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return ShutdownFailure if any of the sequencer failed to shut down | ESW-345" in {
-      val setup = new TestSetup()
-      import setup._
-
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, eswClearSkiesSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent)
@@ -357,9 +329,6 @@ class SequencerUtilTest extends BaseTestSuite {
     val obsModeShutdownPolicy = ShutdownSequencersPolicy.ObsModeSequencers
 
     "stop all the sequencers running for specified Obs Mode | ESW-166" in {
-      val setup = new TestSetup()
-      import setup._
-
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNightObsMode.name), SequenceComponent)), URI.create(""))
       val tcsSeqCompLoc =
@@ -381,9 +350,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-166" in {
-      val setup = new TestSetup()
-      import setup._
-
       when(locationServiceUtil.listAkkaLocationsBy(darkNightObsMode.name, Sequencer))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
@@ -393,9 +359,6 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return ShutdownFailure if any of the sequencer failed to shut down | ESW-166" in {
-      val setup = new TestSetup()
-      import setup._
-
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNightObsMode.name), SequenceComponent)), URI.create(""))
       val tcsSeqCompLoc =
@@ -421,9 +384,6 @@ class SequencerUtilTest extends BaseTestSuite {
     val allShutdownPolicy = ShutdownSequencersPolicy.AllSequencers
 
     "stop all the sequencers running | ESW-324" in {
-      val setup = new TestSetup()
-      import setup._
-
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNightObsMode.name), SequenceComponent)), URI.create(""))
       val tcsSeqCompLoc =
@@ -443,18 +403,12 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-324" in {
-      val setup = new TestSetup()
-      import setup._
-
       when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
       sequencerUtil.shutdownSequencers(allShutdownPolicy).futureValue should ===(LocationServiceError("Error"))
     }
 
     "return ShutdownFailure if any of the sequencer failed to shut down | ESW-324" in {
-      val setup = new TestSetup()
-      import setup._
-
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNightObsMode.name), SequenceComponent)), URI.create(""))
       val tcsSeqCompLoc =
@@ -508,13 +462,6 @@ class SequencerUtilTest extends BaseTestSuite {
           case _   => mock[SequencerApi]
         }
     }
-
-    when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(Future.successful(Right(eswSeqCompApi)))
-    when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqCompApi)))
-    when(eswSeqCompApi.loadScript(ESW, darkNightObsMode))
-      .thenReturn(Future.successful(SequencerLocation(eswDarkNightSequencerLoc)))
-    when(tcsSeqCompApi.loadScript(TCS, darkNightObsMode))
-      .thenReturn(Future.successful(SequencerLocation(tcsDarkNightSequencerLoc)))
 
     private def akkaLocation(componentId: ComponentId): AkkaLocation = AkkaLocation(AkkaConnection(componentId), URI.create(""))
   }
