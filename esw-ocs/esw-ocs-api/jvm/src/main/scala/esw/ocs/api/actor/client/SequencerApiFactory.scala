@@ -15,13 +15,12 @@ import msocket.impl.ws.WebsocketTransport
 
 object SequencerApiFactory extends SequencerHttpCodecs {
 
-  def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): SequencerApi = {
+  def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): SequencerApi =
     componentLocation match {
       case _: TcpLocation             => throw new RuntimeException("Only AkkaLocation and HttpLocation can be used to access sequencer")
       case akkaLocation: AkkaLocation => new SequencerImpl(akkaLocation.sequencerRef)
       case httpLocation: HttpLocation => httpClient(httpLocation)
     }
-  }
 
   private def httpClient(httpLocation: HttpLocation)(implicit actorSystem: ActorSystem[_]): SequencerClient = {
     import actorSystem.executionContext

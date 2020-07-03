@@ -15,7 +15,6 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.protocol
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
@@ -55,7 +54,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode
-  ): Future[Either[protocol.ShutdownSequencersResponse.Failure, protocol.ShutdownSequencersResponse.Success.type]] =
+  ): Future[Either[ShutdownSequencersResponse.Failure, ShutdownSequencersResponse.Success.type]] =
     locationServiceUtil
       .findSequencer(subsystem, obsMode)
       .flatMap {

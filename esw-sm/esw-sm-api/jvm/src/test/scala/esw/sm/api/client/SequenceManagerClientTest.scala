@@ -36,7 +36,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return cleanup success for cleanup request" in {
-      val shutdownObsModeSequencersMsg = ShutdownObsModeSequencers(obsMode)
+      val shutdownObsModeSequencersMsg = ShutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownObsModeSequencersMsg))(
           any[Decoder[ShutdownSequencersResponse]](),
@@ -60,7 +60,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return shutdown sequencer success for shutdownSequencer request" in {
-      val shutdownSequencerMsg = ShutdownSequencer(ESW, obsMode)
+      val shutdownSequencerMsg = ShutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode))
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
           any[Decoder[ShutdownSequencersResponse]](),
@@ -85,7 +85,9 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
 
     "return shutdown all sequencers success for  ShutdownAllSequencers request" in {
       when(
-        postClient.requestResponse[ShutdownSequencersResponse](argsEq(ShutdownAllSequencers))(
+        postClient.requestResponse[ShutdownSequencersResponse](
+          argsEq(ShutdownSequencers(ShutdownSequencersPolicy.AllSequencers))
+        )(
           any[Decoder[ShutdownSequencersResponse]](),
           any[Encoder[ShutdownSequencersResponse]]()
         )

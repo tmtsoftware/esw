@@ -34,7 +34,8 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val getRunningModesResponseRef           = TestProbe[GetRunningObsModesResponse]().ref
     val shutdownSequencersResponseRef        = TestProbe[ShutdownSequencersResponse]().ref
     val getSmStateRef                        = TestProbe[SequenceManagerState]().ref
-    val StartSequencerResponseRef            = TestProbe[StartSequencerResponse]().ref
+    val startSequencerResponseRef            = TestProbe[StartSequencerResponse]().ref
+    val restartSequencerResponseRef          = TestProbe[RestartSequencerResponse]().ref
     val spawnSequenceComponentResponseRef    = TestProbe[SpawnSequenceComponentResponse]().ref
     val shutdownSequenceComponentResponseRef = TestProbe[ShutdownSequenceComponentResponse]().ref
 
@@ -44,11 +45,14 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "SequenceManagerRemoteMsg models",
       Configure(obsMode, configureResponseRef),
-      ShutdownObsModeSequencers(obsMode, shutdownSequencersResponseRef),
       GetRunningObsModes(getRunningModesResponseRef),
       GetSequenceManagerState(getSmStateRef),
-      StartSequencer(ESW, obsMode, StartSequencerResponseRef),
-      ShutdownSequencer(ESW, obsMode, shutdownSequencersResponseRef),
+      StartSequencer(ESW, obsMode, startSequencerResponseRef),
+      RestartSequencer(ESW, obsMode, restartSequencerResponseRef),
+      ShutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode), shutdownSequencersResponseRef),
+      ShutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(ESW), shutdownSequencersResponseRef),
+      ShutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode), shutdownSequencersResponseRef),
+      ShutdownSequencers(ShutdownSequencersPolicy.AllSequencers, shutdownSequencersResponseRef),
       SpawnSequenceComponent(agent, "seq_comp", spawnSequenceComponentResponseRef),
       ShutdownSequenceComponent(Prefix(ESW, "primary"), shutdownSequenceComponentResponseRef)
     )

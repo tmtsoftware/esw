@@ -29,17 +29,15 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
       case SequenceManagerMsg.Configure(_, replyTo)                        => replyTo ! configureResponse
-      case SequenceManagerMsg.ShutdownObsModeSequencers(_, replyTo)        => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ConfigurationResponseInternal(_)             =>
       case SequenceManagerMsg.GetRunningObsModes(replyTo)                  => replyTo ! getRunningObsModesResponse
       case SequenceManagerMsg.GetSequenceManagerState(replyTo)             => replyTo ! Idle
       case SequenceManagerMsg.StartSequencer(_, _, replyTo)                => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)             => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)               => replyTo ! shutdownSequencersResponse
       case SequenceManagerMsg.RestartSequencer(_, _, replyTo)              => replyTo ! restartSequencerResponse
+      case SequenceManagerMsg.ShutdownSequencers(_, replyTo)               => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ShutdownObsModeSequencersResponseInternal(_) =>
       case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo)        => replyTo ! spawnSequenceComponentResponse
       case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo)        => replyTo ! shutdownSequenceComponentResponse
-      case SequenceManagerMsg.ShutdownObsModeSequencersResponseInternal(_) =>
-      case SequenceManagerMsg.ConfigurationResponseInternal(_)             =>
     }
     Behaviors.same
   }

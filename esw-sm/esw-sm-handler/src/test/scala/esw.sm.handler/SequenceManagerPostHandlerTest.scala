@@ -55,16 +55,6 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return success for shutdownObsModeSequencers request | ESW-171" in {
-      when(sequenceManagerApi.shutdownObsModeSequencers(obsMode))
-        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
-
-      Post("/post-endpoint", ShutdownObsModeSequencers(obsMode).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownObsModeSequencers(obsMode)
-        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
-      }
-    }
-
     "return start sequencer success for startSequencer request | ESW-171" in {
       when(sequenceManagerApi.startSequencer(ESW, obsMode))
         .thenReturn(Future.successful(StartSequencerResponse.Started(componentId)))
@@ -76,11 +66,41 @@ class SequenceManagerPostHandlerTest
     }
 
     "return shutdown sequencer success for shutdownSequencer request | ESW-171" in {
-      when(sequenceManagerApi.shutdownSequencer(ESW, obsMode))
-        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode)
+      when(sequenceManagerApi.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequencer(ESW, obsMode).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode)
+      Post("/post-endpoint", ShutdownSequencers(policy).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSequencers(policy)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
+      }
+    }
+
+    "return success for shutdownSubsystemSequencers request | ESW-171" in {
+      val policy = ShutdownSequencersPolicy.SubsystemSequencers(ESW)
+      when(sequenceManagerApi.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+
+      Post("/post-endpoint", ShutdownSequencers(policy).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSequencers(policy)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
+      }
+    }
+
+    "return success for shutdownObsModeSequencers request | ESW-171" in {
+      val policy = ShutdownSequencersPolicy.ObsModeSequencers(obsMode)
+      when(sequenceManagerApi.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+
+      Post("/post-endpoint", ShutdownSequencers(policy).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSequencers(policy)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
+      }
+    }
+
+    "return shutdown all sequencer success for shutdownAllSequencer request | ESW-171" in {
+      val policy = ShutdownSequencersPolicy.AllSequencers
+      when(sequenceManagerApi.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+
+      Post("/post-endpoint", ShutdownSequencers(policy).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSequencers(policy)
         responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
@@ -92,16 +112,6 @@ class SequenceManagerPostHandlerTest
       Post("/post-endpoint", RestartSequencer(ESW, obsMode).narrow) ~> route ~> check {
         verify(sequenceManagerApi).restartSequencer(ESW, obsMode)
         responseAs[RestartSequencerResponse] should ===(RestartSequencerResponse.Success(componentId))
-      }
-    }
-
-    "return shutdown all sequencer success for shutdownAllSequencer request | ESW-171" in {
-      when(sequenceManagerApi.shutdownAllSequencers())
-        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
-
-      Post("/post-endpoint", ShutdownAllSequencers.narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownAllSequencers()
-        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
 
