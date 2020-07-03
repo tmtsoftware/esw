@@ -45,12 +45,12 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
 
       // returns success with master sequencer location after starting all the sequencers
-      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS), 3).futureValue should ===(Success(eswComponentId))
+      sequencerUtil.startSequencers(darknightObsMode, Sequencers(ESW, TCS), 3).futureValue should ===(Success(eswComponentId))
 
       verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
       verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
-      verify(eswSeqComp).loadScript(ESW, obsMode)
-      verify(tcsSeqComp).loadScript(TCS, obsMode)
+      verify(eswSeqComp).loadScript(ESW, darknightObsMode)
+      verify(tcsSeqComp).loadScript(TCS, darknightObsMode)
     }
 
     "return all the errors caused while starting the sequencers  | ESW-178" in {
@@ -63,12 +63,12 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(spawnSequenceComponentFailed)
 
       // unable to loadScript script error
-      val scriptErrorMsg = s"script initialisation failed for TCS ${obsMode.name}"
+      val scriptErrorMsg = s"script initialisation failed for TCS ${darknightObsMode.name}"
       val scriptError    = Future.successful(ScriptError.LoadingScriptFailed(scriptErrorMsg))
-      when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
+      when(tcsSeqComp.loadScript(TCS, darknightObsMode)).thenReturn(scriptError)
 
       sequencerUtil
-        .startSequencers(obsMode, Sequencers(ESW, TCS), 3)
+        .startSequencers(darknightObsMode, Sequencers(ESW, TCS), 3)
         .futureValue should ===(FailedToStartSequencers(Set(seqCompErrorMsg, scriptErrorMsg)))
 
       // getAvailableSequenceComponent for ESW returns SpawnSequenceComponentFailed so retry 3 times make total invocations 4
@@ -79,8 +79,8 @@ class SequencerUtilTest extends BaseTestSuite {
       // below verify validates 1 invocations
       verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
 
-      verify(tcsSeqComp).loadScript(TCS, obsMode)
-      verify(eswSeqComp, never).loadScript(ESW, obsMode)
+      verify(tcsSeqComp).loadScript(TCS, darknightObsMode)
+      verify(eswSeqComp, never).loadScript(ESW, darknightObsMode)
     }
   }
 
@@ -89,10 +89,10 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup._
 
-      sequencerUtil.startSequencer(ESW, obsMode, 3).rightValue should ===(eswLocation)
+      sequencerUtil.startSequencer(ESW, darknightObsMode, 3).rightValue should ===(eswLocation)
 
       verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
-      verify(eswSeqComp).loadScript(ESW, obsMode)
+      verify(eswSeqComp).loadScript(ESW, darknightObsMode)
     }
 
     "return error caused is spawn sequence component fails | ESW-176" in {
@@ -102,7 +102,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val sequenceComponentFailedError = SpawnSequenceComponentFailed("could not spawn SeqComp for ESW")
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(futureLeft(sequenceComponentFailedError))
 
-      sequencerUtil.startSequencer(ESW, obsMode, 3).leftValue should ===(sequenceComponentFailedError)
+      sequencerUtil.startSequencer(ESW, darknightObsMode, 3).leftValue should ===(sequenceComponentFailedError)
 
       verify(sequenceComponentUtil, times(4)).getAvailableSequenceComponent(ESW)
     }
@@ -115,7 +115,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW))
         .thenReturn(futureLeft(sequenceComponentFailedError), futureRight(eswSeqComp))
 
-      sequencerUtil.startSequencer(ESW, obsMode, 3).rightValue should ===(eswLocation)
+      sequencerUtil.startSequencer(ESW, darknightObsMode, 3).rightValue should ===(eswLocation)
 
       verify(sequenceComponentUtil, times(2)).getAvailableSequenceComponent(ESW)
     }
@@ -128,16 +128,16 @@ class SequencerUtilTest extends BaseTestSuite {
         .thenReturn(futureRight(tcsSeqComp), futureRight(eswSeqComp))
 
       //mimic that meantime SM could start tcs sequencer on esw seqcomp, it is loaded another sequencer script
-      when(tcsSeqComp.loadScript(TCS, obsMode))
+      when(tcsSeqComp.loadScript(TCS, darknightObsMode))
         .thenReturn(Future.successful(Unhandled(Running, "already running")))
 
-      when(eswSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(SequencerLocation(tcsLocation)))
+      when(eswSeqComp.loadScript(TCS, darknightObsMode)).thenReturn(Future.successful(SequencerLocation(tcsLocation)))
 
-      sequencerUtil.startSequencer(TCS, obsMode, 3).rightValue should ===(tcsLocation)
+      sequencerUtil.startSequencer(TCS, darknightObsMode, 3).rightValue should ===(tcsLocation)
 
       verify(sequenceComponentUtil, times(2)).getAvailableSequenceComponent(TCS)
-      verify(tcsSeqComp).loadScript(TCS, obsMode)
-      verify(eswSeqComp).loadScript(TCS, obsMode)
+      verify(tcsSeqComp).loadScript(TCS, darknightObsMode)
+      verify(eswSeqComp).loadScript(TCS, darknightObsMode)
     }
 
     "return error caused if loading script returns error and do not retry | ESW-176" in {
@@ -145,11 +145,11 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
 
       // unable to loadScript script error
-      val scriptErrorMsg = s"script initialisation failed for TCS ${obsMode.name}"
+      val scriptErrorMsg = s"script initialisation failed for TCS ${darknightObsMode.name}"
       val scriptError    = Future.successful(ScriptError.LoadingScriptFailed(scriptErrorMsg))
-      when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
+      when(tcsSeqComp.loadScript(TCS, darknightObsMode)).thenReturn(scriptError)
 
-      sequencerUtil.startSequencer(TCS, obsMode, 3).leftValue should ===(LoadScriptError(scriptErrorMsg))
+      sequencerUtil.startSequencer(TCS, darknightObsMode, 3).leftValue should ===(LoadScriptError(scriptErrorMsg))
 
       verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
     }
@@ -160,10 +160,11 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup._
 
-      val policy        = ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode)
-      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode.name), SequenceComponent)), URI.create(""))
+      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, darknightObsMode)
+      val eswSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), SequenceComponent)), URI.create(""))
 
-      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
+      when(locationServiceUtil.findSequencer(ESW, darknightObsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Ok))
 
@@ -176,37 +177,37 @@ class SequencerUtilTest extends BaseTestSuite {
     "return Success even if sequencer is not running | ESW-326" in {
       val setup = new TestSetup()
       import setup._
-      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode)
+      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, darknightObsMode)
       // mimic the exception thrown from LocationServiceUtil.findSequencer
       val findLocationFailed = futureLeft(LocationNotFound("location service error"))
-      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(findLocationFailed)
+      when(locationServiceUtil.findSequencer(ESW, darknightObsMode)).thenReturn(findLocationFailed)
 
       sequencerUtil.shutdownSequencers(policy).futureValue should ===(ShutdownSequencersResponse.Success)
 
-      verify(locationServiceUtil).findSequencer(ESW, obsMode)
+      verify(locationServiceUtil).findSequencer(ESW, darknightObsMode)
       verify(eswSequencerApi, never).getSequenceComponent
     }
 
     "return Failure response when location service returns RegistrationListingFailed error | ESW-326" in {
       val setup = new TestSetup()
       import setup._
-      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode)
-      when(locationServiceUtil.findSequencer(ESW, obsMode))
+      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, darknightObsMode)
+      when(locationServiceUtil.findSequencer(ESW, darknightObsMode))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
       sequencerUtil.shutdownSequencers(policy).futureValue should ===(LocationServiceError("Error"))
 
-      verify(locationServiceUtil).findSequencer(ESW, obsMode)
+      verify(locationServiceUtil).findSequencer(ESW, darknightObsMode)
     }
 
     "return Failure response when unload script future fails | ESW-326" in {
       val setup = new TestSetup()
       import setup._
-      val prefix        = Prefix(ESW, obsMode.name)
+      val prefix        = Prefix(ESW, darknightObsMode.name)
       val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(prefix, SequenceComponent)), URI.create(""))
 
-      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode)
-      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
+      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, darknightObsMode)
+      when(locationServiceUtil.findSequencer(ESW, darknightObsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.failed(new TimeoutException("error")))
 
@@ -214,7 +215,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(eswSequencerApi).getSequenceComponent
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
-      verify(locationServiceUtil).findSequencer(ESW, obsMode)
+      verify(locationServiceUtil).findSequencer(ESW, darknightObsMode)
     }
   }
 
@@ -225,8 +226,10 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup._
 
-      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode.name), SequenceComponent)), URI.create(""))
-      val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode.name), SequenceComponent)), URI.create(""))
+      val eswSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), SequenceComponent)), URI.create(""))
+      val tcsSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, darknightObsMode.name), SequenceComponent)), URI.create(""))
 
       when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureRight(List(eswLocation, tcsLocation)))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
@@ -253,8 +256,10 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup._
 
-      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode.name), SequenceComponent)), URI.create(""))
-      val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode.name), SequenceComponent)), URI.create(""))
+      val eswSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), SequenceComponent)), URI.create(""))
+      val tcsSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, darknightObsMode.name), SequenceComponent)), URI.create(""))
 
       when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureRight(List(eswLocation, tcsLocation)))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
@@ -263,7 +268,71 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.failed(new RuntimeException("Error")))
 
       sequencerUtil.shutdownSequencers(allShutdownPolicy).futureValue should ===(
-        ShutdownSequencersResponse.ShutdownFailure(List(UnloadScriptError(Prefix(TCS, obsMode.name), "Error")))
+        ShutdownSequencersResponse.ShutdownFailure(List(UnloadScriptError(Prefix(TCS, darknightObsMode.name), "Error")))
+      )
+
+      verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
+      verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
+    }
+  }
+
+  "ShutdownSequencersPolicy.ObsModeSequencers" must {
+    val obsModeShutdownPolicy = ShutdownSequencersPolicy.ObsModeSequencers
+
+    "stop all the sequencers running for specified Obs Mode | ESW-166" in {
+      val setup = new TestSetup()
+      import setup._
+
+      val eswSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), SequenceComponent)), URI.create(""))
+      val tcsSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, darknightObsMode.name), SequenceComponent)), URI.create(""))
+
+      when(locationServiceUtil.listAkkaLocationsBy(darknightObsMode.name, Sequencer))
+        .thenReturn(futureRight(List(eswLocation, tcsLocation)))
+      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Ok))
+      when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Ok))
+
+      sequencerUtil.shutdownSequencers(obsModeShutdownPolicy(darknightObsMode)).futureValue should ===(
+        ShutdownSequencersResponse.Success
+      )
+
+      verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
+      verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
+    }
+
+    "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-166" in {
+      val setup = new TestSetup()
+      import setup._
+
+      when(locationServiceUtil.listAkkaLocationsBy(darknightObsMode.name, Sequencer))
+        .thenReturn(futureLeft(RegistrationListingFailed("Error")))
+
+      sequencerUtil.shutdownSequencers(obsModeShutdownPolicy(darknightObsMode)).futureValue should ===(
+        LocationServiceError("Error")
+      )
+    }
+
+    "return ShutdownFailure if any of the sequencer failed to shut down | ESW-166" in {
+      val setup = new TestSetup()
+      import setup._
+
+      val eswSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), SequenceComponent)), URI.create(""))
+      val tcsSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, darknightObsMode.name), SequenceComponent)), URI.create(""))
+
+      when(locationServiceUtil.listAkkaLocationsBy(darknightObsMode.name, Sequencer))
+        .thenReturn(futureRight(List(eswLocation, tcsLocation)))
+      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Ok))
+      when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.failed(new RuntimeException("Error")))
+
+      sequencerUtil.shutdownSequencers(obsModeShutdownPolicy(darknightObsMode)).futureValue should ===(
+        ShutdownSequencersResponse.ShutdownFailure(List(UnloadScriptError(Prefix(TCS, darknightObsMode.name), "Error")))
       )
 
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
@@ -278,15 +347,17 @@ class SequencerUtilTest extends BaseTestSuite {
 
       val eswSeqCompLoc =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary.name"), SequenceComponent)), URI.create(""))
-      val eswSeqLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode.name), Sequencer)), URI.create(""))
+      val eswSeqLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), Sequencer)), URI.create(""))
 
-      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
+      when(locationServiceUtil.findSequencer(ESW, darknightObsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.restart(eswSeqCompLoc)).thenReturn(Future.successful(SequencerLocation(eswSeqLoc)))
 
-      sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(RestartSequencerResponse.Success(eswComponentId))
+      sequencerUtil.restartSequencer(ESW, darknightObsMode).futureValue should ===(
+        RestartSequencerResponse.Success(eswComponentId)
+      )
 
-      verify(locationServiceUtil).findSequencer(ESW, obsMode)
+      verify(locationServiceUtil).findSequencer(ESW, darknightObsMode)
       verify(sequenceComponentUtil).restart(eswSeqCompLoc)
     }
 
@@ -296,16 +367,17 @@ class SequencerUtilTest extends BaseTestSuite {
 
       val errorMsg        = "loading script failed"
       val loadScriptError = LoadScriptError(errorMsg)
-      val eswSeqCompLoc   = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode.name), SequenceComponent)), URI.create(""))
+      val eswSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), SequenceComponent)), URI.create(""))
 
-      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
+      when(locationServiceUtil.findSequencer(ESW, darknightObsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.restart(eswSeqCompLoc))
         .thenReturn(Future.successful(ScriptError.LoadingScriptFailed(errorMsg)))
 
-      sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(loadScriptError)
+      sequencerUtil.restartSequencer(ESW, darknightObsMode).futureValue should ===(loadScriptError)
 
-      verify(locationServiceUtil).findSequencer(ESW, obsMode)
+      verify(locationServiceUtil).findSequencer(ESW, darknightObsMode)
       verify(sequenceComponentUtil).restart(eswSeqCompLoc)
     }
 
@@ -313,14 +385,16 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup._
 
-      val errorMsg      = "location not found"
-      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode.name), SequenceComponent)), URI.create(""))
+      val errorMsg = "location not found"
+      val eswSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), SequenceComponent)), URI.create(""))
 
-      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureLeft(LocationNotFound("location not found")))
+      when(locationServiceUtil.findSequencer(ESW, darknightObsMode))
+        .thenReturn(futureLeft(LocationNotFound("location not found")))
 
-      sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(LocationServiceError(errorMsg))
+      sequencerUtil.restartSequencer(ESW, darknightObsMode).futureValue should ===(LocationServiceError(errorMsg))
 
-      verify(locationServiceUtil).findSequencer(ESW, obsMode)
+      verify(locationServiceUtil).findSequencer(ESW, darknightObsMode)
       verify(sequenceComponentUtil, times(0)).restart(eswSeqCompLoc)
     }
 
@@ -328,22 +402,23 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup._
 
-      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode.name), SequenceComponent)), URI.create(""))
+      val eswSeqCompLoc =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darknightObsMode.name), SequenceComponent)), URI.create(""))
 
-      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
+      when(locationServiceUtil.findSequencer(ESW, darknightObsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.restart(eswSeqCompLoc))
         .thenReturn(Future.successful(Unhandled(Idle, "Restart", "error")))
 
-      sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(LoadScriptError("error"))
+      sequencerUtil.restartSequencer(ESW, darknightObsMode).futureValue should ===(LoadScriptError("error"))
 
-      verify(locationServiceUtil).findSequencer(ESW, obsMode)
+      verify(locationServiceUtil).findSequencer(ESW, darknightObsMode)
       verify(sequenceComponentUtil).restart(eswSeqCompLoc)
     }
   }
 
   class TestSetup() {
-    val obsMode: ObsMode                             = ObsMode("darkNight")
+    val darknightObsMode: ObsMode                    = ObsMode("darkNight")
     val eswSeqComp: SequenceComponentApi             = mock[SequenceComponentApi]
     val tcsSeqComp: SequenceComponentApi             = mock[SequenceComponentApi]
     val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
@@ -351,11 +426,11 @@ class SequencerUtilTest extends BaseTestSuite {
     val eswSequencerApi: SequencerApi                = mock[SequencerApi]
     val tcsSequencerApi: SequencerApi                = mock[SequencerApi]
 
-    val eswComponentId: ComponentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
+    val eswComponentId: ComponentId = ComponentId(Prefix(ESW, darknightObsMode.name), Sequencer)
 
     val eswLocation: AkkaLocation = AkkaLocation(AkkaConnection(eswComponentId), URI.create(""))
     val tcsLocation: AkkaLocation =
-      AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode.name), Sequencer)), URI.create(""))
+      AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, darknightObsMode.name), Sequencer)), URI.create(""))
 
     val sequencerUtil: SequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil) {
       override private[sm] def createSequencerClient(location: Location) =
@@ -368,10 +443,10 @@ class SequencerUtilTest extends BaseTestSuite {
 
     when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(Future.successful(Right(eswSeqComp)))
     when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqComp)))
-    when(eswSeqComp.loadScript(ESW, obsMode)).thenReturn(Future.successful(SequencerLocation(eswLocation)))
-    when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(SequencerLocation(tcsLocation)))
+    when(eswSeqComp.loadScript(ESW, darknightObsMode)).thenReturn(Future.successful(SequencerLocation(eswLocation)))
+    when(tcsSeqComp.loadScript(TCS, darknightObsMode)).thenReturn(Future.successful(SequencerLocation(tcsLocation)))
 
-    val masterSeqConnection: HttpConnection = HttpConnection(ComponentId(Prefix(ESW, obsMode.name), Sequencer))
+    val masterSeqConnection: HttpConnection = HttpConnection(ComponentId(Prefix(ESW, darknightObsMode.name), Sequencer))
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))
   }
 }
