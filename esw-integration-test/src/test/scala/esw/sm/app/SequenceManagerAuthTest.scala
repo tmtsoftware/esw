@@ -28,10 +28,11 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   private val table = Table[String, SequenceManagerApi => Future[Any]](
     ("Name", "Command"),
     ("configure", _.configure(IRIS_CAL)),
-    ("cleanup", _.shutdownObsModeSequencers(IRIS_CAL)),
     ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
-    ("stopSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
+    ("stopSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
+    ("shutdownSubsystemSequencers", _.shutdownSubsystemSequencers(ESW)),
+    ("shutdownObsModeSequencers", _.shutdownObsModeSequencers(IRIS_CAL)),
     ("shutdownAllSequencers", _.shutdownAllSequencers()),
     ("shutdownSequenceComponent", _.shutdownSequenceComponent(seqCompPrefix))
   )

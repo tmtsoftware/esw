@@ -53,16 +53,24 @@ class SequenceManagerImplTest extends BaseTestSuite {
       sequenceManager.configure(obsMode).futureValue shouldBe configureResponse
     }
 
+    "startSequencer" in {
+      sequenceManager.startSequencer(ESW, obsMode).futureValue shouldBe startSequencerResponse
+    }
+
+    "restartSequencer" in {
+      sequenceManager.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
+    }
+
     "shutdownSequencer" in {
       sequenceManager.shutdownSequencer(ESW, obsMode).futureValue shouldBe shutdownSequencersResponse
     }
 
-    "shutdownObsModeSequencers" in {
-      sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe shutdownSequencersResponse
-    }
-
     "shutdownSubsystemSequencers" in {
       sequenceManager.shutdownSubsystemSequencers(ESW).futureValue shouldBe shutdownSequencersResponse
+    }
+
+    "shutdownObsModeSequencers" in {
+      sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe shutdownSequencersResponse
     }
 
     "shutdownAllSequencers" in {
@@ -71,14 +79,6 @@ class SequenceManagerImplTest extends BaseTestSuite {
 
     "getRunningObsModes" in {
       sequenceManager.getRunningObsModes.futureValue shouldBe getRunningObsModesResponse
-    }
-
-    "startSequencer" in {
-      sequenceManager.startSequencer(ESW, obsMode).futureValue shouldBe startSequencerResponse
-    }
-
-    "restartSequencer" in {
-      sequenceManager.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
     }
 
     "shutdownSequenceComponent | ESW-338" in {
