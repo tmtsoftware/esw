@@ -53,26 +53,25 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       subsystem: Subsystem,
       componentType: ComponentType
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
-    list(componentType)
-      .mapRight(_.collect {
-        case akkaLocation: AkkaLocation if akkaLocation.prefix.subsystem == subsystem => akkaLocation
-      })
+    listAkkaLocationsFor(componentType)(_.prefix.subsystem == subsystem)
 
   def listAkkaLocationsBy(
       componentName: String,
       componentType: ComponentType
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
-    list(componentType)
-      .mapRight(_.collect {
-        case akkaLocation: AkkaLocation if akkaLocation.prefix.componentName == componentName => akkaLocation
-      })
+    listAkkaLocationsFor(componentType)(_.prefix.componentName == componentName)
 
   def listAkkaLocationsBy(
       componentType: ComponentType
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
+    listAkkaLocationsFor(componentType)(_ => true)
+
+  private def listAkkaLocationsFor(
+      componentType: ComponentType
+  )(filterPredicate: AkkaLocation => Boolean): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
     list(componentType)
       .mapRight(_.collect {
-        case akkaLocation: AkkaLocation => akkaLocation
+        case akkaLocation: AkkaLocation if filterPredicate(akkaLocation) => akkaLocation
       })
 
   def findByComponentNameAndType(
