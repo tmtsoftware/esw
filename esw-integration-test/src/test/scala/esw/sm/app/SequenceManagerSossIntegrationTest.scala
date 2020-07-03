@@ -11,7 +11,7 @@ import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
-import esw.sm.api.protocol.{CleanupResponse, ConfigureResponse}
+import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequencersResponse}
 
 class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 
@@ -50,7 +50,7 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
           event.isInvalid shouldBe false
       }
 
-      sequenceManager.cleanup(obsMode).futureValue shouldBe a[CleanupResponse.Success.type]
+      sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe a[ShutdownSequencersResponse.Success.type]
     }
   }
 }

@@ -28,7 +28,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   private val table = Table[String, SequenceManagerApi => Future[Any]](
     ("Name", "Command"),
     ("configure", _.configure(IRIS_CAL)),
-    ("cleanup", _.cleanup(IRIS_CAL)),
+    ("cleanup", _.shutdownObsModeSequencers(IRIS_CAL)),
     ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
     ("stopSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
@@ -79,7 +79,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.configure(IRIS_CAL).futureValue shouldBe ConfigureResponse.Success(componentId)
 
       // configure obs mode
-      sequenceManagerApi.cleanup(IRIS_CAL).futureValue shouldBe CleanupResponse.Success
+      sequenceManagerApi.shutdownObsModeSequencers(IRIS_CAL).futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
     "return 200 when start sequencer, restart sequencer and shutdown sequencer request has ESW_user role" in {
@@ -94,7 +94,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       // restart sequencer
       sequenceManagerApi.restartSequencer(ESW, WFOS_Cal).futureValue shouldBe RestartSequencerResponse.Success(componentId)
       // shutdown sequencer
-      sequenceManagerApi.shutdownSequencer(ESW, WFOS_Cal).futureValue shouldBe ShutdownSequencerResponse.Success
+      sequenceManagerApi.shutdownSequencer(ESW, WFOS_Cal).futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
     "return 200 when shutdown all sequencer request has ESW_user role" in {
@@ -111,7 +111,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.configure(IRIS_Darknight).futureValue shouldBe ConfigureResponse.Success(componentId)
 
       // shutdown all sequencers
-      sequenceManagerApi.shutdownAllSequencers().futureValue shouldBe ShutdownAllSequencersResponse.Success
+      sequenceManagerApi.shutdownAllSequencers().futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
     "return 200 even when get running obs modes request does not have token" in {

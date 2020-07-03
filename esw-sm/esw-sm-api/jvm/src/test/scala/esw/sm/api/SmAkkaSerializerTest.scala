@@ -32,9 +32,8 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   "should use sm serializer for SequenceManagerRemoteMsg (de)serialization" in {
     val configureResponseRef                 = TestProbe[ConfigureResponse]().ref
     val getRunningModesResponseRef           = TestProbe[GetRunningObsModesResponse]().ref
-    val cleanupResponseRef                   = TestProbe[CleanupResponse]().ref
+    val shutdownSequencersResponseRef        = TestProbe[ShutdownSequencersResponse]().ref
     val getSmStateRef                        = TestProbe[SequenceManagerState]().ref
-    val shutdownSequencerResponseRef         = TestProbe[ShutdownSequencerResponse]().ref
     val StartSequencerResponseRef            = TestProbe[StartSequencerResponse]().ref
     val spawnSequenceComponentResponseRef    = TestProbe[SpawnSequenceComponentResponse]().ref
     val shutdownSequenceComponentResponseRef = TestProbe[ShutdownSequenceComponentResponse]().ref
@@ -45,11 +44,11 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "SequenceManagerRemoteMsg models",
       Configure(obsMode, configureResponseRef),
-      Cleanup(obsMode, cleanupResponseRef),
+      ShutdownObsModeSequencers(obsMode, shutdownSequencersResponseRef),
       GetRunningObsModes(getRunningModesResponseRef),
       GetSequenceManagerState(getSmStateRef),
       StartSequencer(ESW, obsMode, StartSequencerResponseRef),
-      ShutdownSequencer(ESW, obsMode, shutdownSequencerResponseRef),
+      ShutdownSequencer(ESW, obsMode, shutdownSequencersResponseRef),
       SpawnSequenceComponent(agent, "seq_comp", spawnSequenceComponentResponseRef),
       ShutdownSequenceComponent(Prefix(ESW, "primary"), shutdownSequenceComponentResponseRef)
     )
@@ -82,25 +81,6 @@ class SmAkkaSerializerTest extends BaseTestSuite {
 
       val bytes = serializer.toBinary(configureResponse)
       serializer.fromBinary(bytes, Some(configureResponse.getClass)) shouldEqual configureResponse
-    }
-  }
-
-  "should use sm serializer for CleanupResponse (de)serialization" in {
-    val obsMode1 = ObsMode("IRIS_Darknight")
-
-    val testData = Table(
-      "Sequence Manager CleanupResponse models",
-      CleanupResponse.Success,
-      LocationServiceError("error"),
-      ConfigurationMissing(obsMode1)
-    )
-
-    forAll(testData) { cleanupResponse =>
-      val serializer = serialization.findSerializerFor(cleanupResponse)
-      serializer.getClass shouldBe classOf[SmAkkaSerializer]
-
-      val bytes = serializer.toBinary(cleanupResponse)
-      serializer.fromBinary(bytes, Some(cleanupResponse.getClass)) shouldEqual cleanupResponse
     }
   }
 
@@ -143,22 +123,6 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     }
   }
 
-  "should use sm serializer for ShutdownSequencerResponse (de)serialization" in {
-    val testData = Table(
-      "Sequence Manager ShutdownSequencerResponse models",
-      ShutdownSequencerResponse.Success,
-      LocationServiceError("error")
-    )
-
-    forAll(testData) { shutdownSequencerResponse =>
-      val serializer = serialization.findSerializerFor(shutdownSequencerResponse)
-      serializer.getClass shouldBe classOf[SmAkkaSerializer]
-
-      val bytes = serializer.toBinary(shutdownSequencerResponse)
-      serializer.fromBinary(bytes, Some(shutdownSequencerResponse.getClass)) shouldEqual shutdownSequencerResponse
-    }
-  }
-
   "should use sm serializer for SpawnSequenceComponentResponse (de)serialization" in {
     val seqComp = ComponentId(Prefix("IRIS.seq_comp"), SequenceComponent)
     val testData = Table(
@@ -197,7 +161,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "Sequence Manager SequenceManagerState models",
       SequenceManagerState.Idle,
-      SequenceManagerState.CleaningUp,
+      SequenceManagerState.ShuttingDownObsModeSequencers,
       SequenceManagerState.Configuring
     )
 

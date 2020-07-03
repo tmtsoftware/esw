@@ -12,8 +12,6 @@ import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.models.SequenceComponentState
-import esw.ocs.api.protocol.SequenceComponentResponse
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError

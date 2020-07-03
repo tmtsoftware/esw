@@ -59,6 +59,15 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       })
 
   def listAkkaLocationsBy(
+      componentName: String,
+      componentType: ComponentType
+  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
+    list(componentType)
+      .mapRight(_.collect {
+        case akkaLocation: AkkaLocation if akkaLocation.prefix.componentName == componentName => akkaLocation
+      })
+
+  def listAkkaLocationsBy(
       componentType: ComponentType
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
     list(componentType)
