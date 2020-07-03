@@ -127,7 +127,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val httpConnection = HttpConnection(componentId)
       val akkaLocation   = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
 
-      when(sequencerUtil.startSequencer(ESW, Darknight, 3)).thenReturn(future(1.seconds, Right(akkaLocation)))
+      when(sequencerUtil.startSequencer(ESW, Darknight, 3)).thenReturn(Future.successful(Right(akkaLocation)))
       when(locationServiceUtil.find(httpConnection)).thenReturn(futureLeft(LocationNotFound("error")))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
@@ -179,8 +179,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, Darknight)
 
     "return Success if sequencer is shutdown | ESW-326" in {
-      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
-
+      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
       smRef ! ShutdownSequencers(policy, shutdownSequencerResponseProbe.ref)
@@ -192,7 +191,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "return UnloadScriptError if unload script fails | ESW-326" in {
       val prefix  = Prefix(ESW, Darknight.name)
       val failure = ShutdownFailure(List(UnloadScriptError(prefix, "something went wrong")))
-      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, failure))
+      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(failure))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
@@ -203,7 +202,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return LocationServiceError if location service fails | ESW-326" in {
-      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, LocationServiceError("something went wrong")))
+      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(LocationServiceError("something went wrong")))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
@@ -218,7 +217,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     val policy = ShutdownSequencersPolicy.ObsModeSequencers(Darknight)
 
     "transition sm from Idle -> ShuttingdownObsModeSequencersInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
-      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
+      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
       val responseProbe = TestProbe[ShutdownSequencersResponse]()
 
@@ -249,7 +248,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "ShutdownAllSequencers" must {
     val policy = ShutdownSequencersPolicy.AllSequencers
     "return Success when all the sequencers are shut down | ESW-324" in {
-      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
+      when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
@@ -271,7 +270,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     forAll(errors) { (errorName, error, process) =>
       s"return $errorName if $errorName encountered while $process | ESW-324" in {
-        when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, error))
+        when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(error))
 
         val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
@@ -326,7 +325,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "return Success when sequence component is shutdown | ESW-338" in {
       val prefix = Prefix(ESW, "primary")
 
-      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(future(1.seconds, ShutdownSequenceComponentResponse.Success))
+      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
@@ -357,7 +356,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val agent       = Prefix(ESW, "primary")
       val seqComp     = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
       when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
-        .thenReturn(future(1.seconds, SpawnSequenceComponentResponse.Success(seqComp)))
+        .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
@@ -371,7 +370,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val seqCompName = "seq_comp"
       val agent       = Prefix(ESW, "primary")
       when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
-        .thenReturn(future(1.seconds, LocationServiceError("location service error")))
+        .thenReturn(Future.successful(LocationServiceError("location service error")))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
@@ -385,7 +384,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val seqCompName = "seq_comp"
       val agent       = Prefix(ESW, "primary")
       when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
-        .thenReturn(future(1.seconds, SpawnSequenceComponentFailed("spawning failed")))
+        .thenReturn(Future.successful(SpawnSequenceComponentFailed("spawning failed")))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
