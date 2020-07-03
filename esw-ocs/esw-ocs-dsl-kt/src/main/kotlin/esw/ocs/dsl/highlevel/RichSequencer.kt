@@ -21,13 +21,13 @@ import kotlin.time.Duration
 
 class RichSequencer(
         internal val subsystem: Subsystem,
-        private val observingMode: ObsMode,
+        private val obsMode: ObsMode,
         private val sequencerApiFactory: (Subsystem, ObsMode) -> CompletionStage<SequencerApi>,
         private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
 
-    private suspend fun sequencerAdmin() = sequencerApiFactory(subsystem, observingMode).await()
+    private suspend fun sequencerAdmin() = sequencerApiFactory(subsystem, obsMode).await()
 
     suspend fun submit(sequence: Sequence, resumeOnError: Boolean = false): SubmitResponse {
         val submitResponse: SubmitResponse = sequencerAdmin().submit(sequence).toJava().await()

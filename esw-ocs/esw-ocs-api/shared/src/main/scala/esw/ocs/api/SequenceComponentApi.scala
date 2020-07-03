@@ -7,7 +7,7 @@ import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, Sc
 import scala.concurrent.Future
 
 trait SequenceComponentApi {
-  def loadScript(subsystem: Subsystem, observingMode: ObsMode): Future[ScriptResponseOrUnhandled]
+  def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[ScriptResponseOrUnhandled]
   def restartScript(): Future[ScriptResponseOrUnhandled]
   def unloadScript(): Future[Ok.type]
   def status: Future[GetStatusResponse]

@@ -15,18 +15,18 @@ private[ocs] final case class SequencerConfig(
 )
 
 private[ocs] object SequencerConfig {
-  def from(config: Config, subsystem: Subsystem, observingMode: ObsMode): SequencerConfig = {
+  def from(config: Config, subsystem: Subsystem, obsMode: ObsMode): SequencerConfig = {
     val scriptConfig =
       try {
-        config.getConfig(s"scripts.${subsystem.name}.${observingMode.name}")
+        config.getConfig(s"scripts.${subsystem.name}.${obsMode.name}")
       }
       catch {
-        case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(subsystem, observingMode)
+        case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(subsystem, obsMode)
       }
 
     val scriptClass            = scriptConfig.getString("scriptClass")
     val heartbeatInterval      = config.getDuration("esw.heartbeat-interval")
     val enableThreadMonitoring = config.getBoolean("esw.enable-thread-monitoring")
-    SequencerConfig(Prefix(s"$subsystem.${observingMode.name}"), scriptClass, heartbeatInterval, enableThreadMonitoring)
+    SequencerConfig(Prefix(s"$subsystem.${obsMode.name}"), scriptClass, heartbeatInterval, enableThreadMonitoring)
   }
 }

@@ -20,8 +20,8 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
 
   private val sequenceComponentRef = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
 
-  override def loadScript(subsystem: Subsystem, observingMode: ObsMode): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(subsystem, observingMode, x) })(
+  override def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[ScriptResponseOrUnhandled] =
+    (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(subsystem, obsMode, x) })(
       SequenceComponentApiTimeout.LoadScriptTimeout,
       actorSystem.scheduler
     )

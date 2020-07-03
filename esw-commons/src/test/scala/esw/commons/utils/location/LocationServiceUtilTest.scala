@@ -38,8 +38,8 @@ class LocationServiceUtilTest extends BaseTestSuite {
   private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
 
   private val subsystem      = TCS
-  private val observingMode  = ObsMode("darknight")
-  private val prefix         = Prefix(subsystem, observingMode.name)
+  private val obsMode        = ObsMode("darknight")
+  private val prefix         = Prefix(subsystem, obsMode.name)
   private val uri            = TestProbe[Any]()(actorSystem).ref.toURI
   private val akkaConnection = AkkaConnection(ComponentId(prefix, Sequencer))
   private val akkaLocation   = AkkaLocation(akkaConnection, uri)
@@ -266,7 +266,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       val error =
-        locationServiceUtil.findByComponentNameAndType(observingMode.name, Sequencer).leftValue
+        locationServiceUtil.findByComponentNameAndType(obsMode.name, Sequencer).leftValue
 
       error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
@@ -290,7 +290,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
+      locationServiceUtil.resolveSequencer(subsystem, obsMode, 200.millis).leftValue shouldBe
       LocationNotFound(s"Could not resolve location matching connection: $akkaConnection")
     }
 
@@ -299,7 +299,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
+      locationServiceUtil.resolveSequencer(subsystem, obsMode, 200.millis).leftValue shouldBe
       RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
@@ -343,7 +343,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(Some(akkaLocation)))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, observingMode, within = 10.millis).rightValue shouldBe akkaLocation
+      locationServiceUtil.resolveSequencer(subsystem, obsMode, within = 10.millis).rightValue shouldBe akkaLocation
 
       verify(locationService).resolve(akkaConnection, 10.millis)
     }
@@ -353,7 +353,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
+      locationServiceUtil.resolveSequencer(subsystem, obsMode, 200.millis).leftValue shouldBe
       LocationNotFound(s"Could not resolve location matching connection: $akkaConnection")
     }
 
@@ -362,7 +362,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
+      locationServiceUtil.resolveSequencer(subsystem, obsMode, 200.millis).leftValue shouldBe
       RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
@@ -373,7 +373,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(Some(akkaLocation)))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.findSequencer(subsystem, observingMode).rightValue shouldBe akkaLocation
+      locationServiceUtil.findSequencer(subsystem, obsMode).rightValue shouldBe akkaLocation
 
       verify(locationService).find(akkaConnection)
     }
@@ -383,7 +383,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.findSequencer(subsystem, observingMode).leftValue should ===(
+      locationServiceUtil.findSequencer(subsystem, obsMode).leftValue should ===(
         LocationNotFound(s"Could not find location matching connection: $akkaConnection")
       )
 
@@ -395,7 +395,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.findSequencer(subsystem, observingMode).leftValue should ===(
+      locationServiceUtil.findSequencer(subsystem, obsMode).leftValue should ===(
         RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
       )
 

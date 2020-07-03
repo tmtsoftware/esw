@@ -33,8 +33,8 @@ class SequenceComponentBehavior(
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (ctx, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
-        case LoadScript(subsystem, observingMode, replyTo) =>
-          load(ctx, subsystem, observingMode, replyTo)
+        case LoadScript(subsystem, obsMode, replyTo) =>
+          load(ctx, subsystem, obsMode, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(None)
           Behaviors.same
@@ -49,25 +49,25 @@ class SequenceComponentBehavior(
   private def load(
       ctx: ActorContext[SequenceComponentMsg],
       subsystem: Subsystem,
-      observingMode: ObsMode,
+      obsMode: ObsMode,
       replyTo: ActorRef[ScriptResponseOrUnhandled]
   ): Behavior[SequenceComponentMsg] = {
     val sequenceComponentLocation = AkkaLocation(akkaConnection, ctx.self.toURI)
-    val sequencerServer           = sequencerServerFactory.make(subsystem, observingMode, sequenceComponentLocation)
+    val sequencerServer           = sequencerServerFactory.make(subsystem, obsMode, sequenceComponentLocation)
     val registrationResult        = sequencerServer.start().mapToAdt(location => SequencerLocation(location), identity)
     replyTo ! registrationResult
 
     registrationResult match {
       case SequencerLocation(location) =>
-        log.info(s"Successfully started sequencer for subsystem :$subsystem in observation mode: ${observingMode.name}")
-        running(subsystem, observingMode, sequencerServer, location)
+        log.info(s"Successfully started sequencer for subsystem :$subsystem in observation mode: ${obsMode.name}")
+        running(subsystem, obsMode, sequencerServer, location)
       case error: ScriptError =>
         log.error(s"Failed to start sequencer: ${error.msg}")
         Behaviors.same
     }
   }
 
-  private def running(subsystem: Subsystem, observingMode: ObsMode, sequencerServer: SequencerServer, location: AkkaLocation) =
+  private def running(subsystem: Subsystem, obsMode: ObsMode, sequencerServer: SequencerServer, location: AkkaLocation) =
     receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (ctx, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
 
@@ -83,7 +83,7 @@ class SequenceComponentBehavior(
           idle
         case RestartScript(replyTo) =>
           unload()
-          load(ctx, subsystem, observingMode, replyTo)
+          load(ctx, subsystem, obsMode, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(Some(location))
           Behaviors.same

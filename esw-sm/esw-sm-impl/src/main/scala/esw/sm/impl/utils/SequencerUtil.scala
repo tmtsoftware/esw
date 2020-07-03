@@ -89,14 +89,14 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Unhandled(_, _, msg)        => LoadScriptError(msg) // restart is unhandled in idle or shutting down state
       })
 
-  private def loadScript(subSystem: Subsystem, observingMode: ObsMode, seqCompApi: SequenceComponentApi, retryCount: Int) =
+  private def loadScript(subSystem: Subsystem, obsMode: ObsMode, seqCompApi: SequenceComponentApi, retryCount: Int) =
     seqCompApi
-      .loadScript(subSystem, observingMode)
+      .loadScript(subSystem, obsMode)
       .flatMap {
         case SequencerLocation(location)                           => Future.successful(Right(location))
-        case _: ScriptError.LocationServiceError if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
+        case _: ScriptError.LocationServiceError if retryCount > 0 => startSequencer(subSystem, obsMode, retryCount - 1)
         case error: ScriptError.LoadingScriptFailed                => Future.successful(Left(LoadScriptError(error.msg)))
-        case Unhandled(_, _, _) if retryCount > 0                  => startSequencer(subSystem, observingMode, retryCount - 1)
+        case Unhandled(_, _, _) if retryCount > 0                  => startSequencer(subSystem, obsMode, retryCount - 1)
       }
 
   // get sequence component from Sequencer and unload sequencer script

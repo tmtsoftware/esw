@@ -9,8 +9,8 @@ object SequenceManagerPostRequest {
   case class Configure(obsMode: ObsMode) extends SequenceManagerPostRequest
   case object GetRunningObsModes         extends SequenceManagerPostRequest
 
-  case class StartSequencer(subsystem: Subsystem, observingMode: ObsMode)   extends SequenceManagerPostRequest
-  case class RestartSequencer(subsystem: Subsystem, observingMode: ObsMode) extends SequenceManagerPostRequest
+  case class StartSequencer(subsystem: Subsystem, obsMode: ObsMode)   extends SequenceManagerPostRequest
+  case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode) extends SequenceManagerPostRequest
 
   case class ShutdownSequencers(policy: ShutdownSequencersPolicy) extends SequenceManagerPostRequest
 

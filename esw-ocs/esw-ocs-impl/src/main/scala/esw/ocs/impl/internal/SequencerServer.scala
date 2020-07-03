@@ -15,5 +15,5 @@ trait SequencerServer {
 }
 
 trait SequencerServerFactory {
-  def make(subsystem: Subsystem, observingMode: ObsMode, sequenceComponentLocation: AkkaLocation): SequencerServer
+  def make(subsystem: Subsystem, obsMode: ObsMode, sequenceComponentLocation: AkkaLocation): SequencerServer
 }

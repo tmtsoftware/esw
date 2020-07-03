@@ -50,7 +50,7 @@ class ScriptLoaderTest extends BaseTestSuite {
 
   "load" must {
 
-    "load script class if subsystem and observingMode is provided | ESW-102, ESW-136" in {
+    "load script class if subsystem and obsMode is provided | ESW-102, ESW-136" in {
       val loader: ScriptApi =
         ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", scriptContext)
       loader shouldBe a[ScriptDsl]

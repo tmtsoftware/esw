@@ -26,8 +26,8 @@ import esw.ocs.testkit.EswTestKit
 import scala.concurrent.Future
 
 class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
-  private val subsystem     = ESW
-  private val observingMode = ObsMode("MoonNight")
+  private val subsystem = ESW
+  private val obsMode   = ObsMode("MoonNight")
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
@@ -41,9 +41,9 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   override protected def beforeEach(): Unit = {
     //ocs sequencer, starts with TestScript2
-    spawnSequencer(subsystem, observingMode)
+    spawnSequencer(subsystem, obsMode)
 
-    ocsSequencer = sequencerClient(subsystem, observingMode)
+    ocsSequencer = sequencerClient(subsystem, obsMode)
 
     // tcs sequencer, starts with TestScript3
     val tcsSequencerId            = TCS
@@ -300,11 +300,11 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val sequenceComponentImpl     = new SequenceComponentImpl(sequenceComponentLocation)
 
     //start sequencer
-    val observingMode = ObsMode("darknight")
-    val response      = sequenceComponentImpl.loadScript(ESW, observingMode).futureValue
+    val obsMode  = ObsMode("darknight")
+    val response = sequenceComponentImpl.loadScript(ESW, obsMode).futureValue
     response shouldBe a[SequencerLocation]
 
-    val sequencer: SequencerApi = sequencerClient(ESW, observingMode)
+    val sequencer: SequencerApi = sequencerClient(ESW, obsMode)
 
     //assert that getSequenceComponent returns sequenceComponentLocation where sequencer is running
     sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)

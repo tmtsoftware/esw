@@ -23,31 +23,31 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
-  override def configure(observingMode: ObsMode): Future[ConfigureResponse] =
-    smRef ? (Configure(observingMode, _))
+  override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
+    smRef ? (Configure(obsMode, _))
 
   override def getRunningObsModes: Future[GetRunningObsModesResponse] = smRef ? GetRunningObsModes
 
-  override def startSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[StartSequencerResponse] =
-    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, observingMode, x) })(
+  override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
+    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, obsMode, x) })(
       SequenceManagerTimeout.StartSequencerTimeout,
       actorSystem.scheduler
     )
 
-  override def restartSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[RestartSequencerResponse] =
-    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, observingMode, x) })(
+  override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
+    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, obsMode, x) })(
       SequenceManagerTimeout.RestartSequencerTimeout,
       actorSystem.scheduler
     )
 
-  override def shutdownSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(subsystem, observingMode))
+  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(subsystem, obsMode))
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
     shutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(subsystem))
 
-  override def shutdownObsModeSequencers(observingMode: ObsMode): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(observingMode))
+  override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
 
   override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
     shutdownSequencers(ShutdownSequencersPolicy.AllSequencers)

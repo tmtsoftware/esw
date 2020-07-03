@@ -13,6 +13,6 @@ object SequenceManagerAppCommand {
       @HelpMessage(
         "Config file path which has mapping of sequencers and resources needed for different observing modes"
       )
-      observingModeResourcesConfigPath: Path
+      obsModeResourcesConfigPath: Path
   ) extends SequenceManagerAppCommand
 }

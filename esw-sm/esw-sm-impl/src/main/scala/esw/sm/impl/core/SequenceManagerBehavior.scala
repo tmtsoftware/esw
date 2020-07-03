@@ -41,11 +41,11 @@ class SequenceManagerBehavior(
 
   private def idle(self: SelfRef): SMBehavior =
     receive[SequenceManagerIdleMsg](Idle) {
-      case Configure(observingMode, replyTo)                 => configure(observingMode, self, replyTo)
-      case ShutdownSequencers(policy, replyTo)               => shutdownSequencers(policy, self, replyTo)
-      case StartSequencer(subsystem, observingMode, replyTo) => startSequencer(subsystem, observingMode, replyTo); Behaviors.same
-      case RestartSequencer(subsystem, observingMode, replyTo) =>
-        restartSequencer(subsystem, observingMode, replyTo); Behaviors.same
+      case Configure(obsMode, replyTo)                 => configure(obsMode, self, replyTo)
+      case ShutdownSequencers(policy, replyTo)         => shutdownSequencers(policy, self, replyTo)
+      case StartSequencer(subsystem, obsMode, replyTo) => startSequencer(subsystem, obsMode, replyTo); Behaviors.same
+      case RestartSequencer(subsystem, obsMode, replyTo) =>
+        restartSequencer(subsystem, obsMode, replyTo); Behaviors.same
       case SpawnSequenceComponent(machine, name, replyTo) => spawnSequenceComponent(machine, name, replyTo); Behaviors.same
       case ShutdownSequenceComponent(prefix, replyTo)     => shutdownSequenceComponent(prefix, replyTo); Behaviors.same
     }

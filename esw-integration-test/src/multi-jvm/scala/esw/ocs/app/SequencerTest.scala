@@ -104,8 +104,8 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
     enterBarrier("end")
   }
 
-  private def sequencerClient(subsystem: Subsystem, observingMode: ObsMode) = {
-    val componentId = ComponentId(Prefix(subsystem, observingMode.name), ComponentType.Sequencer)
+  private def sequencerClient(subsystem: Subsystem, obsMode: ObsMode) = {
+    val componentId = ComponentId(Prefix(subsystem, obsMode.name), ComponentType.Sequencer)
     val location    = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
     SequencerApiFactory.make(location)
   }

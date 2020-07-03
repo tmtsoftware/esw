@@ -110,14 +110,14 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
 
   private[esw] def resolveSequencer(
       subsystem: Subsystem,
-      observingMode: ObsMode,
+      obsMode: ObsMode,
       within: FiniteDuration
   ): Future[Either[FindLocationError, AkkaLocation]] =
-    resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode.name), Sequencer)), within)
+    resolve(AkkaConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)), within)
 
   private[esw] def findSequencer(
       subsystem: Subsystem,
-      observingMode: ObsMode
+      obsMode: ObsMode
   ): Future[Either[FindLocationError, AkkaLocation]] =
-    find(AkkaConnection(ComponentId(Prefix(subsystem, observingMode.name), Sequencer)))
+    find(AkkaConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
 }
