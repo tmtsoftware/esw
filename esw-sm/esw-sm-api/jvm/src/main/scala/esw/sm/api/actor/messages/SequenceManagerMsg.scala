@@ -26,10 +26,11 @@ object SequenceManagerMsg {
       extends SequenceManagerIdleMsg
 
   case class SpawnSequenceComponent(
-      agent: Prefix,
+      machine: Prefix,
       sequenceComponentName: String,
       replyTo: ActorRef[SpawnSequenceComponentResponse]
   ) extends SequenceManagerIdleMsg
+
   case class ShutdownSequenceComponent(prefix: Prefix, replyTo: ActorRef[ShutdownSequenceComponentResponse])
       extends SequenceManagerIdleMsg
 

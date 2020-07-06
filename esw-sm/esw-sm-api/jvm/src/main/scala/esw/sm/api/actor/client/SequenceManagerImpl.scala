@@ -55,8 +55,8 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def shutdownSequencers(shutdownSequencersPolicy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
     smRef ? (ShutdownSequencers(shutdownSequencersPolicy, _))
 
-  override def spawnSequenceComponent(agent: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
-    smRef ? (SpawnSequenceComponent(agent, sequenceComponentName, _))
+  override def spawnSequenceComponent(machine: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
+    smRef ? (SpawnSequenceComponent(machine, sequenceComponentName, _))
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
     smRef ? (ShutdownSequenceComponent(prefix, _))

@@ -131,11 +131,11 @@ class SequenceManagerBehavior(
   }
 
   private def spawnSequenceComponent(
-      agent: Prefix,
+      machine: Prefix,
       name: String,
       replyTo: ActorRef[SpawnSequenceComponentResponse]
   ): Future[Unit] =
-    sequenceComponentUtil.spawnSequenceComponent(agent, name).map(replyTo ! _)
+    sequenceComponentUtil.spawnSequenceComponent(machine, name).map(replyTo ! _)
 
   private def shutdownSequenceComponent(
       prefix: Prefix,

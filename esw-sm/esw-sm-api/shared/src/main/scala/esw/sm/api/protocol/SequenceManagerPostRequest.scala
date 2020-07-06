@@ -14,6 +14,6 @@ object SequenceManagerPostRequest {
 
   case class ShutdownSequencers(policy: ShutdownSequencersPolicy) extends SequenceManagerPostRequest
 
-  case class SpawnSequenceComponent(agent: Prefix, name: String) extends SequenceManagerPostRequest
-  case class ShutdownSequenceComponent(prefix: Prefix)           extends SequenceManagerPostRequest
+  case class SpawnSequenceComponent(machine: Prefix, name: String) extends SequenceManagerPostRequest
+  case class ShutdownSequenceComponent(prefix: Prefix)             extends SequenceManagerPostRequest
 }

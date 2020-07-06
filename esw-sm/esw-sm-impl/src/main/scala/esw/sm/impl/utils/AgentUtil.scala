@@ -29,10 +29,10 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .flatMapE(spawnSeqComp(_, sequenceComponentPrefix))
   }
 
-  def spawnSequenceComponentFor(agentPrefix: Prefix, seqCompName: String): Future[Either[AgentError, SequenceComponentApi]] =
-    getAgent(agentPrefix)
+  def spawnSequenceComponentFor(machine: Prefix, seqCompName: String): Future[Either[AgentError, SequenceComponentApi]] =
+    getAgent(machine)
       .mapLeft(error => LocationServiceError(error.msg))
-      .flatMapE(spawnSeqComp(_, Prefix(agentPrefix.subsystem, seqCompName)))
+      .flatMapE(spawnSeqComp(_, Prefix(machine.subsystem, seqCompName)))
 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
