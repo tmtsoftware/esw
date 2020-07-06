@@ -30,7 +30,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       .spawnSequenceComponentFor(machine, name)
       .mapToAdt(
         _ => SpawnSequenceComponentResponse.Success(ComponentId(seqCompPrefix, SequenceComponent)),
-        error => SpawnSequenceComponentFailed(error.msg)
+        identity
       )
   }
 

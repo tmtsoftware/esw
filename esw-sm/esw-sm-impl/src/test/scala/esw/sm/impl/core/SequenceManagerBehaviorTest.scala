@@ -353,17 +353,17 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "SpawnSequenceComponent" must {
     "return Success with sequence component id when it is spawned | ESW-337" in {
       val seqCompName = "seq_comp"
-      val agent       = Prefix(ESW, "primary")
-      val seqComp     = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
-      when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
-        .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
+      val machine     = Prefix(ESW, "primary")
+      val componentId = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
+      when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
+        .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(componentId)))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
-      smRef ! SpawnSequenceComponent(agent, seqCompName, spawnSequenceComponentProbe.ref)
-      spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(seqComp))
+      smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
+      spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(componentId))
 
-      verify(sequenceComponentUtil).spawnSequenceComponent(agent, seqCompName)
+      verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
     }
 
     "return LocationServiceError if location service gives error | ESW-337" in {
