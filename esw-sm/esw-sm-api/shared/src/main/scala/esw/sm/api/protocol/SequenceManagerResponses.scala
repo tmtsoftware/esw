@@ -8,7 +8,9 @@ import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
 
 private[protocol] sealed trait SmFailure extends Throwable
 
-sealed trait ConfigureResponse extends SmAkkaSerializable
+sealed trait SmResponse extends SmAkkaSerializable
+
+sealed trait ConfigureResponse extends SmResponse
 
 object ConfigureResponse {
   case class Success(masterSequencerComponentId: ComponentId) extends ConfigureResponse
@@ -18,14 +20,14 @@ object ConfigureResponse {
   case class FailedToStartSequencers(reasons: Set[String])                        extends Failure
 }
 
-sealed trait GetRunningObsModesResponse extends SmAkkaSerializable
+sealed trait GetRunningObsModesResponse extends SmResponse
 
 object GetRunningObsModesResponse {
   case class Success(runningObsModes: Set[ObsMode]) extends GetRunningObsModesResponse
   case class Failed(msg: String)                    extends SmFailure with GetRunningObsModesResponse
 }
 
-sealed trait StartSequencerResponse extends SmAkkaSerializable
+sealed trait StartSequencerResponse extends SmResponse
 
 object StartSequencerResponse {
   sealed trait Success                                extends StartSequencerResponse
@@ -38,7 +40,7 @@ object StartSequencerResponse {
   case class LoadScriptError(msg: String) extends Failure
 }
 
-sealed trait ShutdownSequencersResponse extends SmAkkaSerializable
+sealed trait ShutdownSequencersResponse extends SmResponse
 object ShutdownSequencersResponse {
   case object Success extends ShutdownSequencersResponse
 
@@ -46,7 +48,7 @@ object ShutdownSequencersResponse {
   case class ShutdownFailure(failureResponses: List[UnloadScriptError]) extends Failure
 }
 
-sealed trait RestartSequencerResponse extends SmAkkaSerializable
+sealed trait RestartSequencerResponse extends SmResponse
 
 object RestartSequencerResponse {
   case class Success(componentId: ComponentId) extends RestartSequencerResponse
@@ -57,7 +59,7 @@ object RestartSequencerResponse {
   case class UnloadScriptError(prefix: Prefix, msg: String) extends Failure
 }
 
-sealed trait SpawnSequenceComponentResponse extends SmAkkaSerializable
+sealed trait SpawnSequenceComponentResponse extends SmResponse
 
 object SpawnSequenceComponentResponse {
   case class Success(componentId: ComponentId) extends SpawnSequenceComponentResponse
@@ -65,7 +67,7 @@ object SpawnSequenceComponentResponse {
   sealed trait Failure extends SmFailure with SpawnSequenceComponentResponse
 }
 
-sealed trait ShutdownSequenceComponentResponse extends SmAkkaSerializable
+sealed trait ShutdownSequenceComponentResponse extends SmResponse
 object ShutdownSequenceComponentResponse {
   case object Success extends ShutdownSequenceComponentResponse
 

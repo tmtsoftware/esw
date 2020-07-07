@@ -183,8 +183,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "Sequence Manager SequenceManagerState models",
       SequenceManagerState.Idle,
-      SequenceManagerState.ShuttingDownSequencers,
-      SequenceManagerState.Configuring
+      SequenceManagerState.Processing
     )
 
     forAll(testData) { sequenceManagerState =>

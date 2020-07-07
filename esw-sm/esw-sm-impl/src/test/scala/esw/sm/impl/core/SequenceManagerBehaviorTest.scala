@@ -66,7 +66,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "Configure" must {
 
-    "transition sm from Idle -> ConfigurationInProcess -> Idle state and return location of master sequencer | ESW-178, ESW-164" in {
+    "transition sm from Idle -> Processing -> Idle state and return location of master sequencer | ESW-178, ESW-164" in {
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val configResponse = Success(componentId)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
@@ -76,7 +76,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       // STATE TRANSITION: Idle -> Configure() -> ConfigurationInProcess -> Idle
       assertState(Idle)
       smRef ! Configure(darkNight, configureProbe.ref)
-      assertState(Configuring)
+      assertState(Processing)
       assertState(Idle)
 
       configureProbe.expectMessage(configResponse)
@@ -122,19 +122,22 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "StartSequencer" must {
-    "return Started when sequencer is started | ESW-176" in {
+    "transition sm from Idle -> Processing -> Idle state and return componentId of started sequencer | ESW-176" in {
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
       val akkaLocation   = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
 
-      when(sequencerUtil.startSequencer(ESW, darkNight, 3)).thenReturn(Future.successful(Right(akkaLocation)))
+      when(sequencerUtil.startSequencer(ESW, darkNight, 3)).thenReturn(future(1.second, Right(akkaLocation)))
       when(locationServiceUtil.find(httpConnection)).thenReturn(futureLeft(LocationNotFound("error")))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
 
+      assertState(Idle)
       smRef ! StartSequencer(ESW, darkNight, startSequencerResponseProbe.ref)
-      startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(componentId))
+      assertState(Processing)
+      assertState(Idle)
 
+      startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(componentId))
       verify(sequencerUtil).startSequencer(ESW, darkNight, 3)
       verify(locationServiceUtil).find(httpConnection)
     }
@@ -225,13 +228,13 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     forAll(policies) { (policy, shutdownFailure, locationServiceFailure) =>
       val policyName = policy.getClass.getSimpleName
-      s"transition sm from Idle -> ShuttingDownSequencers -> Idle state and stop $policyName | ESW-326, ESW-345, ESW-166, ESW-324" in {
+      s"transition sm from Idle -> Processing -> Idle state and stop $policyName | ESW-326, ESW-345, ESW-166, ESW-324" in {
         when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
         val responseProbe = TestProbe[ShutdownSequencersResponse]()
 
         assertState(Idle)
         smRef ! ShutdownSequencers(policy, responseProbe.ref)
-        assertState(ShuttingDownSequencers)
+        assertState(Processing)
         assertState(Idle)
 
         responseProbe.expectMessage(ShutdownSequencersResponse.Success)
@@ -261,7 +264,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "RestartSequencer" must {
-    "return Success when sequencer is restarted | ESW-327" in {
+    "transition sm from Idle -> Processing -> Idle state and return success on restart | ESW-327" in {
       val prefix      = Prefix(ESW, darkNight.name)
       val componentId = ComponentId(prefix, Sequencer)
 
@@ -270,9 +273,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val restartSequencerResponseProbe = TestProbe[RestartSequencerResponse]()
 
+      assertState(Idle)
       smRef ! RestartSequencer(ESW, darkNight, restartSequencerResponseProbe.ref)
-      restartSequencerResponseProbe.expectMessage(RestartSequencerResponse.Success(componentId))
+      assertState(Processing)
+      assertState(Idle)
 
+      restartSequencerResponseProbe.expectMessage(RestartSequencerResponse.Success(componentId))
       verify(sequencerUtil).restartSequencer(ESW, darkNight)
     }
 
@@ -300,16 +306,19 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "ShutdownSequenceComponent" must {
-    "return Success when sequence component is shutdown | ESW-338" in {
+    "transition sm from Idle -> Processing -> Idle state and return success on shutdown | ESW-338" in {
       val prefix = Prefix(ESW, "primary")
 
-      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
+      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(future(1.second, ShutdownSequenceComponentResponse.Success))
 
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
+      assertState(Idle)
       smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
-      shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
+      assertState(Processing)
+      assertState(Idle)
 
+      shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
       verify(sequenceComponentUtil).shutdown(prefix)
     }
 
@@ -329,18 +338,21 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "SpawnSequenceComponent" must {
-    "return Success with sequence component id when it is spawned | ESW-337" in {
+    "transition sm from Idle -> Processing -> Idle state and return success when spawned | ESW-337" in {
       val seqCompName = "seq_comp"
       val machine     = Prefix(ESW, "primary")
       val componentId = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
       when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
-        .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(componentId)))
+        .thenReturn(future(1.second, SpawnSequenceComponentResponse.Success(componentId)))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
+      assertState(Idle)
       smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
-      spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(componentId))
+      assertState(Processing)
+      assertState(Idle)
 
+      spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(componentId))
       verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
     }
 
