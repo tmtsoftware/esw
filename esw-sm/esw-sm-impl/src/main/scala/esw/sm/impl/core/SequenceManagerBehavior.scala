@@ -89,16 +89,14 @@ class SequenceManagerBehavior(
       self: SelfRef,
       replyTo: ActorRef[ShutdownSequencersResponse]
   ): SMBehavior = {
-    sequencerUtil.shutdownSequencers(policy).map(self ! ShutdownObsModeSequencersResponseInternal(_))
-    shuttingDownObsModeSequencers(self, replyTo)
+    sequencerUtil.shutdownSequencers(policy).map(self ! ShutdownSequencersResponseInternal(_))
+    shuttingDownSequencers(self, replyTo)
   }
 
   // shutting down ObsMode Sequencers is in progress, waiting for CleanupResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def shuttingDownObsModeSequencers(self: SelfRef, replyTo: ActorRef[ShutdownSequencersResponse]): SMBehavior =
-    receive[ShutdownObsModeSequencersResponseInternal](ShuttingDownObsModeSequencers)(msg =>
-      replyAndGoToIdle(self, replyTo, msg.res)
-    )
+  private def shuttingDownSequencers(self: SelfRef, replyTo: ActorRef[ShutdownSequencersResponse]): SMBehavior =
+    receive[ShutdownSequencersResponseInternal](ShuttingDownSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def startSequencer(
       subsystem: Subsystem,

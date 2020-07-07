@@ -223,6 +223,28 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     secondRestartResponse should ===(LocationServiceError(s"Could not find location matching connection: $connection"))
   }
 
+  "shutdown running sequencers for given subsystem | ESW-345" in {
+    val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT.name)
+    val wfosCalPrefix       = Prefix(WFOS, WFOS_CAL.name)
+
+    val darkNightSequencerL = spawnSequencer(ESW, IRIS_DARKNIGHT)
+    val calSequencerL       = spawnSequencer(WFOS, WFOS_CAL)
+
+    // verify all sequencers are started
+    resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
+    resolveAkkaLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
+
+    // shutdown all ESW sequencers that are running
+    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
+    sequenceManagerClient.shutdownSubsystemSequencers(ESW).futureValue should ===(ShutdownSequencersResponse.Success)
+
+    // verify ESW sequencer has stopped
+    intercept[Exception](resolveAkkaLocation(irisDarkNightPrefix, Sequencer))
+
+    // verify WFOS sequencer is still running
+    resolveAkkaLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
+  }
+
   "shutdown all the running sequencers | ESW-324, ESW-171" in {
     val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT.name)
     val irisCalPrefix       = Prefix(ESW, IRIS_CAL.name)

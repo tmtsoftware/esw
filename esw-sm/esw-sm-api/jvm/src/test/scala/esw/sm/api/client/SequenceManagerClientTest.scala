@@ -58,7 +58,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.restartSequencer(ESW, obsMode).futureValue shouldBe RestartSequencerResponse.Success(componentId)
     }
 
-    "return success for Shutdown sequencer for shutdownSequencer request" in {
+    "return success for Shutdown sequencer for shutdownSequencer request | ESW-326" in {
       val shutdownSequencerMsg = ShutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode))
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
@@ -70,10 +70,10 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.shutdownSequencer(ESW, obsMode).futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
-    "return success for Shutdown Sequencers for Subsystem request" in {
-      val shutdownSusystemSequencersMsg = ShutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(ESW))
+    "return success for Shutdown Sequencers for Subsystem request | ESW-345" in {
+      val shutdownSubsystemSequencersMsg = ShutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(ESW))
       when(
-        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSusystemSequencersMsg))(
+        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSubsystemSequencersMsg))(
           any[Decoder[ShutdownSequencersResponse]](),
           any[Encoder[ShutdownSequencersResponse]]()
         )
@@ -82,7 +82,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.shutdownSubsystemSequencers(ESW).futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
-    "return success for Shutdown Sequencers for ObsMode request" in {
+    "return success for Shutdown Sequencers for ObsMode request | ESW-166" in {
       val shutdownObsModeSequencersMsg = ShutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownObsModeSequencersMsg))(
@@ -94,7 +94,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.shutdownObsModeSequencers(obsMode).futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
-    "return shutdown all sequencers success for  ShutdownAllSequencers request" in {
+    "return shutdown all sequencers success for ShutdownAllSequencers request | ESW-324" in {
       when(
         postClient.requestResponse[ShutdownSequencersResponse](
           argsEq(ShutdownSequencers(ShutdownSequencersPolicy.AllSequencers))
