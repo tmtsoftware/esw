@@ -7,6 +7,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.SequenceManagerPostRequest.{GetRunningObsModes, _}
+import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
@@ -119,15 +120,30 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.startSequencer(ESW, obsMode).futureValue shouldBe StartSequencerResponse.Started(componentId)
     }
 
-    "return success response for Shutdown Sequence Component request" in {
+    "return success response for shutdown sequence component request" in {
       when(
-        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownSequenceComponent(seqCompPrefix)))(
+        postClient.requestResponse[ShutdownSequenceComponentResponse](
+          argsEq(ShutdownSequenceComponents(SingleSequenceComponent(seqCompPrefix)))
+        )(
           any[Decoder[ShutdownSequenceComponentResponse]](),
           any[Encoder[ShutdownSequenceComponentResponse]]()
         )
       ).thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
       client.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe ShutdownSequenceComponentResponse.Success
+    }
+
+    "return success response for shutdown sequence all component request" in {
+      when(
+        postClient.requestResponse[ShutdownSequenceComponentResponse](
+          argsEq(ShutdownSequenceComponents(AllSequenceComponents))
+        )(
+          any[Decoder[ShutdownSequenceComponentResponse]](),
+          any[Encoder[ShutdownSequenceComponentResponse]]()
+        )
+      ).thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
+
+      client.shutdownAllSequenceComponents().futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
 
     "return spawn sequence component success response for spawnSequenceComponent request | ESW-337" in {

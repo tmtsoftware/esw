@@ -30,8 +30,10 @@ object SequenceManagerMsg {
       replyTo: ActorRef[SpawnSequenceComponentResponse]
   ) extends SequenceManagerIdleMsg
 
-  case class ShutdownSequenceComponent(prefix: Prefix, replyTo: ActorRef[ShutdownSequenceComponentResponse])
-      extends SequenceManagerIdleMsg
+  case class ShutdownSequenceComponents(
+      policy: ShutdownSequenceComponentPolicy,
+      replyTo: ActorRef[ShutdownSequenceComponentResponse]
+  ) extends SequenceManagerIdleMsg
 
   sealed trait CommonMessage                                                   extends SequenceManagerRemoteMsg
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage

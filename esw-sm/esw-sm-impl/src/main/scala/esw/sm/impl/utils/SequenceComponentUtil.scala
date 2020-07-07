@@ -11,6 +11,7 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
+import esw.ocs.api.protocol.SequenceComponentResponse
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.{AgentError, ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}
@@ -51,10 +52,18 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   def shutdown(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
     locationServiceUtil
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
-      .flatMapRight(createSequenceComponentImpl(_).shutdown())
+      .flatMapRight(shutdown)
+      .mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
+
+  def shutdownAll(): Future[ShutdownSequenceComponentResponse] =
+    locationServiceUtil
+      .listAkkaLocationsBy(SequenceComponent)
+      .flatMapRight(Future.traverse(_)(shutdown))
       .mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
   def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
+
+  private def shutdown(loc: AkkaLocation): Future[SequenceComponentResponse.Ok.type] = createSequenceComponentImpl(loc).shutdown()
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil

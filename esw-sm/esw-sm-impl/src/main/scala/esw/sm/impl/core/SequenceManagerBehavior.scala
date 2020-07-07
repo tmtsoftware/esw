@@ -17,6 +17,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
 import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
+import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, Started}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
@@ -46,7 +47,7 @@ class SequenceManagerBehavior(
       case StartSequencer(subsystem, obsMode, replyTo)    => startSequencer(obsMode, subsystem, self, replyTo)
       case RestartSequencer(subsystem, obsMode, replyTo)  => restartSequencer(subsystem, obsMode, self, replyTo)
       case SpawnSequenceComponent(machine, name, replyTo) => spawnSequenceComponent(machine, name, self, replyTo)
-      case ShutdownSequenceComponent(prefix, replyTo)     => shutdownSequenceComponent(prefix, self, replyTo)
+      case ShutdownSequenceComponents(policy, replyTo)    => shutdownSequenceComponents(policy, self, replyTo)
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -131,12 +132,15 @@ class SequenceManagerBehavior(
     processing(self, replyTo)
   }
 
-  private def shutdownSequenceComponent(
-      prefix: Prefix,
+  private def shutdownSequenceComponents(
+      policy: ShutdownSequenceComponentPolicy,
       self: SelfRef,
       replyTo: ActorRef[ShutdownSequenceComponentResponse]
   ): SMBehavior = {
-    sequenceComponentUtil.shutdown(prefix).map(self ! ProcessingComplete(_))
+    policy match {
+      case SingleSequenceComponent(prefix) => sequenceComponentUtil.shutdown(prefix).map(self ! ProcessingComplete(_))
+      case AllSequenceComponents           => sequenceComponentUtil.shutdownAll().map(self ! ProcessingComplete(_))
+    }
     processing(self, replyTo)
   }
 

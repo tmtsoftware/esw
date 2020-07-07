@@ -59,7 +59,15 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
     smRef ? (SpawnSequenceComponent(machine, sequenceComponentName, _))
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
-    smRef ? (ShutdownSequenceComponent(prefix, _))
+    shutdownSequenceComponents(ShutdownSequenceComponentPolicy.SingleSequenceComponent(prefix))
+
+  override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
+    shutdownSequenceComponents(ShutdownSequenceComponentPolicy.AllSequenceComponents)
+
+  override private[sm] def shutdownSequenceComponents(
+      policy: ShutdownSequenceComponentPolicy
+  ): Future[ShutdownSequenceComponentResponse] =
+    smRef ? (ShutdownSequenceComponents(policy, _))
 }
 
 object SequenceManagerTimeout {

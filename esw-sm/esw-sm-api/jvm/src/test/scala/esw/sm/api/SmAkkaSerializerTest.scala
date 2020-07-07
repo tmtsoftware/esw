@@ -12,6 +12,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
@@ -55,7 +56,8 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       ShutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode), shutdownSequencersResponseRef),
       ShutdownSequencers(ShutdownSequencersPolicy.AllSequencers, shutdownSequencersResponseRef),
       SpawnSequenceComponent(agent, "seq_comp", spawnSequenceComponentResponseRef),
-      ShutdownSequenceComponent(Prefix(ESW, "primary"), shutdownSequenceComponentResponseRef)
+      ShutdownSequenceComponents(SingleSequenceComponent(Prefix(ESW, "primary")), shutdownSequenceComponentResponseRef),
+      ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>

@@ -17,6 +17,7 @@ trait SequenceManagerCodecs extends LocationCodecs with BasicCodecs with OcsCode
   implicit lazy val spawnSequenceComponentResponseCodec: Codec[SpawnSequenceComponentResponse]       = deriveAllCodecs
   implicit lazy val shutdownSequenceComponentResponseCodec: Codec[ShutdownSequenceComponentResponse] = deriveAllCodecs
   implicit lazy val shutdownSequencerPolicyCodec: Codec[ShutdownSequencersPolicy]                    = deriveAllCodecs
+  implicit lazy val shutdownSequenceComponentPolicyCodec: Codec[ShutdownSequenceComponentPolicy]     = deriveAllCodecs
   // todo: see if unloadScriptErrorCodec is required
   implicit lazy val unloadScriptErrorCodec: Codec[UnloadScriptError]                      = deriveCodec
   implicit lazy val shutdownAllSequencersResponseCodec: Codec[ShutdownSequencersResponse] = deriveAllCodecs

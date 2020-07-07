@@ -20,6 +20,7 @@ import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.SingleSequenceComponent
 import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownFailure
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
@@ -305,7 +306,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "ShutdownSequenceComponent" must {
+  "ShutdownSequenceComponents" must {
     "transition sm from Idle -> Processing -> Idle state and return success on shutdown | ESW-338" in {
       val prefix = Prefix(ESW, "primary")
 
@@ -314,7 +315,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
       assertState(Idle)
-      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
+      smRef ! ShutdownSequenceComponents(SingleSequenceComponent(prefix), shutdownSequenceComponentResponseProbe.ref)
       assertState(Processing)
       assertState(Idle)
 
@@ -330,7 +331,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(error))
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
+      smRef ! ShutdownSequenceComponents(SingleSequenceComponent(prefix), shutdownSequenceComponentResponseProbe.ref)
       shutdownSequenceComponentResponseProbe.expectMessage(error)
 
       verify(sequenceComponentUtil).shutdown(prefix)
