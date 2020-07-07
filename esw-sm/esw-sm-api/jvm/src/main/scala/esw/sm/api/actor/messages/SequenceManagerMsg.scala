@@ -9,7 +9,7 @@ import esw.sm.api.protocol._
 
 sealed trait SequenceManagerMsg
 
-sealed trait SequenceManagerRemoteMsg   extends SequenceManagerMsg with SmAkkaSerializable
+sealed trait SequenceManagerRemoteMsg extends SequenceManagerMsg with SmAkkaSerializable
 
 sealed trait SequenceManagerIdleMsg extends SequenceManagerRemoteMsg
 
