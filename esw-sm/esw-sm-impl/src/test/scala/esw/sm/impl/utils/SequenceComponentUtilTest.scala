@@ -8,13 +8,14 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.commons.utils.location.EswLocationError.LocationNotFound
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}
 import esw.testcommons.BaseTestSuite
 
@@ -183,9 +184,8 @@ class SequenceComponentUtilTest extends BaseTestSuite {
     }
   }
 
-  "shutdown by prefix" must {
-
-    "return success when shutdown sequence component is successful | ESW-338" in {
+  "shutdown" must {
+    "return success when shutdown of single sequence component is successful | ESW-338" in {
       val mockSeqCompImpl = mock[SequenceComponentImpl]
       val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
         override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
@@ -197,13 +197,14 @@ class SequenceComponentUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(Right(mockAkkaLocation(prefixStr))))
       when(mockSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
 
-      seqCompUtil.shutdown(Prefix(prefixStr)).futureValue should ===(ShutdownSequenceComponentResponse.Success)
+      val singleShutdownPolicy = SingleSequenceComponent(Prefix(prefixStr))
+      seqCompUtil.shutdown(singleShutdownPolicy).futureValue should ===(ShutdownSequenceComponentResponse.Success)
 
       verify(locationServiceUtil).find(akkaConnection)
       verify(mockSeqCompImpl).shutdown()
     }
 
-    "return error when location service returns error | ESW-338" in {
+    "return error when location service returns error while shutting down single sequencer | ESW-338" in {
       val mockSeqCompImpl = mock[SequenceComponentImpl]
       val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
         override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
@@ -214,8 +215,50 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.find(connection))
         .thenReturn(Future.successful(Left(LocationNotFound("error"))))
 
-      seqCompUtil.shutdown(Prefix(prefixStr)).futureValue should ===(LocationServiceError("error"))
+      val singleShutdownPolicy = SingleSequenceComponent(Prefix(prefixStr))
+      seqCompUtil.shutdown(singleShutdownPolicy).futureValue should ===(LocationServiceError("error"))
+
       verify(locationServiceUtil).find(connection)
+      verify(mockSeqCompImpl, never).shutdown()
+    }
+
+    "return success when shutting down all sequence components is successful | ESW-346" in {
+
+      val eswSeqCompLoc   = mockAkkaLocation("ESW.primary")
+      val irisSeqCompLoc  = mockAkkaLocation("IRIS.primary")
+      val eswSeqCompImpl  = mock[SequenceComponentImpl]
+      val irisSeqCompImpl = mock[SequenceComponentImpl]
+
+      val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+        override private[sm] def createSequenceComponentImpl(loc: AkkaLocation): SequenceComponentImpl =
+          if (loc.prefix.subsystem == ESW) eswSeqCompImpl else irisSeqCompImpl
+      }
+
+      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
+        .thenReturn(Future.successful(Right(List(eswSeqCompLoc, irisSeqCompLoc))))
+
+      when(eswSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
+      when(irisSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
+
+      seqCompUtil.shutdown(AllSequenceComponents).futureValue should ===(ShutdownSequenceComponentResponse.Success)
+
+      verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
+      verify(eswSeqCompImpl).shutdown()
+      verify(irisSeqCompImpl).shutdown()
+    }
+
+    "return error when location service returns error while shutting down all sequence components | ESW-346" in {
+      val mockSeqCompImpl = mock[SequenceComponentImpl]
+      val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+        override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
+          mockSeqCompImpl
+      }
+      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
+        .thenReturn(Future.successful(Left(RegistrationListingFailed("error"))))
+
+      seqCompUtil.shutdown(AllSequenceComponents).futureValue should ===(LocationServiceError("error"))
+
+      verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
       verify(mockSeqCompImpl, never).shutdown()
     }
   }

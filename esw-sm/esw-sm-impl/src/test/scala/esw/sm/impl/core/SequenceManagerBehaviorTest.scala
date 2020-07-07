@@ -20,7 +20,7 @@ import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
-import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.SingleSequenceComponent
+import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownFailure
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
@@ -310,7 +310,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "transition sm from Idle -> Processing -> Idle state and return success on shutdown | ESW-338" in {
       val prefix = Prefix(ESW, "primary")
 
-      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(future(1.second, ShutdownSequenceComponentResponse.Success))
+      val singleShutdownPolicy = SingleSequenceComponent(prefix)
+      when(sequenceComponentUtil.shutdown(singleShutdownPolicy))
+        .thenReturn(future(1.second, ShutdownSequenceComponentResponse.Success))
 
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
@@ -320,7 +322,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       assertState(Idle)
 
       shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
-      verify(sequenceComponentUtil).shutdown(prefix)
+      verify(sequenceComponentUtil).shutdown(singleShutdownPolicy)
     }
 
     "return LocationServiceError if LocationServiceError encountered while shutting down sequence component | ESW-338" in {
@@ -328,13 +330,38 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val error = LocationServiceError("location service error")
 
-      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(error))
+      val singleShutdownPolicy = SingleSequenceComponent(prefix)
+      when(sequenceComponentUtil.shutdown(singleShutdownPolicy)).thenReturn(Future.successful(error))
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-      smRef ! ShutdownSequenceComponents(SingleSequenceComponent(prefix), shutdownSequenceComponentResponseProbe.ref)
+      smRef ! ShutdownSequenceComponents(singleShutdownPolicy, shutdownSequenceComponentResponseProbe.ref)
       shutdownSequenceComponentResponseProbe.expectMessage(error)
 
-      verify(sequenceComponentUtil).shutdown(prefix)
+      verify(sequenceComponentUtil).shutdown(singleShutdownPolicy)
+    }
+
+    "return Success when shutting down all sequence components | ESW-346" in {
+      when(sequenceComponentUtil.shutdown(AllSequenceComponents))
+        .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
+
+      val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
+
+      smRef ! ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseProbe.ref)
+      shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
+
+      verify(sequenceComponentUtil).shutdown(AllSequenceComponents)
+    }
+
+    "return LocationServiceError if LocationServiceError encountered while shutting down all sequence components | ESW-346" in {
+      val error = LocationServiceError("location service error")
+
+      when(sequenceComponentUtil.shutdown(AllSequenceComponents)).thenReturn(Future.successful(error))
+      val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
+
+      smRef ! ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseProbe.ref)
+      shutdownSequenceComponentResponseProbe.expectMessage(error)
+
+      verify(sequenceComponentUtil).shutdown(AllSequenceComponents)
     }
   }
 

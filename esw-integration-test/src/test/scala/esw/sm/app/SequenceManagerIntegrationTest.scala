@@ -3,9 +3,9 @@ package esw.sm.app
 import java.io.File
 import java.nio.file.Files
 
-import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.BinaryFetcherUtil
@@ -265,7 +265,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     intercept[Exception](resolveAkkaLocation(irisCalPrefix, Sequencer))
   }
 
-  "should return loadScript error if configuration is missing for subsystem observation mode | ESW-176, ESW-171" in {
+  "return loadScript error if configuration is missing for subsystem observation mode | ESW-176, ESW-171" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
@@ -280,7 +280,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     loadScriptError.msg should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
   }
 
-  "should support all observation modes in configuration file | ESW-160" in {
+  "support all observation modes in configuration file | ESW-160" in {
     val tmpPath = File.createTempFile("temp-config", ".conf").toPath
     File.createTempFile("temp-config", ".conf").deleteOnExit()
     Files.write(tmpPath, "esw-sm {\n  obsModes: {}}".getBytes)
@@ -340,6 +340,29 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     //ESW-338 verify that sequence component is shutdown
     intercept[Exception](resolveSequenceComponentLocation(seqCompPrefix))
+  }
+
+  "shutdown all running sequence components | ESW-346" in {
+    val eswSeqCompPrefix   = Prefix(ESW, "primary")
+    val irisSeqCompPrefix  = Prefix(IRIS, "primary")
+    val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
+    TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
+
+    // verify sequence components are started
+    resolveSequenceComponentLocation(eswSeqCompPrefix) shouldBe a[AkkaLocation]
+    resolveSequenceComponentLocation(irisSeqCompPrefix) shouldBe a[AkkaLocation]
+    resolveSequenceComponentLocation(aoeswSeqCompPrefix) shouldBe a[AkkaLocation]
+
+    val sequenceManagerApi = TestSetup.startSequenceManager(sequenceManagerPrefix)
+    sequenceManagerApi.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
+
+    // verify all started sequence components are stopped
+    intercept[Exception](resolveSequenceComponentLocation(eswSeqCompPrefix))
+    intercept[Exception](resolveSequenceComponentLocation(irisSeqCompPrefix))
+    intercept[Exception](resolveSequenceComponentLocation(aoeswSeqCompPrefix))
+
+    // verify there are no sequence components in the system
+    locationService.list(SequenceComponent).futureValue should ===(List.empty)
   }
 
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))

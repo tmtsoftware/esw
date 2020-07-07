@@ -120,7 +120,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.startSequencer(ESW, obsMode).futureValue shouldBe StartSequencerResponse.Started(componentId)
     }
 
-    "return success response for shutdown sequence component request" in {
+    "return success response for shutdown sequence component request | ESW-338" in {
       when(
         postClient.requestResponse[ShutdownSequenceComponentResponse](
           argsEq(ShutdownSequenceComponents(SingleSequenceComponent(seqCompPrefix)))
@@ -133,7 +133,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
 
-    "return success response for shutdown sequence all component request" in {
+    "return success response for shutdown sequence all component request | ESW-346" in {
       when(
         postClient.requestResponse[ShutdownSequenceComponentResponse](
           argsEq(ShutdownSequenceComponents(AllSequenceComponents))

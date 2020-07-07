@@ -17,7 +17,6 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
 import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, Started}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
@@ -137,10 +136,7 @@ class SequenceManagerBehavior(
       self: SelfRef,
       replyTo: ActorRef[ShutdownSequenceComponentResponse]
   ): SMBehavior = {
-    policy match {
-      case SingleSequenceComponent(prefix) => sequenceComponentUtil.shutdown(prefix).map(self ! ProcessingComplete(_))
-      case AllSequenceComponents           => sequenceComponentUtil.shutdownAll().map(self ! ProcessingComplete(_))
-    }
+    sequenceComponentUtil.shutdown(policy).map(self ! ProcessingComplete(_))
     processing(self, replyTo)
   }
 
