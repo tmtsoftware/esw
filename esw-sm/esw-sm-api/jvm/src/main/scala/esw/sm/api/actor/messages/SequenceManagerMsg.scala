@@ -31,7 +31,7 @@ object SequenceManagerMsg {
   ) extends SequenceManagerIdleMsg
 
   case class ShutdownSequenceComponents(
-      policy: ShutdownSequenceComponentPolicy,
+      policy: ShutdownSequenceComponentsPolicy,
       replyTo: ActorRef[ShutdownSequenceComponentResponse]
   ) extends SequenceManagerIdleMsg
 

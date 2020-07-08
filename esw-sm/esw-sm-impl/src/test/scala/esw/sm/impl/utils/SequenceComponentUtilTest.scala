@@ -15,7 +15,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
+import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}
 import esw.testcommons.BaseTestSuite
 

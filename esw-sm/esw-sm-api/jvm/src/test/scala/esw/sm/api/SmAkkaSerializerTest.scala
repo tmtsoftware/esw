@@ -12,7 +12,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
-import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
+import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite

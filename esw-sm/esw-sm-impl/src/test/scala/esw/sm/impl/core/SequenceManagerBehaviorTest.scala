@@ -20,7 +20,7 @@ import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
-import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
+import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownFailure
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
@@ -325,21 +325,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequenceComponentUtil).shutdown(singleShutdownPolicy)
     }
 
-    "return LocationServiceError if LocationServiceError encountered while shutting down sequence component | ESW-338" in {
-      val prefix = Prefix(ESW, "primary")
-
-      val error = LocationServiceError("location service error")
-
-      val singleShutdownPolicy = SingleSequenceComponent(prefix)
-      when(sequenceComponentUtil.shutdown(singleShutdownPolicy)).thenReturn(Future.successful(error))
-      val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
-
-      smRef ! ShutdownSequenceComponents(singleShutdownPolicy, shutdownSequenceComponentResponseProbe.ref)
-      shutdownSequenceComponentResponseProbe.expectMessage(error)
-
-      verify(sequenceComponentUtil).shutdown(singleShutdownPolicy)
-    }
-
     "return Success when shutting down all sequence components | ESW-346" in {
       when(sequenceComponentUtil.shutdown(AllSequenceComponents))
         .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
@@ -352,16 +337,19 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequenceComponentUtil).shutdown(AllSequenceComponents)
     }
 
-    "return LocationServiceError if LocationServiceError encountered while shutting down all sequence components | ESW-346" in {
-      val error = LocationServiceError("location service error")
+    "return LocationServiceError if LocationServiceError encountered while shutting down sequence components | ESW-338,ESW-346" in {
+      val prefix = Prefix(ESW, "primary")
 
-      when(sequenceComponentUtil.shutdown(AllSequenceComponents)).thenReturn(Future.successful(error))
+      val error          = LocationServiceError("location service error")
+      val shutdownPolicy = SingleSequenceComponent(prefix)
+
+      when(sequenceComponentUtil.shutdown(shutdownPolicy)).thenReturn(Future.successful(error))
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-      smRef ! ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseProbe.ref)
+      smRef ! ShutdownSequenceComponents(shutdownPolicy, shutdownSequenceComponentResponseProbe.ref)
       shutdownSequenceComponentResponseProbe.expectMessage(error)
 
-      verify(sequenceComponentUtil).shutdown(AllSequenceComponents)
+      verify(sequenceComponentUtil).shutdown(shutdownPolicy)
     }
   }
 

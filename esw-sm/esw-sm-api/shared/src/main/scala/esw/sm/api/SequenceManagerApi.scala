@@ -22,5 +22,5 @@ trait SequenceManagerApi {
   def spawnSequenceComponent(machine: Prefix, name: String): Future[SpawnSequenceComponentResponse]
   def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
   def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse]
-  private[sm] def shutdownSequenceComponents(policy: ShutdownSequenceComponentPolicy): Future[ShutdownSequenceComponentResponse]
+  private[sm] def shutdownSequenceComponents(policy: ShutdownSequenceComponentsPolicy): Future[ShutdownSequenceComponentResponse]
 }

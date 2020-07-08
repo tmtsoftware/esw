@@ -132,7 +132,7 @@ class SequenceManagerBehavior(
   }
 
   private def shutdownSequenceComponents(
-      policy: ShutdownSequenceComponentPolicy,
+      policy: ShutdownSequenceComponentsPolicy,
       self: SelfRef,
       replyTo: ActorRef[ShutdownSequenceComponentResponse]
   ): SMBehavior = {

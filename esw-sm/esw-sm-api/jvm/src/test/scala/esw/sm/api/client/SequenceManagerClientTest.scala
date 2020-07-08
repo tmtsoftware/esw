@@ -7,7 +7,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.SequenceManagerPostRequest.{GetRunningObsModes, _}
-import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
+import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}

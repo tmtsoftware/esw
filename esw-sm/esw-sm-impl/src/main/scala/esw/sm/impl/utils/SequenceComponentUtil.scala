@@ -14,10 +14,10 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.SequenceComponentResponse
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ShutdownSequenceComponentPolicy.{AllSequenceComponents, SingleSequenceComponent}
+import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.{
   AgentError,
-  ShutdownSequenceComponentPolicy,
+  ShutdownSequenceComponentsPolicy,
   ShutdownSequenceComponentResponse,
   SpawnSequenceComponentResponse
 }
@@ -55,7 +55,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def unloadScript(loc: AkkaLocation): Future[Ok.type] = createSequenceComponentImpl(loc).unloadScript()
 
-  def shutdown(policy: ShutdownSequenceComponentPolicy): Future[ShutdownSequenceComponentResponse] =
+  def shutdown(policy: ShutdownSequenceComponentsPolicy): Future[ShutdownSequenceComponentResponse] =
     (policy match {
       case SingleSequenceComponent(prefix) => shutdown(prefix)
       case AllSequenceComponents           => shutdownAll().mapRight(_ => SequenceComponentResponse.Ok)
