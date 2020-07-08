@@ -18,6 +18,7 @@ import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}
 import esw.testcommons.BaseTestSuite
+import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
@@ -263,16 +264,16 @@ class SequenceComponentUtilTest extends BaseTestSuite {
     }
   }
 
-  "getIdleSequenceComponentsForSubsystems" must {
+  "idleSequenceComponentsFor" must {
     "return list of sequence component locations that are idle for given subsystems | ESW-340" in {
-      val eswPrimary   = akkaLocation("esw.primary")
-      val tcsPrimary   = akkaLocation("tcs.primary")
-      val wfosPrimary  = akkaLocation("wfos.primary")
-      val aoeswPrimary = akkaLocation("aoesw.primary")
-      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
-        .thenReturn(Future.successful(Right(List(eswPrimary, tcsPrimary, wfosPrimary, aoeswPrimary))))
+      val eswPrimary  = akkaLocation("esw.primary")
+      val tcsPrimary  = akkaLocation("tcs.primary")
+      val wfosPrimary = akkaLocation("wfos.primary")
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
+        .thenReturn(Future.successful(Right(List(eswPrimary, tcsPrimary, wfosPrimary))))
+
       val sequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
-        override private[sm] def isIdleSequenceComponent(
+        override private[sm] def idleSeqComp(
             sequenceComponentLocation: AkkaLocation
         ): Future[Option[AkkaLocation]] = {
           sequenceComponentLocation.prefix.subsystem match {
@@ -289,7 +290,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
     "return RegistrationListingFailed if location service returns error | ESW-340" in {
       val registrationListingFailed = RegistrationListingFailed("error")
-      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Left(registrationListingFailed)))
 
       val sequenceComponents = sequenceComponentUtil.idleSequenceComponentsFor(List(ESW, TCS, WFOS))
