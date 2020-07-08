@@ -19,9 +19,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
-import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownFailure
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config._
@@ -180,54 +178,22 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "ShutdownSequencers" must {
-    val eswDarkNight  = Prefix(ESW, darkNight.name)
-    val tcsDarkNight  = Prefix(TCS, darkNight.name)
-    val tcsClearSkies = Prefix(TCS, clearSkies.name)
-    val errorMsg      = "error"
+    val errorMsg = "error"
 
-    val singlePolicy                = ShutdownSequencersPolicy.SingleSequencer(ESW, darkNight)
-    val singlePolicyShutdownFailure = ShutdownFailure(List(UnloadScriptError(eswDarkNight, errorMsg)))
-
-    val obsModePolicy = ShutdownSequencersPolicy.ObsModeSequencers(darkNight)
-    val obsModePolicyShutdownFailure = ShutdownFailure(
-      List(UnloadScriptError(eswDarkNight, errorMsg), UnloadScriptError(tcsDarkNight, errorMsg))
-    )
-
+    val singlePolicy    = ShutdownSequencersPolicy.SingleSequencer(ESW, darkNight)
+    val obsModePolicy   = ShutdownSequencersPolicy.ObsModeSequencers(darkNight)
     val subsystemPolicy = ShutdownSequencersPolicy.SubsystemSequencers(TCS)
-    val subsystemPolicyShutdownFailure = ShutdownFailure(
-      List(UnloadScriptError(tcsDarkNight, errorMsg), UnloadScriptError(tcsClearSkies, errorMsg))
-    )
-
-    val allPolicy = ShutdownSequencersPolicy.AllSequencers
-    val allPolicyShutdownFailure = ShutdownFailure(
-      List(UnloadScriptError(eswDarkNight, errorMsg), UnloadScriptError(tcsClearSkies, errorMsg))
-    )
+    val allPolicy       = ShutdownSequencersPolicy.AllSequencers
 
     val policies = Table(
-      ("policy", "shutdownFailure", "locationServiceFailure"),
-      (
-        singlePolicy,
-        singlePolicyShutdownFailure,
-        LocationServiceError(errorMsg)
-      ),
-      (
-        obsModePolicy,
-        obsModePolicyShutdownFailure,
-        LocationServiceError(errorMsg)
-      ),
-      (
-        subsystemPolicy,
-        subsystemPolicyShutdownFailure,
-        LocationServiceError(errorMsg)
-      ),
-      (
-        allPolicy,
-        allPolicyShutdownFailure,
-        LocationServiceError(errorMsg)
-      )
+      ("policy", "locationServiceFailure"),
+      (singlePolicy, LocationServiceError(errorMsg)),
+      (obsModePolicy, LocationServiceError(errorMsg)),
+      (subsystemPolicy, LocationServiceError(errorMsg)),
+      (allPolicy, LocationServiceError(errorMsg))
     )
 
-    forAll(policies) { (policy, shutdownFailure, locationServiceFailure) =>
+    forAll(policies) { (policy, locationServiceFailure) =>
       val policyName = policy.getClass.getSimpleName
       s"transition sm from Idle -> Processing -> Idle state and stop $policyName | ESW-326, ESW-345, ESW-166, ESW-324" in {
         when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
@@ -239,16 +205,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         assertState(Idle)
 
         responseProbe.expectMessage(ShutdownSequencersResponse.Success)
-        verify(sequencerUtil).shutdownSequencers(policy)
-      }
-
-      s"return ShutdownFailure if unload script fails for $policyName | ESW-326, ESW-345, ESW-166, ESW-324" in {
-        when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(shutdownFailure))
-        val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
-
-        smRef ! ShutdownSequencers(policy, shutdownSequencerResponseProbe.ref)
-        shutdownSequencerResponseProbe.expectMessage(shutdownFailure)
-
         verify(sequencerUtil).shutdownSequencers(policy)
       }
 
@@ -285,9 +241,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     val errors = Table(
       ("errorName", "error", "process"),
-      ("UnloadScriptError", UnloadScriptError(Prefix(ESW, darkNight.name), "unload script error"), "stop"),
-      ("LocationServiceError", LocationServiceError("location service error"), "stop"),
       ("SpawnSequenceComponentFailed", SpawnSequenceComponentFailed("spawn sequence component failed"), "start"),
+      ("LocationServiceError", LocationServiceError("location service error"), "stop"),
       ("LoadScriptError", LoadScriptError("load script failed"), "start")
     )
 

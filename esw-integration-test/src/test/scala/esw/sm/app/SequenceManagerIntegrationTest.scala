@@ -44,7 +44,6 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   }
 
   "configure SH, send sequence to master sequencer and cleanup for provided observation mode | ESW-162, ESW-164, ESW-166, ESW-171" in {
-
     val eswSeqCompPrefix   = Prefix(ESW, "primary")
     val irisSeqCompPrefix  = Prefix(IRIS, "primary")
     val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
@@ -132,7 +131,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     seqCompRunningSequencer.prefix.subsystem shouldBe ESW
 
     //test cleanup
-    sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL)
+    sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
   }
 
   "throw exception if config file is missing | ESW-162, ESW-160, ESW-171" in {

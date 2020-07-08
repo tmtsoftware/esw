@@ -19,15 +19,13 @@ import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
-import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownFailure
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{RestartSequencerResponse, ShutdownSequencersPolicy, ShutdownSequencersResponse}
 import esw.sm.impl.config.Sequencers
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, Future, TimeoutException}
+import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerUtilTest extends BaseTestSuite {
   implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
@@ -246,20 +244,6 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).findSequencer(ESW, darkNightObsMode)
     }
-
-    "return Failure response when unload script future fails | ESW-326" in {
-      when(locationServiceUtil.findSequencer(ESW, darkNightObsMode)).thenReturn(futureRight(eswDarkNightSequencerLoc))
-      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
-      when(sequenceComponentUtil.unloadScript(eswPrimarySeqCompLoc)).thenReturn(Future.failed(new TimeoutException("error")))
-
-      sequencerUtil.shutdownSequencers(singleShutdownPolicy).futureValue should ===(
-        ShutdownFailure(List(UnloadScriptError(Prefix(ESW, darkNightObsMode.name), "error")))
-      )
-
-      verify(eswSequencerApi).getSequenceComponent
-      verify(sequenceComponentUtil).unloadScript(eswPrimarySeqCompLoc)
-      verify(locationServiceUtil).findSequencer(ESW, darkNightObsMode)
-    }
   }
 
   "ShutdownSequencersPolicy.SubsystemSequencers" must {
@@ -288,22 +272,6 @@ class SequencerUtilTest extends BaseTestSuite {
       sequencerUtil.shutdownSequencers(subsystemShutdownPolicy(ESW)).futureValue should ===(
         LocationServiceError("Error")
       )
-    }
-
-    "return ShutdownFailure if any of the sequencer failed to shut down | ESW-345" in {
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
-        .thenReturn(futureRight(List(eswDarkNightSequencerLoc, eswClearSkiesSequencerLoc)))
-      when(eswSequencerApi.getSequenceComponent)
-        .thenReturn(Future.successful(eswPrimarySeqCompLoc), Future.successful(eswSecondarySeqCompLoc))
-      when(sequenceComponentUtil.unloadScript(eswPrimarySeqCompLoc)).thenReturn(Future.successful(Ok))
-      when(sequenceComponentUtil.unloadScript(eswSecondarySeqCompLoc)).thenReturn(Future.failed(new RuntimeException("Error")))
-
-      sequencerUtil.shutdownSequencers(subsystemShutdownPolicy(ESW)).futureValue should ===(
-        ShutdownSequencersResponse.ShutdownFailure(List(UnloadScriptError(Prefix(ESW, clearSkiesObsMode.name), "Error")))
-      )
-
-      verify(sequenceComponentUtil).unloadScript(eswPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).unloadScript(eswSecondarySeqCompLoc)
     }
   }
 
@@ -335,21 +303,6 @@ class SequencerUtilTest extends BaseTestSuite {
       )
     }
 
-    "return ShutdownFailure if any of the sequencer failed to shut down | ESW-166" in {
-      when(locationServiceUtil.listAkkaLocationsBy(darkNightObsMode.name, Sequencer))
-        .thenReturn(futureRight(List(eswDarkNightSequencerLoc, tcsDarkNightSequencerLoc)))
-      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
-      when(sequenceComponentUtil.unloadScript(eswPrimarySeqCompLoc)).thenReturn(Future.successful(Ok))
-      when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsPrimarySeqCompLoc))
-      when(sequenceComponentUtil.unloadScript(tcsPrimarySeqCompLoc)).thenReturn(Future.failed(new RuntimeException("Error")))
-
-      sequencerUtil.shutdownSequencers(obsModeShutdownPolicy(darkNightObsMode)).futureValue should ===(
-        ShutdownSequencersResponse.ShutdownFailure(List(UnloadScriptError(Prefix(TCS, darkNightObsMode.name), "Error")))
-      )
-
-      verify(sequenceComponentUtil).unloadScript(eswPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).unloadScript(tcsPrimarySeqCompLoc)
-    }
   }
 
   "ShutdownSequencersPolicy.AllSequencers" must {
@@ -373,22 +326,6 @@ class SequencerUtilTest extends BaseTestSuite {
       when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
       sequencerUtil.shutdownSequencers(allShutdownPolicy).futureValue should ===(LocationServiceError("Error"))
-    }
-
-    "return ShutdownFailure if any of the sequencer failed to shut down | ESW-324" in {
-      when(locationServiceUtil.listAkkaLocationsBy(Sequencer))
-        .thenReturn(futureRight(List(eswDarkNightSequencerLoc, tcsDarkNightSequencerLoc)))
-      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
-      when(sequenceComponentUtil.unloadScript(eswPrimarySeqCompLoc)).thenReturn(Future.successful(Ok))
-      when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsPrimarySeqCompLoc))
-      when(sequenceComponentUtil.unloadScript(tcsPrimarySeqCompLoc)).thenReturn(Future.failed(new RuntimeException("Error")))
-
-      sequencerUtil.shutdownSequencers(allShutdownPolicy).futureValue should ===(
-        ShutdownSequencersResponse.ShutdownFailure(List(UnloadScriptError(Prefix(TCS, darkNightObsMode.name), "Error")))
-      )
-
-      verify(sequenceComponentUtil).unloadScript(eswPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).unloadScript(tcsPrimarySeqCompLoc)
     }
   }
 

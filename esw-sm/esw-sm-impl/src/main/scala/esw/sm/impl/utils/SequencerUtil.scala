@@ -16,7 +16,6 @@ import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhand
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.ShutdownSequencersPolicy.{AllSequencers, ObsModeSequencers, SingleSequencer, SubsystemSequencers}
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
@@ -100,17 +99,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private def unloadScript(sequencerLocation: AkkaLocation) =
     createSequencerClient(sequencerLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.unloadScript)
-      .map(_ => Right(ShutdownSequencersResponse.Success))
-      .mapError(e => UnloadScriptError(sequencerLocation.prefix, e.getMessage))
+      .map(_ => ShutdownSequencersResponse.Success)
 
-  private def unloadScripts(sequencerLocations: List[AkkaLocation]) =
-    traverse(sequencerLocations)(unloadScript)
-      .mapToAdt(_ => ShutdownSequencersResponse.Success, ShutdownSequencersResponse.ShutdownFailure)
+  private def unloadScripts(sequencerLocations: List[AkkaLocation]): Future[ShutdownSequencersResponse.Success.type] =
+    Future.traverse(sequencerLocations)(unloadScript).map(_ => ShutdownSequencersResponse.Success)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
-
-  private def traverse[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = Future.traverse(i)(f).map(_.sequence)
 
   private def sequential[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = FutureUtils.sequential(i)(f).map(_.sequence)
 }

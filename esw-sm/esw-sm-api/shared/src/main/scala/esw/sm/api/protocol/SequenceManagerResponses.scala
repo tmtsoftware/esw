@@ -1,10 +1,8 @@
 package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
-import csw.prefix.models.Prefix
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
 
 private[protocol] sealed trait SmFailure extends Throwable
 
@@ -42,10 +40,8 @@ object StartSequencerResponse {
 
 sealed trait ShutdownSequencersResponse extends SmResponse
 object ShutdownSequencersResponse {
-  case object Success extends ShutdownSequencersResponse
-
-  sealed trait Failure                                                  extends SmFailure with ShutdownSequencersResponse
-  case class ShutdownFailure(failureResponses: List[UnloadScriptError]) extends Failure
+  case object Success  extends ShutdownSequencersResponse
+  sealed trait Failure extends SmFailure with ShutdownSequencersResponse
 }
 
 sealed trait RestartSequencerResponse extends SmResponse
@@ -56,7 +52,6 @@ object RestartSequencerResponse {
   sealed trait Failure extends SmFailure with RestartSequencerResponse {
     def msg: String
   }
-  case class UnloadScriptError(prefix: Prefix, msg: String) extends Failure
 }
 
 sealed trait SpawnSequenceComponentResponse extends SmResponse
