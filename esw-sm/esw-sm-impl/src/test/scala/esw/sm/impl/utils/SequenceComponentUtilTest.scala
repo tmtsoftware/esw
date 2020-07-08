@@ -7,7 +7,7 @@ import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
+import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
@@ -40,10 +40,10 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
   }
 
-  private def mockAkkaLocation(prefixStr: String) =
+  private def akkaLocation(prefixStr: String) =
     AkkaLocation(AkkaConnection(ComponentId(Prefix(prefixStr), SequenceComponent)), new URI("some-uri"))
-  private val tcsLocations = futureRight(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))
-  private val eswLocations = futureRight(List(mockAkkaLocation("ESW.primary")))
+  private val tcsLocations = futureRight(List(akkaLocation("TCS.primary"), akkaLocation("TCS.secondary")))
+  private val eswLocations = futureRight(List(akkaLocation("ESW.primary")))
 
   override def beforeEach(): Unit = reset(locationServiceUtil, agentUtil)
 
@@ -88,7 +88,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
   "getAvailableSequenceComponent" must {
     "return available sequence component for given subsystem | ESW-164" in {
-      val irisLocations = futureRight(List(mockAkkaLocation("IRIS.primary"), mockAkkaLocation("IRIS.secondary")))
+      val irisLocations = futureRight(List(akkaLocation("IRIS.primary"), akkaLocation("IRIS.secondary")))
       when(locationServiceUtil.listAkkaLocationsBy(IRIS, SequenceComponent)).thenReturn(irisLocations)
 
       sequenceComponentUtil.getAvailableSequenceComponent(IRIS).rightValue shouldBe a[SequenceComponentApi]
@@ -178,9 +178,9 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       }
 
       when(mockSeqCompImpl.status)
-        .thenReturn(Future.successful(GetStatusResponse(Some(mockAkkaLocation("IRIS.darknight")))))
+        .thenReturn(Future.successful(GetStatusResponse(Some(akkaLocation("IRIS.darknight")))))
 
-      seqCompUtil.idleSequenceComponent(mockAkkaLocation("ESW.backup")).futureValue should ===(None)
+      seqCompUtil.idleSequenceComponent(akkaLocation("ESW.backup")).futureValue should ===(None)
     }
   }
 
@@ -194,7 +194,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       val prefixStr      = "ESW.primary"
       val akkaConnection = AkkaConnection(ComponentId(Prefix(prefixStr), SequenceComponent))
       when(locationServiceUtil.find(akkaConnection))
-        .thenReturn(Future.successful(Right(mockAkkaLocation(prefixStr))))
+        .thenReturn(Future.successful(Right(akkaLocation(prefixStr))))
       when(mockSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
 
       val singleShutdownPolicy = SingleSequenceComponent(Prefix(prefixStr))
@@ -224,8 +224,8 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
     "return success when shutting down all sequence components is successful | ESW-346" in {
 
-      val eswSeqCompLoc   = mockAkkaLocation("ESW.primary")
-      val irisSeqCompLoc  = mockAkkaLocation("IRIS.primary")
+      val eswSeqCompLoc   = akkaLocation("ESW.primary")
+      val irisSeqCompLoc  = akkaLocation("IRIS.primary")
       val eswSeqCompImpl  = mock[SequenceComponentImpl]
       val irisSeqCompImpl = mock[SequenceComponentImpl]
 
@@ -260,6 +260,41 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
       verify(mockSeqCompImpl, never).shutdown()
+    }
+  }
+
+  "getIdleSequenceComponentsForSubsystems" must {
+    "return list of sequence component locations that are idle for given subsystems | ESW-340" in {
+      val eswPrimary   = akkaLocation("esw.primary")
+      val tcsPrimary   = akkaLocation("tcs.primary")
+      val wfosPrimary  = akkaLocation("wfos.primary")
+      val aoeswPrimary = akkaLocation("aoesw.primary")
+      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
+        .thenReturn(Future.successful(Right(List(eswPrimary, tcsPrimary, wfosPrimary, aoeswPrimary))))
+      val sequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+        override private[sm] def isIdleSequenceComponent(
+            sequenceComponentLocation: AkkaLocation
+        ): Future[Option[AkkaLocation]] = {
+          sequenceComponentLocation.prefix.subsystem match {
+            case TCS => Future.successful(None)
+            case _   => Future.successful(Some(sequenceComponentLocation))
+          }
+        }
+      }
+
+      val sequenceComponents = sequenceComponentUtil.idleSequenceComponentsFor(List(ESW, TCS, WFOS))
+
+      sequenceComponents.rightValue should ===(List(eswPrimary, wfosPrimary))
+    }
+
+    "return RegistrationListingFailed if location service returns error | ESW-340" in {
+      val registrationListingFailed = RegistrationListingFailed("error")
+      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
+        .thenReturn(Future.successful(Left(registrationListingFailed)))
+
+      val sequenceComponents = sequenceComponentUtil.idleSequenceComponentsFor(List(ESW, TCS, WFOS))
+
+      sequenceComponents.leftValue should ===(registrationListingFailed)
     }
   }
 }

@@ -44,7 +44,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       }
 
   def startSequencers(obsMode: ObsMode, requiredSequencers: Sequencers, retryCount: Int): Future[ConfigureResponse] = {
-    def masterSequencerId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
+    val masterSequencerId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
 
     val startSequencerResponses = sequential(requiredSequencers.subsystems)(startSequencer(_, obsMode, retryCount))
     startSequencerResponses.mapToAdt(_ => Success(masterSequencerId), e => FailedToStartSequencers(e.map(_.msg).toSet))

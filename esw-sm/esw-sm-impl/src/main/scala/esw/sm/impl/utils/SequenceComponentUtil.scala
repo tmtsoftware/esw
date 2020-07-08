@@ -8,6 +8,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.FutureUtils
+import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
@@ -38,6 +39,17 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         _ => SpawnSequenceComponentResponse.Success(ComponentId(seqCompPrefix, SequenceComponent)),
         identity
       )
+  }
+
+  def idleSequenceComponentsFor(
+      subsystems: List[Subsystem]
+  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] = {
+    locationServiceUtil
+      .listAkkaLocationsBy(SequenceComponent)
+      .flatMapRight(locations => {
+        val requiredSubsystemSeqComps = filterBySubsystems(locations, subsystems)
+        filterIdleSequenceComponentsFrom(requiredSubsystemSeqComps)
+      })
   }
 
   def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] =
@@ -86,11 +98,29 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       .firstCompletedOf(locations.map(idleSequenceComponent))(_.isDefined)
       .map(_.flatten)
 
+  //todo: to be removed
   private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] =
     async {
       val sequenceComponentApi = createSequenceComponentImpl(sequenceComponentLocation)
       val isAvailable          = await(sequenceComponentApi.status).response.isEmpty
       if (isAvailable) Some(sequenceComponentApi) else None
+    }
+
+  private def filterBySubsystems(locations: List[AkkaLocation], subsystems: List[Subsystem]): List[AkkaLocation] = {
+    locations.filter(l => subsystems.contains(l.prefix.subsystem))
+  }
+
+  private def filterIdleSequenceComponentsFrom(locations: List[AkkaLocation]): Future[List[AkkaLocation]] = {
+    Future
+      .traverse(locations)(isIdleSequenceComponent)
+      .map(_.collect { case Some(location) => location })
+  }
+
+  private[sm] def isIdleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[AkkaLocation]] =
+    async {
+      val sequenceComponentApi = createSequenceComponentImpl(sequenceComponentLocation)
+      val isAvailable          = await(sequenceComponentApi.status).response.isEmpty
+      if (isAvailable) Some(sequenceComponentLocation) else None
     }
 
   private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) =
