@@ -57,7 +57,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
     createSequencerClient(akkaLocation).getSequenceComponent
-      .flatMap(sequenceComponentUtil.restart(_).map {
+      .flatMap(sequenceComponentUtil.restartScript(_).map {
         case SequencerLocation(location) => RestartSequencerResponse.Success(location.connection.componentId)
         case error: ScriptError          => LoadScriptError(error.msg)
         case Unhandled(_, _, msg)        => LoadScriptError(msg) // restart is unhandled in idle or shutting down state

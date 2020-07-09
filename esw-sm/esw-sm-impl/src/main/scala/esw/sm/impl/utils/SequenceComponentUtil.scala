@@ -69,7 +69,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       case AllSequenceComponents           => shutdownAll().mapRight(_ => SequenceComponentResponse.Ok)
     }).mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
-  def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
+  def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
 
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil
@@ -115,6 +115,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       if (isIdle) Some(sequenceComponentLocation) else None
     }
 
-  private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) =
+  private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentApi =
     new SequenceComponentImpl(sequenceComponentLocation)
 }

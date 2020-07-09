@@ -12,13 +12,17 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok}
+import esw.ocs.api.models.SequenceComponentState.Running
+import esw.ocs.api.protocol.ScriptError
+import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
+import org.scalatest.prop.Tables.Table
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
@@ -38,7 +42,6 @@ class SequenceComponentUtilTest extends BaseTestSuite {
         case TCS => Future.successful(None)
         case _   => Future.successful(Some(mock[SequenceComponentApi]))
       }
-
   }
 
   private def akkaLocation(prefixStr: String) =
@@ -296,6 +299,52 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       val sequenceComponents = sequenceComponentUtil.idleSequenceComponentsFor(List(ESW, TCS, WFOS))
 
       sequenceComponents.leftValue should ===(registrationListingFailed)
+    }
+  }
+
+  "unloadScript" must {
+    val mockSeqCompApi = mock[SequenceComponentApi]
+
+    val sequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+      override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentApi =
+        mockSeqCompApi
+    }
+
+    "return Ok if unload script is successful | ESW-166" in {
+      val seqCompLocation = akkaLocation("esw.primary")
+      when(mockSeqCompApi.unloadScript()).thenReturn(Future.successful(Ok))
+
+      sequenceComponentUtil.unloadScript(seqCompLocation).futureValue should ===(Ok)
+
+      verify(mockSeqCompApi).unloadScript()
+    }
+  }
+
+  "restartScript" must {
+    val restartScriptResponses = Table(
+      "Restart Script Response",
+      LoadingScriptFailed("error"),
+      ScriptError.LocationServiceError("error"),
+      SequencerLocation(akkaLocation("esw.darknight")),
+      Unhandled(Running, "RestartScript")
+    )
+
+    restartScriptResponses.foreach { response =>
+      s"return ${response.getClass.getSimpleName} when restart script | ESW-327" in {
+        val mockSeqCompApi = mock[SequenceComponentApi]
+
+        val sequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+          override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentApi =
+            mockSeqCompApi
+        }
+
+        val seqCompLocation = akkaLocation("esw.primary")
+        when(mockSeqCompApi.restartScript()).thenReturn(Future.successful(response))
+
+        sequenceComponentUtil.restartScript(seqCompLocation).futureValue should ===(response)
+
+        verify(mockSeqCompApi).restartScript()
+      }
     }
   }
 }

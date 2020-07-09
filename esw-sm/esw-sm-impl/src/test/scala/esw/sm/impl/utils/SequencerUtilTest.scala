@@ -164,7 +164,7 @@ class SequencerUtilTest extends BaseTestSuite {
     "restart given sequencer that is running | ESW-327" in {
       when(locationServiceUtil.findSequencer(ESW, darkNightObsMode)).thenReturn(futureRight(eswDarkNightSequencerLoc))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
-      when(sequenceComponentUtil.restart(eswPrimarySeqCompLoc))
+      when(sequenceComponentUtil.restartScript(eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(SequencerLocation(eswDarkNightSequencerLoc)))
 
       sequencerUtil.restartSequencer(ESW, darkNightObsMode).futureValue should ===(
@@ -172,7 +172,7 @@ class SequencerUtilTest extends BaseTestSuite {
       )
 
       verify(locationServiceUtil).findSequencer(ESW, darkNightObsMode)
-      verify(sequenceComponentUtil).restart(eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).restartScript(eswPrimarySeqCompLoc)
     }
 
     "return LoadScriptError error if restart fails with LoadingScriptFailed | ESW-327" in {
@@ -180,13 +180,13 @@ class SequencerUtilTest extends BaseTestSuite {
       val loadScriptError = LoadScriptError(errorMsg)
       when(locationServiceUtil.findSequencer(ESW, darkNightObsMode)).thenReturn(futureRight(eswDarkNightSequencerLoc))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
-      when(sequenceComponentUtil.restart(eswPrimarySeqCompLoc))
+      when(sequenceComponentUtil.restartScript(eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(ScriptError.LoadingScriptFailed(errorMsg)))
 
       sequencerUtil.restartSequencer(ESW, darkNightObsMode).futureValue should ===(loadScriptError)
 
       verify(locationServiceUtil).findSequencer(ESW, darkNightObsMode)
-      verify(sequenceComponentUtil).restart(eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).restartScript(eswPrimarySeqCompLoc)
     }
 
     "return LocationServiceError error if restart fails | ESW-327" in {
@@ -197,19 +197,19 @@ class SequencerUtilTest extends BaseTestSuite {
       sequencerUtil.restartSequencer(ESW, darkNightObsMode).futureValue should ===(LocationServiceError(errorMsg))
 
       verify(locationServiceUtil).findSequencer(ESW, darkNightObsMode)
-      verify(sequenceComponentUtil, never).restart(eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil, never).restartScript(eswPrimarySeqCompLoc)
     }
 
     "return LoadScriptError error if restart fails with Unhandled| ESW-327" in {
       when(locationServiceUtil.findSequencer(ESW, darkNightObsMode)).thenReturn(futureRight(eswDarkNightSequencerLoc))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
-      when(sequenceComponentUtil.restart(eswPrimarySeqCompLoc))
+      when(sequenceComponentUtil.restartScript(eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(Unhandled(Idle, "Restart", "error")))
 
       sequencerUtil.restartSequencer(ESW, darkNightObsMode).futureValue should ===(LoadScriptError("error"))
 
       verify(locationServiceUtil).findSequencer(ESW, darkNightObsMode)
-      verify(sequenceComponentUtil).restart(eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).restartScript(eswPrimarySeqCompLoc)
     }
   }
 
