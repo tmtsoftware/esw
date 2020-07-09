@@ -12,16 +12,13 @@ import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.protocol.SequenceComponentResponse
-import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled}
+import esw.ocs.api.models.ObsMode
+import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
+import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
-import esw.sm.api.protocol.{
-  AgentError,
-  ShutdownSequenceComponentResponse,
-  ShutdownSequenceComponentsPolicy,
-  SpawnSequenceComponentResponse
-}
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
+import esw.sm.api.protocol._
 
 import scala.async.Async._
 import scala.concurrent.Future
@@ -60,6 +57,22 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         // spawn ESW SeqComp on ESW Machine if not able to find available sequence component of subsystem or ESW
         case None => agentUtil.spawnSequenceComponentFor(ESW)
       }
+
+  def loadScript(
+      subSystem: Subsystem,
+      obsMode: ObsMode,
+      seqCompLoc: AkkaLocation
+  ): Future[StartSequencerResponse] = {
+    val seqCompApi = createSequenceComponentImpl(seqCompLoc)
+    seqCompApi
+      .loadScript(subSystem, obsMode)
+      .flatMap {
+        case SequencerLocation(location)             => Future.successful(Started(location.connection.componentId))
+        case error: ScriptError.LocationServiceError => Future.successful(LocationServiceError(error.msg))
+        case error: ScriptError.LoadingScriptFailed  => Future.successful(LoadScriptError(error.msg))
+        case error: Unhandled                        => Future.successful(LoadScriptError(error.msg))
+      }
+  }
 
   def unloadScript(loc: AkkaLocation): Future[Ok.type] = createSequenceComponentImpl(loc).unloadScript()
 
