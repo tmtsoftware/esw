@@ -330,15 +330,14 @@ class SequenceComponentUtilTest extends BaseTestSuite {
     )
 
     restartScriptResponses.foreach { response =>
-      s"return ${response.getClass.getSimpleName} when restart script | ESW-327" in {
+      s"return appropriate response when ${response.getClass.getSimpleName} | ESW-327" in {
         val mockSeqCompApi = mock[SequenceComponentApi]
-
         val sequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
           override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentApi =
             mockSeqCompApi
         }
-
         val seqCompLocation = akkaLocation("esw.primary")
+
         when(mockSeqCompApi.restartScript()).thenReturn(Future.successful(response))
 
         sequenceComponentUtil.restartScript(seqCompLocation).futureValue should ===(response)
