@@ -2,7 +2,7 @@ package esw.sm.impl.config
 
 import java.nio.file.Path
 
-import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
+import com.typesafe.config.{Config, ConfigRenderOptions}
 import csw.config.client.commons.ConfigUtils
 import io.bullet.borer._
 
@@ -13,18 +13,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
   import ConfigCodecs._
 
-  private val EswSmKey                 = "esw-sm"
-  private val SequencerStartRetriesKey = "sequencerStartRetries"
+  private val EswSmKey = "esw-sm"
+  private val ObsModes = "obsModes"
 
   // Reads config file from config service or local filesystem
   def read(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
     configUtils.getConfig(configFilePath, isLocal).map(parseConfig)
 
   private def parseConfig(config: Config): SequenceManagerConfig = {
-    // pick retries from provided config. If not present then pick from application.conf of esw-sm-app as fallback
-    val configWithRetries = config.withFallback(ConfigFactory.load().withOnlyPath(s"$EswSmKey.$SequencerStartRetriesKey"))
-    val configStr         = configWithRetries.getConfig(EswSmKey).root().render(ConfigRenderOptions.concise())
-
+    val configStr = config.getConfig(s"$EswSmKey.$ObsModes").root().render(ConfigRenderOptions.concise())
     Json.decode(configStr.getBytes).to[SequenceManagerConfig].value
   }
 }

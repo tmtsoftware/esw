@@ -8,9 +8,8 @@ import org.scalatest.wordspec.AnyWordSpecLike
 
 class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeCheckedTripleEquals {
 
-  private val DarkNight             = ObsMode("darknight")
-  private val ClearSkies            = ObsMode("clearskies")
-  private val SequencerStartRetries = 1
+  private val DarkNight  = ObsMode("darknight")
+  private val ClearSkies = ObsMode("clearskies")
 
   private val esw: Resource     = Resource(ESW)
   private val tcs: Resource     = Resource(TCS)
@@ -50,12 +49,12 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
   "Resources for SequenceManagerConfig" must {
 
     "return resources if obsMode present in map | ESW-162" in {
-      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, SequencerStartRetries)
+      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
       sequenceManagerConfig.resources(DarkNight) should ===(Some(Resources(esw, tcs)))
     }
 
     "return ConfigurationMissing if obsMode not present in map while fetching Resources | ESW-162" in {
-      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, SequencerStartRetries)
+      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
       sequenceManagerConfig.resources(ObsMode("RandomObsMode")) should ===(None)
     }
   }
@@ -63,12 +62,12 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
   "Sequencers for SequenceManagerConfig" must {
 
     "return sequencers if obsMode present in map | ESW-162" in {
-      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, SequencerStartRetries)
+      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
       sequenceManagerConfig.sequencers(DarkNight) should ===(Some(Sequencers(ESW, TCS)))
     }
 
     "return ConfigurationMissing if obsMode not present in map while fetching Sequencers | ESW-162" in {
-      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, SequencerStartRetries)
+      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
       sequenceManagerConfig.sequencers(ObsMode("RandomObsMode")) should ===(None)
     }
   }

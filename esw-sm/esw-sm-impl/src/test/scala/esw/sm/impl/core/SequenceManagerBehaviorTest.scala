@@ -44,8 +44,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     Map(
       darkNight  -> ObsModeConfig(Resources(Resource(NSCU), Resource(TCS)), darkNightSequencers),
       clearSkies -> ObsModeConfig(Resources(Resource(TCS), Resource(IRIS)), clearSkiesSequencers)
-    ),
-    sequencerStartRetries = 3
+    )
   )
   private val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
   private val sequencerUtil: SequencerUtil                 = mock[SequencerUtil]
