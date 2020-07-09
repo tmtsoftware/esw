@@ -9,11 +9,11 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
-import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.ShutdownSequencersPolicy.{AllSequencers, ObsModeSequencers, SingleSequencer, SubsystemSequencers}
@@ -28,24 +28,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  // spawn the sequencer on available SequenceComponent
-  def startSequencer(
-      subSystem: Subsystem,
-      obsMode: ObsMode,
-      retryCount: Int
-  ): Future[Either[StartSequencerResponse.Failure, AkkaLocation]] =
-    sequenceComponentUtil
-      .getAvailableSequenceComponent(subSystem)
-      .flatMap {
-        case Right(seqCompApi)         => loadScript(subSystem, obsMode, seqCompApi, retryCount)
-        case Left(_) if retryCount > 0 => startSequencer(subSystem, obsMode, retryCount - 1)
-        case Left(e)                   => Future.successful(Left(e))
-      }
+  def startSequencers(obsMode: ObsMode, requiredSequencers: Sequencers): Future[ConfigureResponse] = {
+    val masterSequencerId       = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
+    val startSequencerResponses = sequential(requiredSequencers.subsystems)(sequenceComponentUtil.loadScript(_, obsMode))
 
-  def startSequencers(obsMode: ObsMode, requiredSequencers: Sequencers, retryCount: Int): Future[ConfigureResponse] = {
-    val masterSequencerId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
-
-    val startSequencerResponses = sequential(requiredSequencers.subsystems)(startSequencer(_, obsMode, retryCount))
     startSequencerResponses.mapToAdt(_ => Success(masterSequencerId), e => FailedToStartSequencers(e.map(_.msg).toSet))
   }
 
@@ -54,14 +40,6 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .findSequencer(subSystem, obsMode)
       .flatMapToAdt(restartSequencer, e => LocationServiceError(e.msg))
 
-  private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
-    createSequencerClient(akkaLocation).getSequenceComponent
-      .flatMap(sequenceComponentUtil.restartScript(_).map {
-        case SequencerLocation(location) => RestartSequencerResponse.Success(location.connection.componentId)
-        case error: ScriptError          => LoadScriptError(error.msg)
-        case Unhandled(_, _, msg)        => LoadScriptError(msg) // restart is unhandled in idle or shutting down state
-      })
-
   def shutdownSequencers(policy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
     policy match {
       case SingleSequencer(subsystem, obsMode) => shutdownSequencersAndHandleErrors(getSequencer(subsystem, obsMode))
@@ -69,6 +47,14 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       case ObsModeSequencers(obsMode)          => shutdownSequencersAndHandleErrors(getObsModeSequencers(obsMode))
       case AllSequencers                       => shutdownSequencersAndHandleErrors(getAllSequencers)
     }
+
+  private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
+    createSequencerClient(akkaLocation).getSequenceComponent
+      .flatMap(sequenceComponentUtil.restartScript(_).map {
+        case SequencerLocation(location) => RestartSequencerResponse.Success(location.connection.componentId)
+        case error: ScriptError          => LoadScriptError(error.msg)
+        case Unhandled(_, _, msg)        => LoadScriptError(msg) // restart is unhandled in idle or shutting down state
+      })
 
   private def getSequencer(subsystem: Subsystem, obsMode: ObsMode) =
     locationServiceUtil.findSequencer(subsystem, obsMode).mapRight(List(_))
@@ -84,16 +70,6 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       case _: EswLocationError.LocationNotFound => ShutdownSequencersResponse.Success
       case e: EswLocationError                  => LocationServiceError(e.msg)
     }
-
-  private def loadScript(subSystem: Subsystem, obsMode: ObsMode, seqCompApi: SequenceComponentApi, retryCount: Int) =
-    seqCompApi
-      .loadScript(subSystem, obsMode)
-      .flatMap {
-        case SequencerLocation(location)                           => Future.successful(Right(location))
-        case _: ScriptError.LocationServiceError if retryCount > 0 => startSequencer(subSystem, obsMode, retryCount - 1)
-        case error: ScriptError.LoadingScriptFailed                => Future.successful(Left(LoadScriptError(error.msg)))
-        case Unhandled(_, _, _) if retryCount > 0                  => startSequencer(subSystem, obsMode, retryCount - 1)
-      }
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(sequencerLocation: AkkaLocation) =

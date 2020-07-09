@@ -17,7 +17,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
 import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, Started}
+import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
 import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
 import esw.sm.impl.utils.{SequenceComponentUtil, SequencerUtil}
@@ -34,8 +34,6 @@ class SequenceManagerBehavior(
 )(implicit val actorSystem: ActorSystem[_]) {
   import SequenceManagerBehavior._
   import actorSystem.executionContext
-
-  private val sequencerStartRetries = config.sequencerStartRetries
 
   def setup: SMBehavior = Behaviors.setup(ctx => idle(ctx.self))
 
@@ -67,7 +65,7 @@ class SequenceManagerBehavior(
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
-          await(sequencerUtil.startSequencers(requestedObsMode, sequencers, sequencerStartRetries))
+          await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
         case None => ConfigurationMissing(requestedObsMode)
       }
     }
@@ -98,17 +96,12 @@ class SequenceManagerBehavior(
     locationServiceUtil
       .find(HttpConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
       .flatMap {
-        case Left(_)         => startSequencer(subsystem, obsMode)
+        case Left(_)         => sequenceComponentUtil.loadScript(subsystem, obsMode).mapToAdt(identity, identity)
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
       .map(self ! ProcessingComplete(_))
     processing(self, replyTo)
   }
-
-  private def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
-    sequencerUtil
-      .startSequencer(subsystem, obsMode, sequencerStartRetries)
-      .mapToAdt(akkaLocation => Started(akkaLocation.connection.componentId), identity)
 
   private def restartSequencer(
       subsystem: Subsystem,

@@ -17,7 +17,7 @@ import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhan
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
-import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol._
 
 import scala.async.Async._
@@ -45,32 +45,28 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       .listAkkaLocationsBy(SequenceComponent, withFilter = location => subsystems.contains(location.prefix.subsystem))
       .flatMapRight(filterIdleSequenceComponents)
 
-  def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] =
-    getIdleSequenceComponentFor(subsystem)
-      .flatMap {
-        case api @ Some(_)            => Future.successful(api)
-        case None if subsystem != ESW => getIdleSequenceComponentFor(ESW) // fallback
-        case None                     => Future.successful(None)
-      }
-      .flatMap {
-        case Some(sequenceComponentApi) => Future.successful(Right(sequenceComponentApi))
-        // spawn ESW SeqComp on ESW Machine if not able to find available sequence component of subsystem or ESW
-        case None => agentUtil.spawnSequenceComponentFor(ESW)
-      }
+  def loadScript(
+      subSystem: Subsystem,
+      obsMode: ObsMode
+  ): Future[Either[StartSequencerResponse.Failure, Started]] =
+    getAvailableSequenceComponent(subSystem).flatMap {
+      case Left(error)       => Future.successful(Left(error))
+      case Right(seqCompLoc) => loadScript(subSystem, obsMode, seqCompLoc)
+    }
 
   def loadScript(
       subSystem: Subsystem,
       obsMode: ObsMode,
       seqCompLoc: AkkaLocation
-  ): Future[StartSequencerResponse] = {
+  ): Future[Either[StartSequencerResponse.Failure, Started]] = {
     val seqCompApi = createSequenceComponentImpl(seqCompLoc)
     seqCompApi
       .loadScript(subSystem, obsMode)
       .flatMap {
-        case SequencerLocation(location)             => Future.successful(Started(location.connection.componentId))
-        case error: ScriptError.LocationServiceError => Future.successful(LocationServiceError(error.msg))
-        case error: ScriptError.LoadingScriptFailed  => Future.successful(LoadScriptError(error.msg))
-        case error: Unhandled                        => Future.successful(LoadScriptError(error.msg))
+        case SequencerLocation(location)             => Future.successful(Right(Started(location.connection.componentId)))
+        case error: ScriptError.LocationServiceError => Future.successful(Left(LocationServiceError(error.msg)))
+        case error: ScriptError.LoadingScriptFailed  => Future.successful(Left(LoadScriptError(error.msg)))
+        case error: Unhandled                        => Future.successful(Left(LoadScriptError(error.msg)))
       }
   }
 
@@ -84,6 +80,18 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
 
+  private def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[SequenceComponentNotAvailable, AkkaLocation]] =
+    getIdleSequenceComponentFor(subsystem)
+      .flatMap {
+        case location @ Some(_)       => Future.successful(location)
+        case None if subsystem != ESW => getIdleSequenceComponentFor(ESW) // fallback
+        case None                     => Future.successful(None)
+      }
+      .map {
+        case Some(location) => Right(location)
+        case None           => Left(SequenceComponentNotAvailable(s"No available sequence components for $subsystem or $ESW"))
+      }
+
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
@@ -96,32 +104,24 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   private def shutdown(loc: AkkaLocation): Future[SequenceComponentResponse.Ok.type] = createSequenceComponentImpl(loc).shutdown()
 
-  private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
+  private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[AkkaLocation]] =
     locationServiceUtil
       .listAkkaLocationsBy(subsystem, SequenceComponent)
       .flatMapToAdt(raceForIdleSequenceComponents, _ => None)
   // intentionally ignoring Left as in this case domain won't decide action based on what is error hence converting it to optionality
 
-  private def raceForIdleSequenceComponents(locations: List[AkkaLocation]) =
+  private def raceForIdleSequenceComponents(locations: List[AkkaLocation]): Future[Option[AkkaLocation]] =
     FutureUtils
       .firstCompletedOf(locations.map(idleSequenceComponent))(_.isDefined)
       .map(_.flatten)
 
-  //todo: to be removed
-  private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] =
-    async {
-      val sequenceComponentApi = createSequenceComponentImpl(sequenceComponentLocation)
-      val isAvailable          = await(sequenceComponentApi.status).response.isEmpty
-      if (isAvailable) Some(sequenceComponentApi) else None
-    }
-
   private def filterIdleSequenceComponents(locations: List[AkkaLocation]): Future[List[AkkaLocation]] = {
     Future
-      .traverse(locations)(idleSeqComp)
+      .traverse(locations)(idleSequenceComponent)
       .map(_.collect { case Some(location) => location })
   }
 
-  private[sm] def idleSeqComp(sequenceComponentLocation: AkkaLocation): Future[Option[AkkaLocation]] =
+  private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[AkkaLocation]] =
     async {
       val sequenceComponentApi = createSequenceComponentImpl(sequenceComponentLocation)
       val isIdle               = await(sequenceComponentApi.status).response.isEmpty

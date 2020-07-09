@@ -32,10 +32,11 @@ object StartSequencerResponse {
   case class Started(componentId: ComponentId)        extends Success
   case class AlreadyRunning(componentId: ComponentId) extends Success
 
-  sealed trait Failure extends SmFailure with StartSequencerResponse with RestartSequencerResponse.Failure {
+  sealed trait Failure extends SmFailure with StartSequencerResponse {
     def msg: String
   }
-  case class LoadScriptError(msg: String) extends Failure
+  case class LoadScriptError(msg: String)               extends Failure with RestartSequencerResponse.Failure
+  case class SequenceComponentNotAvailable(msg: String) extends Failure
 }
 
 sealed trait ShutdownSequencersResponse extends SmResponse
@@ -76,11 +77,13 @@ object CommonFailure {
   case class LocationServiceError(msg: String)
       extends AgentError
       with CommonFailure
+      with StartSequencerResponse.Failure
+      with RestartSequencerResponse.Failure
       with ShutdownSequencersResponse.Failure
       with ShutdownSequenceComponentResponse.Failure
 }
 
-sealed trait AgentError extends StartSequencerResponse.Failure with SpawnSequenceComponentResponse.Failure
+sealed trait AgentError extends SpawnSequenceComponentResponse.Failure
 
 object AgentError {
   case class SpawnSequenceComponentFailed(msg: String) extends AgentError

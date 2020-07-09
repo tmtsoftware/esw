@@ -20,7 +20,7 @@ import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
-import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config._
 import esw.sm.impl.utils.{SequenceComponentUtil, SequencerUtil}
@@ -69,7 +69,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val configResponse = Success(componentId)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
-      when(sequencerUtil.startSequencers(darkNight, darkNightSequencers, 3)).thenReturn(Future.successful(configResponse))
+      when(sequencerUtil.startSequencers(darkNight, darkNightSequencers)).thenReturn(Future.successful(configResponse))
       val configureProbe = TestProbe[ConfigureResponse]()
 
       // STATE TRANSITION: Idle -> Configure() -> ConfigurationInProcess -> Idle
@@ -80,7 +80,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       configureProbe.expectMessage(configResponse)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil).startSequencers(darkNight, darkNightSequencers, 3)
+      verify(sequencerUtil).startSequencers(darkNight, darkNightSequencers)
     }
 
     "return LocationServiceError if location service fails to return running observation mode | ESW-178" in {
@@ -105,7 +105,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       probe.expectMessage(ConflictingResourcesWithRunningObsMode(Set(clearSkies)))
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil, times(0)).startSequencers(darkNight, darkNightSequencers, 3)
+      verify(sequencerUtil, times(0)).startSequencers(darkNight, darkNightSequencers)
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164" in {
@@ -124,9 +124,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "transition sm from Idle -> Processing -> Idle state and return componentId of started sequencer | ESW-176" in {
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
-      val akkaLocation   = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
 
-      when(sequencerUtil.startSequencer(ESW, darkNight, 3)).thenReturn(future(1.second, Right(akkaLocation)))
+      when(sequenceComponentUtil.loadScript(ESW, darkNight)).thenReturn(future(1.second, Right(Started(componentId))))
       when(locationServiceUtil.find(httpConnection)).thenReturn(futureLeft(LocationNotFound("error")))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
@@ -137,7 +136,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       assertState(Idle)
 
       startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(componentId))
-      verify(sequencerUtil).startSequencer(ESW, darkNight, 3)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNight)
       verify(locationServiceUtil).find(httpConnection)
     }
 
@@ -154,7 +153,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       smRef ! StartSequencer(ESW, darkNight, startSequencerResponseProbe.ref)
 
       startSequencerResponseProbe.expectMessage(StartSequencerResponse.AlreadyRunning(componentId))
-      verify(sequencerUtil, never).startSequencer(ESW, darkNight, 3)
+      verify(sequenceComponentUtil, never).loadScript(ESW, darkNight)
       verify(locationServiceUtil).find(httpConnection)
     }
 
@@ -165,14 +164,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       when(locationServiceUtil.find(httpConnection))
         .thenReturn(futureLeft(LocationNotFound("error")))
-      when(sequencerUtil.startSequencer(ESW, darkNight, 3)).thenReturn(futureLeft(expectedErrorResponse))
+      when(sequenceComponentUtil.loadScript(ESW, darkNight)).thenReturn(futureLeft(expectedErrorResponse))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
 
       smRef ! StartSequencer(ESW, darkNight, startSequencerResponseProbe.ref)
 
       startSequencerResponseProbe.expectMessage(expectedErrorResponse)
-      verify(sequencerUtil).startSequencer(ESW, darkNight, 3)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNight)
       verify(locationServiceUtil).find(httpConnection)
     }
   }
@@ -241,7 +240,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     val errors = Table(
       ("errorName", "error", "process"),
-      ("SpawnSequenceComponentFailed", SpawnSequenceComponentFailed("spawn sequence component failed"), "start"),
       ("LocationServiceError", LocationServiceError("location service error"), "stop"),
       ("LoadScriptError", LoadScriptError("load script failed"), "start")
     )

@@ -11,15 +11,14 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.ObsMode
-import esw.ocs.api.models.SequenceComponentState.{Idle, Running}
+import esw.ocs.api.models.SequenceComponentState.Idle
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
-import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol.{RestartSequencerResponse, ShutdownSequencersPolicy, ShutdownSequencersResponse}
 import esw.sm.impl.config.Sequencers
 import esw.testcommons.BaseTestSuite
@@ -37,7 +36,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(eswSeqCompApi, tcsSeqCompApi, locationServiceUtil, sequenceComponentUtil, eswSequencerApi, tcsSequencerApi)
+    reset(locationServiceUtil, sequenceComponentUtil, eswSequencerApi, tcsSequencerApi)
   }
 
   override def afterAll(): Unit = {
@@ -47,114 +46,34 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "startSequencers" must {
     "start all the given sequencers | ESW-178" in {
-      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(Future.successful(Right(eswSeqCompApi)))
-      when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqCompApi)))
-      when(eswSeqCompApi.loadScript(ESW, darkNightObsMode))
-        .thenReturn(Future.successful(SequencerLocation(eswDarkNightSequencerLoc)))
-      when(tcsSeqCompApi.loadScript(TCS, darkNightObsMode))
-        .thenReturn(Future.successful(SequencerLocation(tcsDarkNightSequencerLoc)))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode))
+        .thenReturn(Future.successful(Right(Started(eswDarkNightSequencer))))
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode))
+        .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
 
       // returns success with master sequencer location after starting all the sequencers
-      sequencerUtil.startSequencers(darkNightObsMode, Sequencers(ESW, TCS), 3).futureValue should ===(
+      sequencerUtil.startSequencers(darkNightObsMode, Sequencers(ESW, TCS)).futureValue should ===(
         Success(eswDarkNightSequencer)
       )
 
-      verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
-      verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
-      verify(eswSeqCompApi).loadScript(ESW, darkNightObsMode)
-      verify(tcsSeqCompApi).loadScript(TCS, darkNightObsMode)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode)
     }
 
     "return all the errors caused while starting the sequencers  | ESW-178" in {
-      // unable to start sequence component error
-      val seqCompErrorMsg              = "could not spawn SeqComp for ESW"
-      val spawnSequenceComponentFailed = futureLeft(SpawnSequenceComponentFailed(seqCompErrorMsg))
-      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(spawnSequenceComponentFailed)
-      when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqCompApi)))
-
-      // unable to loadScript script error
-      val scriptErrorMsg = s"script initialisation failed for TCS ${darkNightObsMode.name}"
-      val scriptError    = Future.successful(ScriptError.LoadingScriptFailed(scriptErrorMsg))
-      when(tcsSeqCompApi.loadScript(TCS, darkNightObsMode)).thenReturn(scriptError)
+      // load script error for ESW
+      val loadScriptErrorMsg = "load script error"
+      val loadScriptError    = futureLeft(LoadScriptError(loadScriptErrorMsg))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode)).thenReturn(loadScriptError)
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode))
+        .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
 
       sequencerUtil
-        .startSequencers(darkNightObsMode, Sequencers(ESW, TCS), 3)
-        .futureValue should ===(FailedToStartSequencers(Set(seqCompErrorMsg, scriptErrorMsg)))
+        .startSequencers(darkNightObsMode, Sequencers(ESW, TCS))
+        .futureValue should ===(FailedToStartSequencers(Set(loadScriptErrorMsg)))
 
-      // getAvailableSequenceComponent for ESW returns SpawnSequenceComponentFailed so retry 3 times make total invocations 4
-      // below verify validates 4 invocations
-      verify(sequenceComponentUtil, times(4)).getAvailableSequenceComponent(ESW)
-
-      // getAvailableSequenceComponent for ESW returns ScriptError so no retry
-      // below verify validates 1 invocations
-      verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
-
-      verify(tcsSeqCompApi).loadScript(TCS, darkNightObsMode)
-      verify(eswSeqCompApi, never).loadScript(ESW, darkNightObsMode)
-    }
-  }
-
-  "startSequencer" must {
-    "start given sequencer | ESW-176" in {
-      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(Future.successful(Right(eswSeqCompApi)))
-      when(eswSeqCompApi.loadScript(ESW, darkNightObsMode))
-        .thenReturn(Future.successful(SequencerLocation(eswDarkNightSequencerLoc)))
-
-      sequencerUtil.startSequencer(ESW, darkNightObsMode, 3).rightValue should ===(eswDarkNightSequencerLoc)
-
-      verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
-      verify(eswSeqCompApi).loadScript(ESW, darkNightObsMode)
-    }
-
-    "return error caused is spawn sequence component fails | ESW-176" in {
-      val sequenceComponentFailedError = SpawnSequenceComponentFailed("could not spawn SeqComp for ESW")
-      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(futureLeft(sequenceComponentFailedError))
-
-      sequencerUtil.startSequencer(ESW, darkNightObsMode, 3).leftValue should ===(sequenceComponentFailedError)
-
-      verify(sequenceComponentUtil, times(4)).getAvailableSequenceComponent(ESW)
-    }
-
-    "retry if spawn sequence component fails | ESW-176" in {
-      val sequenceComponentFailedError = SpawnSequenceComponentFailed("could not spawn SeqComp for ESW")
-      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW))
-        .thenReturn(futureLeft(sequenceComponentFailedError), futureRight(eswSeqCompApi))
-      when(eswSeqCompApi.loadScript(ESW, darkNightObsMode))
-        .thenReturn(Future.successful(SequencerLocation(eswDarkNightSequencerLoc)))
-
-      sequencerUtil.startSequencer(ESW, darkNightObsMode, 3).rightValue should ===(eswDarkNightSequencerLoc)
-
-      verify(sequenceComponentUtil, times(2)).getAvailableSequenceComponent(ESW)
-    }
-
-    "retry if any other error than load script error | ESW-176" in {
-      when(sequenceComponentUtil.getAvailableSequenceComponent(TCS))
-        .thenReturn(futureRight(tcsSeqCompApi), futureRight(eswSeqCompApi))
-
-      //mimic that meantime SM could start tcs sequencer on esw sequence component, it is loaded another sequencer script
-      when(tcsSeqCompApi.loadScript(TCS, darkNightObsMode))
-        .thenReturn(Future.successful(Unhandled(Running, "already running")))
-
-      when(eswSeqCompApi.loadScript(TCS, darkNightObsMode))
-        .thenReturn(Future.successful(SequencerLocation(tcsDarkNightSequencerLoc)))
-
-      sequencerUtil.startSequencer(TCS, darkNightObsMode, 3).rightValue should ===(tcsDarkNightSequencerLoc)
-
-      verify(sequenceComponentUtil, times(2)).getAvailableSequenceComponent(TCS)
-      verify(tcsSeqCompApi).loadScript(TCS, darkNightObsMode)
-      verify(eswSeqCompApi).loadScript(TCS, darkNightObsMode)
-    }
-
-    "return error caused if loading script returns error and do not retry | ESW-176" in {
-      // unable to loadScript script error
-      val scriptErrorMsg = s"script initialisation failed for TCS ${darkNightObsMode.name}"
-      val scriptError    = Future.successful(ScriptError.LoadingScriptFailed(scriptErrorMsg))
-      when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqCompApi)))
-      when(tcsSeqCompApi.loadScript(TCS, darkNightObsMode)).thenReturn(scriptError)
-
-      sequencerUtil.startSequencer(TCS, darkNightObsMode, 3).leftValue should ===(LoadScriptError(scriptErrorMsg))
-
-      verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode)
     }
   }
 
@@ -333,8 +252,6 @@ class SequencerUtilTest extends BaseTestSuite {
     val darkNightObsMode: ObsMode  = ObsMode("darkNight")
     val clearSkiesObsMode: ObsMode = ObsMode("clearSkies")
 
-    val eswSeqCompApi: SequenceComponentApi          = mock[SequenceComponentApi]
-    val tcsSeqCompApi: SequenceComponentApi          = mock[SequenceComponentApi]
     val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
     val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
     val eswSequencerApi: SequencerApi                = mock[SequencerApi]
