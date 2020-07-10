@@ -1,6 +1,7 @@
 package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
+import csw.prefix.models.Subsystem
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
 
@@ -16,6 +17,7 @@ object ConfigureResponse {
   sealed trait Failure                                                            extends SmFailure with ConfigureResponse
   case class ConflictingResourcesWithRunningObsMode(runningObsMode: Set[ObsMode]) extends Failure
   case class FailedToStartSequencers(reasons: Set[String])                        extends Failure
+  case class SequenceComponentsNotAvailable(subsystems: List[Subsystem])          extends Failure
 }
 
 sealed trait GetRunningObsModesResponse extends SmResponse

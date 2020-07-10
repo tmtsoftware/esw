@@ -8,6 +8,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
@@ -15,11 +16,11 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
-import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
-import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
+import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
+import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, SequenceComponentsNotAvailable}
+import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
-import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
+import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import esw.sm.impl.utils.{SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
@@ -69,6 +70,70 @@ class SequenceManagerBehavior(
         case None => ConfigurationMissing(requestedObsMode)
       }
     }
+
+  def startSequencers(
+      obsMode: ObsMode,
+      sequencers: Sequencers
+  ): Future[Either[ConfigureResponse.Failure, List[Either[StartSequencerResponse.Failure, StartSequencerResponse.Started]]]] = {
+    mapSequencersToSequenceComponents(sequencers).flatMapRight(mappings => {
+      val responsesF = Future.traverse(mappings) { mapping =>
+        val (subsystem, seqCompLocation) = mapping
+        sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
+      }
+      responsesF.map(_.sequence)
+    })
+  }
+
+  def mapSequencersToSequenceComponents(
+      sequencers: Sequencers
+  ): Future[Either[ConfigureResponse.Failure, List[(Subsystem, AkkaLocation)]]] = {
+    val responseF = sequenceComponentUtil
+      .idleSequenceComponentsFor(sequencers.subsystems)
+      .mapRight(locations => {
+        var startWithLocations = locations
+        for {
+          subsystem <- sequencers.subsystems
+          seqComp   <- findMatchingSeqComp(subsystem, startWithLocations)
+        } yield {
+          startWithLocations = startWithLocations.filterNot(_.equals(seqComp))
+          (subsystem -> seqComp)
+        }
+      })
+
+    responseF.map {
+      case Left(error)     => Left(LocationServiceError(error.msg))
+      case Right(mappings) => Right(mappings)
+    }
+  }
+
+  def mapSequencersToSequenceComponents1(
+      sequencers: Sequencers
+  ): Future[Either[ConfigureResponse.Failure, List[(Subsystem, AkkaLocation)]]] =
+    async {
+      val response = await(sequenceComponentUtil.idleSequenceComponentsFor(sequencers.subsystems))
+      response match {
+        case Left(error) => Left(LocationServiceError(error.msg))
+        case Right(locations) =>
+          sequencers.subsystems.map(s => {
+            findMatchingSeqComp(s, locations)
+          })
+      }
+      ???
+    }
+
+  def dd(subsystems: List[Subsystem], seqCompLocations: List[AkkaLocation]) = {
+    subsystems match {
+      case ::(subsystem, remainingSubsystems) =>
+        findMatchingSeqComp(subsystem, seqCompLocations) match {
+          case Some(location) => (subsystem, location) :: dd(remainingSubsystems, seqCompLocations.filterNot(_.equals(location)))
+          case None           => Left()
+        }
+      case Nil =>
+    }
+  }
+
+  def findMatchingSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =
+    seqCompLocations.find(_.prefix.subsystem == subsystem).orElse(seqCompLocations.find(_.prefix.subsystem == ESW))
 
   // ignoring failure of getResources as config should never be absent for running obsModes
   private def checkConflicts(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
