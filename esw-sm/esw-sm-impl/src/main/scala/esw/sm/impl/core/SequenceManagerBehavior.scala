@@ -66,59 +66,15 @@ class SequenceManagerBehavior(
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
-          await(startSequencers(requestedObsMode, sequencers))
+          await(
+            findIdleAndMap(sequencers)
+              .flatMapToAdt(mappings => sequencerUtil.startSequencers(requestedObsMode, mappings), identity)
+          )
         case None => ConfigurationMissing(requestedObsMode)
       }
     }
 
-  def startSequencers(
-      obsMode: ObsMode,
-      sequencers: Sequencers
-  ): Future[ConfigureResponse] = {
-    mapSequencersToSequenceComponents(sequencers).flatMapToAdt(
-      mappings => {
-        val responsesF = Future.traverse(mappings) { mapping =>
-          val (subsystem, seqCompLocation) = mapping
-          sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
-        }
-        responsesF
-          .map(_.sequence)
-          .mapToAdt(
-            responses => ConfigureResponse.Success(masterSequencerComponentId(responses)),
-            errors => FailedToStartSequencers(errors.map(_.msg).toSet)
-          )
-      },
-      identity
-    )
-  }
-
-  private def masterSequencerComponentId(responses: List[StartSequencerResponse.Started]) = {
-    responses.find(_.componentId.prefix.subsystem == ESW).get.componentId
-  }
-
-  def mapSequencersToSequenceComponents(
-      sequencers: Sequencers
-  ): Future[Either[ConfigureResponse.Failure, List[(Subsystem, AkkaLocation)]]] = {
-    val responseF = sequenceComponentUtil
-      .idleSequenceComponentsFor(sequencers.subsystems)
-      .mapRight(locations => {
-        var startWithLocations = locations
-        for {
-          subsystem <- sequencers.subsystems
-          seqComp   <- findMatchingSeqComp(subsystem, startWithLocations)
-        } yield {
-          startWithLocations = startWithLocations.filterNot(_.equals(seqComp))
-          (subsystem -> seqComp)
-        }
-      })
-
-    responseF.map {
-      case Left(error)     => Left(LocationServiceError(error.msg))
-      case Right(mappings) => Right(mappings)
-    }
-  }
-
-  def mapSequencersToSequenceComponents1(
+  private def findIdleAndMap(
       sequencers: Sequencers
   ): Future[Either[ConfigureResponse.Failure, List[(Subsystem, AkkaLocation)]]] =
     async {
@@ -126,28 +82,28 @@ class SequenceManagerBehavior(
       response match {
         case Left(error) => Left(LocationServiceError(error.msg))
         case Right(locations) =>
-          try {
-            Right(dd(sequencers.subsystems, locations))
-          }
-          catch {
-            case _: RuntimeException =>
-              Left(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
-          }
+          mapSequencersToSequenceComponents(sequencers.subsystems, locations)
       }
     }
 
-  private def dd(subsystems: List[Subsystem], seqCompLocations: List[AkkaLocation]): List[(Subsystem, AkkaLocation)] = {
+  private def mapSequencersToSequenceComponents(
+      subsystems: List[Subsystem],
+      seqCompLocations: List[AkkaLocation]
+  ): Either[SequenceComponentNotAvailable, List[(Subsystem, AkkaLocation)]] = {
     subsystems match {
-      case Nil => List.empty
+      case Nil => Right(List.empty)
       case ::(subsystem, remainingSubsystems) =>
         findMatchingSeqComp(subsystem, seqCompLocations) match {
-          case None           => throw new RuntimeException("error")
-          case Some(location) => (subsystem, location) :: dd(remainingSubsystems, seqCompLocations.filterNot(_.equals(location)))
+          case None => Left(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
+          case Some(location) =>
+            mapSequencersToSequenceComponents(remainingSubsystems, seqCompLocations.filterNot(_.equals(location))).map(list =>
+              list :+ (subsystem, location)
+            )
         }
     }
   }
 
-  def findMatchingSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =
+  private def findMatchingSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =
     seqCompLocations.find(_.prefix.subsystem == subsystem).orElse(seqCompLocations.find(_.prefix.subsystem == ESW))
 
   // ignoring failure of getResources as config should never be absent for running obsModes

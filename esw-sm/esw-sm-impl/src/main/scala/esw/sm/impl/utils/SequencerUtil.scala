@@ -28,11 +28,20 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  def startSequencers(obsMode: ObsMode, requiredSequencers: Sequencers): Future[ConfigureResponse] = {
-    val masterSequencerId       = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
-    val startSequencerResponses = sequential(requiredSequencers.subsystems)(sequenceComponentUtil.loadScript(_, obsMode))
-
-    startSequencerResponses.mapToAdt(_ => Success(masterSequencerId), e => FailedToStartSequencers(e.map(_.msg).toSet))
+  def startSequencers(obsMode: ObsMode, mappings: List[(Subsystem, AkkaLocation)]): Future[ConfigureResponse] = {
+    val responsesF = Future.traverse(mappings) { mapping =>
+      val (subsystem, seqCompLocation) = mapping
+      sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
+    }
+    responsesF
+      .map(_.sequence)
+      .mapToAdt(
+        responses => {
+          val masterSequencerId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
+          ConfigureResponse.Success(masterSequencerId)
+        },
+        errors => FailedToStartSequencers(errors.map(_.msg).toSet)
+      )
   }
 
   def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
