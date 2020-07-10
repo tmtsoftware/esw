@@ -17,7 +17,7 @@ import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, SequenceComponentsNotAvailable}
+import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, FailedToStartSequencers}
 import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
@@ -66,7 +66,7 @@ class SequenceManagerBehavior(
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
-          await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
+          await(startSequencers(requestedObsMode, sequencers))
         case None => ConfigurationMissing(requestedObsMode)
       }
     }
@@ -74,14 +74,26 @@ class SequenceManagerBehavior(
   def startSequencers(
       obsMode: ObsMode,
       sequencers: Sequencers
-  ): Future[Either[ConfigureResponse.Failure, List[Either[StartSequencerResponse.Failure, StartSequencerResponse.Started]]]] = {
-    mapSequencersToSequenceComponents(sequencers).flatMapRight(mappings => {
-      val responsesF = Future.traverse(mappings) { mapping =>
-        val (subsystem, seqCompLocation) = mapping
-        sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
-      }
-      responsesF.map(_.sequence)
-    })
+  ): Future[ConfigureResponse] = {
+    mapSequencersToSequenceComponents(sequencers).flatMapToAdt(
+      mappings => {
+        val responsesF = Future.traverse(mappings) { mapping =>
+          val (subsystem, seqCompLocation) = mapping
+          sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
+        }
+        responsesF
+          .map(_.sequence)
+          .mapToAdt(
+            responses => ConfigureResponse.Success(masterSequencerComponentId(responses)),
+            errors => FailedToStartSequencers(errors.map(_.msg).toSet)
+          )
+      },
+      identity
+    )
+  }
+
+  private def masterSequencerComponentId(responses: List[StartSequencerResponse.Started]) = {
+    responses.find(_.componentId.prefix.subsystem == ESW).get.componentId
   }
 
   def mapSequencersToSequenceComponents(
@@ -114,21 +126,24 @@ class SequenceManagerBehavior(
       response match {
         case Left(error) => Left(LocationServiceError(error.msg))
         case Right(locations) =>
-          sequencers.subsystems.map(s => {
-            findMatchingSeqComp(s, locations)
-          })
+          try {
+            Right(dd(sequencers.subsystems, locations))
+          }
+          catch {
+            case _: RuntimeException =>
+              Left(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
+          }
       }
-      ???
     }
 
-  def dd(subsystems: List[Subsystem], seqCompLocations: List[AkkaLocation]) = {
+  private def dd(subsystems: List[Subsystem], seqCompLocations: List[AkkaLocation]): List[(Subsystem, AkkaLocation)] = {
     subsystems match {
+      case Nil => List.empty
       case ::(subsystem, remainingSubsystems) =>
         findMatchingSeqComp(subsystem, seqCompLocations) match {
+          case None           => throw new RuntimeException("error")
           case Some(location) => (subsystem, location) :: dd(remainingSubsystems, seqCompLocations.filterNot(_.equals(location)))
-          case None           => Left()
         }
-      case Nil =>
     }
   }
 
