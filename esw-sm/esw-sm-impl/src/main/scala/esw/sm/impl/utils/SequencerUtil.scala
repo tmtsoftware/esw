@@ -7,7 +7,6 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
-import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
@@ -15,12 +14,13 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
+import esw.sm.api.protocol.ConfigureResponse.FailedToStartSequencers
 import esw.sm.api.protocol.ShutdownSequencersPolicy.{AllSequencers, ObsModeSequencers, SingleSequencer, SubsystemSequencers}
-import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
 
+import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
@@ -28,12 +28,18 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  def startSequencers(obsMode: ObsMode, requiredSequencers: Sequencers): Future[ConfigureResponse] = {
-    val masterSequencerId       = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
-    val startSequencerResponses = sequential(requiredSequencers.subsystems)(sequenceComponentUtil.loadScript(_, obsMode))
-
-    startSequencerResponses.mapToAdt(_ => Success(masterSequencerId), e => FailedToStartSequencers(e.map(_.msg).toSet))
-  }
+  def createMappingAndStartSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] =
+    async {
+      val response = await(sequenceComponentUtil.idleSequenceComponentsFor(sequencers.subsystems))
+      response match {
+        case Left(error) => LocationServiceError(error.msg)
+        case Right(locations) =>
+          await(mapSequencersToSequenceComponents(sequencers.subsystems, locations) match {
+            case Left(error)     => Future.successful(error)
+            case Right(mappings) => startSequencers(obsMode, mappings)
+          })
+      }
+    }
 
   def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
@@ -47,6 +53,35 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       case ObsModeSequencers(obsMode)          => shutdownSequencersAndHandleErrors(getObsModeSequencers(obsMode))
       case AllSequencers                       => shutdownSequencersAndHandleErrors(getAllSequencers)
     }
+
+  private[utils] def startSequencers(obsMode: ObsMode, mappings: List[SequencerToSeqCompMapping]): Future[ConfigureResponse] = {
+    parallel(mappings) { mapping =>
+      sequenceComponentUtil.loadScript(mapping.sequencerSubsystem, obsMode, mapping.SeqCompLocation)
+    }.mapToAdt(
+      _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)),
+      errors => FailedToStartSequencers(errors.map(_.msg).toSet)
+    )
+  }
+
+  private[utils] def mapSequencersToSequenceComponents(
+      subsystems: List[Subsystem],
+      seqCompLocations: List[AkkaLocation]
+  ): Either[SequenceComponentNotAvailable, List[SequencerToSeqCompMapping]] = {
+    subsystems match {
+      case Nil => Right(List.empty)
+      case ::(subsystem, remainingSubsystems) =>
+        findMatchingSeqComp(subsystem, seqCompLocations) match {
+          case None => Left(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
+          case Some(location) =>
+            mapSequencersToSequenceComponents(remainingSubsystems, seqCompLocations.filterNot(_.equals(location))).map(list =>
+              list :+ SequencerToSeqCompMapping(subsystem, location)
+            )
+        }
+    }
+  }
+
+  private def findMatchingSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =
+    seqCompLocations.find(_.prefix.subsystem == subsystem).orElse(seqCompLocations.find(_.prefix.subsystem == ESW))
 
   private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
     createSequencerClient(akkaLocation).getSequenceComponent
@@ -83,5 +118,5 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
 
-  private def sequential[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = FutureUtils.sequential(i)(f).map(_.sequence)
+  private def parallel[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = Future.traverse(i)(f).map(_.sequence)
 }

@@ -38,6 +38,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       )
   }
 
+  // todo: covert RegistrationListingFailed into LocationServiceError
   def idleSequenceComponentsFor(
       subsystems: List[Subsystem]
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =

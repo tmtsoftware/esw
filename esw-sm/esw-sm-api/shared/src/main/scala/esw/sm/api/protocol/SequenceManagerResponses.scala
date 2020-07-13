@@ -36,7 +36,7 @@ object StartSequencerResponse {
     def msg: String
   }
   case class LoadScriptError(msg: String)               extends Failure with RestartSequencerResponse.Failure
-  case class SequenceComponentNotAvailable(msg: String) extends Failure
+  case class SequenceComponentNotAvailable(msg: String) extends Failure with ConfigureResponse.Failure
 }
 
 sealed trait ShutdownSequencersResponse extends SmResponse

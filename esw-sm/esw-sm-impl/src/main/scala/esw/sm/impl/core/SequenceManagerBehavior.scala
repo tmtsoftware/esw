@@ -32,6 +32,7 @@ class SequenceManagerBehavior(
     sequencerUtil: SequencerUtil,
     sequenceComponentUtil: SequenceComponentUtil
 )(implicit val actorSystem: ActorSystem[_]) {
+
   import SequenceManagerBehavior._
   import actorSystem.executionContext
 
@@ -65,7 +66,7 @@ class SequenceManagerBehavior(
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
-          await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
+          await(sequencerUtil.createMappingAndStartSequencers(requestedObsMode, sequencers))
         case None => ConfigurationMissing(requestedObsMode)
       }
     }
