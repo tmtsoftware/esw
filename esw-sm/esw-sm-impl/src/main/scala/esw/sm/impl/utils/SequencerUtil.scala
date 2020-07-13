@@ -54,10 +54,9 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       case AllSequencers                       => shutdownSequencersAndHandleErrors(getAllSequencers)
     }
 
-  private[utils] def startSequencers(obsMode: ObsMode, mappings: List[(Subsystem, AkkaLocation)]): Future[ConfigureResponse] = {
+  private[utils] def startSequencers(obsMode: ObsMode, mappings: List[SequencerToSeqCompMapping]): Future[ConfigureResponse] = {
     parallel(mappings) { mapping =>
-      val (subsystem, seqCompLocation) = mapping
-      sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
+      sequenceComponentUtil.loadScript(mapping.sequencerSubsystem, obsMode, mapping.SeqCompLocation)
     }.mapToAdt(
       _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)),
       errors => FailedToStartSequencers(errors.map(_.msg).toSet)
@@ -67,7 +66,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private[utils] def mapSequencersToSequenceComponents(
       subsystems: List[Subsystem],
       seqCompLocations: List[AkkaLocation]
-  ): Either[SequenceComponentNotAvailable, List[(Subsystem, AkkaLocation)]] = {
+  ): Either[SequenceComponentNotAvailable, List[SequencerToSeqCompMapping]] = {
     subsystems match {
       case Nil => Right(List.empty)
       case ::(subsystem, remainingSubsystems) =>
@@ -75,7 +74,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
           case None => Left(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
           case Some(location) =>
             mapSequencersToSequenceComponents(remainingSubsystems, seqCompLocations.filterNot(_.equals(location))).map(list =>
-              list :+ (subsystem, location)
+              list :+ SequencerToSeqCompMapping(subsystem, location)
             )
         }
     }
