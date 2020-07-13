@@ -7,20 +7,18 @@ import akka.util.Timeout
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.api.{Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.Timeouts
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
-import esw.sm.api.protocol.AgentError
-import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.testcommons.BaseTestSuite
-import org.mockito.ArgumentMatchers.{any, eq => argEq}
-import org.mockito.captor.ArgCaptor
+import org.mockito.ArgumentMatchers.any
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
@@ -35,78 +33,59 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   "spawnSequenceComponentFor" must {
-    "return SequenceComponentApi after spawning sequence component | ESW-164" in {
-      val setup = new TestSetup()
-      import setup._
-      val connectionCaptor = ArgCaptor[AkkaConnection]
-      val prefixCaptor     = ArgCaptor[Prefix]
-
-      when(agentClient.spawnSequenceComponent(prefixCaptor.capture, argEq(None))).thenReturn(Future.successful(Spawned))
-      when(locationServiceUtil.resolve(connectionCaptor.capture, argEq(Timeouts.DefaultResolveLocationDuration)))
-        .thenReturn(futureRight(sequenceComponentLocation))
-
-      agentUtil.spawnSequenceComponentFor(ESW).rightValue shouldBe a[SequenceComponentApi]
-
-      connectionCaptor.value.prefix.subsystem shouldBe ESW
-      prefixCaptor.value.subsystem shouldBe ESW
-
-      // verify random name generation logic
-      val name                          = prefixCaptor.value.componentName
-      val (subsystemName, randomNumber) = name.splitAt(name.indexOf('_'))
-      subsystemName shouldBe ESW.entryName
-      (1 to 100) should contain(randomNumber.drop(1).toLong)
-    }
-
-    "return SequenceComponentApi after spawning sequence component for given name and agent prefix | ESW-337" in {
+    "return SequenceComponentApi after spawning sequence component for given name and machine prefix | ESW-337" in {
       val setup = new TestSetup()
       import setup._
 
       val seqCompName       = "seq_comp"
-      val agentPrefix       = Prefix(IRIS, "primary")
-      val seqCompConnection = AkkaConnection(ComponentId(Prefix(IRIS, seqCompName), SequenceComponent))
+      val seqCompPrefix     = Prefix(IRIS, seqCompName)
+      val seqCompConnection = AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent))
+      val machinePrefix     = Prefix(IRIS, "primary")
 
-      val connectionCaptor = ArgCaptor[AkkaConnection]
-      val prefixCaptor     = ArgCaptor[Prefix]
-
-      when(agentClient.spawnSequenceComponent(prefixCaptor.capture, argEq(None))).thenReturn(Future.successful(Spawned))
-      when(locationServiceUtil.resolve(connectionCaptor.capture, argEq(Timeouts.DefaultResolveLocationDuration)))
+      when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(Spawned))
+      when(locationServiceUtil.resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration))
         .thenReturn(futureRight(sequenceComponentLocation))
 
-      agentUtil.spawnSequenceComponentFor(agentPrefix, seqCompName).rightValue shouldBe a[SequenceComponentApi]
+      agentUtil.spawnSequenceComponentOn(machinePrefix, seqCompName).rightValue shouldBe a[SequenceComponentApi]
 
-      connectionCaptor.value shouldBe seqCompConnection
-      prefixCaptor.value shouldBe seqCompConnection.prefix
+      verify(agentClient).spawnSequenceComponent(seqCompPrefix, None)
+      verify(locationServiceUtil).resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration)
     }
 
     "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-164" in {
       val setup = new TestSetup()
       import setup._
 
-      val spawnFailed = Failed("failed to spawn sequence component")
+      val componentName = "testComp"
+      val prefix        = Prefix(TCS, componentName)
+      val spawnFailed   = Failed("failed to spawn sequence component")
 
-      val prefixCaptor = ArgCaptor[Prefix]
-      when(agentClient.spawnSequenceComponent(prefixCaptor.capture, argEq(None))).thenReturn(Future.successful(spawnFailed))
+      when(agentClient.spawnSequenceComponent(prefix, None)).thenReturn(Future.successful(spawnFailed))
 
-      agentUtil.spawnSequenceComponentFor(ESW).leftValue should ===(SpawnSequenceComponentFailed(spawnFailed.msg))
-
-      prefixCaptor.value.subsystem shouldBe ESW
+      agentUtil.spawnSequenceComponentOn(prefix, componentName).leftValue should ===(
+        SpawnSequenceComponentFailed(spawnFailed.msg)
+      )
     }
 
-    "return LocationServiceError if location service call to resolve spawned sequence returns error | ESW-164" in {
+    "return LocationServiceError if location service call to resolve spawned sequence component returns error | ESW-164" in {
       val setup = new TestSetup()
       import setup._
 
-      val connectionCaptor = ArgCaptor[AkkaConnection]
-      val prefixCaptor     = ArgCaptor[Prefix]
+      val componentName     = "testComp"
+      val seqCompPrefix     = Prefix(TCS, componentName)
+      val seqCompConnection = AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent))
+      val machinePrefix     = Prefix(TCS, "primary")
 
-      when(agentClient.spawnSequenceComponent(prefixCaptor.capture, argEq(None))).thenReturn(Future.successful(Spawned))
-      when(locationServiceUtil.resolve(connectionCaptor.capture, argEq(Timeouts.DefaultResolveLocationDuration)))
+      when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(Spawned))
+      when(locationServiceUtil.resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration))
         .thenReturn(futureLeft(LocationNotFound("Could not resolve sequence component")))
 
-      agentUtil.spawnSequenceComponentFor(TCS).leftValue should ===(LocationServiceError("Could not resolve sequence component"))
+      agentUtil.spawnSequenceComponentOn(machinePrefix, componentName).leftValue should ===(
+        LocationServiceError("Could not resolve sequence component")
+      )
 
-      connectionCaptor.value.componentId.prefix.subsystem shouldBe TCS
-      prefixCaptor.value.subsystem shouldBe TCS
+      verify(agentClient).spawnSequenceComponent(seqCompPrefix, None)
+      verify(locationServiceUtil).resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration)
     }
 
     "return LocationServiceError if getAgent fails | ESW-164, ESW-337" in {
@@ -114,53 +93,11 @@ class AgentUtilTest extends BaseTestSuite {
 
       val errorMsg = "Error in agent"
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
-        override private[sm] def getRandomAgent(subsystem: Subsystem): Future[Either[AgentError, AgentClient]] =
-          futureLeft(LocationServiceError(errorMsg))
-
         override private[sm] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =
           futureLeft(LocationServiceError(errorMsg))
       }
 
-      agentUtil.spawnSequenceComponentFor(ESW).leftValue should ===(LocationServiceError(errorMsg))
-      agentUtil.spawnSequenceComponentFor(Prefix(ESW, "invalid"), "invalid").leftValue should ===(LocationServiceError(errorMsg))
-    }
-  }
-
-  "getRandomAgent" must {
-    "return AgentClient associated to ESW machine | ESW-164" in {
-      val locationServiceUtil = mock[LocationServiceUtil]
-      val agentClient         = mock[AgentClient]
-      val location            = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "mock"), Machine)), new URI("mock"))
-
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureRight(List(location)))
-
-      val agentUtil = new AgentUtil(locationServiceUtil) {
-        override private[utils] def makeAgent(loc: AkkaLocation) = agentClient
-      }
-
-      agentUtil.getRandomAgent(ESW).rightValue should ===(agentClient)
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
-    }
-
-    "return LocationNotFound when location service list call returns empty list | ESW-164" in {
-      val locationServiceUtil = mock[LocationServiceUtil]
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureRight(List.empty))
-
-      val agentUtil = new AgentUtil(locationServiceUtil)
-      agentUtil.getRandomAgent(ESW).leftValue shouldBe a[LocationServiceError]
-
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
-    }
-
-    "return LocationNotFound when location service list call returns error | ESW-164" in {
-      val locationServiceUtil = mock[LocationServiceUtil]
-      val listingFailed       = RegistrationListingFailed("listing failed")
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureLeft(listingFailed))
-
-      val agentUtil = new AgentUtil(locationServiceUtil)
-      agentUtil.getRandomAgent(ESW).leftValue shouldBe a[LocationServiceError]
-
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
+      agentUtil.spawnSequenceComponentOn(Prefix(ESW, "invalid"), "invalid").leftValue should ===(LocationServiceError(errorMsg))
     }
   }
 
@@ -216,9 +153,6 @@ class AgentUtilTest extends BaseTestSuite {
     val agentClient: AgentClient                 = mock[AgentClient]
 
     val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
-      override private[sm] def getRandomAgent(subsystem: Subsystem): Future[Either[AgentError, AgentClient]] =
-        Future.successful(Right(agentClient))
-
       override private[sm] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =
         Future.successful(Right(agentClient))
     }

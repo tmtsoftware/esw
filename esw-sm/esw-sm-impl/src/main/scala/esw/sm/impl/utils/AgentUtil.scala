@@ -11,27 +11,24 @@ import esw.agent.client.AgentClient
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
-import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ProvisionResponse.ProvisioningFailed
-import esw.sm.api.protocol.{AgentError, ProvisionResponse}
+import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.{ProvisionResponse, SpawnSequenceComponentResponse}
 import esw.sm.impl.config.ProvisionConfig
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
-  // todo: remove this
-  def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] =
-    getRandomAgent(subsystem).flatMapE(spawnSeqComp(_, Prefix(subsystem, generateComponentName(subsystem))))
-
-  def spawnSequenceComponentFor(machine: Prefix, seqCompName: String): Future[Either[AgentError, SequenceComponentApi]] =
+  def spawnSequenceComponentOn(
+      machine: Prefix,
+      seqCompName: String
+  ): Future[Either[SpawnSequenceComponentResponse.Failure, SequenceComponentApi]] =
     getAgent(machine).flatMapE(spawnSeqComp(_, Prefix(machine.subsystem, seqCompName)))
 
   def provision(provisionConfig: ProvisionConfig): Future[ProvisionResponse] = {
@@ -66,26 +63,13 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   private def spawnOn(location: AkkaLocation, prefix: Prefix) = makeAgent(location).spawnSequenceComponent(prefix)
 
-  private def generateComponentName(subsystem: Subsystem) = s"${subsystem}_${Random.between(1, 100)}"
-
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
       .spawnSequenceComponent(seqCompPrefix)
       .flatMap {
         case Spawned     => resolveSeqComp(seqCompPrefix)
-        case Failed(msg) => Future.successful(Left(AgentError.SpawnSequenceComponentFailed(msg)))
+        case Failed(msg) => Future.successful(Left(SpawnSequenceComponentFailed(msg)))
       }
-
-  private[utils] def getRandomAgent(subsystem: Subsystem): Future[Either[AgentError, AgentClient]] =
-    locationServiceUtil
-      .listAkkaLocationsBy(subsystem, Machine)
-      // find subsystem agent randomly from list of subsystem agents (machines).
-      // If this subsystem machine fails to spawn sequence component, in retry attempt randomly picking subsystem agent would help.
-      // if locations are empty then locations(Random.nextInt(locations.length)).prefix will throw exception,
-      // it is handled in mapError block
-      .mapRight(locations => makeAgent(locations(Random.nextInt(locations.length))))
-      .mapError(_ => LocationNotFound(s"Could not find agent matching $subsystem"))
-      .mapLeft(_ => LocationServiceError(s"Could not find agent matching $subsystem"))
 
   private[utils] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =
     locationServiceUtil

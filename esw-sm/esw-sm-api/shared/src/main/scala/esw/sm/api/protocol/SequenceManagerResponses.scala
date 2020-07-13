@@ -60,7 +60,8 @@ sealed trait SpawnSequenceComponentResponse extends SmResponse
 object SpawnSequenceComponentResponse {
   case class Success(componentId: ComponentId) extends SpawnSequenceComponentResponse
 
-  sealed trait Failure extends SmFailure with SpawnSequenceComponentResponse
+  sealed trait Failure                                 extends SmFailure with SpawnSequenceComponentResponse
+  case class SpawnSequenceComponentFailed(msg: String) extends Failure
 }
 
 sealed trait ShutdownSequenceComponentResponse extends SmResponse
@@ -75,19 +76,13 @@ sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure
 object CommonFailure {
   case class ConfigurationMissing(obsMode: ObsMode) extends CommonFailure
   case class LocationServiceError(msg: String)
-      extends AgentError
-      with CommonFailure
+      extends CommonFailure
       with StartSequencerResponse.Failure
       with RestartSequencerResponse.Failure
       with ShutdownSequencersResponse.Failure
       with ShutdownSequenceComponentResponse.Failure
+      with SpawnSequenceComponentResponse.Failure
       with ProvisionResponse.Failure
-}
-
-sealed trait AgentError extends SpawnSequenceComponentResponse.Failure
-// todo : remove this
-object AgentError {
-  case class SpawnSequenceComponentFailed(msg: String) extends AgentError
 }
 
 sealed trait ProvisionResponse extends SmResponse
@@ -95,6 +90,7 @@ sealed trait ProvisionResponse extends SmResponse
 object ProvisionResponse {
   case object Success extends ProvisionResponse
 
-  sealed trait Failure                                                                           extends SmFailure with ProvisionResponse
-  case class ProvisioningFailed(failureResponses: List[AgentError.SpawnSequenceComponentFailed]) extends Failure
+  sealed trait Failure extends SmFailure with ProvisionResponse
+  case class ProvisioningFailed(failureResponses: List[SpawnSequenceComponentResponse.SpawnSequenceComponentFailed])
+      extends Failure
 }

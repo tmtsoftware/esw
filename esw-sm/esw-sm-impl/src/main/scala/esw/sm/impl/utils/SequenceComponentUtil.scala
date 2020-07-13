@@ -32,7 +32,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   def spawnSequenceComponent(machine: Prefix, name: String): Future[SpawnSequenceComponentResponse] = {
     val seqCompPrefix = Prefix(machine.subsystem, name)
     agentUtil
-      .spawnSequenceComponentFor(machine, name)
+      .spawnSequenceComponentOn(machine, name)
       .mapToAdt(
         _ => SpawnSequenceComponentResponse.Success(ComponentId(seqCompPrefix, SequenceComponent)),
         identity
@@ -47,7 +47,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       .listAkkaLocationsBy(SequenceComponent, withFilter = location => subsystems.contains(location.prefix.subsystem))
       .flatMapRight(filterIdleSequenceComponents)
 
-  // TODO : SIMPLIFY THE RETURN TYPE
   def loadScript(
       subSystem: Subsystem,
       obsMode: ObsMode
@@ -83,6 +82,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
 
+  def provision(config: ProvisionConfig): Future[ProvisionResponse] = agentUtil.provision(config)
+
   private def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[SequenceComponentNotAvailable, AkkaLocation]] =
     getIdleSequenceComponentFor(subsystem)
       .flatMap {
@@ -94,8 +95,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         case Some(location) => Right(location)
         case None           => Left(SequenceComponentNotAvailable(s"No available sequence components for $subsystem or $ESW"))
       }
-
-  def provision(config: ProvisionConfig): Future[ProvisionResponse] = agentUtil.provision(config)
 
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil

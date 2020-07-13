@@ -17,9 +17,9 @@ import esw.ocs.api.models.SequenceComponentState.Running
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
-import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
+import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse, StartSequencerResponse}
 import esw.testcommons.BaseTestSuite
@@ -53,14 +53,14 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
 
       val sequenceComponentApi = mock[SequenceComponentImpl]
-      when(agentUtil.spawnSequenceComponentFor(agent, seqCompName))
+      when(agentUtil.spawnSequenceComponentOn(agent, seqCompName))
         .thenReturn(futureRight(sequenceComponentApi))
 
       sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName).futureValue should ===(
         SpawnSequenceComponentResponse.Success(seqComp)
       )
 
-      verify(agentUtil).spawnSequenceComponentFor(agent, seqCompName)
+      verify(agentUtil).spawnSequenceComponentOn(agent, seqCompName)
     }
 
     "return failure if agent fails to spawn sequence component | ESW-337" in {
@@ -68,14 +68,14 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       val agent                                        = Prefix(TCS, "tcs.primary")
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
 
-      when(agentUtil.spawnSequenceComponentFor(agent, seqCompName))
+      when(agentUtil.spawnSequenceComponentOn(agent, seqCompName))
         .thenReturn(futureLeft(SpawnSequenceComponentFailed("spawn failed")))
 
       sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName).futureValue should ===(
         SpawnSequenceComponentFailed("spawn failed")
       )
 
-      verify(agentUtil).spawnSequenceComponentFor(agent, seqCompName)
+      verify(agentUtil).spawnSequenceComponentOn(agent, seqCompName)
     }
   }
 
