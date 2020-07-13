@@ -68,7 +68,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val configResponse = Success(componentId)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
-      when(sequencerUtil.createMappingAndStartSequencers(darkNight, darkNightSequencers))
+      when(sequencerUtil.startSequencers(darkNight, darkNightSequencers))
         .thenReturn(Future.successful(configResponse))
       val configureProbe = TestProbe[ConfigureResponse]()
 
@@ -80,7 +80,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       configureProbe.expectMessage(configResponse)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil).createMappingAndStartSequencers(darkNight, darkNightSequencers)
+      verify(sequencerUtil).startSequencers(darkNight, darkNightSequencers)
     }
 
     "return LocationServiceError if location service fails to return running observation mode | ESW-178" in {
@@ -105,7 +105,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       probe.expectMessage(ConflictingResourcesWithRunningObsMode(Set(clearSkies)))
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil, times(0)).createMappingAndStartSequencers(darkNight, darkNightSequencers)
+      verify(sequencerUtil, times(0)).startSequencers(darkNight, darkNightSequencers)
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164" in {

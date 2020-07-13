@@ -66,7 +66,7 @@ class SequenceManagerBehavior(
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
-          await(sequencerUtil.createMappingAndStartSequencers(requestedObsMode, sequencers))
+          await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
         case None => ConfigurationMissing(requestedObsMode)
       }
     }

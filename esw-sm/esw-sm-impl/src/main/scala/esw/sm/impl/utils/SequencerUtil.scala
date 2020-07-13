@@ -28,7 +28,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  def createMappingAndStartSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] =
+  def startSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] =
     async {
       val response = await(sequenceComponentUtil.idleSequenceComponentsFor(sequencers.subsystems))
       response match {
@@ -36,7 +36,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Right(locations) =>
           await(mapSequencersToSequenceComponents(sequencers.subsystems, locations) match {
             case Left(error)     => Future.successful(error)
-            case Right(mappings) => startSequencers(obsMode, mappings)
+            case Right(mappings) => startSequencersByMapping(obsMode, mappings)
           })
       }
     }
@@ -54,7 +54,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       case AllSequencers                       => shutdownSequencersAndHandleErrors(getAllSequencers)
     }
 
-  private[utils] def startSequencers(obsMode: ObsMode, mappings: List[SequencerToSeqCompMapping]): Future[ConfigureResponse] = {
+  private[utils] def startSequencersByMapping(obsMode: ObsMode, mappings: List[SequencerToSeqCompMapping]): Future[ConfigureResponse] = {
     parallel(mappings) { mapping =>
       sequenceComponentUtil.loadScript(mapping.sequencerSubsystem, obsMode, mapping.SeqCompLocation)
     }.mapToAdt(
