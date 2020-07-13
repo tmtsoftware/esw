@@ -7,7 +7,6 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
-import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
@@ -56,19 +55,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     }
 
   private[utils] def startSequencers(obsMode: ObsMode, mappings: List[(Subsystem, AkkaLocation)]): Future[ConfigureResponse] = {
-    val responsesF = Future.traverse(mappings) { mapping =>
+    parallel(mappings) { mapping =>
       val (subsystem, seqCompLocation) = mapping
       sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
-    }
-    responsesF
-      .map(_.sequence)
-      .mapToAdt(
-        _ => {
-          val masterSequencerId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
-          ConfigureResponse.Success(masterSequencerId)
-        },
-        errors => FailedToStartSequencers(errors.map(_.msg).toSet)
-      )
+    }.mapToAdt(
+      _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)),
+      errors => FailedToStartSequencers(errors.map(_.msg).toSet)
+    )
   }
 
   private[utils] def mapSequencersToSequenceComponents(
@@ -126,5 +119,5 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
 
-  private def sequential[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = FutureUtils.sequential(i)(f).map(_.sequence)
+  private def parallel[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = Future.traverse(i)(f).map(_.sequence)
 }
