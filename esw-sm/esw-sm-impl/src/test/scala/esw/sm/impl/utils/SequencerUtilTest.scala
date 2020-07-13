@@ -8,7 +8,7 @@ import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, TCS}
+import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequencerApi
@@ -18,9 +18,8 @@ import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{RestartSequencerResponse, ShutdownSequencersPolicy, ShutdownSequencersResponse}
-import esw.sm.impl.config.Sequencers
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationInt
@@ -46,34 +45,36 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "startSequencers" must {
     "start all the given sequencers | ESW-178" in {
-      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(eswDarkNightSequencer))))
-      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode))
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
 
       // returns success with master sequencer location after starting all the sequencers
-      sequencerUtil.startSequencers(darkNightObsMode, Sequencers(ESW, TCS)).futureValue should ===(
-        Success(eswDarkNightSequencer)
-      )
+      val response = sequencerUtil
+        .startSequencers(darkNightObsMode, List((ESW, eswPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc)))
+        .futureValue
 
-      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode)
-      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode)
+      response should ===(Success(eswDarkNightSequencer))
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc)
     }
 
     "return all the errors caused while starting the sequencers  | ESW-178" in {
       // load script error for ESW
       val loadScriptErrorMsg = "load script error"
       val loadScriptError    = futureLeft(LoadScriptError(loadScriptErrorMsg))
-      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode)).thenReturn(loadScriptError)
-      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc)).thenReturn(loadScriptError)
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
 
-      sequencerUtil
-        .startSequencers(darkNightObsMode, Sequencers(ESW, TCS))
-        .futureValue should ===(FailedToStartSequencers(Set(loadScriptErrorMsg)))
+      val response = sequencerUtil
+        .startSequencers(darkNightObsMode, List((ESW, eswPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc)))
+        .futureValue
 
-      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode)
-      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode)
+      response should ===(FailedToStartSequencers(Set(loadScriptErrorMsg)))
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc)
     }
   }
 
@@ -248,6 +249,35 @@ class SequencerUtilTest extends BaseTestSuite {
     }
   }
 
+  "mapSequencersToSequenceComponents" must {
+    "return mapping between provided sequencers and sequence components on first match basis | ESW-340" in {
+      val mapping = sequencerUtil.mapSequencersToSequenceComponents(
+        List(TCS, IRIS, ESW),
+        List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc, irisPrimarySeqCompLoc, eswSecondarySeqCompLoc)
+      )
+
+      mapping.rightValue should ===(List((ESW, eswPrimarySeqCompLoc), (IRIS, irisPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc)))
+    }
+
+    "return SequenceComponentNotAvailable if no sequence component available for any provided sequencer | ESW-340" in {
+      val mapping = sequencerUtil.mapSequencersToSequenceComponents(
+        List(TCS, IRIS, ESW),
+        List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc)
+      )
+
+      mapping.leftValue should ===(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
+    }
+
+    "return empty list if empty sequencer list provided | ESW-340" in {
+      val mapping = sequencerUtil.mapSequencersToSequenceComponents(
+        List.empty,
+        List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc)
+      )
+
+      mapping.rightValue should ===(List.empty)
+    }
+  }
+
   class TestSetup() {
     val darkNightObsMode: ObsMode  = ObsMode("darkNight")
     val clearSkiesObsMode: ObsMode = ObsMode("clearSkies")
@@ -268,6 +298,7 @@ class SequencerUtilTest extends BaseTestSuite {
     val eswPrimarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(ESW, "primary"), SequenceComponent))
     val eswSecondarySeqCompLoc: AkkaLocation = akkaLocation(ComponentId(Prefix(ESW, "secondary"), SequenceComponent))
     val tcsPrimarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(TCS, "primary"), SequenceComponent))
+    val irisPrimarySeqCompLoc: AkkaLocation  = akkaLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
 
     val masterSeqConnection: HttpConnection = HttpConnection(eswDarkNightSequencer)
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))

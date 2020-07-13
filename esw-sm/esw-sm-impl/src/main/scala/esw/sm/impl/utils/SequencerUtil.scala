@@ -55,7 +55,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       case AllSequencers                       => shutdownSequencersAndHandleErrors(getAllSequencers)
     }
 
-  private def startSequencers(obsMode: ObsMode, mappings: List[(Subsystem, AkkaLocation)]): Future[ConfigureResponse] = {
+  private[utils] def startSequencers(obsMode: ObsMode, mappings: List[(Subsystem, AkkaLocation)]): Future[ConfigureResponse] = {
     val responsesF = Future.traverse(mappings) { mapping =>
       val (subsystem, seqCompLocation) = mapping
       sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
@@ -71,7 +71,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       )
   }
 
-  private def mapSequencersToSequenceComponents(
+  private[utils] def mapSequencersToSequenceComponents(
       subsystems: List[Subsystem],
       seqCompLocations: List[AkkaLocation]
   ): Either[SequenceComponentNotAvailable, List[(Subsystem, AkkaLocation)]] = {
