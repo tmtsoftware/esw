@@ -54,7 +54,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       case AllSequencers                       => shutdownSequencersAndHandleErrors(getAllSequencers)
     }
 
-  private[utils] def startSequencersByMapping(obsMode: ObsMode, mappings: List[SequencerToSeqCompMapping]): Future[ConfigureResponse] = {
+  private[utils] def startSequencersByMapping(
+      obsMode: ObsMode,
+      mappings: List[SequencerToSeqCompMapping]
+  ): Future[ConfigureResponse] = {
     parallel(mappings) { mapping =>
       sequenceComponentUtil.loadScript(mapping.sequencerSubsystem, obsMode, mapping.SeqCompLocation)
     }.mapToAdt(
