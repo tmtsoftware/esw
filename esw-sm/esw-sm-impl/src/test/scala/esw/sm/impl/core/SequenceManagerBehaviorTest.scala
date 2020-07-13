@@ -68,7 +68,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val configResponse = Success(componentId)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
-      when(sequencerUtil.createMappingAndStartSequencers(darkNight, darkNightSequencers)).thenReturn(Future.successful(configResponse))
+      when(sequencerUtil.createMappingAndStartSequencers(darkNight, darkNightSequencers))
+        .thenReturn(Future.successful(configResponse))
       val configureProbe = TestProbe[ConfigureResponse]()
 
       // STATE TRANSITION: Idle -> Configure() -> ConfigurationInProcess -> Idle

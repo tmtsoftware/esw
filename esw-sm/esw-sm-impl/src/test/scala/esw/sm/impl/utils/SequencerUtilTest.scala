@@ -259,6 +259,17 @@ class SequencerUtilTest extends BaseTestSuite {
       mapping.rightValue should ===(List((ESW, eswPrimarySeqCompLoc), (IRIS, irisPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc)))
     }
 
+    "return mapping between provided sequencers and sequence components with ESW as fallback sequence component | ESW-340" in {
+      val mapping = sequencerUtil.mapSequencersToSequenceComponents(
+        List(TCS, IRIS, ESW),
+        List(eswPrimarySeqCompLoc, eswSecondarySeqCompLoc, irisPrimarySeqCompLoc)
+      )
+
+      mapping.rightValue should ===(
+        List((ESW, eswSecondarySeqCompLoc), (IRIS, irisPrimarySeqCompLoc), (TCS, eswPrimarySeqCompLoc))
+      )
+    }
+
     "return SequenceComponentNotAvailable if no sequence component available for any provided sequencer | ESW-340" in {
       val mapping = sequencerUtil.mapSequencersToSequenceComponents(
         List(TCS, IRIS, ESW),
