@@ -19,6 +19,7 @@ import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol._
+import esw.sm.impl.config.ProvisionConfig
 
 import scala.async.Async._
 import scala.concurrent.Future
@@ -46,6 +47,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       .listAkkaLocationsBy(SequenceComponent, withFilter = location => subsystems.contains(location.prefix.subsystem))
       .flatMapRight(filterIdleSequenceComponents)
 
+  // TODO : SIMPLIFY THE RETURN TYPE
   def loadScript(
       subSystem: Subsystem,
       obsMode: ObsMode
@@ -92,6 +94,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         case Some(location) => Right(location)
         case None           => Left(SequenceComponentNotAvailable(s"No available sequence components for $subsystem or $ESW"))
       }
+
+  def provision(config: ProvisionConfig): Future[ProvisionResponse] = agentUtil.provision(config)
 
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil

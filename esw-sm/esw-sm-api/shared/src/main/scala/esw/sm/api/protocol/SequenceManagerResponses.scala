@@ -81,10 +81,20 @@ object CommonFailure {
       with RestartSequencerResponse.Failure
       with ShutdownSequencersResponse.Failure
       with ShutdownSequenceComponentResponse.Failure
+      with ProvisionResponse.Failure
 }
 
 sealed trait AgentError extends SpawnSequenceComponentResponse.Failure
-
+// todo : remove this
 object AgentError {
   case class SpawnSequenceComponentFailed(msg: String) extends AgentError
+}
+
+sealed trait ProvisionResponse extends SmResponse
+
+object ProvisionResponse {
+  case object Success extends ProvisionResponse
+
+  sealed trait Failure                                                                           extends SmFailure with ProvisionResponse
+  case class ProvisioningFailed(failureResponses: List[AgentError.SpawnSequenceComponentFailed]) extends Failure
 }

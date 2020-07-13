@@ -24,6 +24,8 @@ object SequenceManagerMsg {
   case class ShutdownSequencers(policy: ShutdownSequencersPolicy, replyTo: ActorRef[ShutdownSequencersResponse])
       extends SequenceManagerIdleMsg
 
+  case class Provision(replyTo: ActorRef[ProvisionResponse]) extends SequenceManagerIdleMsg
+
   case class SpawnSequenceComponent(
       machine: Prefix,
       sequenceComponentName: String,

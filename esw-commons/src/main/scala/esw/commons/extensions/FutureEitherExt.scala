@@ -18,7 +18,7 @@ object FutureEitherExt {
     def flatMapRight[R1](f: R => Future[R1])(implicit executor: ExecutionContext): Future[Either[L, R1]] =
       flatMapE(f(_).map(Right(_)))
 
-    def flatMapE[R1, L1 >: L](f: R => Future[Either[L1, R1]])(implicit executor: ExecutionContext): Future[Either[L1, R1]] =
+    def flatMapE[L1 >: L, R1](f: R => Future[Either[L1, R1]])(implicit executor: ExecutionContext): Future[Either[L1, R1]] =
       futureEither.flatMap {
         case Left(l)  => Future.successful(Left(l))
         case Right(r) => f(r)

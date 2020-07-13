@@ -19,7 +19,7 @@ import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
 import esw.sm.api.protocol._
-import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
+import esw.sm.impl.config.{ObsModeConfig, ProvisionConfig, Resources, SequenceManagerConfig}
 import esw.sm.impl.utils.{SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
@@ -46,6 +46,7 @@ class SequenceManagerBehavior(
       case RestartSequencer(subsystem, obsMode, replyTo)  => restartSequencer(subsystem, obsMode, self, replyTo)
       case SpawnSequenceComponent(machine, name, replyTo) => spawnSequenceComponent(machine, name, self, replyTo)
       case ShutdownSequenceComponents(policy, replyTo)    => shutdownSequenceComponents(policy, self, replyTo)
+      case Provision(replyTo)                             => provision(self, replyTo)
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -132,6 +133,13 @@ class SequenceManagerBehavior(
   ): SMBehavior = {
     sequenceComponentUtil.shutdown(policy).map(self ! ProcessingComplete(_))
     processing(self, replyTo)
+  }
+
+  private def getProvisionConfig: ProvisionConfig = ???
+
+  private def provision(selfRef: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
+    sequenceComponentUtil.provision(getProvisionConfig).map(selfRef ! ProcessingComplete(_))
+    processing(selfRef, replyTo)
   }
 
   // processing some message, waiting for ProcessingComplete message
