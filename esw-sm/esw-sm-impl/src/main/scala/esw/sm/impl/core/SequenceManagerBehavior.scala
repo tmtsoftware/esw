@@ -135,7 +135,7 @@ class SequenceManagerBehavior(
     processing(self, replyTo)
   }
 
-  private def getProvisionConfig: ProvisionConfig = ???
+  private def getProvisionConfig: ProvisionConfig = ProvisionConfig(Map.empty)
 
   private def provision(selfRef: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
     sequenceComponentUtil.provision(getProvisionConfig).map(selfRef ! ProcessingComplete(_))
