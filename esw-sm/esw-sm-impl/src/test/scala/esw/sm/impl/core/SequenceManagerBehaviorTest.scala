@@ -64,7 +64,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "Configure" must {
 
-    "transition sm from Idle -> Processing -> Idle state and return location of master sequencer | ESW-178, ESW-164" in {
+    "transition sm from Idle -> Processing -> Idle state and return location of master sequencer | ESW-164, ESW-178" in {
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val configResponse = Success(componentId)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
@@ -83,7 +83,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil).startSequencers(darkNight, darkNightSequencers)
     }
 
-    "return LocationServiceError if location service fails to return running observation mode | ESW-178" in {
+    "return LocationServiceError if location service fails to return running observation mode | ESW-164, ESW-178" in {
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("Sequencer"))))
 
@@ -94,7 +94,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
     }
 
-    "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-169, ESW-168, ESW-170, ESW-179" in {
+    "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-169, ESW-168, ESW-170, ESW-179, ESW-178" in {
       // this simulates that ClearSkies observation is running
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, clearSkies.name), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
@@ -108,7 +108,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil, times(0)).startSequencers(darkNight, darkNightSequencers)
     }
 
-    "return ConfigurationMissing error when config for given obsMode is missing | ESW-164" in {
+    "return ConfigurationMissing error when config for given obsMode is missing | ESW-164, ESW-178" in {
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, randomObsMode.name), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
       val probe = TestProbe[ConfigureResponse]()

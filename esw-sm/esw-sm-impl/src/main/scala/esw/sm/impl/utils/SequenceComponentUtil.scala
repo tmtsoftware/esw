@@ -8,7 +8,6 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.FutureUtils
-import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
@@ -39,13 +38,16 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       )
   }
 
-  // todo: covert RegistrationListingFailed into LocationServiceError
+  // return mapping of subsystems for which idle sequence components are available
   def idleSequenceComponentsFor(
       subsystems: List[Subsystem]
-  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
+  ): Future[Either[LocationServiceError, Map[Subsystem, List[AkkaLocation]]]] = {
     locationServiceUtil
       .listAkkaLocationsBy(SequenceComponent, withFilter = location => subsystems.contains(location.prefix.subsystem))
       .flatMapRight(filterIdleSequenceComponents)
+      .mapRight(_.groupBy(_.prefix.subsystem))
+      .mapLeft(error => LocationServiceError(error.msg))
+  }
 
   def loadScript(
       subSystem: Subsystem,
