@@ -1,6 +1,5 @@
 package esw.sm.impl.utils
 
-import akka.Done
 import akka.actor.typed.{ActorSystem, Scheduler}
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
@@ -10,12 +9,10 @@ import esw.agent.api.{Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ProvisionResponse.ProvisioningFailed
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.{ProvisionResponse, SpawnSequenceComponentResponse}
 import esw.sm.impl.config.ProvisionConfig
@@ -25,6 +22,7 @@ import scala.concurrent.Future
 class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
+  // todo: remove the logic to resolving seq comp after spawning
   def spawnSequenceComponentOn(
       machine: Prefix,
       seqCompName: String
@@ -39,11 +37,13 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   }
 
   private def provisionOn(machines: List[AkkaLocation], provisionConfig: ProvisionConfig) = {
-
-    val spawnResponses = Future.traverse(provisionConfig.config.toList) { config =>
-      val neededSeqComps          = configToSeqComps(config)
-      val subsystemMachines       = machines.filter(_.prefix.subsystem == config._1)
-      val seqCompToMachineMapping = neededSeqComps.zip(cycle(subsystemMachines: _*))
+    // todo: handle the error case where machines not available for given subsystem
+    val spawnResponses = Future.traverse(provisionConfig.config.toList) { subsystemConfig =>
+      val neededSeqComps = configToSeqComps(subsystemConfig)
+      val subsystemMachines =
+        machines.filter(_.prefix.subsystem == subsystemConfig._1) // todo: remove filtering on every iteration
+      val seqCompToMachineMapping =
+        neededSeqComps.zip(cycle(subsystemMachines: _*)) // round robin distribution of components on machines
 
       Future.traverse(seqCompToMachineMapping)(x => spawnOn(x._2, x._1))
     }
@@ -51,11 +51,10 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   }
 
   private def spawnResToProvisionRes(responses: List[SpawnResponse]): ProvisionResponse = {
-    val segregatedResE = responses.collect {
-      case Spawned     => Left(Done)
-      case Failed(msg) => Right(SpawnSequenceComponentFailed(msg))
-    }
-    segregatedResE.sequence.map(ProvisioningFailed).getOrElse(ProvisionResponse.Success)
+    val failedResponses = responses.collect { case Failed(msg) => SpawnSequenceComponentFailed(msg) }
+
+    if (failedResponses.isEmpty) ProvisionResponse.Success
+    else ProvisionResponse.ProvisioningFailed(failedResponses)
   }
 
   private def configToSeqComps(config: (Subsystem, Int)) =

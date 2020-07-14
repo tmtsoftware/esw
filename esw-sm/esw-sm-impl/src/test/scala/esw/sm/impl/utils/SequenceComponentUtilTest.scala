@@ -21,7 +21,13 @@ import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
-import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse, StartSequencerResponse}
+import esw.sm.api.protocol.{
+  ProvisionResponse,
+  ShutdownSequenceComponentResponse,
+  SpawnSequenceComponentResponse,
+  StartSequencerResponse
+}
+import esw.sm.impl.config.ProvisionConfig
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -287,6 +293,17 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
         verify(mockSeqCompApi).restartScript()
       }
+    }
+  }
+
+  "provision" must {
+    "call agentUtil.provision with given provision config and return its response | ESW-346" in {
+      val provisionConfig = ProvisionConfig(Map(ESW -> 2))
+      when(agentUtil.provision(provisionConfig)).thenReturn(Future.successful(ProvisionResponse.Success))
+
+      sequenceComponentUtil.provision(provisionConfig).futureValue shouldBe ProvisionResponse.Success
+
+      verify(agentUtil).provision(provisionConfig)
     }
   }
 
