@@ -115,7 +115,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.find(connection)).thenReturn(futureRight(location))
 
       val agentUtil = new AgentUtil(locationServiceUtil) {
-        override private[utils] def makeAgent(loc: AkkaLocation) = agentClient
+        override private[utils] def makeAgentClient(loc: AkkaLocation) = agentClient
       }
 
       agentUtil.getAgent(agentPrefix).rightValue should ===(agentClient)
@@ -161,7 +161,7 @@ class AgentUtilTest extends BaseTestSuite {
       val irisMachineLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "primary"), Machine)), uri)
 
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
-        override def makeAgent(loc: AkkaLocation): AgentClient =
+        override def makeAgentClient(loc: AkkaLocation): AgentClient =
           if (loc.prefix.subsystem == ESW) eswMachine else irisMachine
       }
 
@@ -192,7 +192,7 @@ class AgentUtilTest extends BaseTestSuite {
       val secondaryMachineLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "secondary"), Machine)), uri)
 
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
-        override def makeAgent(loc: AkkaLocation): AgentClient =
+        override def makeAgentClient(loc: AkkaLocation): AgentClient =
           if (loc == primaryMachineLoc) primaryMachine else secondaryMachine
       }
 
@@ -224,7 +224,7 @@ class AgentUtilTest extends BaseTestSuite {
       val eswMachineLocation  = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Machine)), uri)
 
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
-        override def makeAgent(loc: AkkaLocation): AgentClient = eswMachine
+        override def makeAgentClient(loc: AkkaLocation): AgentClient = eswMachine
       }
 
       val errorMsg = "failed to spawn"
@@ -271,7 +271,7 @@ class AgentUtilTest extends BaseTestSuite {
       val eswAgentStatus: AgentStatus = AgentStatus(Map(eswPrimarySeqCompId -> Running, eswSecondarySeqCompId -> Initializing))
       val cswAgentStatus: AgentStatus = AgentStatus(Map(ComponentId(Prefix(CSW, "redis"), Service) -> Running))
       val agentUtil = new AgentUtil(locationServiceUtil) {
-        override private[utils] def makeAgent(loc: AkkaLocation) = {
+        override private[utils] def makeAgentClient(loc: AkkaLocation) = {
           loc.prefix.subsystem match {
             case ESW => eswAgentClient
             case CSW => cswAgentClient

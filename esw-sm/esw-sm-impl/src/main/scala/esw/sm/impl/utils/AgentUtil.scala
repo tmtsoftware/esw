@@ -5,7 +5,7 @@ import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.agent.api.{ComponentStatus, Failed, SpawnResponse, Spawned}
+import esw.agent.api._
 import esw.agent.client.AgentClient
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
@@ -60,7 +60,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   private def configToSeqComps(config: (Subsystem, Int)) =
     (1 to config._2).map(i => Prefix(config._1, s"${config._1}_$i"))
 
-  private def spawnOn(location: AkkaLocation, prefix: Prefix) = makeAgent(location).spawnSequenceComponent(prefix)
+  private def spawnOn(location: AkkaLocation, prefix: Prefix) = makeAgentClient(location).spawnSequenceComponent(prefix)
 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
@@ -73,10 +73,10 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   private[utils] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =
     locationServiceUtil
       .find(AkkaConnection(ComponentId(prefix, Machine)))
-      .mapRight(location => makeAgent(location))
+      .mapRight(location => makeAgentClient(location))
       .mapLeft(error => LocationServiceError(error.msg))
 
-  private[utils] def makeAgent(loc: AkkaLocation): AgentClient = {
+  private[utils] def makeAgentClient(loc: AkkaLocation): AgentClient = {
     implicit val sch: Scheduler = actorSystem.scheduler
     new AgentClient(loc)
   }
@@ -89,22 +89,21 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   private def cycle[T](elems: T*): LazyList[T] = LazyList(elems: _*) #::: cycle(elems: _*)
 
-  def getSequenceComponentsRunningOn(
-      agents: List[AkkaLocation]
-  ): Future[Map[ComponentId, List[ComponentId]]] = {
-    Future
-      .traverse(agents)(agentLocation =>
-        makeAgent(agentLocation).getAgentStatus
-          .map(agentStatus =>
-            agentStatus.componentStatus
-              .filter(componentIdStatus => {
-                val (componentId, componentStatus) = componentIdStatus
-                componentId.componentType == SequenceComponent && componentStatus == ComponentStatus.Running
-              })
-              .keys
-          )
-          .map(seqComIds => agentLocation.connection.componentId -> seqComIds.toList)
-      )
-      .map(_.toMap)
-  }
+  def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[Map[ComponentId, List[ComponentId]]] =
+    parallel(agents)(agent =>
+      makeAgentClient(agent).getAgentStatus
+        .map(filterRunningSeqComps)
+        .map(seqComps => agent.connection.componentId -> seqComps)
+    )
+
+  private def filterRunningSeqComps(agentStatus: AgentStatus): List[ComponentId] =
+    agentStatus.componentStatus
+      .filter { componentIdStatus =>
+        val (componentId, componentStatus) = componentIdStatus
+        componentId.componentType == SequenceComponent && componentStatus == ComponentStatus.Running
+      }
+      .keys
+      .toList
+
+  private def parallel[T, T1, T2](i: List[T])(f: T => Future[(T1, T2)]): Future[Map[T1, T2]] = Future.traverse(i)(f).map(_.toMap)
 }
