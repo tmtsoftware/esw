@@ -217,7 +217,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(secondaryMachine).spawnSequenceComponent(Prefix(ESW, "ESW_4"), None)
     }
 
-    "return ProvisioningFailed if spawning sequence component fails | ESW-346" in {
+    "return SpawningSequenceComponentsFailed if agent fails to spawn sequence component | ESW-346" in {
       val uri                 = new URI("some-uri")
       val eswMachine          = mock[AgentClient]
       val locationServiceUtil = mock[LocationServiceUtil]
@@ -234,7 +234,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       val provisionConfig = ProvisionConfig(Map(ESW -> 2))
       agentUtil.provision(provisionConfig).futureValue should ===(
-        ProvisionResponse.ProvisioningFailed(List(SpawnSequenceComponentFailed(errorMsg)))
+        ProvisionResponse.SpawningSequenceComponentsFailed(List(SpawnSequenceComponentFailed(errorMsg)))
       )
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
@@ -255,6 +255,20 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
     }
 
+    "return NoMachineFoundForSubsystems if any subsystem does not have machine available | ESW-346" in {
+      val setup = new TestSetup()
+      import setup._
+
+      val uri                = new URI("some-uri")
+      val eswMachineLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Machine)), uri)
+
+      when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(Future.successful(Right(List(eswMachineLocation))))
+
+      val provisionConfig = ProvisionConfig(Map(ESW -> 1, IRIS -> 1))
+      agentUtil.provision(provisionConfig).futureValue should ===(ProvisionResponse.NoMachineFoundForSubsystems(Set(IRIS)))
+
+      verify(locationServiceUtil).listAkkaLocationsBy(Machine)
+    }
   }
 
   "getSequenceComponentsRunningOn" must {

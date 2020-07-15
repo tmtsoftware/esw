@@ -1,6 +1,7 @@
 package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
+import csw.prefix.models.Subsystem
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
 
@@ -90,7 +91,8 @@ sealed trait ProvisionResponse extends SmResponse
 object ProvisionResponse {
   case object Success extends ProvisionResponse
 
-  sealed trait Failure extends SmFailure with ProvisionResponse
-  case class ProvisioningFailed(failureResponses: List[SpawnSequenceComponentResponse.SpawnSequenceComponentFailed])
+  sealed trait Failure                                               extends SmFailure with ProvisionResponse
+  case class NoMachineFoundForSubsystems(subsystems: Set[Subsystem]) extends Failure
+  case class SpawningSequenceComponentsFailed(failureResponses: List[SpawnSequenceComponentResponse.SpawnSequenceComponentFailed])
       extends Failure
 }
