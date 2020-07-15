@@ -5,7 +5,7 @@ import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.agent.api.{Failed, SpawnResponse, Spawned}
+import esw.agent.api.{ComponentStatus, Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
@@ -88,4 +88,23 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .mapLeft(e => LocationServiceError(e.msg))
 
   private def cycle[T](elems: T*): LazyList[T] = LazyList(elems: _*) #::: cycle(elems: _*)
+
+  def getSequenceComponentsRunningOn(
+      agents: List[AkkaLocation]
+  ): Future[Map[ComponentId, List[ComponentId]]] = {
+    Future
+      .traverse(agents)(agentLocation =>
+        makeAgent(agentLocation).getAgentStatus
+          .map(agentStatus =>
+            agentStatus.componentStatus
+              .filter(componentIdStatus => {
+                val (componentId, componentStatus) = componentIdStatus
+                componentId.componentType == SequenceComponent && componentStatus == ComponentStatus.Running
+              })
+              .keys
+          )
+          .map(seqComIds => agentLocation.connection.componentId -> seqComIds.toList)
+      )
+      .map(_.toMap)
+  }
 }

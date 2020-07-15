@@ -4,12 +4,13 @@ import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.agent.api.{Failed, SpawnResponse, Spawned}
+import csw.prefix.models.Subsystem.{CSW, ESW, IRIS, TCS}
+import esw.agent.api.ComponentStatus.{Initializing, Running}
+import esw.agent.api.{AgentStatus, Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.Timeouts
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
@@ -46,7 +47,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(Spawned))
       when(locationServiceUtil.resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration))
-        .thenReturn(futureRight(sequenceComponentLocation))
+        .thenReturn(futureRight(eswPrimarySeqCompLocation))
 
       agentUtil.spawnSequenceComponentOn(machinePrefix, seqCompName).rightValue shouldBe a[SequenceComponentApi]
 
@@ -256,6 +257,49 @@ class AgentUtilTest extends BaseTestSuite {
 
   }
 
+  "getSequenceComponentsRunningOn" must {
+    "return all running sequence components" in {
+      val eswAgent: AkkaLocation =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "machine1"), Machine)), new URI("some-uri"))
+      val cswAgent: AkkaLocation =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(CSW, "machine1"), Machine)), new URI("some-uri"))
+      val testSetup = new TestSetup()
+      import testSetup._
+      val eswAgentClient = mock[AgentClient]
+      val cswAgentClient = mock[AgentClient]
+
+      val eswAgentStatus: AgentStatus = AgentStatus(Map(eswPrimarySeqCompId -> Running, eswSecondarySeqCompId -> Initializing))
+      val cswAgentStatus: AgentStatus = AgentStatus(Map(ComponentId(Prefix(CSW, "redis"), Service) -> Running))
+      val agentUtil = new AgentUtil(locationServiceUtil) {
+        override private[utils] def makeAgent(loc: AkkaLocation) = {
+          loc.prefix.subsystem match {
+            case ESW => eswAgentClient
+            case CSW => cswAgentClient
+            case _   => agentClient
+          }
+        }
+      }
+      when(eswAgentClient.getAgentStatus).thenReturn(Future.successful(eswAgentStatus))
+      when(cswAgentClient.getAgentStatus).thenReturn(Future.successful(cswAgentStatus))
+
+      val expectedResponse: Map[ComponentId, List[ComponentId]] = Map(
+        eswAgent.connection.componentId -> List(eswPrimarySeqCompId),
+        cswAgent.connection.componentId -> List()
+      )
+      val seqComponents = agentUtil.getSequenceComponentsRunningOn(List(eswAgent, cswAgent)).futureValue
+
+      seqComponents should ===(expectedResponse)
+    }
+
+    "return empty list when no agent running" in {
+      val expectedResponse: Map[ComponentId, List[ComponentId]] = Map()
+      val seqComponents                                         = new TestSetup().agentUtil.getSequenceComponentsRunningOn(List.empty).futureValue
+
+      seqComponents should ===(expectedResponse)
+    }
+
+  }
+
   class TestSetup() {
     val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
     val agentClient: AgentClient                 = mock[AgentClient]
@@ -265,8 +309,13 @@ class AgentUtilTest extends BaseTestSuite {
         Future.successful(Right(agentClient))
     }
 
-    val sequenceComponentLocation: AkkaLocation =
-      AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), new URI("some-uri"))
+    val eswPrimarySeqCompId: ComponentId = ComponentId(Prefix(ESW, "primary"), SequenceComponent)
+    val eswPrimarySeqCompLocation: AkkaLocation =
+      AkkaLocation(AkkaConnection(eswPrimarySeqCompId), new URI("some-uri"))
+
+    val eswSecondarySeqCompId: ComponentId = ComponentId(Prefix(ESW, "secondary"), SequenceComponent)
+    val eswSecondarySeqCompLocation: AkkaLocation =
+      AkkaLocation(AkkaConnection(eswSecondarySeqCompId), new URI("some-uri"))
 
     def mockSpawnComponent(response: SpawnResponse): Unit =
       when(agentClient.spawnSequenceComponent(any[Prefix], any[Option[String]]))
