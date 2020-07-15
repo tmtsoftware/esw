@@ -6,8 +6,8 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
-import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
@@ -32,7 +32,6 @@ import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.prop.TableDrivenPropertyChecks
 
-import scala.collection.immutable.HashMap
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
@@ -180,8 +179,8 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
     }
   }
 
-  "idleSequenceComponentsFor" must {
-    "return list of sequence component locations that are idle for given subsystems | ESW-178" in {
+  "getAllIdleSequenceComponentsFor" must {
+    "return list of sequence component locations that are idle for all given subsystems | ESW-178" in {
       val eswPrimary   = sequenceComponentLocation("esw.primary")
       val eswSecondary = sequenceComponentLocation("esw.secondary")
       val tcsPrimary   = sequenceComponentLocation("tcs.primary")
@@ -200,21 +199,28 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
         }
       }
 
-      val actualMap: Map[Subsystem, List[AkkaLocation]] =
-        sequenceComponentUtil.idleSequenceComponentsFor(List(ESW, TCS, WFOS)).rightValue
+      val idleSequenceComponents: List[AkkaLocation] =
+        sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(ESW, TCS, WFOS)).rightValue
 
-      val expectedMap: Map[Subsystem, List[AkkaLocation]] =
-        HashMap(ESW -> List(eswPrimary, eswSecondary), WFOS -> List(wfosPrimary))
-
-      actualMap should ===(expectedMap)
+      idleSequenceComponents should ===(List(eswPrimary, wfosPrimary, eswSecondary))
     }
 
-    "return RegistrationListingFailed if location service returns error | ESW-178" in {
+    "return empty list if there are no idle sequence component | ESW-178" in {
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
+        .thenReturn(Future.successful(Right(List.empty)))
+
+      val idleSequenceComponents: List[AkkaLocation] =
+        sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(ESW, TCS, WFOS)).rightValue
+
+      idleSequenceComponents should ===(List.empty)
+    }
+
+    "return LocationServiceError if location service returns error | ESW-178" in {
       val registrationListingFailed = RegistrationListingFailed("error")
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Left(registrationListingFailed)))
 
-      val sequenceComponents = sequenceComponentUtil.idleSequenceComponentsFor(List(ESW, TCS, WFOS))
+      val sequenceComponents = sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(ESW, TCS, WFOS))
 
       sequenceComponents.leftValue should ===(LocationServiceError("error"))
     }

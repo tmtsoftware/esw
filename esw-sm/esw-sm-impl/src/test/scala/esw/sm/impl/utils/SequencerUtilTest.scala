@@ -281,62 +281,51 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "mapSequencersToSequenceComponents" must {
     "return mapping between provided sequencers and sequence components on first match basis | ESW-178" in {
-      sequencerUtil.mapSequencersToSequenceComponents(
-        Sequencers(TCS, IRIS, ESW),
-        Map(
-          TCS  -> List(tcsPrimarySeqCompLoc),
-          IRIS -> List(irisPrimarySeqCompLoc),
-          ESW  -> List(eswPrimarySeqCompLoc, eswSecondarySeqCompLoc)
-        )
-      ) match {
-        case Left(value)  => println(s"left ------> $value")
-        case Right(value) => println(s"right ------> $value")
-      }
-      val actualMap: Map[Subsystem, AkkaLocation] = sequencerUtil
+      val sequencerToSeqCompMapping: Map[Subsystem, AkkaLocation] = sequencerUtil
         .mapSequencersToSequenceComponents(
           Sequencers(TCS, IRIS, ESW),
-          Map(
-            TCS  -> List(tcsPrimarySeqCompLoc),
-            IRIS -> List(irisPrimarySeqCompLoc),
-            ESW  -> List(eswPrimarySeqCompLoc, eswSecondarySeqCompLoc)
-          )
+          List(tcsPrimarySeqCompLoc, irisPrimarySeqCompLoc, eswPrimarySeqCompLoc, eswSecondarySeqCompLoc)
         )
         .rightValue
+
       val expectedMap: Map[Subsystem, AkkaLocation] =
         Map(TCS -> tcsPrimarySeqCompLoc, IRIS -> irisPrimarySeqCompLoc, ESW -> eswPrimarySeqCompLoc)
 
-      actualMap should ===(expectedMap)
+      sequencerToSeqCompMapping should ===(expectedMap)
     }
 
     "return mapping between provided sequencers and sequence components with ESW as fallback sequence component | ESW-178" in {
-      val mapping = sequencerUtil.mapSequencersToSequenceComponents(
-        Sequencers(TCS, IRIS, ESW),
-        Map(IRIS -> List(irisPrimarySeqCompLoc), ESW -> List(eswPrimarySeqCompLoc, eswSecondarySeqCompLoc))
-      )
+      val sequencerToSeqCompMapping: Map[Subsystem, AkkaLocation] = sequencerUtil
+        .mapSequencersToSequenceComponents(
+          Sequencers(TCS, IRIS, ESW),
+          List(irisPrimarySeqCompLoc, eswPrimarySeqCompLoc, eswSecondarySeqCompLoc)
+        )
+        .rightValue
 
-      val actualMap: Map[Subsystem, AkkaLocation] = mapping.rightValue
       val expectedMap: Map[Subsystem, AkkaLocation] =
-        Map(TCS -> eswSecondarySeqCompLoc, IRIS -> irisPrimarySeqCompLoc, ESW -> eswPrimarySeqCompLoc)
+        Map(TCS -> eswPrimarySeqCompLoc, IRIS -> irisPrimarySeqCompLoc, ESW -> eswSecondarySeqCompLoc)
 
-      actualMap should ===(expectedMap)
+      sequencerToSeqCompMapping should ===(expectedMap)
     }
 
     "return SequenceComponentNotAvailable if no sequence component available for any provided sequencer | ESW-178" in {
-      val mapping = sequencerUtil.mapSequencersToSequenceComponents(
+      val sequencerToSeqCompMapping = sequencerUtil.mapSequencersToSequenceComponents(
         Sequencers(TCS, IRIS, ESW),
-        Map(ESW -> List(eswPrimarySeqCompLoc), TCS -> List(tcsPrimarySeqCompLoc))
+        List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc)
       )
 
-      mapping.leftValue should ===(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
+      sequencerToSeqCompMapping.leftValue should ===(
+        SequenceComponentNotAvailable("adequate amount of sequence components not available")
+      )
     }
   }
 
   "startSequencers" must {
     "return success when adequate idle sequence components are available and all sequencers are started successfully | ESW-178" in {
-      when(sequenceComponentUtil.idleSequenceComponentsFor(List(IRIS, ESW, TCS)))
+      when(sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS)))
         .thenReturn(
           Future
-            .successful(Right(Map(ESW -> List(eswPrimarySeqCompLoc, eswSecondarySeqCompLoc), TCS -> List(tcsPrimarySeqCompLoc))))
+            .successful(Right(List(eswPrimarySeqCompLoc, eswSecondarySeqCompLoc, tcsPrimarySeqCompLoc)))
         )
       when(sequenceComponentUtil.loadScript(argEq(ESW), argEq(darkNightObsMode), any[AkkaLocation]))
         .thenReturn(Future.successful(Right(Started(eswDarkNightSequencer))))
@@ -349,36 +338,36 @@ class SequencerUtilTest extends BaseTestSuite {
         Success(eswDarkNightSequencer)
       )
 
-      verify(sequenceComponentUtil).idleSequenceComponentsFor(List(IRIS, ESW, TCS))
+      verify(sequenceComponentUtil).getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS))
     }
 
     "return failure when adequate sequence components are not available to start sequencers | ESW-178" in {
-      when(sequenceComponentUtil.idleSequenceComponentsFor(List(IRIS, ESW, TCS)))
-        .thenReturn(Future.successful(Right(Map(ESW -> List(eswPrimarySeqCompLoc), TCS -> List(tcsPrimarySeqCompLoc)))))
+      when(sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS)))
+        .thenReturn(Future.successful(Right(List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc))))
 
       sequencerUtil.startSequencers(darkNightObsMode, Sequencers(IRIS, ESW, TCS)).futureValue should ===(
         SequenceComponentNotAvailable("adequate amount of sequence components not available")
       )
 
-      verify(sequenceComponentUtil).idleSequenceComponentsFor(List(IRIS, ESW, TCS))
+      verify(sequenceComponentUtil).getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS))
     }
 
     "return failure when location service error | ESW-178" in {
-      when(sequenceComponentUtil.idleSequenceComponentsFor(List(IRIS, ESW, TCS)))
+      when(sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS)))
         .thenReturn(Future.successful(Left(LocationServiceError("error"))))
 
       sequencerUtil.startSequencers(darkNightObsMode, Sequencers(IRIS, ESW, TCS)).futureValue should ===(
         LocationServiceError("error")
       )
 
-      verify(sequenceComponentUtil).idleSequenceComponentsFor(List(IRIS, ESW, TCS))
+      verify(sequenceComponentUtil).getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS))
     }
 
     "return failure when load script fails | ESW-178" in {
-      when(sequenceComponentUtil.idleSequenceComponentsFor(List(IRIS, ESW, TCS)))
+      when(sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS)))
         .thenReturn(
           Future.successful(
-            Right(Map(ESW -> List(eswPrimarySeqCompLoc), IRIS -> List(irisPrimarySeqCompLoc), TCS -> List(tcsPrimarySeqCompLoc)))
+            Right(List(eswPrimarySeqCompLoc, irisPrimarySeqCompLoc, tcsPrimarySeqCompLoc))
           )
         )
       val eswError  = "error for esw sequencer"
@@ -395,7 +384,7 @@ class SequencerUtilTest extends BaseTestSuite {
         FailedToStartSequencers(Set(eswError, irisError))
       )
 
-      verify(sequenceComponentUtil).idleSequenceComponentsFor(List(IRIS, ESW, TCS))
+      verify(sequenceComponentUtil).getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS))
       verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc)
       verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc)
       verify(sequenceComponentUtil).loadScript(IRIS, darkNightObsMode, irisPrimarySeqCompLoc)

@@ -13,6 +13,7 @@ object Resources {
   def apply(resources: Resource*): Resources = new Resources(resources.toSet)
 }
 
+//todo: subsystems in sequencers cannot be duplicate (replace List by Set)
 case class Sequencers(subsystems: List[Subsystem])
 object Sequencers {
   def apply(subsystems: Subsystem*): Sequencers = new Sequencers(subsystems.toList)

@@ -29,7 +29,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def startSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] =
     sequenceComponentUtil
-      .idleSequenceComponentsFor(sequencers.subsystems)
+      .getAllIdleSequenceComponentsFor(sequencers.subsystems)
       .flatMap {
         case Left(error) => Future.successful(error)
         case Right(idleSeqComps) =>
@@ -67,22 +67,25 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   // map sequencers to available seq comp for subsystem or ESW (fallback)
   private[utils] def mapSequencersToSequenceComponents(
       sequencers: Sequencers,
-      availableSeqComps: Map[Subsystem, List[AkkaLocation]]
+      seqCompLocations: List[AkkaLocation]
   ): Either[SequenceComponentNotAvailable, Map[Subsystem, AkkaLocation]] = {
-    val subsystemsWithoutSeqComp = sequencers.subsystems.diff(availableSeqComps.keys.toList)
+    val subsystems = sequencers.subsystems
+    var locations  = seqCompLocations
+    val mapping = (for {
+      subsystem       <- subsystems
+      seqCompLocation <- findMatchingSeqComp(subsystem, locations)
+    } yield {
+      locations = locations.filterNot(_.equals(seqCompLocation))
+      (subsystem, seqCompLocation)
+    }).toMap
 
-    def insufficientFallbackSeqComps = availableSeqComps.getOrElse(ESW, Nil).size - 1 < subsystemsWithoutSeqComp.size
-
-    if (insufficientFallbackSeqComps) {
+    if (mapping.size < subsystems.size)
       Left(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
-    }
-    else {
-      val subsystemToAvailableSeqCompMapping = availableSeqComps.view.mapValues(_.head).toMap
-      // assign extra ESW sequence components to subsystems for which sequence component is not available (fallback)
-      val subsystemToFallbackSeqCompMapping = subsystemsWithoutSeqComp.zip(availableSeqComps(ESW).tail).toMap
-      Right(subsystemToAvailableSeqCompMapping ++ subsystemToFallbackSeqCompMapping)
-    }
+    else Right(mapping)
   }
+
+  private def findMatchingSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =
+    seqCompLocations.find(_.prefix.subsystem == subsystem).orElse(seqCompLocations.find(_.prefix.subsystem == ESW))
 
   private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
     createSequencerClient(akkaLocation).getSequenceComponent

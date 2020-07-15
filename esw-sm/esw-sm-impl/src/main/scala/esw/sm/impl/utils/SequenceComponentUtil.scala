@@ -39,13 +39,12 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   }
 
   // return mapping of subsystems for which idle sequence components are available
-  def idleSequenceComponentsFor(
+  def getAllIdleSequenceComponentsFor(
       subsystems: List[Subsystem]
-  ): Future[Either[LocationServiceError, Map[Subsystem, List[AkkaLocation]]]] = {
+  ): Future[Either[LocationServiceError, List[AkkaLocation]]] = {
     locationServiceUtil
       .listAkkaLocationsBy(SequenceComponent, withFilter = location => subsystems.contains(location.prefix.subsystem))
       .flatMapRight(filterIdleSequenceComponents)
-      .mapRight(_.groupBy(_.prefix.subsystem))
       .mapLeft(error => LocationServiceError(error.msg))
   }
 
