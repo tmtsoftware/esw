@@ -40,7 +40,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val spawnSequenceComponentResponseRef    = TestProbe[SpawnSequenceComponentResponse]().ref
     val shutdownSequenceComponentResponseRef = TestProbe[ShutdownSequenceComponentResponse]().ref
 
-    val obsMode = ObsMode("IRIS_Darknight")
+    val obsMode = ObsMode("IRIS_DarkNight")
     val agent   = Prefix(ESW, "agent1")
 
     val testData = Table(
@@ -69,16 +69,16 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   }
 
   "should use sm serializer for ConfigureResponse (de)serialization" in {
-    val obsMode1 = ObsMode("IRIS_Darknight")
-    val obsMode2 = ObsMode("IRIS_ClearSkies")
+    val darkNight  = ObsMode("IRIS_DarkNight")
+    val clearSkies = ObsMode("IRIS_ClearSkies")
 
     val testData = Table(
       "Sequence Manager ConfigureResponse models",
       ConfigureResponse.Success(ComponentId(Prefix(ESW, "primary"), Sequencer)),
       ConfigureResponse.FailedToStartSequencers(Set("Error1", "Error2")),
-      ConfigureResponse.ConflictingResourcesWithRunningObsMode(Set(obsMode1, obsMode2)),
+      ConfigureResponse.ConflictingResourcesWithRunningObsMode(Set(darkNight, clearSkies)),
       LocationServiceError("error"),
-      ConfigurationMissing(obsMode1)
+      ConfigurationMissing(darkNight)
     )
 
     forAll(testData) { configureResponse =>
@@ -91,12 +91,12 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   }
 
   "should use sm serializer for GetRunningObsModesResponse (de)serialization" in {
-    val obsMode1 = ObsMode("IRIS_Darknight")
-    val obsMode2 = ObsMode("IRIS_ClearSkies")
+    val darkNight  = ObsMode("IRIS_DarkNight")
+    val clearSkies = ObsMode("IRIS_ClearSkies")
 
     val testData = Table(
       "Sequence Manager GetRunningObsModesResponse models",
-      GetRunningObsModesResponse.Success(Set(obsMode1, obsMode2)),
+      GetRunningObsModesResponse.Success(Set(darkNight, clearSkies)),
       GetRunningObsModesResponse.Failed("error")
     )
 
@@ -110,7 +110,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   }
 
   "should use sm serializer for StartSequencerResponse (de)serialization" in {
-    val componentId = ComponentId(Prefix("IRIS.darknight"), Sequencer)
+    val componentId = ComponentId(Prefix("IRIS.DarkNight"), Sequencer)
     val testData = Table(
       "Sequence Manager StartSequencerResponse models",
       StartSequencerResponse.Started(componentId),
