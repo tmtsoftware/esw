@@ -30,11 +30,12 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
     ("configure", _.configure(IRIS_CAL)),
     ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
-    ("stopSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
+    ("shutdownSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
     ("shutdownSubsystemSequencers", _.shutdownSubsystemSequencers(ESW)),
     ("shutdownObsModeSequencers", _.shutdownObsModeSequencers(IRIS_CAL)),
     ("shutdownAllSequencers", _.shutdownAllSequencers()),
-    ("shutdownSequenceComponent", _.shutdownSequenceComponent(seqCompPrefix))
+    ("shutdownSequenceComponent", _.shutdownSequenceComponent(seqCompPrefix)),
+    ("shutdownAllSequenceComponents", _.shutdownAllSequenceComponents())
   )
 
   override def afterEach(): Unit = {
@@ -65,7 +66,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       }
     }
 
-    "return 200 when configure, clean request has ESW_user role" in {
+    "return 200 when configure, clean request has ESW_user role | ESW-332" in {
       val eswSeqCompPrefix   = Prefix(ESW, "primary")
       val irisSeqCompPrefix  = Prefix(IRIS, "primary")
       val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
@@ -83,7 +84,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.shutdownObsModeSequencers(IRIS_CAL).futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
-    "return 200 when start sequencer, restart sequencer and shutdown sequencer request has ESW_user role" in {
+    "return 200 when start sequencer, restart sequencer and shutdown sequencer request has ESW_user role | ESW-332" in {
       val eswSeqCompPrefix = Prefix(ESW, "primary")
       TestSetup.startSequenceComponents(eswSeqCompPrefix)
 
@@ -98,7 +99,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.shutdownSequencer(ESW, WFOS_Cal).futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
-    "return 200 when shutdown all sequencer request has ESW_user role" in {
+    "return 200 when shutdown all sequencer request has ESW_user role | ESW-332" in {
       val eswSeqCompPrefix  = Prefix(ESW, "primary")
       val irisSeqCompPrefix = Prefix(IRIS, "primary")
       val tcsSeqCompPrefix  = Prefix(TCS, "primary")
@@ -115,12 +116,12 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.shutdownAllSequencers().futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
-    "return 200 even when get running obs modes request does not have token" in {
+    "return 200 even when get running obs modes request does not have token | ESW-332" in {
       val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, () => None)
       sequenceManagerApi.getRunningObsModes.futureValue shouldBe GetRunningObsModesResponse.Success(Set.empty)
     }
 
-    "return 200 when shutdown sequence component request has ESW_user role" in {
+    "return 200 when shutdown sequence component request has ESW_user role | ESW-332" in {
       val eswSeqCompPrefix = Prefix(ESW, "primary")
 
       TestSetup.startSequenceComponents(eswSeqCompPrefix)
@@ -130,6 +131,20 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       // shutdown sequence component
       sequenceManagerApi
         .shutdownSequenceComponent(eswSeqCompPrefix)
+        .futureValue shouldBe ShutdownSequenceComponentResponse.Success
+    }
+
+    "return 200 when shutdown all sequence components request has ESW_user role | ESW-332" in {
+      val eswSeqCompPrefix1 = Prefix(ESW, "primary")
+      val eswSeqCompPrefix2 = Prefix(ESW, "secondary")
+
+      TestSetup.startSequenceComponents(eswSeqCompPrefix1, eswSeqCompPrefix2)
+
+      val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, tokenWithEswUserRole)
+
+      // shutdown sequence component
+      sequenceManagerApi
+        .shutdownAllSequenceComponents()
         .futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
   }
