@@ -45,7 +45,7 @@ class SequencerUtilTest extends BaseTestSuite {
     system.whenTerminated.futureValue
   }
 
-  "startSequencers" must {
+  "startSequencersByMapping" must {
     "start all the given sequencers | ESW-178" in {
       when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(eswDarkNightSequencer))))
@@ -308,7 +308,7 @@ class SequencerUtilTest extends BaseTestSuite {
       sequencerToSeqCompMapping should ===(expectedMap)
     }
 
-    "return SequenceComponentNotAvailable if no sequence component available for any provided sequencer | ESW-178" in {
+    "return SequenceComponentNotAvailable if no sequence component available for any provided sequencer | ESW-178, ESW-340" in {
       val sequencerToSeqCompMapping = sequencerUtil.mapSequencersToSequenceComponents(
         Sequencers(TCS, IRIS, ESW),
         List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc)
@@ -341,7 +341,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS))
     }
 
-    "return failure when adequate sequence components are not available to start sequencers | ESW-178" in {
+    "return failure when adequate sequence components are not available to start sequencers | ESW-178, ESW-340" in {
       when(sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS)))
         .thenReturn(Future.successful(Right(List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc))))
 

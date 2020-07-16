@@ -16,7 +16,7 @@ import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
 
 import scala.concurrent.Await
@@ -116,9 +116,17 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManagerClient.shutdownObsModeSequencers(WFOS_CAL).futureValue
   }
 
-  "start sequencer on esw sequence component as fallback if subsystem sequence component is not available | ESW-164, ESW-171" in {
-    TestSetup.startSequenceComponents(Prefix(ESW, "primary"), Prefix(ESW, "secondary"), Prefix(IRIS, "primary"))
+  "Use ESW sequence components as fallback for other subsystems and give error if enough components are not available| ESW-164, ESW-171, ESW-340" in {
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
+
+    // Start only 2 sequence components
+    TestSetup.startSequenceComponents(Prefix(ESW, "primary"), Prefix(IRIS, "primary"))
+
+    // ESW-340: Configuring without sufficient number of sequence components
+    sequenceManagerClient.configure(IRIS_CAL).futureValue shouldBe a[SequenceComponentNotAvailable]
+
+    // Start one more ESW component for AOESW sequencer
+    TestSetup.startSequenceComponents(Prefix(ESW, "secondary"))
 
     // ************ Configure for observing mode: sequencers required: [IRIS, ESW, AOESW] ************************
     sequenceManagerClient.configure(IRIS_CAL).futureValue shouldBe a[ConfigureResponse.Success]

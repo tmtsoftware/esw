@@ -246,8 +246,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
     forAll(loadScriptResponses) { (seqCompApiResponse, loadScriptResponse) =>
       s"return ${loadScriptResponse.getClass.getSimpleName} when seqCompApi returns ${seqCompApiResponse.getClass.getSimpleName} | ESW-340" in {
-        when(sequenceComponentApi.loadScript(ESW, darkNight))
-          .thenReturn(Future.successful(seqCompApiResponse))
+        when(sequenceComponentApi.loadScript(ESW, darkNight)).thenReturn(Future.successful(seqCompApiResponse))
 
         val eventualResponse: Future[Either[StartSequencerResponse.Failure, StartSequencerResponse.Started]] =
           sequenceComponentUtil.loadScript(ESW, darkNight, sequenceComponentLocation("esw.primary"))
