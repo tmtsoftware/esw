@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorSystem, Scheduler}
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.prefix.models.Prefix
 import esw.agent.api._
 import esw.agent.client.AgentClient
 import esw.commons.Timeouts
@@ -45,27 +45,19 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       }
       .map(_.toMap)
 
-  private def provisionOn(machines: List[AkkaLocation], provisionConfig: ProvisionConfig) = {
-    val subsystemMappedMachines  = machines.groupBy(_.prefix.subsystem)
-    val subsystemsWithoutMachine = provisionConfig.config.keySet.diff(subsystemMappedMachines.keySet)
+  private def provisionOn(
+      machines: List[AkkaLocation],
+      provisionConfig: ProvisionConfig
+  ): Future[Either[ProvisionResponse.NoMachineFoundForSubsystems, List[SpawnResponse]]] =
+    Future
+      .successful(AgentAllocator(machines).allocate(provisionConfig))
+      .flatMapRight(x => spawnComponentsByMapping(x.flatMap(_.toList)))
 
-    if (subsystemsWithoutMachine.isEmpty) spawnSeqCompsOn(subsystemMappedMachines, provisionConfig).map(Right(_))
-    else Future.successful(Left(ProvisionResponse.NoMachineFoundForSubsystems(subsystemsWithoutMachine)))
-  }
-
-  private def spawnSeqCompsOn(subsystemMappedMachines: Map[Subsystem, List[AkkaLocation]], provisionConfig: ProvisionConfig) = {
-
-    val spawnResponses = Future.traverse(provisionConfig.config.toList) {
-      case (subsystem, noOfSeqComp) =>
-        val neededSeqComps    = configToSeqComps(subsystem, noOfSeqComp)
-        val subsystemMachines = subsystemMappedMachines(subsystem)
-
-        // round robin distribution of components on machines
-        val seqCompToMachineMapping = neededSeqComps.zip(cycle(subsystemMachines: _*))
-        Future.traverse(seqCompToMachineMapping) { case (seqCompPrefix, agent) => spawnOn(agent, seqCompPrefix) }
+  private def spawnComponentsByMapping(mappings: List[(Prefix, AkkaLocation)]) =
+    Future.traverse(mappings) { seqCompMapping =>
+      val (prefix, machine) = seqCompMapping
+      makeAgentClient(machine).spawnSequenceComponent(prefix)
     }
-    spawnResponses.map(_.flatten)
-  }
 
   private def spawnResToProvisionRes(responses: List[SpawnResponse]): ProvisionResponse = {
     val failedResponses = responses.collect { case Failed(msg) => SpawnSequenceComponentFailed(msg) }
@@ -73,11 +65,6 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
     if (failedResponses.isEmpty) ProvisionResponse.Success
     else ProvisionResponse.SpawningSequenceComponentsFailed(failedResponses)
   }
-
-  private def configToSeqComps(subsystem: Subsystem, noOfSeqComps: Int) =
-    (1 to noOfSeqComps).map(i => Prefix(subsystem, s"${subsystem}_$i"))
-
-  private def spawnOn(location: AkkaLocation, prefix: Prefix) = makeAgentClient(location).spawnSequenceComponent(prefix)
 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
@@ -112,6 +99,4 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       }
       .keys
       .toList
-
-  private def cycle[T](elems: T*): LazyList[T] = LazyList(elems: _*) #::: cycle(elems: _*)
 }

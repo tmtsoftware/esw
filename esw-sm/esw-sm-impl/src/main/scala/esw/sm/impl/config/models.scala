@@ -27,4 +27,5 @@ case class SequenceManagerConfig(obsModes: Map[ObsMode, ObsModeConfig]) {
   def obsModeConfig(obsMode: ObsMode): Option[ObsModeConfig] = obsModes.get(obsMode)
 }
 
+//todo : validate count is not zero
 case class ProvisionConfig(config: Map[Subsystem, Int])
