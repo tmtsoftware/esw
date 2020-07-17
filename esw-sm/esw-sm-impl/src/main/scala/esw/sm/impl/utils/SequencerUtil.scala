@@ -79,9 +79,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       (subsystem, seqCompLocation)
     }).toMap
 
-    if (mapping.size < subsystems.size)
-      Left(SequenceComponentNotAvailable("adequate amount of sequence components not available"))
-    else Right(mapping)
+    val diff = subsystems.diff(mapping.keys.toList)
+    if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(diff: _*))
   }
 
   private def findMatchingSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =

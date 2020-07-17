@@ -310,13 +310,13 @@ class SequencerUtilTest extends BaseTestSuite {
 
     "return SequenceComponentNotAvailable if no sequence component available for any provided sequencer | ESW-178, ESW-340" in {
       val sequencerToSeqCompMapping = sequencerUtil.mapSequencersToSequenceComponents(
-        Sequencers(TCS, IRIS, ESW),
+        Sequencers(ESW, TCS, IRIS),
         List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc)
       )
 
-      sequencerToSeqCompMapping.leftValue should ===(
-        SequenceComponentNotAvailable("adequate amount of sequence components not available")
-      )
+      val response = sequencerToSeqCompMapping.leftValue
+      response shouldBe a[SequenceComponentNotAvailable]
+      response.subsystems shouldBe List(IRIS) // because IRIS is last in the List.
     }
   }
 
@@ -345,9 +345,9 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS)))
         .thenReturn(Future.successful(Right(List(eswPrimarySeqCompLoc, tcsPrimarySeqCompLoc))))
 
-      sequencerUtil.startSequencers(darkNightObsMode, Sequencers(IRIS, ESW, TCS)).futureValue should ===(
-        SequenceComponentNotAvailable("adequate amount of sequence components not available")
-      )
+      sequencerUtil
+        .startSequencers(darkNightObsMode, Sequencers(IRIS, ESW, TCS))
+        .futureValue shouldBe a[SequenceComponentNotAvailable]
 
       verify(sequenceComponentUtil).getAllIdleSequenceComponentsFor(List(IRIS, ESW, TCS))
     }

@@ -94,7 +94,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       }
       .map {
         case Some(location) => Right(location)
-        case None           => Left(SequenceComponentNotAvailable(s"No available sequence components for $subsystem or $ESW"))
+        case None           => Left(SequenceComponentNotAvailable(subsystem))
       }
 
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
