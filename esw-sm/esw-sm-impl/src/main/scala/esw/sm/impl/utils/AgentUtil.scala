@@ -36,6 +36,13 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .flatMapE(provisionOn(_, provisionConfig))
       .mapToAdt(spawnResToProvisionRes, identity)
 
+  def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[Map[ComponentId, List[ComponentId]]] =
+    parallel(agents)(agent =>
+      makeAgentClient(agent).getAgentStatus
+        .map(filterRunningSeqComps)
+        .map(seqComps => agent.connection.componentId -> seqComps)
+    )
+
   private def provisionOn(machines: List[AkkaLocation], provisionConfig: ProvisionConfig) = {
     val subsystemMappedMachines  = machines.groupBy(_.prefix.subsystem)
     val subsystemsWithoutMachine = provisionConfig.config.keySet.diff(subsystemMappedMachines.keySet)
@@ -97,13 +104,6 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), within = Timeouts.DefaultResolveLocationDuration)
       .mapRight(loc => new SequenceComponentImpl(loc))
       .mapLeft(e => LocationServiceError(e.msg))
-
-  def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[Map[ComponentId, List[ComponentId]]] =
-    parallel(agents)(agent =>
-      makeAgentClient(agent).getAgentStatus
-        .map(filterRunningSeqComps)
-        .map(seqComps => agent.connection.componentId -> seqComps)
-    )
 
   private def filterRunningSeqComps(agentStatus: AgentStatus): List[ComponentId] =
     agentStatus.componentStatus

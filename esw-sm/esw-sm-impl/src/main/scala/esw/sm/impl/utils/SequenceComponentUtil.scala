@@ -85,6 +85,17 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def provision(config: ProvisionConfig): Future[ProvisionResponse] = agentUtil.provision(config)
 
+  def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[Map[ComponentId, Option[AkkaLocation]]] = {
+    Future
+      .traverse(seqCompIds) { seqComp =>
+        locationServiceUtil.find(AkkaConnection(seqComp)).flatMap {
+          case Left(locationError)    => Future.successful(List.empty)
+          case Right(seqCompLocation) => createSequenceComponentImpl(seqCompLocation).status.map(s => List(seqComp -> s.response))
+        }
+      }
+      .map(_.flatten.toMap)
+  }
+
   private def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[SequenceComponentNotAvailable, AkkaLocation]] =
     getIdleSequenceComponentFor(subsystem)
       .flatMap {

@@ -272,18 +272,24 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   "getSequenceComponentsRunningOn" must {
-    "return all running sequence components" in {
-      val eswAgent: AkkaLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "machine1"), Machine)), new URI("some-uri"))
-      val cswAgent: AkkaLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(CSW, "machine1"), Machine)), new URI("some-uri"))
+    "return all running sequence components on all agents | ESW-349" in {
       val testSetup = new TestSetup()
       import testSetup._
+
+      // machine running esw seq comps
+      val eswAgent: AkkaLocation =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "machine1"), Machine)), new URI("some-uri"))
+
+      // machine running Redis
+      val cswAgent: AkkaLocation =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(CSW, "machine1"), Machine)), new URI("some-uri"))
+
       val eswAgentClient = mock[AgentClient]
       val cswAgentClient = mock[AgentClient]
 
       val eswAgentStatus: AgentStatus = AgentStatus(Map(eswPrimarySeqCompId -> Running, eswSecondarySeqCompId -> Initializing))
       val cswAgentStatus: AgentStatus = AgentStatus(Map(ComponentId(Prefix(CSW, "redis"), Service) -> Running))
+
       val agentUtil = new AgentUtil(locationServiceUtil) {
         override private[utils] def makeAgentClient(loc: AkkaLocation) = {
           loc.prefix.subsystem match {
@@ -293,25 +299,31 @@ class AgentUtilTest extends BaseTestSuite {
           }
         }
       }
+
       when(eswAgentClient.getAgentStatus).thenReturn(Future.successful(eswAgentStatus))
       when(cswAgentClient.getAgentStatus).thenReturn(Future.successful(cswAgentStatus))
 
+      // expected map will include sequence components which are in running state
       val expectedResponse: Map[ComponentId, List[ComponentId]] = Map(
         eswAgent.connection.componentId -> List(eswPrimarySeqCompId),
         cswAgent.connection.componentId -> List()
       )
+
       val seqComponents = agentUtil.getSequenceComponentsRunningOn(List(eswAgent, cswAgent)).futureValue
 
       seqComponents should ===(expectedResponse)
     }
 
-    "return empty list when no agent running" in {
+    "return empty list when no agent running | ESW-349" in {
+      val setup = new TestSetup()
+      import setup._
+
       val expectedResponse: Map[ComponentId, List[ComponentId]] = Map()
-      val seqComponents                                         = new TestSetup().agentUtil.getSequenceComponentsRunningOn(List.empty).futureValue
+
+      val seqComponents = agentUtil.getSequenceComponentsRunningOn(List.empty).futureValue
 
       seqComponents should ===(expectedResponse)
     }
-
   }
 
   class TestSetup() {
