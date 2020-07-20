@@ -20,7 +20,7 @@ object Libs {
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.3.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "9374d69"
 
-  val `ammonite` = "com.lihaoyi" % "ammonite" % "2.1.4" cross CrossVersion.full
+  val `ammonite` = "com.lihaoyi" % "ammonite" % "2.2.0" cross CrossVersion.full
 }
 
 object Csw {
