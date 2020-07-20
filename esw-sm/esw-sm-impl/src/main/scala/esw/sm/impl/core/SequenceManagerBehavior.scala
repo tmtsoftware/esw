@@ -2,7 +2,7 @@ package esw.sm.impl.core
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import csw.location.api.models.ComponentType.Sequencer
+import csw.location.api.models.ComponentType.{Machine, Sequencer}
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Subsystem.ESW
@@ -14,13 +14,13 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
-import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
+import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg}
+import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
 import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, ProvisionConfig, Resources, SequenceManagerConfig}
-import esw.sm.impl.utils.{SequenceComponentUtil, SequencerUtil}
+import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
@@ -29,6 +29,7 @@ import scala.reflect.ClassTag
 class SequenceManagerBehavior(
     config: SequenceManagerConfig,
     locationServiceUtil: LocationServiceUtil,
+    agentUtil: AgentUtil,
     sequencerUtil: SequencerUtil,
     sequenceComponentUtil: SequenceComponentUtil
 )(implicit val actorSystem: ActorSystem[_]) {
@@ -163,7 +164,26 @@ class SequenceManagerBehavior(
     msg match {
       case GetRunningObsModes(replyTo)      => runningObsModesResponse.foreach(replyTo ! _)
       case GetSequenceManagerState(replyTo) => replyTo ! currentState
+      case GetAgentStatus(replyTo)          => getAgentStatus(replyTo)
     }
+
+  // todo: Extract in class
+  private def getAgentStatus(
+      replyTo: ActorRef[GetAgentStatusResponse]
+  ): Future[Unit] = {
+    locationServiceUtil
+      .listAkkaLocationsBy(Machine)
+      .flatMapRight { agentLocations =>
+        agentUtil.getSequenceComponentsRunningOn(agentLocations).flatMap { agentToSeqCompMap =>
+          Future.traverse(agentToSeqCompMap.toList) {
+            case (agent, seqComps) =>
+              sequenceComponentUtil.getSequenceComponentStatus(seqComps).map(seqCompStatus => agent -> seqCompStatus)
+          }
+        }
+      }
+      .mapToAdt(mapping => GetAgentStatusResponse.Success(mapping.toMap), e => LocationServiceError(e.msg))
+      .map(replyTo ! _)
+  }
 
   private def runningObsModesResponse =
     getRunningObsModes.mapToAdt(

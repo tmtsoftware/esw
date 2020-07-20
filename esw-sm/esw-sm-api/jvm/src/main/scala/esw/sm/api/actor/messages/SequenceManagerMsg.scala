@@ -12,6 +12,7 @@ sealed trait SequenceManagerMsg
 sealed trait SequenceManagerRemoteMsg extends SequenceManagerMsg with SmAkkaSerializable
 
 sealed trait SequenceManagerIdleMsg extends SequenceManagerRemoteMsg
+sealed trait CommonMessage          extends SequenceManagerRemoteMsg
 
 object SequenceManagerMsg {
   case class Configure(obsMode: ObsMode, replyTo: ActorRef[ConfigureResponse]) extends SequenceManagerIdleMsg
@@ -37,9 +38,9 @@ object SequenceManagerMsg {
       replyTo: ActorRef[ShutdownSequenceComponentResponse]
   ) extends SequenceManagerIdleMsg
 
-  sealed trait CommonMessage                                                   extends SequenceManagerRemoteMsg
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
+  case class GetAgentStatus(replyTo: ActorRef[GetAgentStatusResponse])         extends CommonMessage
 
   private[sm] case class ProcessingComplete[T <: SmResponse](res: T) extends SequenceManagerMsg
 }

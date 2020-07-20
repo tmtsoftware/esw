@@ -18,6 +18,7 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi, securityDi
   override def handle(request: SequenceManagerPostRequest): Route =
     request match {
       case GetRunningObsModes                    => complete(getRunningObsModes)
+      case GetAgentStatus                        => complete(getAgentStatus)
       case Configure(obsMode)                    => sPost(complete(configure(obsMode)))
       case StartSequencer(subsystem, obsMode)    => sPost(complete(startSequencer(subsystem, obsMode)))
       case RestartSequencer(subsystem, obsMode)  => sPost(complete(restartSequencer(subsystem, obsMode)))

@@ -3,7 +3,7 @@ package esw.sm.handler
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.SecurityDirectives
-import csw.location.api.models.{ComponentId, ComponentType}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
@@ -148,6 +148,16 @@ class SequenceManagerPostHandlerTest
       Post("/post-endpoint", SpawnSequenceComponent(agent, seqCompName).narrow) ~> route ~> check {
         verify(sequenceManagerApi).spawnSequenceComponent(agent, seqCompName)
         responseAs[SpawnSequenceComponentResponse] should ===(SpawnSequenceComponentResponse.Success(seqComp))
+      }
+    }
+
+    "return agent status for all running agents | ESW-349" in {
+      val response = GetAgentStatusResponse.Success(Map.empty[ComponentId, Map[ComponentId, Option[AkkaLocation]]])
+      when(sequenceManagerApi.getAgentStatus).thenReturn(Future.successful(response))
+
+      Post("/post-endpoint", GetAgentStatus.narrow) ~> route ~> check {
+        verify(sequenceManagerApi).getAgentStatus
+        responseAs[GetAgentStatusResponse] should ===(response)
       }
     }
   }

@@ -4,6 +4,7 @@ import csw.location.api.models.ComponentId
 import csw.prefix.models.Subsystem
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
+import esw.sm.api.protocol.AgentStatus.AgentStatus
 
 private[protocol] sealed trait SmFailure extends Throwable
 
@@ -91,6 +92,7 @@ object CommonFailure {
       with ShutdownSequenceComponentResponse.Failure
       with SpawnSequenceComponentResponse.Failure
       with ProvisionResponse.Failure
+      with GetAgentStatusResponse.Failure
 }
 
 sealed trait ProvisionResponse extends SmResponse
@@ -102,4 +104,12 @@ object ProvisionResponse {
   case class NoMachineFoundForSubsystems(subsystems: Set[Subsystem]) extends Failure
   case class SpawningSequenceComponentsFailed(failureResponses: List[SpawnSequenceComponentResponse.SpawnSequenceComponentFailed])
       extends Failure
+}
+
+sealed trait GetAgentStatusResponse extends SmResponse
+
+object GetAgentStatusResponse {
+  case class Success(agentStatus: AgentStatus) extends GetAgentStatusResponse
+
+  sealed trait Failure extends SmFailure with GetAgentStatusResponse
 }

@@ -14,6 +14,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
+import esw.sm.api.protocol.AgentStatus.SequenceComponentStatus
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
@@ -79,11 +80,12 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def provision(config: ProvisionConfig): Future[ProvisionResponse] = agentUtil.provision(config)
 
-  def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[Map[ComponentId, Option[AkkaLocation]]] = {
+  def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[SequenceComponentStatus] = {
     Future
       .traverse(seqCompIds) { seqComp =>
         locationServiceUtil.find(AkkaConnection(seqComp)).flatMap {
-          case Left(locationError)    => Future.successful(List.empty)
+          case Left(_) =>
+            Future.successful(List.empty) //ignore sequence components for which can't be resolved in location service
           case Right(seqCompLocation) => createSequenceComponentImpl(seqCompLocation).status.map(s => List(seqComp -> s.response))
         }
       }

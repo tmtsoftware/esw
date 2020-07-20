@@ -26,6 +26,8 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val spawnSequenceComponentResponse                            = SpawnSequenceComponentResponse.Success(sequenceComponentId)
   private val shutdownSequenceComponentResponse                         = ShutdownSequenceComponentResponse.Success
   private val provisionResponse                                         = ProvisionResponse.Success
+  private val getAgentStatusResponse =
+    GetAgentStatusResponse.Success(Map.empty[ComponentId, Map[ComponentId, Option[AkkaLocation]]])
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
@@ -38,6 +40,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
       case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo)  => replyTo ! spawnSequenceComponentResponse
       case SequenceManagerMsg.ShutdownSequenceComponents(_, replyTo) => replyTo ! shutdownSequenceComponentResponse
       case SequenceManagerMsg.Provision(replyTo)                     => replyTo ! provisionResponse
+      case SequenceManagerMsg.GetAgentStatus(replyTo)                => replyTo ! getAgentStatusResponse
       case SequenceManagerMsg.ProcessingComplete(_)                  =>
     }
     Behaviors.same
@@ -93,6 +96,10 @@ class SequenceManagerImplTest extends BaseTestSuite {
     "spawnSequenceComponent | ESW-337" in {
       val agent = Prefix("tcs.primary")
       sequenceManager.spawnSequenceComponent(agent, "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
+    }
+
+    "getAgentStatus | ESW-349" in {
+      sequenceManager.getAgentStatus.futureValue shouldBe getAgentStatusResponse
     }
   }
 }

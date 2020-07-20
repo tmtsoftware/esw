@@ -23,4 +23,6 @@ trait SequenceManagerApi {
   def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
   def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse]
   private[sm] def shutdownSequenceComponents(policy: ShutdownSequenceComponentsPolicy): Future[ShutdownSequenceComponentResponse]
+
+  def getAgentStatus: Future[GetAgentStatusResponse]
 }

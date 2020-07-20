@@ -67,7 +67,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path) {
     Await.result(new SequenceManagerConfigParser(configUtils).read(obsModeConfigPath, isLocal = true), Timeouts.DefaultTimeout)
 
   private lazy val sequenceManagerBehavior =
-    new SequenceManagerBehavior(smConfig, locationServiceUtil, sequencerUtil, sequenceComponentUtil)
+    new SequenceManagerBehavior(smConfig, locationServiceUtil, agentUtil, sequencerUtil, sequenceComponentUtil)
 
   private lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] = Await.result(
     actorSystem ? (Spawn(sequenceManagerBehavior.setup, "sequence-manager", Props.empty, _)),

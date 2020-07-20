@@ -1,10 +1,13 @@
 package esw.sm.api
 
+import java.net.URI
+
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.serialization.SerializationExtension
-import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
@@ -39,6 +42,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val restartSequencerResponseRef          = TestProbe[RestartSequencerResponse]().ref
     val spawnSequenceComponentResponseRef    = TestProbe[SpawnSequenceComponentResponse]().ref
     val shutdownSequenceComponentResponseRef = TestProbe[ShutdownSequenceComponentResponse]().ref
+    val getAgentResponseRef                  = TestProbe[GetAgentStatusResponse]().ref
 
     val obsMode = ObsMode("IRIS_DarkNight")
     val agent   = Prefix(ESW, "agent1")
@@ -56,7 +60,8 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       ShutdownSequencers(ShutdownSequencersPolicy.AllSequencers, shutdownSequencersResponseRef),
       SpawnSequenceComponent(agent, "seq_comp", spawnSequenceComponentResponseRef),
       ShutdownSequenceComponents(SingleSequenceComponent(Prefix(ESW, "primary")), shutdownSequenceComponentResponseRef),
-      ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseRef)
+      ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseRef),
+      GetAgentStatus(getAgentResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>
@@ -167,6 +172,31 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "Sequence Manager ShutdownSequenceComponentResponse models",
       ShutdownSequenceComponentResponse.Success,
+      LocationServiceError("error")
+    )
+
+    forAll(testData) { shutdownSequencerResponse =>
+      val serializer = serialization.findSerializerFor(shutdownSequencerResponse)
+      serializer.getClass shouldBe classOf[SmAkkaSerializer]
+
+      val bytes = serializer.toBinary(shutdownSequencerResponse)
+      serializer.fromBinary(bytes, Some(shutdownSequencerResponse.getClass)) shouldEqual shutdownSequencerResponse
+    }
+  }
+
+  "should use sm serializer for GetAgentStatusResponse (de)serialization" in {
+    val agentStatus = Map(
+      ComponentId(Prefix(ESW, "machine1"), Machine) ->
+        Map(
+          ComponentId(Prefix(ESW, "primary"), SequenceComponent) -> Some(
+            AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "darkNight"), Sequencer)), URI.create("uri"))
+          )
+        )
+    )
+
+    val testData = Table(
+      "Sequence Manager GetAgentStatusResponse models",
+      GetAgentStatusResponse.Success(agentStatus),
       LocationServiceError("error")
     )
 

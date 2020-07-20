@@ -344,6 +344,17 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       verify(locationServiceUtil).find(AkkaConnection(tcsSeqCompId))
       verify(eswSeqComp).status
     }
+
+    "return mapping for empty list of sequence components | ESW-349" in {
+      val seqCompUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+        override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
+          mock[SequenceComponentImpl]
+      }
+
+      val expectedResponse = Map.empty[ComponentId, Option[AkkaLocation]]
+
+      seqCompUtil.getSequenceComponentStatus(List.empty[ComponentId]).futureValue should ===(expectedResponse)
+    }
   }
 
   private def akkaLocation(componentId: ComponentId): AkkaLocation = AkkaLocation(AkkaConnection(componentId), URI.create(""))
