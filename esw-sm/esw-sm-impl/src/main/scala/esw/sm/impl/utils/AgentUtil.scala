@@ -7,13 +7,10 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import esw.agent.api._
 import esw.agent.client.AgentClient
-import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.SequenceComponentApi
-import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.SpawnSequenceComponentResponse.{SpawnSequenceComponentFailed, Success}
 import esw.sm.api.protocol.{ProvisionResponse, SpawnSequenceComponentResponse}
 import esw.sm.impl.config.ProvisionConfig
 
@@ -26,8 +23,8 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   def spawnSequenceComponentOn(
       machine: Prefix,
       seqCompName: String
-  ): Future[Either[SpawnSequenceComponentResponse.Failure, SequenceComponentApi]] =
-    getAgent(machine).flatMapE(spawnSeqComp(_, Prefix(machine.subsystem, seqCompName)))
+  ): Future[SpawnSequenceComponentResponse] =
+    getAgent(machine).flatMapToAdt(spawnSeqComp(_, Prefix(machine.subsystem, seqCompName)), identity)
 
   def provision(provisionConfig: ProvisionConfig): Future[ProvisionResponse] =
     locationServiceUtil
@@ -70,8 +67,8 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
     agentClient
       .spawnSequenceComponent(seqCompPrefix)
       .flatMap {
-        case Spawned     => resolveSeqComp(seqCompPrefix)
-        case Failed(msg) => Future.successful(Left(SpawnSequenceComponentFailed(msg)))
+        case Spawned     => Future.successful(Success(ComponentId(seqCompPrefix, SequenceComponent)))
+        case Failed(msg) => Future.successful(SpawnSequenceComponentFailed(msg))
       }
 
   private[utils] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =
@@ -84,12 +81,6 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
     implicit val sch: Scheduler = actorSystem.scheduler
     new AgentClient(loc)
   }
-
-  private def resolveSeqComp(seqCompPrefix: Prefix) =
-    locationServiceUtil
-      .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), within = Timeouts.DefaultResolveLocationDuration)
-      .mapRight(loc => new SequenceComponentImpl(loc))
-      .mapLeft(e => LocationServiceError(e.msg))
 
   private def filterRunningSeqComps(agentStatus: AgentStatus): List[ComponentId] =
     agentStatus.componentStatus

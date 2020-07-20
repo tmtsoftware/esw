@@ -58,9 +58,8 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       val seqComp                                      = ComponentId(Prefix(agent.subsystem, seqCompName), SequenceComponent)
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
 
-      val sequenceComponentApi = mock[SequenceComponentImpl]
       when(agentUtil.spawnSequenceComponentOn(agent, seqCompName))
-        .thenReturn(futureRight(sequenceComponentApi))
+        .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
 
       sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName).futureValue should ===(
         SpawnSequenceComponentResponse.Success(seqComp)
@@ -75,7 +74,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
 
       when(agentUtil.spawnSequenceComponentOn(agent, seqCompName))
-        .thenReturn(futureLeft(SpawnSequenceComponentFailed("spawn failed")))
+        .thenReturn(Future.successful(SpawnSequenceComponentFailed("spawn failed")))
 
       sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName).futureValue should ===(
         SpawnSequenceComponentFailed("spawn failed")

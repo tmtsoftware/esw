@@ -29,13 +29,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   import actorSystem.executionContext
 
   def spawnSequenceComponent(machine: Prefix, name: String): Future[SpawnSequenceComponentResponse] = {
-    val seqCompPrefix = Prefix(machine.subsystem, name)
-    agentUtil
-      .spawnSequenceComponentOn(machine, name)
-      .mapToAdt(
-        _ => SpawnSequenceComponentResponse.Success(ComponentId(seqCompPrefix, SequenceComponent)),
-        identity
-      )
+    agentUtil.spawnSequenceComponentOn(machine, name)
   }
 
   // return mapping of subsystems for which idle sequence components are available

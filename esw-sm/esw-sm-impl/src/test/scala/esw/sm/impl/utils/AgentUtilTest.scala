@@ -12,13 +12,11 @@ import csw.prefix.models.Subsystem.{CSW, ESW, IRIS, TCS}
 import esw.agent.api.ComponentStatus.{Initializing, Running}
 import esw.agent.api.{AgentStatus, Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
-import esw.commons.Timeouts
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.SequenceComponentApi
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ProvisionResponse
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.{ProvisionResponse, SpawnSequenceComponentResponse}
 import esw.sm.impl.config.ProvisionConfig
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.any
@@ -36,7 +34,7 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   "spawnSequenceComponentFor" must {
-    "return SequenceComponentApi after spawning sequence component for given name and machine prefix | ESW-337" in {
+    "return Success after spawning sequence component for given name and machine prefix | ESW-337" in {
       val setup = new TestSetup()
       import setup._
 
@@ -46,13 +44,12 @@ class AgentUtilTest extends BaseTestSuite {
       val machinePrefix     = Prefix(IRIS, "primary")
 
       when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(Spawned))
-      when(locationServiceUtil.resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration))
-        .thenReturn(futureRight(eswPrimarySeqCompLocation))
 
-      agentUtil.spawnSequenceComponentOn(machinePrefix, seqCompName).rightValue shouldBe a[SequenceComponentApi]
+      agentUtil.spawnSequenceComponentOn(machinePrefix, seqCompName).futureValue shouldBe SpawnSequenceComponentResponse.Success(
+        seqCompConnection.componentId
+      )
 
       verify(agentClient).spawnSequenceComponent(seqCompPrefix, None)
-      verify(locationServiceUtil).resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration)
     }
 
     "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-164" in {
@@ -65,30 +62,9 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(agentClient.spawnSequenceComponent(prefix, None)).thenReturn(Future.successful(spawnFailed))
 
-      agentUtil.spawnSequenceComponentOn(prefix, componentName).leftValue should ===(
+      agentUtil.spawnSequenceComponentOn(prefix, componentName).futureValue should ===(
         SpawnSequenceComponentFailed(spawnFailed.msg)
       )
-    }
-
-    "return LocationServiceError if location service call to resolve spawned sequence component returns error | ESW-164" in {
-      val setup = new TestSetup()
-      import setup._
-
-      val componentName     = "testComp"
-      val seqCompPrefix     = Prefix(TCS, componentName)
-      val seqCompConnection = AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent))
-      val machinePrefix     = Prefix(TCS, "primary")
-
-      when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(Spawned))
-      when(locationServiceUtil.resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration))
-        .thenReturn(futureLeft(LocationNotFound("Could not resolve sequence component")))
-
-      agentUtil.spawnSequenceComponentOn(machinePrefix, componentName).leftValue should ===(
-        LocationServiceError("Could not resolve sequence component")
-      )
-
-      verify(agentClient).spawnSequenceComponent(seqCompPrefix, None)
-      verify(locationServiceUtil).resolve(seqCompConnection, Timeouts.DefaultResolveLocationDuration)
     }
 
     "return LocationServiceError if getAgent fails | ESW-164, ESW-337" in {
@@ -100,7 +76,7 @@ class AgentUtilTest extends BaseTestSuite {
           futureLeft(LocationServiceError(errorMsg))
       }
 
-      agentUtil.spawnSequenceComponentOn(Prefix(ESW, "invalid"), "invalid").leftValue should ===(LocationServiceError(errorMsg))
+      agentUtil.spawnSequenceComponentOn(Prefix(ESW, "invalid"), "invalid").futureValue should ===(LocationServiceError(errorMsg))
     }
   }
 
