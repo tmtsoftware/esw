@@ -19,7 +19,6 @@ import scala.concurrent.Future
 class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
-  // todo: remove the logic to resolving seq comp after spawning
   def spawnSequenceComponentOn(
       machine: Prefix,
       seqCompName: String
@@ -48,13 +47,10 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   ): Future[Either[ProvisionResponse.NoMachineFoundForSubsystems, List[SpawnResponse]]] =
     Future
       .successful(AgentAllocator(machines).allocate(provisionConfig))
-      .flatMapRight(x => spawnComponentsByMapping(x.flatMap(_.toList)))
+      .flatMapRight(spawnComponentsByMapping)
 
   private def spawnComponentsByMapping(mappings: List[(Prefix, AkkaLocation)]) =
-    Future.traverse(mappings) { seqCompMapping =>
-      val (prefix, machine) = seqCompMapping
-      makeAgentClient(machine).spawnSequenceComponent(prefix)
-    }
+    Future.traverse(mappings) { case (prefix, machine) => makeAgentClient(machine).spawnSequenceComponent(prefix) }
 
   private def spawnResToProvisionRes(responses: List[SpawnResponse]): ProvisionResponse = {
     val failedResponses = responses.collect { case Failed(msg) => SpawnSequenceComponentFailed(msg) }
@@ -66,9 +62,9 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
       .spawnSequenceComponent(seqCompPrefix)
-      .flatMap {
-        case Spawned     => Future.successful(Success(ComponentId(seqCompPrefix, SequenceComponent)))
-        case Failed(msg) => Future.successful(SpawnSequenceComponentFailed(msg))
+      .map {
+        case Spawned     => Success(ComponentId(seqCompPrefix, SequenceComponent))
+        case Failed(msg) => SpawnSequenceComponentFailed(msg)
       }
 
   private[utils] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =

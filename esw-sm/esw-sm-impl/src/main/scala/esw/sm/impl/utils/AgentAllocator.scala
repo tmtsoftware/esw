@@ -6,16 +6,16 @@ import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.sm.api.protocol.ProvisionResponse.NoMachineFoundForSubsystems
 import esw.sm.impl.config.ProvisionConfig
 
-case class AgentAllocator(machines: List[AkkaLocation]) {
+private[sm] case class AgentAllocator(machines: List[AkkaLocation]) {
   private val subsystemMachines = machines.groupBy(_.prefix.subsystem)
 
-  def allocate(provisionConfig: ProvisionConfig): Either[NoMachineFoundForSubsystems, List[Map[Prefix, AkkaLocation]]] = {
+  def allocate(provisionConfig: ProvisionConfig): Either[NoMachineFoundForSubsystems, List[(Prefix, AkkaLocation)]] = {
     val allocatedPrefixesE = provisionConfig.config.toList.map { config =>
       val (subsystem, count)     = config
       val maybeAllocatedPrefixes = allocate(subsystem, count)
       maybeAllocatedPrefixes.map(Right(_)).getOrElse(Left(subsystem))
     }
-    allocatedPrefixesE.sequence.left.map(x => NoMachineFoundForSubsystems(x.toSet))
+    allocatedPrefixesE.sequence.map(_.flatten).left.map(x => NoMachineFoundForSubsystems(x.toSet))
   }
 
   private def allocate(subsystem: Subsystem, count: Int): Option[Map[Prefix, AkkaLocation]] = {
