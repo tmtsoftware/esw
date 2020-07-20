@@ -28,7 +28,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val configUtils                     = mock[ConfigUtils]
       val path                            = Paths.get("testConfig.conf")
       val sequenceManagerConfigParser     = new SequenceManagerConfigParser(configUtils)
-      val darknightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS, AOESW)
+      val darkNightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS, AOESW)
       val calSequencers: Sequencers       = Sequencers(IRIS, ESW, AOESW)
       val testConfig                      = ConfigFactory.parseResources("testConfig.conf")
       when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
@@ -37,10 +37,9 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
 
       val expectedConfig = SequenceManagerConfig(
         Map(
-          ObsMode("IRIS_Darknight") -> ObsModeConfig(Resources(iris, tcs, nfiraos), darknightSequencers),
+          ObsMode("IRIS_DarkNight") -> ObsModeConfig(Resources(iris, tcs, nfiraos), darkNightSequencers),
           ObsMode("IRIS_Cal")       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
-        ),
-        sequencerStartRetries = 2
+        )
       )
       config.futureValue should ===(expectedConfig)
     }
@@ -71,27 +70,6 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       )
 
       exception should ===(expectedException)
-    }
-
-    "read sequencer start retires config from application.conf if not present in main config file | ESW-176" in {
-      val configUtils                     = mock[ConfigUtils]
-      val path                            = Paths.get("testConfigWithoutRetries.conf")
-      val sequenceManagerConfigParser     = new SequenceManagerConfigParser(configUtils)
-      val darknightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS, AOESW)
-      val calSequencers: Sequencers       = Sequencers(IRIS, ESW, AOESW)
-      val testConfig                      = ConfigFactory.parseResources("testConfigWithoutRetries.conf")
-      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
-
-      val config = sequenceManagerConfigParser.read(configFilePath = path, isLocal = true)
-
-      val expectedConfig = SequenceManagerConfig(
-        Map(
-          ObsMode("IRIS_Darknight") -> ObsModeConfig(Resources(iris, tcs, nfiraos), darknightSequencers),
-          ObsMode("IRIS_Cal")       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
-        ),
-        sequencerStartRetries = 3
-      )
-      config.futureValue should ===(expectedConfig)
     }
   }
 

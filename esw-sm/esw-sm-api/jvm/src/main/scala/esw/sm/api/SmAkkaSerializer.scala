@@ -17,14 +17,13 @@ class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
   override def identifier: Int = 29945
 
   register[SequenceManagerRemoteMsg]
-  register[CleanupResponse]
   register[StartSequencerResponse]
-  register[ShutdownSequencerResponse]
   register[ShutdownSequenceComponentResponse]
   register[RestartSequencerResponse]
-  register[ShutdownAllSequencersResponse]
+  register[ShutdownSequencersResponse]
   register[GetRunningObsModesResponse]
   register[SpawnSequenceComponentResponse]
   register[ConfigureResponse]
+  register[GetAgentStatusResponse]
   register[SequenceManagerState]
 }

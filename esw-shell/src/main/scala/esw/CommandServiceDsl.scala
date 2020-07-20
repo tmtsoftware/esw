@@ -23,9 +23,9 @@ class CommandServiceDsl(val shellWiring: ShellWiring) {
   import typedSystem.executionContext
   private val locationUtil: LocationServiceUtil = new LocationServiceUtil(shellWiring.cswContext.locationService)
 
-  def sequencerCommandService(subsystem: Subsystem, observingMode: ObsMode): SequencerApi =
+  def sequencerCommandService(subsystem: Subsystem, obsMode: ObsMode): SequencerApi =
     locationUtil
-      .findSequencer(subsystem, observingMode)
+      .findSequencer(subsystem, obsMode)
       .map(e => new SequencerImpl(throwLeft(e).sequencerRef))
       .await()
 

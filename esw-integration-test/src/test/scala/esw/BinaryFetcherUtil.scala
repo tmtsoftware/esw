@@ -4,7 +4,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.GenericLoggerFactory
 import esw.agent.app.process.cs.Coursier
 
-trait BinaryFetcherUtil {
+object BinaryFetcherUtil {
   val logger: Logger = GenericLoggerFactory.getLogger
 
   def fetchBinaryFor(channel: String, appVersion: Option[String] = None): Unit = {

@@ -12,8 +12,8 @@ import esw.ocs.testkit.EswTestKit
 
 class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
 
-  private val tcsSubsystem     = TCS
-  private val tcsObservingMode = ObsMode("exceptionscript3") // ExceptionTestScript3.kt
+  private val tcsSubsystem = TCS
+  private val tcsObsMode   = ObsMode("exceptionscript3") // ExceptionTestScript3.kt
 
   "should not invoke exception handler when handle-shutdown-failed" in {
     val reason            = "handle-shutdown-failed"
@@ -23,7 +23,7 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
     subscription.ready().futureValue
     subscriptionProbe.expectMessageType[SystemEvent] // discard msg
 
-    val sequencer = spawnSequencerRef(tcsSubsystem, tcsObservingMode)
+    val sequencer = spawnSequencerRef(tcsSubsystem, tcsObsMode)
 
     val shutdownProbe = TestProbe[Ok.type]()
     sequencer ! Shutdown(shutdownProbe.ref)

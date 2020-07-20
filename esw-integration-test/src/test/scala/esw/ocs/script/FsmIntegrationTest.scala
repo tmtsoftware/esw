@@ -138,8 +138,8 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
     "be able to bind to param variables with polling time | ESW-142, ESW-256, ESW-291" in {
       val subsystem                  = ESW
-      val observingMode              = ObsMode("MoonNight")
-      val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
+      val obsMode                    = ObsMode("MoonNight")
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, obsMode)
       val command1                   = Setup(Prefix("esw.test"), CommandName("start-param-fsm"), None)
       val probe                      = TestProbe[Event]()
 
@@ -154,10 +154,10 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
     }
 
     "be able to bind to event variables with polling time | ESW-142, ESW-256, ESW-291" in {
-      val subsystem     = ESW
-      val observingMode = ObsMode("EventVar")
+      val subsystem = ESW
+      val obsMode   = ObsMode("EventVar")
 
-      val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, obsMode)
       val command1                   = Setup(Prefix("esw.test"), CommandName("start-event-fsm"), None)
       val probe                      = TestProbe[Event]()
 

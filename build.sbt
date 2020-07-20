@@ -140,7 +140,8 @@ lazy val `esw-agent-app` = project
   .enablePlugins(EswBuildInfo, MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentApp.value)
   .dependsOn(
-    `esw-agent-client`
+    `esw-agent-client`,
+    `esw-test-commons` % Test
   )
 
 lazy val `esw-agent-client` = project
@@ -167,7 +168,8 @@ lazy val `esw-integration-test` = project
     `esw-agent-app`,
     `esw-agent-client`,
     `esw-sm-app`,
-    `esw-testkit`
+    `esw-testkit`,
+    `esw-test-commons` % Test
   )
 
 lazy val `esw-gateway` = project

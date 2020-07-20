@@ -13,6 +13,7 @@ object Resources {
   def apply(resources: Resource*): Resources = new Resources(resources.toSet)
 }
 
+//todo: subsystems in sequencers cannot be duplicate (replace List by Set)
 case class Sequencers(subsystems: List[Subsystem])
 object Sequencers {
   def apply(subsystems: Subsystem*): Sequencers = new Sequencers(subsystems.toList)
@@ -20,8 +21,11 @@ object Sequencers {
 
 case class ObsModeConfig(resources: Resources, sequencers: Sequencers)
 
-case class SequenceManagerConfig(obsModes: Map[ObsMode, ObsModeConfig], sequencerStartRetries: Int) {
+case class SequenceManagerConfig(obsModes: Map[ObsMode, ObsModeConfig]) {
   def resources(obsMode: ObsMode): Option[Resources]         = obsModeConfig(obsMode).map(_.resources)
   def sequencers(obsMode: ObsMode): Option[Sequencers]       = obsModeConfig(obsMode).map(_.sequencers)
   def obsModeConfig(obsMode: ObsMode): Option[ObsModeConfig] = obsModes.get(obsMode)
 }
+
+//todo : validate count is not zero
+case class ProvisionConfig(config: Map[Subsystem, Int])

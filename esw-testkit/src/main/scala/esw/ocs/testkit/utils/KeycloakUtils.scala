@@ -51,6 +51,14 @@ trait KeycloakUtils extends BaseTestSuite {
     "bearer-only"
   )
 
+  private lazy val `tmt-backend-app`: Client = Client(
+    "tmt-backend-app",
+    "bearer-only"
+  )
+
+  private lazy val `tmt-frontend-app`: Client =
+    Client("tmt-frontend-app", "public", implicitFlowEnabled = true, passwordGrantEnabled = true, authorizationEnabled = false)
+
   private lazy val `esw-gateway-client`: Client =
     Client("esw-gateway-client", "public", implicitFlowEnabled = true, passwordGrantEnabled = true, authorizationEnabled = false)
 
@@ -96,7 +104,7 @@ trait KeycloakUtils extends BaseTestSuite {
     realms = Set(
       Realm(
         "TMT-test",
-        clients = Set(`esw-gateway-server`, `esw-gateway-client`, `esw-sequence-manager`),
+        clients = Set(`esw-gateway-server`, `esw-gateway-client`, `esw-sequence-manager`, `tmt-backend-app`, `tmt-frontend-app`),
         users = users,
         realmRoles = Set(irisUserRole, irisEngRole, tcsUserRole, apsEngRole, eswUserRole)
       )

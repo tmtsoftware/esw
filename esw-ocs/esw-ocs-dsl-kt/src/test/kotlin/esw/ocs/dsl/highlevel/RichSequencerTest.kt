@@ -37,7 +37,7 @@ class RichSequencerTest {
     private val startTime: UTCTime = UTCTime.now()
 
     private val subsystem: Subsystem = TCS
-    private val observingMode: ObsMode = ObsMode("darknight")
+    private val obsMode: ObsMode = ObsMode("darknight")
     private val sequence: Sequence = mockk()
 
     private val sequencerApiFactory: (Subsystem, ObsMode) -> CompletableFuture<SequencerApi> = { _, _ -> CompletableFuture.completedFuture(sequencerApi) }
@@ -48,7 +48,7 @@ class RichSequencerTest {
     private val defaultTimeoutDuration: Duration = 5.seconds
     private val defaultTimeout = Timeout(defaultTimeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
-    private val tcsSequencer = RichSequencer(subsystem, observingMode, sequencerApiFactory, defaultTimeoutDuration, coroutineScope)
+    private val tcsSequencer = RichSequencer(subsystem, obsMode, sequencerApiFactory, defaultTimeoutDuration, coroutineScope)
 
     private val sequencerApi: SequencerApi = mockk()
 

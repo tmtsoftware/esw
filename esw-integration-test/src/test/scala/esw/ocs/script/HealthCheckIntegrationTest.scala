@@ -35,7 +35,7 @@ class HealthCheckIntegrationTest extends EswTestKit {
 
   // HealthCheck.kts
   private val ocsSubsystem               = ESW
-  private val ocsObservingMode           = ObsMode("healthCheck")
+  private val ocsObsMode                 = ObsMode("healthCheck")
   private var ocsSequencer: SequencerApi = _
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
@@ -46,7 +46,7 @@ class HealthCheckIntegrationTest extends EswTestKit {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObservingMode)
+    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
     logBuffer.clear()
   }
 

@@ -9,7 +9,7 @@ The API provided by a Sequencer Command Service is tailored to Sequencer to Sequ
 First a Sequencer instance is needed. To create a Sequencer instance, the following parameters need to be passed to the Sequencer method:
 
 * `subsystem`: Subsystem of the Sequencer to be resolved and sent commands (for eg. TCS, IRIS)
-* `observingMode`: observing mode of the Sequencer to be resolved and send commands to (for eg. wfos_imaging, wfos_spec)
+* `obsMode`: observing mode of the Sequencer to be resolved and send commands to (for eg. wfos_imaging, wfos_spec)
 * `defaultTimeout`: optional max timeout to wait for completion of Sequences sent with `sumbitAndWait` or `queryFinal`.  The default
 value for this option is set to 10 hours since it will be common that the handling of Sequences can take a long time, and 
 we don't want unexpected timeouts to occur in production.  For development, it might make sense to set this to some smaller value.

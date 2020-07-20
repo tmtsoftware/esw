@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "aad3e260a4"
+  private val MSocketVersion = "a36f8db"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
@@ -15,7 +15,7 @@ object Libs {
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl"       % MSocketVersion
   val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.4"
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
-  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "d1c8c7e"
+  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.3.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "9374d69"
@@ -25,7 +25,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "fa4b478" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "79dcf74" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
@@ -55,7 +55,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.5"
+  private val Version     = "2.6.6"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version

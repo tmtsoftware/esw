@@ -1,6 +1,5 @@
 package esw.sm.api.client
 
-import csw.location.api.models.ComponentId
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
@@ -18,30 +17,43 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
     postClient.requestResponse[ConfigureResponse](Configure(obsMode))
 
-  override def cleanup(obsMode: ObsMode): Future[CleanupResponse] =
-    postClient.requestResponse[CleanupResponse](Cleanup(obsMode))
-
   override def getRunningObsModes: Future[GetRunningObsModesResponse] =
     postClient.requestResponse[GetRunningObsModesResponse](GetRunningObsModes)
 
   override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     postClient.requestResponse[StartSequencerResponse](StartSequencer(subsystem, obsMode))
 
-  override def shutdownSequencer(
-      subsystem: Subsystem,
-      obsMode: ObsMode
-  ): Future[ShutdownSequencerResponse] =
-    postClient.requestResponse[ShutdownSequencerResponse](ShutdownSequencer(subsystem, obsMode))
-
   override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     postClient.requestResponse[RestartSequencerResponse](RestartSequencer(subsystem, obsMode))
 
-  override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
-    postClient.requestResponse[ShutdownAllSequencersResponse](ShutdownAllSequencers)
+  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(subsystem, obsMode))
 
-  override def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse] =
-    postClient.requestResponse[SpawnSequenceComponentResponse](SpawnSequenceComponent(machine, name))
+  override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(subsystem))
+
+  override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
+
+  override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.AllSequencers)
+
+  override def shutdownSequencers(shutdownSequencersPolicy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencers(shutdownSequencersPolicy))
+
+  override def spawnSequenceComponent(machine: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
+    postClient.requestResponse[SpawnSequenceComponentResponse](SpawnSequenceComponent(machine, sequenceComponentName))
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
-    postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownSequenceComponent(prefix))
+    shutdownSequenceComponents(ShutdownSequenceComponentsPolicy.SingleSequenceComponent(prefix))
+
+  override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
+    shutdownSequenceComponents(ShutdownSequenceComponentsPolicy.AllSequenceComponents)
+
+  override private[sm] def shutdownSequenceComponents(
+      policy: ShutdownSequenceComponentsPolicy
+  ): Future[ShutdownSequenceComponentResponse] =
+    postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownSequenceComponents(policy))
+
+  override def getAgentStatus: Future[GetAgentStatusResponse] = postClient.requestResponse[GetAgentStatusResponse](GetAgentStatus)
 }

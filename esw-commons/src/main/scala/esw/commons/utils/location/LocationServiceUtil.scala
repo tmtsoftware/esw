@@ -53,17 +53,21 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       subsystem: Subsystem,
       componentType: ComponentType
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
-    list(componentType)
-      .mapRight(_.collect {
-        case akkaLocation: AkkaLocation if akkaLocation.prefix.subsystem == subsystem => akkaLocation
-      })
+    listAkkaLocationsBy(componentType, _.prefix.subsystem == subsystem)
 
   def listAkkaLocationsBy(
+      componentName: String,
       componentType: ComponentType
+  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
+    listAkkaLocationsBy(componentType, _.prefix.componentName == componentName)
+
+  def listAkkaLocationsBy(
+      componentType: ComponentType,
+      withFilter: AkkaLocation => Boolean = _ => true
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
     list(componentType)
       .mapRight(_.collect {
-        case akkaLocation: AkkaLocation => akkaLocation
+        case akkaLocation: AkkaLocation if withFilter(akkaLocation) => akkaLocation
       })
 
   def findByComponentNameAndType(
@@ -102,14 +106,14 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
 
   private[esw] def resolveSequencer(
       subsystem: Subsystem,
-      observingMode: ObsMode,
+      obsMode: ObsMode,
       within: FiniteDuration
   ): Future[Either[FindLocationError, AkkaLocation]] =
-    resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode.name), Sequencer)), within)
+    resolve(AkkaConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)), within)
 
   private[esw] def findSequencer(
       subsystem: Subsystem,
-      observingMode: ObsMode
+      obsMode: ObsMode
   ): Future[Either[FindLocationError, AkkaLocation]] =
-    find(AkkaConnection(ComponentId(Prefix(subsystem, observingMode.name), Sequencer)))
+    find(AkkaConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
 }

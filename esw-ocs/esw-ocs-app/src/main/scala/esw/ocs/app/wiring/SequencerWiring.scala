@@ -50,13 +50,13 @@ import scala.util.control.NonFatal
 // $COVERAGE-OFF$
 private[ocs] class SequencerWiring(
     val subsystem: Subsystem,
-    val observingMode: ObsMode,
+    val obsMode: ObsMode,
     sequenceComponentLocation: AkkaLocation
 ) extends SequencerHttpCodecs {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   private[ocs] lazy val config: Config  = actorSystem.settings.config
-  private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, subsystem, observingMode)
+  private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, subsystem, obsMode)
   import sequencerConfig._
 
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
@@ -135,7 +135,7 @@ private[ocs] class SequencerWiring(
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
       try {
-        logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: ${observingMode.name}")
+        logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
         new Engine(script).start(sequenceOperatorFactory())
 
         Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
@@ -146,7 +146,7 @@ private[ocs] class SequencerWiring(
           Timeouts.DefaultTimeout
         )
 
-        logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: ${observingMode.name}")
+        logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
         if (enableThreadMonitoring) {
           logger.info(s"Thread Monitoring enabled for ${BlockHoundWiring.integrations}")
           BlockHoundWiring.install()

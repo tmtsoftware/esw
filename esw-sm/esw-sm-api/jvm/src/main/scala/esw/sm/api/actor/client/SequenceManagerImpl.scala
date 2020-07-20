@@ -4,7 +4,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.AkkaLocation
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.ocs.api.actor.client.SequenceComponentApiTimeout
@@ -23,38 +23,53 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
-  override def configure(observingMode: ObsMode): Future[ConfigureResponse] =
-    smRef ? (Configure(observingMode, _))
-
-  override def cleanup(observingMode: ObsMode): Future[CleanupResponse] = smRef ? (Cleanup(observingMode, _))
+  override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
+    smRef ? (Configure(obsMode, _))
 
   override def getRunningObsModes: Future[GetRunningObsModesResponse] = smRef ? GetRunningObsModes
 
-  override def startSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[StartSequencerResponse] =
-    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, observingMode, x) })(
+  override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
+    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, obsMode, x) })(
       SequenceManagerTimeout.StartSequencerTimeout,
       actorSystem.scheduler
     )
 
-  override def shutdownSequencer(
-      subsystem: Subsystem,
-      observingMode: ObsMode
-  ): Future[ShutdownSequencerResponse] =
-    smRef ? (ShutdownSequencer(subsystem, observingMode, _))
-
-  override def restartSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[RestartSequencerResponse] =
-    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, observingMode, x) })(
+  override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
+    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, obsMode, x) })(
       SequenceManagerTimeout.RestartSequencerTimeout,
       actorSystem.scheduler
     )
 
-  override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] = smRef ? ShutdownAllSequencers
+  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(subsystem, obsMode))
 
-  override def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse] =
-    smRef ? (SpawnSequenceComponent(machine, name, _))
+  override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(subsystem))
+
+  override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
+
+  override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
+    shutdownSequencers(ShutdownSequencersPolicy.AllSequencers)
+
+  override def shutdownSequencers(shutdownSequencersPolicy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
+    smRef ? (ShutdownSequencers(shutdownSequencersPolicy, _))
+
+  override def spawnSequenceComponent(machine: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
+    smRef ? (SpawnSequenceComponent(machine, sequenceComponentName, _))
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
-    smRef ? (ShutdownSequenceComponent(prefix, _))
+    shutdownSequenceComponents(ShutdownSequenceComponentsPolicy.SingleSequenceComponent(prefix))
+
+  override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
+    shutdownSequenceComponents(ShutdownSequenceComponentsPolicy.AllSequenceComponents)
+
+  override private[sm] def shutdownSequenceComponents(
+      policy: ShutdownSequenceComponentsPolicy
+  ): Future[ShutdownSequenceComponentResponse] =
+    smRef ? (ShutdownSequenceComponents(policy, _))
+
+  override def getAgentStatus: Future[GetAgentStatusResponse] = smRef ? GetAgentStatus
 }
 
 object SequenceManagerTimeout {
