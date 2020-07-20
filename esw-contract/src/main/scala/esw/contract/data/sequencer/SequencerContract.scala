@@ -1,5 +1,6 @@
 package esw.contract.data.sequencer
 
+import csw.contract.ResourceFetcher
 import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
 import csw.location.api.models.AkkaLocation
@@ -13,7 +14,7 @@ import esw.ocs.api.protocol._
 import io.bullet.borer.Encoder
 
 object SequencerContract extends SequencerData with SequencerHttpCodecs {
-  val models: ModelSet = ModelSet(
+  private val models: ModelSet = ModelSet(
     ModelType[SequenceCommand](observeSequenceCommand, setupSequenceCommand, waitSequenceCommand),
     ModelType[OkOrUnhandledResponse](ok, unhandled),
     ModelType[SubmitResponse](completed, cancelled, invalid, error, locked, started),
@@ -27,10 +28,11 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     ModelType(akkaLocation)
   )
 
-  implicit def httpEnc[Sub <: SequencerPostRequest]: Encoder[Sub]           = SubTypeCodec.encoder(sequencerPostRequestValue)
-  implicit def websocketEnc[Sub <: SequencerWebsocketRequest]: Encoder[Sub] = SubTypeCodec.encoder(sequencerWebsocketRequestValue)
+  private implicit def httpEnc[Sub <: SequencerPostRequest]: Encoder[Sub] = SubTypeCodec.encoder(sequencerPostRequestValue)
+  private implicit def websocketEnc[Sub <: SequencerWebsocketRequest]: Encoder[Sub] =
+    SubTypeCodec.encoder(sequencerWebsocketRequestValue)
 
-  val httpRequests: ModelSet = ModelSet(
+  private val httpRequests: ModelSet = ModelSet(
     ModelType(loadSequence),
     ModelType(add),
     ModelType(prepend),
@@ -53,11 +55,11 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     ModelType(getSequenceComponent)
   )
 
-  val websocketRequests: ModelSet = ModelSet(
+  private val websocketRequests: ModelSet = ModelSet(
     ModelType(sequencerQueryFinal)
   )
 
-  val httpEndpoints: List[Endpoint] = List(
+  private val httpEndpoints: List[Endpoint] = List(
     Endpoint(name[LoadSequence], name[OkOrUnhandledResponse]),
     Endpoint(objectName(StartSequence), name[SubmitResponse]),
     Endpoint(objectName(GetSequence), arrayName[StepList]),
@@ -82,13 +84,16 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     Endpoint(objectName(GetSequenceComponent), name[AkkaLocation])
   )
 
-  val webSocketEndpoints: List[Endpoint] = List(
+  private val webSocketEndpoints: List[Endpoint] = List(
     Endpoint(name[QueryFinal], name[SubmitResponse])
   )
+
+  private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("/sequencer-service/README.md"))
 
   val service: Service = Service(
     `http-contract` = Contract(httpEndpoints, httpRequests),
     `websocket-contract` = Contract(webSocketEndpoints, websocketRequests),
-    models = models
+    models = models,
+    readme = readme
   )
 }
