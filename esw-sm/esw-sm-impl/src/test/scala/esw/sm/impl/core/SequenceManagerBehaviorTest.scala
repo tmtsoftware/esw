@@ -62,7 +62,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  override protected def beforeEach(): Unit = reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil)
+  override protected def beforeEach(): Unit = reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil, agentUtil)
 
   "Configure" must {
 
@@ -317,7 +317,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val seqCompName = "seq_comp"
       val machine     = Prefix(ESW, "primary")
       val componentId = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
-      when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
+      when(agentUtil.spawnSequenceComponent(machine, seqCompName))
         .thenReturn(future(1.second, SpawnSequenceComponentResponse.Success(componentId)))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
@@ -329,13 +329,13 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       assertState(Idle)
 
       spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(componentId))
-      verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
+      verify(agentUtil).spawnSequenceComponent(machine, seqCompName)
     }
 
     "return LocationServiceError if location service gives error | ESW-337" in {
       val seqCompName = "seq_comp"
       val agent       = Prefix(ESW, "primary")
-      when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
+      when(agentUtil.spawnSequenceComponent(agent, seqCompName))
         .thenReturn(Future.successful(LocationServiceError("location service error")))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
@@ -343,13 +343,13 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       smRef ! SpawnSequenceComponent(agent, seqCompName, spawnSequenceComponentProbe.ref)
       spawnSequenceComponentProbe.expectMessage(LocationServiceError("location service error"))
 
-      verify(sequenceComponentUtil).spawnSequenceComponent(agent, seqCompName)
+      verify(agentUtil).spawnSequenceComponent(agent, seqCompName)
     }
 
     "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-337" in {
       val seqCompName = "seq_comp"
       val agent       = Prefix(ESW, "primary")
-      when(sequenceComponentUtil.spawnSequenceComponent(agent, seqCompName))
+      when(agentUtil.spawnSequenceComponent(agent, seqCompName))
         .thenReturn(Future.successful(SpawnSequenceComponentFailed("spawning failed")))
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
@@ -357,7 +357,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       smRef ! SpawnSequenceComponent(agent, seqCompName, spawnSequenceComponentProbe.ref)
       spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentFailed("spawning failed"))
 
-      verify(sequenceComponentUtil).spawnSequenceComponent(agent, seqCompName)
+      verify(agentUtil).spawnSequenceComponent(agent, seqCompName)
     }
   }
 

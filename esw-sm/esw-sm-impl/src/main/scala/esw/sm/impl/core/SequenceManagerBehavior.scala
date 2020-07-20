@@ -123,7 +123,7 @@ class SequenceManagerBehavior(
       self: SelfRef,
       replyTo: ActorRef[SpawnSequenceComponentResponse]
   ): SMBehavior = {
-    sequenceComponentUtil.spawnSequenceComponent(machine, name).map(self ! ProcessingComplete(_))
+    agentUtil.spawnSequenceComponent(machine, name).map(self ! ProcessingComplete(_))
     processing(self, replyTo)
   }
 
@@ -139,7 +139,7 @@ class SequenceManagerBehavior(
   private def getProvisionConfig: ProvisionConfig = ProvisionConfig(Map.empty)
 
   private def provision(selfRef: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
-    sequenceComponentUtil.provision(getProvisionConfig).map(selfRef ! ProcessingComplete(_))
+    agentUtil.provision(getProvisionConfig).map(selfRef ! ProcessingComplete(_))
     processing(selfRef, replyTo)
   }
 

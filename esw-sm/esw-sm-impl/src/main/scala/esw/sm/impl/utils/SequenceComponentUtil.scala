@@ -19,19 +19,14 @@ import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol._
-import esw.sm.impl.config.ProvisionConfig
 
 import scala.async.Async._
 import scala.concurrent.Future
 
-class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(implicit
+class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil)(implicit
     actorSystem: ActorSystem[_]
 ) {
   import actorSystem.executionContext
-
-  def spawnSequenceComponent(machine: Prefix, name: String): Future[SpawnSequenceComponentResponse] = {
-    agentUtil.spawnSequenceComponentOn(machine, name)
-  }
 
   // return mapping of subsystems for which idle sequence components are available
   def getAllIdleSequenceComponentsFor(
@@ -77,8 +72,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     }).mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
-
-  def provision(config: ProvisionConfig): Future[ProvisionResponse] = agentUtil.provision(config)
 
   def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[SequenceComponentStatus] = {
     Future

@@ -19,7 +19,7 @@ import scala.concurrent.Future
 class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
-  def spawnSequenceComponentOn(
+  def spawnSequenceComponent(
       machine: Prefix,
       seqCompName: String
   ): Future[SpawnSequenceComponentResponse] =

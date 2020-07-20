@@ -45,7 +45,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(Spawned))
 
-      agentUtil.spawnSequenceComponentOn(machinePrefix, seqCompName).futureValue shouldBe SpawnSequenceComponentResponse.Success(
+      agentUtil.spawnSequenceComponent(machinePrefix, seqCompName).futureValue shouldBe SpawnSequenceComponentResponse.Success(
         seqCompConnection.componentId
       )
 
@@ -62,7 +62,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(agentClient.spawnSequenceComponent(prefix, None)).thenReturn(Future.successful(spawnFailed))
 
-      agentUtil.spawnSequenceComponentOn(prefix, componentName).futureValue should ===(
+      agentUtil.spawnSequenceComponent(prefix, componentName).futureValue should ===(
         SpawnSequenceComponentFailed(spawnFailed.msg)
       )
     }
@@ -76,7 +76,7 @@ class AgentUtilTest extends BaseTestSuite {
           futureLeft(LocationServiceError(errorMsg))
       }
 
-      agentUtil.spawnSequenceComponentOn(Prefix(ESW, "invalid"), "invalid").futureValue should ===(LocationServiceError(errorMsg))
+      agentUtil.spawnSequenceComponent(Prefix(ESW, "invalid"), "invalid").futureValue should ===(LocationServiceError(errorMsg))
     }
   }
 
