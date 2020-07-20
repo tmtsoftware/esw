@@ -16,13 +16,10 @@ import esw.sm.impl.config.ProvisionConfig
 
 import scala.concurrent.Future
 
-class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
+class AgentUtil(locationServiceUtil: LocationServiceUtil, agentAllocator: AgentAllocator)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
-  def spawnSequenceComponent(
-      machine: Prefix,
-      seqCompName: String
-  ): Future[SpawnSequenceComponentResponse] =
+  def spawnSequenceComponent(machine: Prefix, seqCompName: String): Future[SpawnSequenceComponentResponse] =
     getAgent(machine).flatMapToAdt(spawnSeqComp(_, Prefix(machine.subsystem, seqCompName)), identity)
 
   def provision(provisionConfig: ProvisionConfig): Future[ProvisionResponse] =
@@ -41,18 +38,16 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       }
       .map(_.toMap)
 
-  private def provisionOn(
-      machines: List[AkkaLocation],
-      provisionConfig: ProvisionConfig
-  ): Future[Either[ProvisionResponse.NoMachineFoundForSubsystems, List[SpawnResponse]]] =
+  private def provisionOn(machines: List[AkkaLocation], provisionConfig: ProvisionConfig) =
     Future
-      .successful(AgentAllocator(machines).allocate(provisionConfig))
+      .successful(agentAllocator.allocate(provisionConfig, machines))
       .flatMapRight(spawnComponentsByMapping)
 
   private def spawnComponentsByMapping(mappings: List[(Prefix, AkkaLocation)]) =
     Future.traverse(mappings) { case (prefix, machine) => makeAgentClient(machine).spawnSequenceComponent(prefix) }
 
   private def spawnResToProvisionRes(responses: List[SpawnResponse]): ProvisionResponse = {
+    // todo: error msg should have which component failed and on which machine
     val failedResponses = responses.collect { case Failed(msg) => SpawnSequenceComponentFailed(msg) }
 
     if (failedResponses.isEmpty) ProvisionResponse.Success
@@ -80,10 +75,10 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   private def filterRunningSeqComps(agentStatus: AgentStatus): List[ComponentId] =
     agentStatus.componentStatus
-      .filter {
-        case (componentId, componentStatus) =>
-          componentId.componentType == SequenceComponent && componentStatus == ComponentStatus.Running
-      }
+      .filter { case (compId, status) => isRunningSeqComp(compId, status) }
       .keys
       .toList
+
+  private def isRunningSeqComp(compId: ComponentId, status: ComponentStatus) =
+    compId.componentType == SequenceComponent && status == ComponentStatus.Running
 }

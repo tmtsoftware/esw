@@ -6,19 +6,24 @@ import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.sm.api.protocol.ProvisionResponse.NoMachineFoundForSubsystems
 import esw.sm.impl.config.ProvisionConfig
 
-private[sm] case class AgentAllocator(machines: List[AkkaLocation]) {
-  private val subsystemMachines = machines.groupBy(_.prefix.subsystem)
+class AgentAllocator {
+  def allocate(
+      provisionConfig: ProvisionConfig,
+      machines: List[AkkaLocation]
+  ): Either[NoMachineFoundForSubsystems, List[(Prefix, AkkaLocation)]] = {
+    val subsystemMachines: Map[Subsystem, List[AkkaLocation]] = machines.groupBy(_.prefix.subsystem)
 
-  def allocate(provisionConfig: ProvisionConfig): Either[NoMachineFoundForSubsystems, List[(Prefix, AkkaLocation)]] = {
-    val allocatedPrefixesE = provisionConfig.config.toList.map { config =>
-      val (subsystem, count)     = config
-      val maybeAllocatedPrefixes = allocate(subsystem, count)
-      maybeAllocatedPrefixes.map(Right(_)).getOrElse(Left(subsystem))
+    val allocatedPrefixesE = provisionConfig.config.toList.map {
+      case (subsystem, count) => allocate(subsystem, count, subsystemMachines).map(Right(_)).getOrElse(Left(subsystem))
     }
     allocatedPrefixesE.sequence.map(_.flatten).left.map(x => NoMachineFoundForSubsystems(x.toSet))
   }
 
-  private def allocate(subsystem: Subsystem, count: Int): Option[Map[Prefix, AkkaLocation]] = {
+  private def allocate(
+      subsystem: Subsystem,
+      count: Int,
+      subsystemMachines: Map[Subsystem, List[AkkaLocation]]
+  ): Option[Map[Prefix, AkkaLocation]] = {
     val prefixes = configToSeqComps(subsystem, count)
     subsystemMachines.get(subsystem).map(roundRobinOn(_, prefixes))
   }
