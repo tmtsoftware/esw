@@ -46,12 +46,16 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       clearSkies -> ObsModeConfig(Resources(Resource(TCS), Resource(IRIS)), clearSkiesSequencers)
     )
   )
+
+  private val provisionConfig                              = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
+  private val provisionConfProvider                        = () => Future.successful(provisionConfig)
   private val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
   private val agentUtil: AgentUtil                         = mock[AgentUtil]
   private val sequencerUtil: SequencerUtil                 = mock[SequencerUtil]
   private val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
   private val sequenceManagerBehavior = new SequenceManagerBehavior(
     config,
+    provisionConfProvider,
     locationServiceUtil,
     agentUtil,
     sequencerUtil,

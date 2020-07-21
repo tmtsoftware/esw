@@ -33,5 +33,5 @@ class AgentAllocator {
 
   private def roundRobinOn(machines: List[AkkaLocation], prefixes: Seq[Prefix]) = prefixes.zip(cycle(machines: _*)).toMap
 
-  private def cycle[T](elems: T*): LazyList[T] = LazyList(elems: _*) #::: cycle(elems: _*)
+  private def cycle[T](elems: T*): LazyList[T] = LazyList.continually(elems).flatten
 }

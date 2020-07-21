@@ -102,6 +102,7 @@ object ProvisionResponse {
 
   sealed trait Failure                                               extends SmFailure with ProvisionResponse
   case class NoMachineFoundForSubsystems(subsystems: Set[Subsystem]) extends Failure
+  case class ConfigurationFailure(msg: String)                       extends Failure
   case class SpawningSequenceComponentsFailed(failureResponses: List[SpawnSequenceComponentResponse.SpawnSequenceComponentFailed])
       extends Failure
 }

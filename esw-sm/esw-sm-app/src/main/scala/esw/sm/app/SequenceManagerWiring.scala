@@ -43,7 +43,7 @@ import msocket.impl.post.PostRouteFactory
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
-class SequenceManagerWiring(obsModeConfigPath: Path) {
+class SequenceManagerWiring(obsModeConfigPath: Path, provisionConfigPath: Path = Path.of("")) {
   private[sm] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(actorSystem)
@@ -64,11 +64,20 @@ class SequenceManagerWiring(obsModeConfigPath: Path) {
   private lazy val sequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil)
   private lazy val sequencerUtil         = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
-  private lazy val smConfig =
-    Await.result(new SequenceManagerConfigParser(configUtils).read(obsModeConfigPath, isLocal = true), Timeouts.DefaultTimeout)
+  private lazy val configParser = new SequenceManagerConfigParser(configUtils)
+  private lazy val obsModeConfig =
+    Await.result(configParser.readObsModeConfig(obsModeConfigPath, isLocal = true), Timeouts.DefaultTimeout)
+  private val provisionConfigProvider = () => configParser.readProvisionConfig(provisionConfigPath, isLocal = true)
 
   private lazy val sequenceManagerBehavior =
-    new SequenceManagerBehavior(smConfig, locationServiceUtil, agentUtil, sequencerUtil, sequenceComponentUtil)
+    new SequenceManagerBehavior(
+      obsModeConfig,
+      provisionConfigProvider,
+      locationServiceUtil,
+      agentUtil,
+      sequencerUtil,
+      sequenceComponentUtil
+    )
 
   private lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] = Await.result(
     actorSystem ? (Spawn(sequenceManagerBehavior.setup, "sequence-manager", Props.empty, _)),

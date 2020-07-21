@@ -27,7 +27,8 @@ import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 class SequenceManagerBehavior(
-    config: SequenceManagerConfig,
+    obsModeConfig: SequenceManagerConfig,
+    provisionConfigProvider: () => Future[ProvisionConfig],
     locationServiceUtil: LocationServiceUtil,
     agentUtil: AgentUtil,
     sequencerUtil: SequencerUtil,
@@ -64,7 +65,7 @@ class SequenceManagerBehavior(
   // if requested resources does not conflict with existing running observations
   private def configureResources(requestedObsMode: ObsMode, runningObsModes: Set[ObsMode]): Future[ConfigureResponse] =
     async {
-      config.obsModeConfig(requestedObsMode) match {
+      obsModeConfig.obsModeConfig(requestedObsMode) match {
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
@@ -77,7 +78,7 @@ class SequenceManagerBehavior(
   private def checkConflicts(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
-  private def getResources(obsMode: ObsMode): Resources = config.resources(obsMode).get
+  private def getResources(obsMode: ObsMode): Resources = obsModeConfig.resources(obsMode).get
 
   private def shutdownSequencers(
       policy: ShutdownSequencersPolicy,
@@ -136,11 +137,13 @@ class SequenceManagerBehavior(
     processing(self, replyTo)
   }
 
-  private def getProvisionConfig: ProvisionConfig = ProvisionConfig(Map.empty)
+  private def provision(self: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
+    provisionConfigProvider()
+      .flatMap(agentUtil.provision)
+      .recover(err => ProvisionResponse.ConfigurationFailure(err.getMessage))
+      .map(self ! ProcessingComplete(_))
 
-  private def provision(selfRef: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
-    agentUtil.provision(getProvisionConfig).map(selfRef ! ProcessingComplete(_))
-    processing(selfRef, replyTo)
+    processing(self, replyTo)
   }
 
   // processing some message, waiting for ProcessingComplete message

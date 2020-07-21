@@ -12,4 +12,5 @@ object ConfigCodecs extends CommonCodecs with OcsCodecs {
   implicit lazy val resourcesCodec: Codec[Resources]                         = deriveCodec
   implicit lazy val sequencersCodec: Codec[Sequencers]                       = deriveCodec
   implicit lazy val sequenceManagerConfigCodec: Codec[SequenceManagerConfig] = deriveCodec
+  implicit lazy val provisionConfigCodec: Codec[ProvisionConfig]             = deriveCodec
 }
