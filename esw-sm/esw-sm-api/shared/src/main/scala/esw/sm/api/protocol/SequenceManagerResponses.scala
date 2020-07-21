@@ -100,11 +100,10 @@ sealed trait ProvisionResponse extends SmResponse
 object ProvisionResponse {
   case object Success extends ProvisionResponse
 
-  sealed trait Failure                                               extends SmFailure with ProvisionResponse
-  case class NoMachineFoundForSubsystems(subsystems: Set[Subsystem]) extends Failure
-  case class ConfigurationFailure(msg: String)                       extends Failure
-  case class SpawningSequenceComponentsFailed(failureResponses: List[SpawnSequenceComponentResponse.SpawnSequenceComponentFailed])
-      extends Failure
+  sealed trait Failure                                                        extends SmFailure with ProvisionResponse
+  case class NoMachineFoundForSubsystems(subsystems: Set[Subsystem])          extends Failure
+  case class ConfigurationFailure(msg: String)                                extends Failure
+  case class SpawningSequenceComponentsFailed(failureResponses: List[String]) extends Failure
 }
 
 sealed trait GetAgentStatusResponse extends SmResponse

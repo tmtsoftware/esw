@@ -20,7 +20,7 @@ class AgentAllocatorTest extends BaseTestSuite {
   val allocator = new AgentAllocator()
 
   "allocate" must {
-    "return a mapping of seq comp prefix -> machine on which it will be spawned" in {
+    "return a mapping of seq comp prefix -> machine on which it will be spawned | ESW-346" in {
       val config   = ProvisionConfig(Map(ESW -> 2, IRIS -> 1))
       val machines = List(eswPrimaryM, irisPrimaryM)
       val mapping  = allocator.allocate(config, machines).rightValue
@@ -33,7 +33,7 @@ class AgentAllocatorTest extends BaseTestSuite {
       )
     }
 
-    "distribute required number of sequence components on available machines equally" in {
+    "distribute required number of sequence components on available machines equally | ESW-346" in {
       val config   = ProvisionConfig(Map(ESW -> 5, IRIS -> 2))
       val machines = List(eswPrimaryM, eswSecondaryM, irisPrimaryM)
       val mapping  = allocator.allocate(config, machines).rightValue
@@ -53,7 +53,7 @@ class AgentAllocatorTest extends BaseTestSuite {
       )
     }
 
-    "return NoMachineFoundForSubsystems if subsystem to provision does not have machine available" in {
+    "return NoMachineFoundForSubsystems if subsystem to provision does not have machine available | ESW-346" in {
       val config = ProvisionConfig(Map(ESW -> 1, IRIS -> 1))
       allocator.allocate(config, List(eswPrimaryM)).leftValue shouldBe NoMachineFoundForSubsystems(Set(IRIS))
     }

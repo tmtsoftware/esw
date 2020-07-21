@@ -47,11 +47,11 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil, agentAllocator: AgentA
     Future.traverse(mappings) { case (prefix, machine) => makeAgentClient(machine).spawnSequenceComponent(prefix) }
 
   private def spawnResToProvisionRes(responses: List[SpawnResponse]): ProvisionResponse = {
-    // todo: error msg should have which component failed and on which machine
+    // todo: error msg should have which component failed and on which machine and remove this object creation
     val failedResponses = responses.collect { case Failed(msg) => SpawnSequenceComponentFailed(msg) }
 
     if (failedResponses.isEmpty) ProvisionResponse.Success
-    else ProvisionResponse.SpawningSequenceComponentsFailed(failedResponses)
+    else ProvisionResponse.SpawningSequenceComponentsFailed(failedResponses.map(_.msg))
   }
 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =

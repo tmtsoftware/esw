@@ -43,6 +43,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val spawnSequenceComponentResponseRef    = TestProbe[SpawnSequenceComponentResponse]().ref
     val shutdownSequenceComponentResponseRef = TestProbe[ShutdownSequenceComponentResponse]().ref
     val getAgentResponseRef                  = TestProbe[GetAgentStatusResponse]().ref
+    val provisionResponseRef                 = TestProbe[ProvisionResponse]().ref
 
     val obsMode = ObsMode("IRIS_DarkNight")
     val agent   = Prefix(ESW, "agent1")
@@ -61,7 +62,8 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       SpawnSequenceComponent(agent, "seq_comp", spawnSequenceComponentResponseRef),
       ShutdownSequenceComponents(SingleSequenceComponent(Prefix(ESW, "primary")), shutdownSequenceComponentResponseRef),
       ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseRef),
-      GetAgentStatus(getAgentResponseRef)
+      GetAgentStatus(getAgentResponseRef),
+      Provision(provisionResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>
@@ -224,4 +226,24 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       serializer.fromBinary(bytes, Some(sequenceManagerState.getClass)) shouldEqual sequenceManagerState
     }
   }
+
+  "should use sm serializer for ProvisionResponse (de)serialization" in {
+    val testData = Table(
+      "Sequence Manager Provision response models",
+      ProvisionResponse.Success,
+      ProvisionResponse.ConfigurationFailure("configuration reading failed"),
+      ProvisionResponse.NoMachineFoundForSubsystems(Set(ESW)),
+      ProvisionResponse.SpawningSequenceComponentsFailed(List("spawning sequence component falied")),
+      LocationServiceError("location service error")
+    )
+
+    forAll(testData) { provisionResponse =>
+      val serializer = serialization.findSerializerFor(provisionResponse)
+      serializer.getClass shouldBe classOf[SmAkkaSerializer]
+
+      val bytes = serializer.toBinary(provisionResponse)
+      serializer.fromBinary(bytes, Some(provisionResponse.getClass)) shouldEqual provisionResponse
+    }
+  }
+
 }

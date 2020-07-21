@@ -26,4 +26,5 @@ class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
   register[ConfigureResponse]
   register[GetAgentStatusResponse]
   register[SequenceManagerState]
+  register[ProvisionResponse]
 }

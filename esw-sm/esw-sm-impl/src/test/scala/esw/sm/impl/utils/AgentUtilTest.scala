@@ -183,7 +183,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(agentClient.spawnSequenceComponent(eswSeqComp2Prefix, None)).thenReturn(Future.successful(Failed(errorMsg)))
 
       agentUtil.provision(provisionConfig).futureValue should ===(
-        ProvisionResponse.SpawningSequenceComponentsFailed(List(SpawnSequenceComponentFailed(errorMsg)))
+        ProvisionResponse.SpawningSequenceComponentsFailed(List(errorMsg))
       )
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)

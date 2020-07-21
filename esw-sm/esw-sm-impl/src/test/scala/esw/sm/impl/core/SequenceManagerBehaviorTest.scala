@@ -47,7 +47,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     )
   )
 
-  private val provisionConfig                              = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
+  private var provisionConfig                              = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
   private val provisionConfProvider                        = () => Future.successful(provisionConfig)
   private val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
   private val agentUtil: AgentUtil                         = mock[AgentUtil]
@@ -66,7 +66,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  override protected def beforeEach(): Unit = reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil, agentUtil)
+  override protected def beforeEach(): Unit = {
+    provisionConfig = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
+    reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil, agentUtil)
+  }
 
   "Configure" must {
 
@@ -424,6 +427,68 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       getAgentStatusResponseProbe.expectMessage(LocationServiceError("error"))
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
+    }
+  }
+
+  "provision" must {
+    "transition from Idle -> Processing -> Idle and return provision success | ESW-346" in {
+      when(agentUtil.provision(provisionConfig)).thenReturn(future(1.second, ProvisionResponse.Success))
+      val provisionResponseProbe = TestProbe[ProvisionResponse]()
+
+      assertState(Idle)
+      smRef ! Provision(provisionResponseProbe.ref)
+      assertState(Processing)
+      assertState(Idle)
+
+      verify(agentUtil).provision(provisionConfig)
+      provisionResponseProbe.expectMessage(ProvisionResponse.Success)
+    }
+
+    "read updated configuration on every provision msg | ESW-346" in {
+      when(agentUtil.provision(provisionConfig)).thenReturn(future(1.second, ProvisionResponse.Success))
+      val provisionResponseProbe1 = TestProbe[ProvisionResponse]()
+      smRef ! Provision(provisionResponseProbe1.ref)
+      assertState(Idle)
+
+      verify(agentUtil).provision(provisionConfig)
+      provisionResponseProbe1.expectMessage(ProvisionResponse.Success)
+
+      // update provision config
+      val newProvisionConfig = ProvisionConfig(Map(IRIS -> 2, TCS -> 4))
+      provisionConfig = newProvisionConfig
+
+      val provisionResponseProbe2 = TestProbe[ProvisionResponse]()
+      when(agentUtil.provision(newProvisionConfig)).thenReturn(future(1.second, ProvisionResponse.Success))
+
+      smRef ! Provision(provisionResponseProbe2.ref)
+      assertState(Idle)
+
+      verify(agentUtil).provision(newProvisionConfig)
+      provisionResponseProbe2.expectMessage(ProvisionResponse.Success)
+    }
+
+    "give ConfigurationFailure if config provider gives error | ESW-346" in {
+      val errorMsg = "config reading failed"
+      val provider = () => Future.failed(new RuntimeException(errorMsg))
+      val smBeh =
+        new SequenceManagerBehavior(config, provider, locationServiceUtil, agentUtil, sequencerUtil, sequenceComponentUtil)
+      val smRef: ActorRef[SequenceManagerMsg] = actorSystem.systemActorOf(smBeh.setup, "test_actor1")
+
+      val provisionResponseProbe = TestProbe[ProvisionResponse]()
+      smRef ! Provision(provisionResponseProbe.ref)
+      assertState(Idle)
+
+      provisionResponseProbe.expectMessage(ProvisionResponse.ConfigurationFailure(errorMsg))
+    }
+
+    "return ProvisionResponse given by agentUtil.provision | ESW-346" in {
+      val provisionResponse = ProvisionResponse.NoMachineFoundForSubsystems(Set(ESW))
+      when(agentUtil.provision(provisionConfig)).thenReturn(Future.successful(provisionResponse))
+
+      val provisionResponseProbe = TestProbe[ProvisionResponse]()
+      smRef ! Provision(provisionResponseProbe.ref)
+      assertState(Idle)
+      provisionResponseProbe.expectMessage(provisionResponse)
     }
   }
 
