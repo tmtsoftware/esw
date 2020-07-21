@@ -332,7 +332,7 @@ Content-Length: 191
   "AkkaLocation": {
     "connection": {
       "prefix": "esw.primary",
-      "componentType": "sequence_component",
+      "componentType": "SequenceComponent",
       "connectionType": "akka"
     },
     "uri": "akka://esw-system@10.131.20.138:58492/user/esw.primary#-1731655948"
