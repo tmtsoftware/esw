@@ -108,7 +108,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     Endpoint(name[SubscribeWithPattern], name[Event], List(name[InvalidMaxFrequency]))
   )
 
-  private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("/gateway-service/README.md"))
+  private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("gateway-service/README.md"))
 
   val service: Service = Service(
     `http-contract` = Contract(httpEndpoints, httpRequests),

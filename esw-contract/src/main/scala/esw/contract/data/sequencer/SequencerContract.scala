@@ -88,7 +88,7 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     Endpoint(name[QueryFinal], name[SubmitResponse])
   )
 
-  private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("/sequencer-service/README.md"))
+  private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("sequencer-service/README.md"))
 
   val service: Service = Service(
     `http-contract` = Contract(httpEndpoints, httpRequests),
