@@ -16,23 +16,23 @@ class SequenceComponentAllocator() {
   ): Either[SequenceComponentNotAvailable, SequencerToSequenceComponentMap] = {
     val subsystems = sequencers.subsystems
     var locations  = sequenceComponents
-    val mapping = (for {
+    val mapping = for {
       subsystem       <- subsystems
-      seqCompLocation <- findMatchingSeqComp(subsystem, locations)
+      seqCompLocation <- findSeqComp(subsystem, locations)
     } yield {
       locations = locations.filterNot(_.equals(seqCompLocation))
       (subsystem, seqCompLocation)
-    }).toMap
+    }
 
-    val diff = subsystems.diff(mapping.keys.toList)
-    if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(diff: _*))
+    val diff = subsystems.diff(mapping.map(_._1))
+    if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(diff))
   }
 
-  private def findMatchingSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =
+  private def findSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =
     seqCompLocations.find(_.prefix.subsystem == subsystem).orElse(seqCompLocations.find(_.prefix.subsystem == ESW))
 
 }
 
 object SequenceComponentAllocator {
-  type SequencerToSequenceComponentMap = Map[Subsystem, AkkaLocation]
+  type SequencerToSequenceComponentMap = List[(Subsystem, AkkaLocation)]
 }

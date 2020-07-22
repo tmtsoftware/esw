@@ -29,13 +29,9 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def startSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] =
     sequenceComponentUtil
-      .mapSequencersToSeqComps(sequencers)
-      .flatMap {
-        case Left(error)                      => Future.successful(error)
-        case Right(sequencerToSeqCompMapping) =>
-          // load scripts for sequencers on mapped sequence components
-          startSequencersByMapping(obsMode, sequencerToSeqCompMapping)
-      }
+      .allocateSequenceComponents(sequencers)
+      .flatMapRight(startSequencersByMapping(obsMode, _)) // load scripts for sequencers on mapped sequence components
+      .mapToAdt(identity, identity)
 
   def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
@@ -52,11 +48,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private[utils] def startSequencersByMapping(
       obsMode: ObsMode,
-      mappings: Map[Subsystem, AkkaLocation]
+      mappings: List[(Subsystem, AkkaLocation)]
   ): Future[ConfigureResponse] =
-    parallel(mappings.toList) { mapping =>
-      val (sequencerSubsystem, seqCompLocation) = mapping
-      sequenceComponentUtil.loadScript(sequencerSubsystem, obsMode, seqCompLocation)
+    parallel(mappings) {
+      case (sequencerSubsystem, seqCompLocation) => sequenceComponentUtil.loadScript(sequencerSubsystem, obsMode, seqCompLocation)
     }.mapToAdt(
       _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)),
       errors => FailedToStartSequencers(errors.map(_.msg).toSet)

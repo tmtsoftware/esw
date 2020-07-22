@@ -29,41 +29,25 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
 ) {
   import actorSystem.executionContext
 
-  def mapSequencersToSeqComps(
+  def allocateSequenceComponents(
       sequencers: Sequencers
-  ): Future[Either[ConfigureResponse.Failure, SequencerToSequenceComponentMap]] = {
-    getAllIdleSequenceComponentsFor(sequencers.subsystems)
-      .map {
-        case Left(error)         => Left(error)
-        case Right(idleSeqComps) => sequenceComponentAllocator.allocate(idleSeqComps, sequencers)
-      }
-  }
+  ): Future[Either[ConfigureResponse.Failure, SequencerToSequenceComponentMap]] =
+    getAllIdleSequenceComponentsFor(sequencers.subsystems).mapRightE(sequenceComponentAllocator.allocate(_, sequencers))
 
   // get all sequence components for subsystems and find idle ones from these sequence components
-  private def getAllIdleSequenceComponentsFor(
-      subsystems: List[Subsystem]
-  ): Future[Either[LocationServiceError, List[AkkaLocation]]] = {
+  private def getAllIdleSequenceComponentsFor(subsystems: List[Subsystem]) =
     locationServiceUtil
       .listAkkaLocationsBy(SequenceComponent, withFilter = location => subsystems.contains(location.prefix.subsystem))
       .flatMapRight(filterIdleSequenceComponents)
       .mapLeft(error => LocationServiceError(error.msg))
-  }
 
-  def loadScript(
-      subsystem: Subsystem,
-      obsMode: ObsMode
-  ): Future[StartSequencerResponse] =
+  def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     getAllIdleSequenceComponentsFor(List(subsystem, ESW)) //search idle seq comps for ESW as fallback if needed
-      .map {
-        case Left(error)         => Left(error)
-        case Right(idleSeqComps) => sequenceComponentAllocator.allocate(idleSeqComps, Sequencers(subsystem))
+      .mapRightE(sequenceComponentAllocator.allocate(_, Sequencers(subsystem)))
+      .flatMapE {
+        case (subsystem, seqCompLocation) :: _ => loadScript(subsystem, obsMode, seqCompLocation)
       }
-      .flatMap {
-        case Left(error) => Future.successful(error)
-        case Right(mapping) =>
-          val (subsystem, seqCompLocation) = mapping.head
-          loadScript(subsystem, obsMode, seqCompLocation).mapToAdt(identity, identity)
-      }
+      .mapToAdt(identity, identity)
 
   def loadScript(
       subSystem: Subsystem,
@@ -91,17 +75,16 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
 
-  def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[SequenceComponentStatus] = {
+  def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[SequenceComponentStatus] =
     Future
       .traverse(seqCompIds) { seqComp =>
         locationServiceUtil.find(AkkaConnection(seqComp)).flatMap {
-          case Left(_) =>
-            Future.successful(List.empty) //ignore sequence components for which can't be resolved in location service
+          //ignore sequence components for which can't be resolved in location service
+          case Left(_)                => Future.successful(List.empty)
           case Right(seqCompLocation) => createSequenceComponentImpl(seqCompLocation).status.map(s => List(seqComp -> s.response))
         }
       }
       .map(_.flatten.toMap)
-  }
 
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil
@@ -115,11 +98,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
 
   private def shutdown(loc: AkkaLocation): Future[SequenceComponentResponse.Ok.type] = createSequenceComponentImpl(loc).shutdown()
 
-  private def filterIdleSequenceComponents(locations: List[AkkaLocation]): Future[List[AkkaLocation]] = {
+  private def filterIdleSequenceComponents(locations: List[AkkaLocation]): Future[List[AkkaLocation]] =
     Future
       .traverse(locations)(idleSequenceComponent)
       .map(_.collect { case Some(location) => location })
-  }
 
   private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[AkkaLocation]] =
     async {

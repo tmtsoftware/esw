@@ -42,10 +42,6 @@ object StartSequencerResponse {
   case class SequenceComponentNotAvailable(subsystems: List[Subsystem]) extends Failure with ConfigureResponse.Failure {
     override val msg: String = s"No sequence components found for subsystems : $subsystems"
   }
-
-  object SequenceComponentNotAvailable {
-    def apply(subsystems: Subsystem*): SequenceComponentNotAvailable = new SequenceComponentNotAvailable(subsystems.toList)
-  }
 }
 
 sealed trait ShutdownSequencersResponse extends SmResponse

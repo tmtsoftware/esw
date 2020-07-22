@@ -55,7 +55,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val response = sequencerUtil
         .startSequencersByMapping(
           darkNightObsMode,
-          Map(ESW -> eswPrimarySeqCompLoc, TCS -> tcsPrimarySeqCompLoc)
+          List((ESW, eswPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc))
         )
         .futureValue
 
@@ -76,7 +76,7 @@ class SequencerUtilTest extends BaseTestSuite {
         sequencerUtil
           .startSequencersByMapping(
             darkNightObsMode,
-            Map(ESW -> eswPrimarySeqCompLoc, TCS -> tcsPrimarySeqCompLoc)
+            List((ESW, eswPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc))
           ),
         1200.millis
       )
@@ -97,7 +97,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val response = sequencerUtil
         .startSequencersByMapping(
           darkNightObsMode,
-          Map(ESW -> eswPrimarySeqCompLoc, TCS -> tcsPrimarySeqCompLoc)
+          List((ESW, eswPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc))
         )
         .futureValue
 
@@ -282,8 +282,8 @@ class SequencerUtilTest extends BaseTestSuite {
     "return success when adequate idle sequence components are available and all sequencers are started successfully | ESW-178" in {
       val sequencers = Sequencers(IRIS, ESW, TCS)
 
-      when(sequenceComponentUtil.mapSequencersToSeqComps(sequencers))
-        .thenReturn(futureRight(Map(IRIS -> eswPrimarySeqCompLoc, ESW -> eswSecondarySeqCompLoc, TCS -> tcsPrimarySeqCompLoc)))
+      when(sequenceComponentUtil.allocateSequenceComponents(sequencers))
+        .thenReturn(futureRight(List((IRIS, eswPrimarySeqCompLoc), (ESW, eswSecondarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc))))
       when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswSecondarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(eswDarkNightSequencer))))
       when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc))
@@ -293,7 +293,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       sequencerUtil.startSequencers(darkNightObsMode, sequencers).futureValue should ===(Success(eswDarkNightSequencer))
 
-      verify(sequenceComponentUtil).mapSequencersToSeqComps(sequencers)
+      verify(sequenceComponentUtil).allocateSequenceComponents(sequencers)
       verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, eswSecondarySeqCompLoc)
       verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc)
       verify(sequenceComponentUtil).loadScript(IRIS, darkNightObsMode, eswPrimarySeqCompLoc)
@@ -302,27 +302,27 @@ class SequencerUtilTest extends BaseTestSuite {
     "return failure when adequate sequence components are not available to start sequencers | ESW-178, ESW-340" in {
       val sequencers = Sequencers(IRIS, ESW, TCS)
 
-      when(sequenceComponentUtil.mapSequencersToSeqComps(sequencers))
-        .thenReturn(futureLeft(SequenceComponentNotAvailable(ESW)))
+      when(sequenceComponentUtil.allocateSequenceComponents(sequencers))
+        .thenReturn(futureLeft(SequenceComponentNotAvailable(List(ESW))))
 
       sequencerUtil
         .startSequencers(darkNightObsMode, sequencers)
-        .futureValue should ===(SequenceComponentNotAvailable(ESW))
+        .futureValue should ===(SequenceComponentNotAvailable(List(ESW)))
 
-      verify(sequenceComponentUtil).mapSequencersToSeqComps(sequencers)
+      verify(sequenceComponentUtil).allocateSequenceComponents(sequencers)
     }
 
     "return failure when location service error | ESW-178" in {
       val sequencers = Sequencers(IRIS, ESW, TCS)
 
-      when(sequenceComponentUtil.mapSequencersToSeqComps(sequencers))
+      when(sequenceComponentUtil.allocateSequenceComponents(sequencers))
         .thenReturn(Future.successful(Left(LocationServiceError("error"))))
 
       sequencerUtil.startSequencers(darkNightObsMode, sequencers).futureValue should ===(
         LocationServiceError("error")
       )
 
-      verify(sequenceComponentUtil).mapSequencersToSeqComps(sequencers)
+      verify(sequenceComponentUtil).allocateSequenceComponents(sequencers)
     }
 
     "return failure when load script fails | ESW-178" in {
@@ -330,8 +330,8 @@ class SequencerUtilTest extends BaseTestSuite {
       val eswError   = "error for esw sequencer"
       val irisError  = "error for iris sequencer"
 
-      when(sequenceComponentUtil.mapSequencersToSeqComps(sequencers))
-        .thenReturn(futureRight(Map(IRIS -> irisPrimarySeqCompLoc, ESW -> eswPrimarySeqCompLoc, TCS -> tcsPrimarySeqCompLoc)))
+      when(sequenceComponentUtil.allocateSequenceComponents(sequencers))
+        .thenReturn(futureRight(List((IRIS, irisPrimarySeqCompLoc), (ESW, eswPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc))))
       when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(Left(LoadScriptError(eswError))))
       when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc))
@@ -343,7 +343,7 @@ class SequencerUtilTest extends BaseTestSuite {
         FailedToStartSequencers(Set(eswError, irisError))
       )
 
-      verify(sequenceComponentUtil).mapSequencersToSeqComps(sequencers)
+      verify(sequenceComponentUtil).allocateSequenceComponents(sequencers)
       verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc)
       verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc)
       verify(sequenceComponentUtil).loadScript(IRIS, darkNightObsMode, irisPrimarySeqCompLoc)

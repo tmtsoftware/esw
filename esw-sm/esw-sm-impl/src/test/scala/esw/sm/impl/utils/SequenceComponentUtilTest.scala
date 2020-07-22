@@ -6,8 +6,8 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
-import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
@@ -152,8 +152,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       val seqComps     = List(eswPrimary, tcsPrimary, wfosPrimary, eswSecondary)
       val idleSeqComps = List(eswPrimary, wfosPrimary, eswSecondary)
 
-      val sequenceToSeqCompMapping: Map[Subsystem, AkkaLocation] =
-        Map(ESW -> eswPrimary, TCS -> eswSecondary, WFOS -> wfosPrimary)
+      val sequenceToSeqCompMapping = List((ESW, eswPrimary), (TCS, eswSecondary), (WFOS, wfosPrimary))
 
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(seqComps)))
@@ -171,7 +170,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       }
 
       val sequencerToSeqCompMap: SequencerToSequenceComponentMap =
-        sequenceComponentUtil.mapSequencersToSeqComps(sequencers).rightValue
+        sequenceComponentUtil.allocateSequenceComponents(sequencers).rightValue
 
       sequencerToSeqCompMap should ===(sequenceToSeqCompMapping)
       verify(sequenceComponentAllocator).allocate(idleSeqComps, sequencers)
@@ -187,7 +186,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
         .thenReturn(Left(SequenceComponentNotAvailable(sequencers.subsystems)))
 
       val response: ConfigureResponse.Failure =
-        sequenceComponentUtil.mapSequencersToSeqComps(sequencers).leftValue
+        sequenceComponentUtil.allocateSequenceComponents(sequencers).leftValue
 
       response should ===(SequenceComponentNotAvailable(sequencers.subsystems))
     }
@@ -198,7 +197,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Left(registrationListingFailed)))
 
-      val sequenceComponents = sequenceComponentUtil.mapSequencersToSeqComps(sequencers)
+      val sequenceComponents = sequenceComponentUtil.allocateSequenceComponents(sequencers)
 
       sequenceComponents.leftValue should ===(LocationServiceError("error"))
     }
@@ -254,7 +253,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(List(tcsSeqComp, eswSeqComp))))
       when(sequenceComponentAllocator.allocate(seqComps, sequencers))
-        .thenReturn(Right(Map(TCS -> tcsSeqComp)))
+        .thenReturn(Right(List((TCS, tcsSeqComp))))
       when(sequenceComponentApi.loadScript(TCS, darkNight))
         .thenReturn(Future.successful(SequencerLocation(akkaLocation(tcsSequencer))))
 
@@ -279,7 +278,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(List(tcsSeqComp, eswSeqComp))))
-      when(sequenceComponentAllocator.allocate(idleSeqComps, sequencers)).thenReturn(Right(Map(TCS -> eswSeqComp)))
+      when(sequenceComponentAllocator.allocate(idleSeqComps, sequencers)).thenReturn(Right(List((TCS, eswSeqComp))))
       when(sequenceComponentApi.loadScript(TCS, darkNight))
         .thenReturn(Future.successful(SequencerLocation(akkaLocation(tcsSequencer))))
 
@@ -313,15 +312,11 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
         when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
           .thenReturn(Future.successful(Right(List(tcsSeqComp))))
-        when(sequenceComponentAllocator.allocate(seqComps, sequencers))
-          .thenReturn(Right(Map(TCS -> tcsSeqComp)))
-        when(sequenceComponentApi.loadScript(TCS, darkNight))
-          .thenReturn(Future.successful(seqCompApiResponse))
+        when(sequenceComponentAllocator.allocate(seqComps, sequencers)).thenReturn(Right(List((TCS, tcsSeqComp))))
+        when(sequenceComponentApi.loadScript(TCS, darkNight)).thenReturn(Future.successful(seqCompApiResponse))
 
-        val eventualResponse: Future[StartSequencerResponse] =
-          sequenceComponentUtil.loadScript(TCS, darkNight)
-
-        eventualResponse.futureValue should ===(loadScriptResponse)
+        val response = sequenceComponentUtil.loadScript(TCS, darkNight).futureValue
+        response should ===(loadScriptResponse)
       }
     }
   }
