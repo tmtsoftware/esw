@@ -16,7 +16,7 @@ import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
 import esw.sm.api.protocol.AgentStatus.SequenceComponentStatus
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
-import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
@@ -46,6 +46,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .mapRightE(sequenceComponentAllocator.allocate(_, Sequencers(subsystem)))
       .flatMapE {
         case (subsystem, seqCompLocation) :: _ => loadScript(subsystem, obsMode, seqCompLocation)
+        case Nil                               => Future.successful(Left(SequenceComponentNotAvailable(Nil))) // this should never happen
       }
       .mapToAdt(identity, identity)
 
