@@ -377,8 +377,8 @@ class SequencerUtilTest extends BaseTestSuite {
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))
 
     val sequencerUtil: SequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil) {
-      override private[sm] def createSequencerClient(location: Location) =
-        location.prefix.subsystem match {
+      override private[sm] def makeSequencerClient(sequencerLocation: Location) =
+        sequencerLocation.prefix.subsystem match {
           case ESW => eswSequencerApi
           case TCS => tcsSequencerApi
           case _   => mock[SequencerApi]

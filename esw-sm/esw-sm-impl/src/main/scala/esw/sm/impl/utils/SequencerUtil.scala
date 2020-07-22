@@ -33,9 +33,9 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .flatMapRight(startSequencersByMapping(obsMode, _)) // load scripts for sequencers on mapped sequence components
       .mapToAdt(identity, identity)
 
-  def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
+  def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
-      .findSequencer(subSystem, obsMode)
+      .findSequencer(subsystem, obsMode)
       .flatMapToAdt(restartSequencer, e => LocationServiceError(e.msg))
 
   def shutdownSequencers(policy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
@@ -50,15 +50,18 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       obsMode: ObsMode,
       mappings: List[(Subsystem, AkkaLocation)]
   ): Future[ConfigureResponse] =
-    parallel(mappings) {
-      case (sequencerSubsystem, seqCompLocation) => sequenceComponentUtil.loadScript(sequencerSubsystem, obsMode, seqCompLocation)
-    }.mapToAdt(
-      _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)),
-      errors => FailedToStartSequencers(errors.map(_.msg).toSet)
-    )
+    Future
+      .traverse(mappings) {
+        case (subsystem, seqCompLocation) => sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
+      }
+      .map(_.sequence)
+      .mapToAdt(
+        _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)),
+        errors => FailedToStartSequencers(errors.map(_.msg).toSet)
+      )
 
-  private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
-    createSequencerClient(akkaLocation).getSequenceComponent
+  private def restartSequencer(sequencerLocation: AkkaLocation) =
+    makeSequencerClient(sequencerLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.restartScript(_).map {
         case SequencerLocation(location) => RestartSequencerResponse.Success(location.connection.componentId)
         case error: ScriptError          => LoadScriptError(error.msg)
@@ -82,15 +85,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(sequencerLocation: AkkaLocation) =
-    createSequencerClient(sequencerLocation).getSequenceComponent
+    makeSequencerClient(sequencerLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.unloadScript)
       .map(_ => ShutdownSequencersResponse.Success)
 
-  private def unloadScripts(sequencerLocations: List[AkkaLocation]): Future[ShutdownSequencersResponse.Success.type] =
+  private def unloadScripts(sequencerLocations: List[AkkaLocation]) =
     Future.traverse(sequencerLocations)(unloadScript).map(_ => ShutdownSequencersResponse.Success)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
-  private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
-
-  private def parallel[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = Future.traverse(i)(f).map(_.sequence)
+  private[sm] def makeSequencerClient(sequencerLocation: Location): SequencerApi = SequencerApiFactory.make(sequencerLocation)
 }

@@ -73,7 +73,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil, agentAllocator: AgentA
     new AgentClient(loc)
   }
 
-  private def filterRunningSeqComps(agentStatus: AgentStatus): List[ComponentId] =
+  private def filterRunningSeqComps(agentStatus: AgentStatus) =
     agentStatus.componentStatus
       .filter { case (compId, status) => isRunningSeqComp(compId, status) }
       .keys
