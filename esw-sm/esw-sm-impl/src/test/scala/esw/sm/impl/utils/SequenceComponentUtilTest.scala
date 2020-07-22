@@ -19,7 +19,7 @@ import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
-import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
 import esw.sm.impl.config.Sequencers
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
@@ -37,9 +37,10 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
   private val locationServiceUtil        = mock[LocationServiceUtil]
   private val sequenceComponentAllocator = mock[SequenceComponentAllocator]
+  private val sequenceComponentApi       = mock[SequenceComponentImpl]
   private val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator)
 
-  override def beforeEach(): Unit = reset(locationServiceUtil, sequenceComponentAllocator)
+  override def beforeEach(): Unit = reset(locationServiceUtil, sequenceComponentAllocator, sequenceComponentApi)
 
   override def afterAll(): Unit = {
     actorSystem.terminate()
@@ -204,8 +205,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
   }
 
   "loadScript" must {
-    val darkNight            = ObsMode("DarkNight")
-    val sequenceComponentApi = mock[SequenceComponentImpl]
+    val darkNight = ObsMode("DarkNight")
     val sequenceComponentUtil: SequenceComponentUtil =
       new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
         override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) = sequenceComponentApi
@@ -228,6 +228,98 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
         val eventualResponse: Future[Either[StartSequencerResponse.Failure, StartSequencerResponse.Started]] =
           sequenceComponentUtil.loadScript(ESW, darkNight, sequenceComponentLocation("esw.primary"))
+
+        eventualResponse.futureValue should ===(loadScriptResponse)
+      }
+    }
+  }
+
+  "loadScript with subsystem and obs mode" must {
+    val darkNight    = ObsMode("DarkNight")
+    val tcsSeqComp   = akkaLocation(ComponentId(Prefix(TCS, "primary"), Sequencer))
+    val eswSeqComp   = akkaLocation(ComponentId(Prefix(ESW, "primary"), Sequencer))
+    val tcsSequencer = ComponentId(Prefix(TCS, darkNight.name), Sequencer)
+    val sequencers   = Sequencers(TCS)
+
+    "return success when script is loaded successfully with subsystem seq comp available | ESW-176" in {
+      val seqComps = List(tcsSeqComp, eswSeqComp)
+
+      val sequenceComponentUtil: SequenceComponentUtil =
+        new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
+          override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) = sequenceComponentApi
+          override private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[AkkaLocation]] =
+            Future.successful(Some(sequenceComponentLocation))
+        }
+
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
+        .thenReturn(Future.successful(Right(List(tcsSeqComp, eswSeqComp))))
+      when(sequenceComponentAllocator.allocate(seqComps, sequencers))
+        .thenReturn(Right(Map(TCS -> tcsSeqComp)))
+      when(sequenceComponentApi.loadScript(TCS, darkNight))
+        .thenReturn(Future.successful(SequencerLocation(akkaLocation(tcsSequencer))))
+
+      sequenceComponentUtil.loadScript(TCS, darkNight).futureValue should ===(Started(tcsSequencer))
+
+      verify(sequenceComponentAllocator).allocate(seqComps, sequencers)
+      verify(sequenceComponentApi).loadScript(TCS, darkNight)
+    }
+
+    "return success when script is loaded successfully with ESW seq comp as fallback | ESW-176" in {
+      val idleSeqComps = List(eswSeqComp)
+
+      val sequenceComponentUtil: SequenceComponentUtil =
+        new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
+          override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) = sequenceComponentApi
+          override private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[AkkaLocation]] =
+            sequenceComponentLocation.prefix.subsystem match {
+              case TCS => Future.successful(None) // mimic that TCS seq comp is not idle
+              case _   => Future.successful(Some(sequenceComponentLocation))
+            }
+        }
+
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
+        .thenReturn(Future.successful(Right(List(tcsSeqComp, eswSeqComp))))
+      when(sequenceComponentAllocator.allocate(idleSeqComps, sequencers)).thenReturn(Right(Map(TCS -> eswSeqComp)))
+      when(sequenceComponentApi.loadScript(TCS, darkNight))
+        .thenReturn(Future.successful(SequencerLocation(akkaLocation(tcsSequencer))))
+
+      sequenceComponentUtil.loadScript(TCS, darkNight).futureValue should ===(Started(tcsSequencer))
+
+      verify(sequenceComponentAllocator).allocate(idleSeqComps, sequencers)
+      verify(sequenceComponentApi).loadScript(TCS, darkNight)
+    }
+
+    val loadScriptResponses = Table(
+      ("seqCompApiResponse", "loadScriptResponse"),
+      (ScriptError.LocationServiceError("error"), LocationServiceError("error")),
+      (ScriptError.LoadingScriptFailed("error"), LoadScriptError("error")),
+      (Unhandled(Running, "errorMsg", "error"), LoadScriptError("error"))
+    )
+
+    forAll(loadScriptResponses) { (seqCompApiResponse, loadScriptResponse) =>
+      s"return ${loadScriptResponse.getClass.getSimpleName} when seqCompApi returns ${seqCompApiResponse.getClass.getSimpleName} | ESW-176" in {
+        val tcsSeqComp = akkaLocation(ComponentId(Prefix(TCS, "primary"), Sequencer))
+        val seqComps   = List(tcsSeqComp)
+        val sequencers = Sequencers(TCS)
+
+        val sequenceComponentUtil: SequenceComponentUtil =
+          new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
+            override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) = sequenceComponentApi
+            override private[sm] def idleSequenceComponent(
+                sequenceComponentLocation: AkkaLocation
+            ): Future[Option[AkkaLocation]] =
+              Future.successful(Some(sequenceComponentLocation))
+          }
+
+        when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
+          .thenReturn(Future.successful(Right(List(tcsSeqComp))))
+        when(sequenceComponentAllocator.allocate(seqComps, sequencers))
+          .thenReturn(Right(Map(TCS -> tcsSeqComp)))
+        when(sequenceComponentApi.loadScript(TCS, darkNight))
+          .thenReturn(Future.successful(seqCompApiResponse))
+
+        val eventualResponse: Future[StartSequencerResponse] =
+          sequenceComponentUtil.loadScript(TCS, darkNight)
 
         eventualResponse.futureValue should ===(loadScriptResponse)
       }

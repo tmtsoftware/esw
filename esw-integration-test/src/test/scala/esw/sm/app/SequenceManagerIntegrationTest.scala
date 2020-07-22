@@ -147,7 +147,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
-  "start and shut down sequencer (and shutdown sequence component) for given subsystem and observation mode | ESW-176, ESW-326, ESW-171, ESW-167" in {
+  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326, ESW-171, ESW-167" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"), Prefix(ESW, "secondary"), Prefix(AOESW, "primary"))
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
@@ -156,17 +156,17 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer))
 
     val response  = sequenceManagerClient.startSequencer(ESW, IRIS_DARKNIGHT).futureValue
-    val response2 = sequenceManagerClient.startSequencer(ESW, IRIS_CAL).futureValue
+    val response2 = sequenceManagerClient.startSequencer(IRIS, IRIS_CAL).futureValue
     val response3 = sequenceManagerClient.startSequencer(AOESW, IRIS_CAL).futureValue
 
     // ESW-176 Verify that start sequencer return Started response with component id for master sequencer
     response should ===(StartSequencerResponse.Started(ComponentId(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer)))
-    response2 should ===(StartSequencerResponse.Started(ComponentId(Prefix(ESW, IRIS_CAL.name), Sequencer)))
+    response2 should ===(StartSequencerResponse.Started(ComponentId(Prefix(IRIS, IRIS_CAL.name), Sequencer)))
     response3 should ===(StartSequencerResponse.Started(ComponentId(Prefix(AOESW, IRIS_CAL.name), Sequencer)))
 
     // verify that sequencer is started
     resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer)
-    resolveHTTPLocation(Prefix(ESW, IRIS_CAL.name), Sequencer)
+    resolveHTTPLocation(Prefix(IRIS, IRIS_CAL.name), Sequencer)
     resolveHTTPLocation(Prefix(AOESW, IRIS_CAL.name), Sequencer)
 
     // ESW-326, ESW-167 Verify that shutdown sequencer returns Success
@@ -175,10 +175,10 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // verify that sequencer is shut down
     intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer))
-    resolveHTTPLocation(Prefix(ESW, IRIS_CAL.name), Sequencer)
+    resolveHTTPLocation(Prefix(IRIS, IRIS_CAL.name), Sequencer)
     resolveHTTPLocation(Prefix(AOESW, IRIS_CAL.name), Sequencer)
 
-    // ESW-167: verify that sequence component is shutdown
+    // ESW-167: verify that sequence component is up
     resolveSequenceComponentLocation(Prefix(ESW, "primary"))
     resolveSequenceComponentLocation(Prefix(ESW, "secondary"))
     resolveSequenceComponentLocation(Prefix(AOESW, "primary"))
@@ -187,7 +187,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     shutdownResponse2 should ===(ShutdownSequencersResponse.Success)
 
     // verify that sequencer is shut down
-    resolveHTTPLocation(Prefix(ESW, IRIS_CAL.name), Sequencer)
+    resolveHTTPLocation(Prefix(IRIS, IRIS_CAL.name), Sequencer)
     intercept[Exception](resolveHTTPLocation(Prefix(AOESW, IRIS_CAL.name), Sequencer))
 
     // ESW-167: verify that sequence component is up

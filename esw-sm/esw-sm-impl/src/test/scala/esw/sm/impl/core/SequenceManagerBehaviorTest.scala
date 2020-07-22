@@ -134,7 +134,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
 
-      when(sequenceComponentUtil.loadScript(ESW, darkNight)).thenReturn(future(1.second, Right(Started(componentId))))
+      when(sequenceComponentUtil.loadScript(ESW, darkNight)).thenReturn(future(1.second, Started(componentId)))
       when(locationServiceUtil.find(httpConnection)).thenReturn(futureLeft(LocationNotFound("error")))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
@@ -174,7 +174,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       when(locationServiceUtil.find(httpConnection))
         .thenReturn(futureLeft(LocationNotFound("error")))
-      when(sequenceComponentUtil.loadScript(ESW, darkNight)).thenReturn(futureLeft(expectedErrorResponse))
+      when(sequenceComponentUtil.loadScript(ESW, darkNight)).thenReturn(Future.successful(expectedErrorResponse))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
 

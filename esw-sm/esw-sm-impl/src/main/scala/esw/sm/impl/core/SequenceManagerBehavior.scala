@@ -103,7 +103,7 @@ class SequenceManagerBehavior(
     locationServiceUtil
       .find(HttpConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
       .flatMap {
-        case Left(_)         => sequenceComponentUtil.loadScript(subsystem, obsMode).mapToAdt(identity, identity)
+        case Left(_)         => sequenceComponentUtil.loadScript(subsystem, obsMode)
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
       .map(self ! ProcessingComplete(_))

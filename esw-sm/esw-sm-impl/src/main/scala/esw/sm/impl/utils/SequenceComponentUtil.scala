@@ -7,7 +7,6 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
@@ -17,7 +16,7 @@ import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
 import esw.sm.api.protocol.AgentStatus.SequenceComponentStatus
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
-import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
@@ -51,13 +50,20 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
   }
 
   def loadScript(
-      subSystem: Subsystem,
+      subsystem: Subsystem,
       obsMode: ObsMode
-  ): Future[Either[StartSequencerResponse.Failure, Started]] =
-    getAvailableSequenceComponent(subSystem).flatMap {
-      case Left(error)       => Future.successful(Left(error))
-      case Right(seqCompLoc) => loadScript(subSystem, obsMode, seqCompLoc)
-    }
+  ): Future[StartSequencerResponse] =
+    getAllIdleSequenceComponentsFor(List(subsystem, ESW)) //search idle seq comps for ESW as fallback if needed
+      .map {
+        case Left(error)         => Left(error)
+        case Right(idleSeqComps) => sequenceComponentAllocator.allocate(idleSeqComps, Sequencers(subsystem))
+      }
+      .flatMap {
+        case Left(error) => Future.successful(error)
+        case Right(mapping) =>
+          val (subsystem, seqCompLocation) = mapping.head
+          loadScript(subsystem, obsMode, seqCompLocation).mapToAdt(identity, identity)
+      }
 
   def loadScript(
       subSystem: Subsystem,
@@ -97,18 +103,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .map(_.flatten.toMap)
   }
 
-  private def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[SequenceComponentNotAvailable, AkkaLocation]] =
-    getIdleSequenceComponentFor(subsystem)
-      .flatMap {
-        case location @ Some(_)       => Future.successful(location)
-        case None if subsystem != ESW => getIdleSequenceComponentFor(ESW) // fallback
-        case None                     => Future.successful(None)
-      }
-      .map {
-        case Some(location) => Right(location)
-        case None           => Left(SequenceComponentNotAvailable(subsystem))
-      }
-
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
@@ -120,17 +114,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .flatMapRight(Future.traverse(_)(shutdown))
 
   private def shutdown(loc: AkkaLocation): Future[SequenceComponentResponse.Ok.type] = createSequenceComponentImpl(loc).shutdown()
-
-  private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[AkkaLocation]] =
-    locationServiceUtil
-      .listAkkaLocationsBy(subsystem, SequenceComponent)
-      .flatMapToAdt(raceForIdleSequenceComponents, _ => None)
-  // intentionally ignoring Left as in this case domain won't decide action based on what is error hence converting it to optionality
-
-  private def raceForIdleSequenceComponents(locations: List[AkkaLocation]): Future[Option[AkkaLocation]] =
-    FutureUtils
-      .firstCompletedOf(locations.map(idleSequenceComponent))(_.isDefined)
-      .map(_.flatten)
 
   private def filterIdleSequenceComponents(locations: List[AkkaLocation]): Future[List[AkkaLocation]] = {
     Future
