@@ -18,7 +18,7 @@ import scala.concurrent.duration.DurationInt
 class SequencerScriptLauncherTest extends EswTestKit {
 
   private val className     = "SampleScript"
-  private val ocsAppVersion = "master-SNAPSHOT"
+  private val ocsAppVersion = "d2b05a2"
   private val tmtCsChannel  = "https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
 
   private val sampleScriptPath = getClass.getResource(s"/$className.kts").getPath
