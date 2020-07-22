@@ -7,9 +7,9 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.BinaryFetcherUtil
 import esw.agent.app.ext.ProcessExt.ProcessOps
 import esw.ocs.testkit.EswTestKit
+import esw.{BinaryFetcherUtil, GitUtil}
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import os.{Path, up}
 
@@ -18,7 +18,7 @@ import scala.concurrent.duration.DurationInt
 class SequencerScriptLauncherTest extends EswTestKit {
 
   private val className     = "SampleScript"
-  private val ocsAppVersion = "d2b05a2"
+  private val ocsAppVersion = GitUtil.latestCommitSHA("sequencer-scripts")
   private val tmtCsChannel  = "https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
 
   private val sampleScriptPath = getClass.getResource(s"/$className.kts").getPath

@@ -6,7 +6,6 @@ import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Servic
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.IRIS
-import esw.BinaryFetcherUtil
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
 import esw.agent.app.AgentSettings
@@ -15,6 +14,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
+import esw.{BinaryFetcherUtil, GitUtil}
 
 import scala.concurrent.duration.DurationLong
 
@@ -25,7 +25,7 @@ class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
   private val irisSeqCompConnection    = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
   private val redisPrefix              = Prefix(s"esw.event_server")
   private val redisCompId              = ComponentId(redisPrefix, Service)
-  private val appVersion               = Some("3915dce")
+  private val appVersion               = GitUtil.latestCommitSHA("esw")
   private var agentPrefix: Prefix      = _
   private var agentClient: AgentClient = _
 
@@ -33,14 +33,14 @@ class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
     super.beforeAll()
     val channel: String = "file://" + getClass.getResource("/apps.json").getPath
     agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
-    BinaryFetcherUtil.fetchBinaryFor(channel, appVersion)
+    BinaryFetcherUtil.fetchBinaryFor(channel, Some(appVersion))
     agentClient = AgentClient.make(agentPrefix, locationService).futureValue
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   //ESW-325: spawns sequence component via agent using coursier with provided sha
-  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, appVersion)
+  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some(appVersion))
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
