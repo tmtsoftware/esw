@@ -33,13 +33,19 @@ class SequencerUtil(
 
   def startSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] =
     sequenceComponentUtil
-      .getAllIdleSequenceComponentsFor(sequencers.subsystems)
+      .getAllIdleSequenceComponentsFor(
+        sequencers.subsystems
+      ) // get all sequence components for subsystems and find idle ones from these sequence components
       .flatMap {
         case Left(error) => Future.successful(error)
         case Right(idleSeqComps) =>
           sequenceComponentAllocator.allocate(idleSeqComps, sequencers) match {
-            case Left(error)                      => Future.successful(error)
-            case Right(sequencerToSeqCompMapping) => startSequencersByMapping(obsMode, sequencerToSeqCompMapping)
+            case Left(error) => Future.successful(error)
+            case Right(sequencerToSeqCompMapping) =>
+              startSequencersByMapping(
+                obsMode,
+                sequencerToSeqCompMapping
+              ) // load scripts for sequencers on mapped sequence components
           }
       }
 

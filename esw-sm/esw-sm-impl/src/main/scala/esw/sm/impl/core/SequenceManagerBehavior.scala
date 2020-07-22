@@ -27,7 +27,7 @@ import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 class SequenceManagerBehavior(
-    obsModeConfig: SequenceManagerConfig,
+    sequenceManagerConfig: SequenceManagerConfig,
     provisionConfigProvider: () => Future[ProvisionConfig],
     locationServiceUtil: LocationServiceUtil,
     agentUtil: AgentUtil,
@@ -52,6 +52,7 @@ class SequenceManagerBehavior(
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
+    // getRunningObsModes finds the currently running observation modes
     val runningObsModesF = getRunningObsModes.flatMapToAdt(
       configuredObsModes => configureResources(obsMode, configuredObsModes),
       error => CommonFailure.LocationServiceError(error.msg)
@@ -65,7 +66,9 @@ class SequenceManagerBehavior(
   // if requested resources does not conflict with existing running observations
   private def configureResources(requestedObsMode: ObsMode, runningObsModes: Set[ObsMode]): Future[ConfigureResponse] =
     async {
-      obsModeConfig.obsModeConfig(requestedObsMode) match {
+      // get obsMode config for requested observation mode from sequence manager config
+      sequenceManagerConfig.obsModeConfig(requestedObsMode) match {
+        // check for resource conflict between requested obsMode and currently running obsMode
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
@@ -78,7 +81,7 @@ class SequenceManagerBehavior(
   private def checkConflicts(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
-  private def getResources(obsMode: ObsMode): Resources = obsModeConfig.resources(obsMode).get
+  private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
 
   private def shutdownSequencers(
       policy: ShutdownSequencersPolicy,
