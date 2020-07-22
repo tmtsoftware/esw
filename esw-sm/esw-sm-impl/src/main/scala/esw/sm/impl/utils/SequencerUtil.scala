@@ -22,28 +22,19 @@ import esw.sm.impl.config.Sequencers
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerUtil(
-    locationServiceUtil: LocationServiceUtil,
-    sequenceComponentUtil: SequenceComponentUtil,
-    sequenceComponentAllocator: SequenceComponentAllocator
-)(implicit
+class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
     actorSystem: ActorSystem[_]
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
   def startSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] =
     sequenceComponentUtil
-      .getAllIdleSequenceComponentsFor(sequencers.subsystems) /* get all sequence components for subsystems and
-                                                                 find idle ones from these sequence components*/
+      .mapSequencersToSeqComps(sequencers)
       .flatMap {
-        case Left(error) => Future.successful(error)
-        case Right(idleSeqComps) =>
-          sequenceComponentAllocator.allocate(idleSeqComps, sequencers) match {
-            case Left(error)                      => Future.successful(error)
-            case Right(sequencerToSeqCompMapping) =>
-              // load scripts for sequencers on mapped sequence components
-              startSequencersByMapping(obsMode, sequencerToSeqCompMapping)
-          }
+        case Left(error)                      => Future.successful(error)
+        case Right(sequencerToSeqCompMapping) =>
+          // load scripts for sequencers on mapped sequence components
+          startSequencersByMapping(obsMode, sequencerToSeqCompMapping)
       }
 
   def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =

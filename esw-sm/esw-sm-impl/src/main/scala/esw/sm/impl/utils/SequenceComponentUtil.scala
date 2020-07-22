@@ -19,17 +19,29 @@ import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol._
+import esw.sm.impl.config.Sequencers
+import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
 
 import scala.async.Async._
 import scala.concurrent.Future
 
-class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil)(implicit
-    actorSystem: ActorSystem[_]
+class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentAllocator: SequenceComponentAllocator)(
+    implicit actorSystem: ActorSystem[_]
 ) {
   import actorSystem.executionContext
 
-  // return mapping of subsystems for which idle sequence components are available
-  def getAllIdleSequenceComponentsFor(
+  def mapSequencersToSeqComps(
+      sequencers: Sequencers
+  ): Future[Either[ConfigureResponse.Failure, SequencerToSequenceComponentMap]] = {
+    getAllIdleSequenceComponentsFor(sequencers.subsystems)
+      .map {
+        case Left(error)         => Left(error)
+        case Right(idleSeqComps) => sequenceComponentAllocator.allocate(idleSeqComps, sequencers)
+      }
+  }
+
+  // get all sequence components for subsystems and find idle ones from these sequence components
+  private def getAllIdleSequenceComponentsFor(
       subsystems: List[Subsystem]
   ): Future[Either[LocationServiceError, List[AkkaLocation]]] = {
     locationServiceUtil

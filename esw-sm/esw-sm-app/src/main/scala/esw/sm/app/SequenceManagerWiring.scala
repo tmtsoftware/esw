@@ -36,7 +36,7 @@ import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.handler.SequenceManagerPostHandler
 import esw.sm.impl.config.SequenceManagerConfigParser
 import esw.sm.impl.core.SequenceManagerBehavior
-import esw.sm.impl.utils.{AgentAllocator, AgentUtil, SequenceComponentAllocator, SequenceComponentUtil, SequencerUtil}
+import esw.sm.impl.utils._
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 
@@ -61,9 +61,9 @@ class SequenceManagerWiring(obsModeConfigPath: Path, provisionConfigPath: Path =
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   private lazy val agentAllocator             = new AgentAllocator()
   private lazy val agentUtil                  = new AgentUtil(locationServiceUtil, agentAllocator)
-  private lazy val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil)
   private lazy val sequenceComponentAllocator = new SequenceComponentAllocator()
-  private lazy val sequencerUtil              = new SequencerUtil(locationServiceUtil, sequenceComponentUtil, sequenceComponentAllocator)
+  private lazy val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator)
+  private lazy val sequencerUtil              = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
   private lazy val configParser = new SequenceManagerConfigParser(configUtils)
   private lazy val obsModeConfig =
