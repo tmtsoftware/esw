@@ -1,7 +1,5 @@
 package esw.sm.app
 
-import java.nio.file.{Path, Paths}
-
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
@@ -17,7 +15,6 @@ import org.scalatest.prop.Tables.Table
 import scala.concurrent.{Await, Future}
 
 class SequenceManagerAuthTest extends EswTestKit(AAS) {
-  val obsModeConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smResources.conf").toURI)
 
   private val smPrefix       = Prefix(ESW, "sequence_manager")
   private val IRIS_CAL       = ObsMode("IRIS_Cal")

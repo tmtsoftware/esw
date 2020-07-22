@@ -1,7 +1,7 @@
 package esw.sm.app
 
 import java.io.File
-import java.nio.file.Files
+import java.nio.file.{Files, Path, Paths}
 
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
@@ -142,8 +142,12 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
   }
 
-  "throw exception if config file is missing | ESW-162, ESW-160, ESW-171" in {
-    val exception = intercept[RuntimeException](SequenceManagerApp.main(Array("start", "-p", "sm-config.conf")))
+  "throw exception if obs mode config or provision config file is missing | ESW-162, ESW-160, ESW-171, ESW-346" in {
+    val provisionConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smProvisionConfig.conf").toURI)
+
+    val exception = intercept[RuntimeException](
+      SequenceManagerApp.main(Array("start", "-o", "sm-config.conf", "-p", provisionConfigPath.toAbsolutePath.toString))
+    )
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
@@ -370,6 +374,28 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // verify there are no sequence components in the system
     locationService.list(SequenceComponent).futureValue should ===(List.empty)
+  }
+
+  "provision should start sequence components as mentioned in config file | ESW-346" in {
+    val path: Path      = Paths.get(ClassLoader.getSystemResource("smProvisionConfig.conf").toURI)
+    val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix, provisionConfigPath = path)
+
+    // start required agents to provision
+    val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
+    val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
+    val irisAgentPrefix = spawnAgent(AgentSettings(1.minute, channel), IRIS)
+
+    resolveAkkaLocation(eswAgentPrefix, Machine)
+    resolveAkkaLocation(irisAgentPrefix, Machine)
+
+    // verify no sequence components are started
+    locationService.list(SequenceComponent).futureValue should ===(List.empty)
+
+    sequenceManager.provision().futureValue should ===(ProvisionResponse.Success)
+
+    locationService.list(SequenceComponent).futureValue.size shouldBe 3
+
+    sequenceManager.shutdownAllSequenceComponents().futureValue
   }
 
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))

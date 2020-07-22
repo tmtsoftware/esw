@@ -20,12 +20,12 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
 
   def run(command: SequenceManagerAppCommand, startLogging: Boolean = true): SequenceManagerWiring =
     command match {
-      case StartCommand(configPath) => start(configPath, startLogging)
+      case StartCommand(obsModeConfigPath, provisionConfigPath) => start(obsModeConfigPath, provisionConfigPath, startLogging)
     }
 
   // fixme: App ll not terminate on any failure. Use try/catch and shutdown ActorSystem
-  def start(configPath: Path, startLogging: Boolean): SequenceManagerWiring = {
-    val sequenceManagerWiring = new SequenceManagerWiring(configPath)
+  def start(obsModeConfigPath: Path, provisionConfigPath: Path, startLogging: Boolean): SequenceManagerWiring = {
+    val sequenceManagerWiring = new SequenceManagerWiring(obsModeConfigPath, provisionConfigPath)
     import sequenceManagerWiring._
     if (startLogging) actorRuntime.startLogging(progName, appVersion)
     logResult(sequenceManagerWiring.start())
