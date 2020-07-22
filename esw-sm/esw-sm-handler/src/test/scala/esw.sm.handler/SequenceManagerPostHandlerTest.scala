@@ -46,6 +46,15 @@ class SequenceManagerPostHandlerTest
       }
     }
 
+    "return provision success for provision request | ESW-346" in {
+      when(sequenceManagerApi.provision()).thenReturn(Future.successful(ProvisionResponse.Success))
+
+      Post("/post-endpoint", Provision.narrow) ~> route ~> check {
+        verify(sequenceManagerApi).provision()
+        responseAs[ProvisionResponse] should ===(ProvisionResponse.Success)
+      }
+    }
+
     "return running observation modes for getRunningObsModes request | ESW-171" in {
       val obsModes = Set(obsMode)
       when(sequenceManagerApi.getRunningObsModes).thenReturn(Future.successful(GetRunningObsModesResponse.Success(obsModes)))

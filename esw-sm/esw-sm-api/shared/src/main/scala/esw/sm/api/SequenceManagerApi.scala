@@ -8,6 +8,7 @@ import scala.concurrent.Future
 
 trait SequenceManagerApi {
   def configure(obsMode: ObsMode): Future[ConfigureResponse]
+  def provision(): Future[ProvisionResponse]
   def getRunningObsModes: Future[GetRunningObsModesResponse]
 
   def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse]

@@ -36,6 +36,17 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.getRunningObsModes.futureValue shouldBe GetRunningObsModesResponse.Success(Set(obsMode))
     }
 
+    "return provision success for provision request | ESW-346" in {
+      when(
+        postClient.requestResponse[ProvisionResponse](argsEq(Provision))(
+          any[Decoder[ProvisionResponse]](),
+          any[Encoder[ProvisionResponse]]()
+        )
+      ).thenReturn(Future.successful(ProvisionResponse.Success))
+
+      client.provision().futureValue shouldBe ProvisionResponse.Success
+    }
+
     "return configure success response for configure request" in {
       when(
         postClient.requestResponse[ConfigureResponse](argsEq(Configure(obsMode)))(

@@ -25,9 +25,10 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   private val WFOS_Cal       = ObsMode("WFOS_Cal")
   private val seqCompPrefix  = Prefix(ESW, "primary")
 
-  private val table = Table[String, SequenceManagerApi => Future[Any]](
+  private val testCases = Table[String, SequenceManagerApi => Future[Any]](
     ("Name", "Command"),
     ("configure", _.configure(IRIS_CAL)),
+    ("provision", _.provision()),
     ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
     ("shutdownSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
@@ -44,26 +45,26 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   }
 
   "Sequence Manager" must {
-    table.foreach { testCase =>
-      val (name, action) = testCase
-      s"return 401 when $name request does not have token | ESW-332" in {
-        val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, () => None)
+    testCases.foreach {
+      case (name, action) =>
+        s"return 401 when $name request does not have token | ESW-332" in {
+          val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, () => None)
 
-        val httpError = intercept[HttpError](Await.result(action(sequenceManagerApi), defaultTimeout))
-        println(httpError.message)
-        httpError.statusCode shouldBe 401
-      }
+          val httpError = intercept[HttpError](Await.result(action(sequenceManagerApi), defaultTimeout))
+          println(httpError.message)
+          httpError.statusCode shouldBe 401
+        }
     }
 
-    table.foreach { testCase =>
-      val (name, action) = testCase
-      s"return 403 when $name request does not have ESW_user role | ESW-332" in {
+    testCases.foreach {
+      case (name, action) =>
+        s"return 403 when $name request does not have ESW_user role | ESW-332" in {
 
-        val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, tokenWithIrisUserRole)
+          val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, tokenWithIrisUserRole)
 
-        val httpError = intercept[HttpError](Await.result(action(sequenceManagerApi), defaultTimeout))
-        httpError.statusCode shouldBe 403
-      }
+          val httpError = intercept[HttpError](Await.result(action(sequenceManagerApi), defaultTimeout))
+          httpError.statusCode shouldBe 403
+        }
     }
 
     "return 200 when configure, clean request has ESW_user role | ESW-332" in {

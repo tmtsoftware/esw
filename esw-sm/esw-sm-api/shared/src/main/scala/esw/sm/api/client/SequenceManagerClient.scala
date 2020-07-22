@@ -17,6 +17,9 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
     postClient.requestResponse[ConfigureResponse](Configure(obsMode))
 
+  override def provision(): Future[ProvisionResponse] =
+    postClient.requestResponse[ProvisionResponse](Provision)
+
   override def getRunningObsModes: Future[GetRunningObsModesResponse] =
     postClient.requestResponse[GetRunningObsModesResponse](GetRunningObsModes)
 

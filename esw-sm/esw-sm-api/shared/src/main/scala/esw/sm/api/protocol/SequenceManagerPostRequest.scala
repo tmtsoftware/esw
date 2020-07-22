@@ -7,6 +7,7 @@ sealed trait SequenceManagerPostRequest
 
 object SequenceManagerPostRequest {
   case class Configure(obsMode: ObsMode) extends SequenceManagerPostRequest
+  case object Provision                  extends SequenceManagerPostRequest
   case object GetRunningObsModes         extends SequenceManagerPostRequest
 
   case class StartSequencer(subsystem: Subsystem, obsMode: ObsMode)   extends SequenceManagerPostRequest

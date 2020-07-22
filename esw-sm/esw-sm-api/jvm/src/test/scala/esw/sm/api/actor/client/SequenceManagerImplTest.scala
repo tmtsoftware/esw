@@ -101,5 +101,9 @@ class SequenceManagerImplTest extends BaseTestSuite {
     "getAgentStatus | ESW-349" in {
       sequenceManager.getAgentStatus.futureValue shouldBe getAgentStatusResponse
     }
+
+    "provision | ESW-346" in {
+      sequenceManager.provision().futureValue shouldBe provisionResponse
+    }
   }
 }
