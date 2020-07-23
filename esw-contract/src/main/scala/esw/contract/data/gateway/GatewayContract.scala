@@ -23,10 +23,10 @@ import esw.gateway.api.protocol.PostRequest.{
 import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import esw.ocs.api.protocol.OkOrUnhandledResponse
-import io.bullet.borer.Encoder
 
 object GatewayContract extends GatewayCodecs with GatewayData {
-  private val models: ModelSet = ModelSet(
+
+  private val models: ModelSet = ModelSet.models(
     ModelType[Event](observeEvent, systemEvent),
     ModelType(AlarmSeverity),
     ModelType(prefix),
@@ -43,10 +43,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     )
   )
 
-  private implicit def httpEnc[Sub <: PostRequest]: Encoder[Sub]           = SubTypeCodec.encoder(postRequestValue)
-  private implicit def websocketEnc[Sub <: WebsocketRequest]: Encoder[Sub] = SubTypeCodec.encoder(websocketRequestCodecValue)
-
-  private val httpRequests: ModelSet = ModelSet(
+  private val httpRequests: ModelSet = ModelSet.requests[PostRequest](
     ModelType(postComponentCommand),
     ModelType(postSequencerCommand),
     ModelType(publishEvent),
@@ -57,7 +54,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     ModelType(getLogMetadata)
   )
 
-  private val websocketRequests: ModelSet = ModelSet(
+  private val websocketRequests: ModelSet = ModelSet.requests[WebsocketRequest](
     ModelType(websocketComponentCommand),
     ModelType(websocketSequencerCommand),
     ModelType(subscribe),

@@ -11,10 +11,9 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol._
-import io.bullet.borer.Encoder
 
 object SequencerContract extends SequencerData with SequencerHttpCodecs {
-  private val models: ModelSet = ModelSet(
+  private val models: ModelSet = ModelSet.models(
     ModelType[SequenceCommand](observeSequenceCommand, setupSequenceCommand, waitSequenceCommand),
     ModelType[OkOrUnhandledResponse](ok, unhandled),
     ModelType[SubmitResponse](completed, cancelled, invalid, error, locked, started),
@@ -28,11 +27,7 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     ModelType(akkaLocation)
   )
 
-  private implicit def httpEnc[Sub <: SequencerPostRequest]: Encoder[Sub] = SubTypeCodec.encoder(sequencerPostRequestValue)
-  private implicit def websocketEnc[Sub <: SequencerWebsocketRequest]: Encoder[Sub] =
-    SubTypeCodec.encoder(sequencerWebsocketRequestValue)
-
-  private val httpRequests: ModelSet = ModelSet(
+  private val httpRequests: ModelSet = ModelSet.requests[SequencerPostRequest](
     ModelType(loadSequence),
     ModelType(add),
     ModelType(prepend),
@@ -55,7 +50,7 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     ModelType(getSequenceComponent)
   )
 
-  private val websocketRequests: ModelSet = ModelSet(
+  private val websocketRequests: ModelSet = ModelSet.requests[SequencerWebsocketRequest](
     ModelType(sequencerQueryFinal)
   )
 
