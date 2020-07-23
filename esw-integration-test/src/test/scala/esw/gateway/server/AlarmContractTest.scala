@@ -12,7 +12,7 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
-class AlarmGatewayTest extends EswTestKit(AlarmServer, Gateway) with GatewayCodecs {
+class AlarmContractTest extends EswTestKit(AlarmServer, Gateway) with GatewayCodecs {
   import frameworkTestKit.frameworkWiring.alarmServiceFactory
 
   "AlarmApi" must {

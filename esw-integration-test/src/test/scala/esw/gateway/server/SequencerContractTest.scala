@@ -13,7 +13,7 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
-class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with GatewayCodecs {
+class SequencerContractTest extends EswTestKit(Gateway, EventServer) with GatewayCodecs {
   private val subsystem = ESW
   private val obsMode   = ObsMode("MoonNight") // TestScript2.kts
 

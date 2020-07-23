@@ -22,7 +22,7 @@ import esw.ocs.testkit.Service.Gateway
 
 import scala.concurrent.Future
 
-class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
+class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
