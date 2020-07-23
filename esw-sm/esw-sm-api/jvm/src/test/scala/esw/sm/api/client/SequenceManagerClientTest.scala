@@ -7,7 +7,6 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.SequenceManagerPostRequest.{GetRunningObsModes, _}
-import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
@@ -71,7 +70,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return success for Shutdown sequencer for shutdownSequencer request | ESW-326" in {
-      val shutdownSequencerMsg = ShutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode))
+      val shutdownSequencerMsg = ShutdownSequencer(ESW, obsMode)
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
           any[Decoder[ShutdownSequencersResponse]](),
@@ -83,7 +82,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return success for Shutdown Sequencers for Subsystem request | ESW-345" in {
-      val shutdownSubsystemSequencersMsg = ShutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(ESW))
+      val shutdownSubsystemSequencersMsg = ShutdownSubsystemSequencers(ESW)
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSubsystemSequencersMsg))(
           any[Decoder[ShutdownSequencersResponse]](),
@@ -95,7 +94,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return success for Shutdown Sequencers for ObsMode request | ESW-166" in {
-      val shutdownObsModeSequencersMsg = ShutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
+      val shutdownObsModeSequencersMsg = ShutdownObsModeSequencers(obsMode)
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownObsModeSequencersMsg))(
           any[Decoder[ShutdownSequencersResponse]](),
@@ -109,7 +108,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     "return shutdown all sequencers success for ShutdownAllSequencers request | ESW-324" in {
       when(
         postClient.requestResponse[ShutdownSequencersResponse](
-          argsEq(ShutdownSequencers(ShutdownSequencersPolicy.AllSequencers))
+          argsEq(ShutdownAllSequencers)
         )(
           any[Decoder[ShutdownSequencersResponse]](),
           any[Encoder[ShutdownSequencersResponse]]()
@@ -133,9 +132,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
 
     "return success response for shutdown sequence component request | ESW-338" in {
       when(
-        postClient.requestResponse[ShutdownSequenceComponentResponse](
-          argsEq(ShutdownSequenceComponents(SingleSequenceComponent(seqCompPrefix)))
-        )(
+        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownSequenceComponent(seqCompPrefix)))(
           any[Decoder[ShutdownSequenceComponentResponse]](),
           any[Encoder[ShutdownSequenceComponentResponse]]()
         )
@@ -146,9 +143,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
 
     "return success response for shutdown sequence all component request | ESW-346" in {
       when(
-        postClient.requestResponse[ShutdownSequenceComponentResponse](
-          argsEq(ShutdownSequenceComponents(AllSequenceComponents))
-        )(
+        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownAllSequenceComponents))(
           any[Decoder[ShutdownSequenceComponentResponse]](),
           any[Encoder[ShutdownSequenceComponentResponse]]()
         )

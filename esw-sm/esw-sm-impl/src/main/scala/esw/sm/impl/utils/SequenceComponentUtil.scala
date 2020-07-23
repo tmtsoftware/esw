@@ -15,7 +15,6 @@ import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhan
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
 import esw.sm.api.protocol.AgentStatusResponses.SequenceComponentStatus
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
@@ -66,11 +65,13 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
 
   def unloadScript(seqCompLocation: AkkaLocation): Future[Ok.type] = sequenceComponentApi(seqCompLocation).unloadScript()
 
-  def shutdown(policy: ShutdownSequenceComponentsPolicy): Future[ShutdownSequenceComponentResponse] =
-    (policy match {
-      case SingleSequenceComponent(prefix) => shutdown(prefix)
-      case AllSequenceComponents           => shutdownAll().mapRight(_ => SequenceComponentResponse.Ok)
-    }).mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
+  def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
+    shutdown(prefix).mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
+
+  def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
+    shutdownAll()
+      .mapRight(_ => SequenceComponentResponse.Ok)
+      .mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = sequenceComponentApi(loc).restartScript()
 

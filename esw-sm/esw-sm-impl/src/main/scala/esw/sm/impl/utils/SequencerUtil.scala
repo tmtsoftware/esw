@@ -15,7 +15,6 @@ import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.FailedToStartSequencers
-import esw.sm.api.protocol.ShutdownSequencersPolicy.{AllSequencers, ObsModeSequencers, SingleSequencer, SubsystemSequencers}
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
@@ -38,13 +37,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .findSequencer(subsystem, obsMode)
       .flatMapToAdt(restartSequencer, e => LocationServiceError(e.msg))
 
-  def shutdownSequencers(policy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
-    policy match {
-      case SingleSequencer(subsystem, obsMode) => shutdownSequencersAndHandleErrors(getSequencer(subsystem, obsMode))
-      case SubsystemSequencers(subsystem)      => shutdownSequencersAndHandleErrors(getSubsystemSequencers(subsystem))
-      case ObsModeSequencers(obsMode)          => shutdownSequencersAndHandleErrors(getObsModeSequencers(obsMode))
-      case AllSequencers                       => shutdownSequencersAndHandleErrors(getAllSequencers)
-    }
+  def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    shutdownSequencersAndHandleErrors(getSequencer(subsystem, obsMode))
+  def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
+    shutdownSequencersAndHandleErrors(getSubsystemSequencers(subsystem))
+  def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    shutdownSequencersAndHandleErrors(getObsModeSequencers(obsMode))
+  def shutdownAllSequencers(): Future[ShutdownSequencersResponse] = shutdownSequencersAndHandleErrors(getAllSequencers)
 
   private[utils] def startSequencersByMapping(
       obsMode: ObsMode,

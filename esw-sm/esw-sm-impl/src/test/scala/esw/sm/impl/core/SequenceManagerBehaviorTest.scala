@@ -19,7 +19,6 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol.AgentStatusResponses.{AgentStatus, AgentToSeqCompsMap, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
@@ -187,47 +186,111 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "ShutdownSequencers" must {
-    val errorMsg = "error"
+  "ShutdownSequencer" must {
+    val responseProbe = TestProbe[ShutdownSequencersResponse]()
+    val shutdownMsg   = ShutdownSequencer(ESW, darkNight, responseProbe.ref)
+    s"transition sm from Idle -> Processing -> Idle state and stop| ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
+      when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
-    val singlePolicy    = ShutdownSequencersPolicy.SingleSequencer(ESW, darkNight)
-    val obsModePolicy   = ShutdownSequencersPolicy.ObsModeSequencers(darkNight)
-    val subsystemPolicy = ShutdownSequencersPolicy.SubsystemSequencers(TCS)
-    val allPolicy       = ShutdownSequencersPolicy.AllSequencers
+      // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
+      assertState(Idle)
+      smRef ! shutdownMsg
+      assertState(Processing)
+      assertState(Idle)
 
-    val policies = Table(
-      ("policy", "locationServiceFailure"),
-      (singlePolicy, LocationServiceError(errorMsg)),
-      (obsModePolicy, LocationServiceError(errorMsg)),
-      (subsystemPolicy, LocationServiceError(errorMsg)),
-      (allPolicy, LocationServiceError(errorMsg))
-    )
+      responseProbe.expectMessage(ShutdownSequencersResponse.Success)
+      verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
+    }
 
-    forAll(policies) { (policy, locationServiceFailure) =>
-      val policyName = policy.getClass.getSimpleName
-      s"transition sm from Idle -> Processing -> Idle state and stop $policyName | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
-        when(sequencerUtil.shutdownSequencers(policy)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
-        val responseProbe = TestProbe[ShutdownSequencersResponse]()
+    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324" in {
+      val err = LocationServiceError("error")
+      when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(Future.successful(err))
 
-        // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
-        assertState(Idle)
-        smRef ! ShutdownSequencers(policy, responseProbe.ref)
-        assertState(Processing)
-        assertState(Idle)
+      smRef ! shutdownMsg
+      responseProbe.expectMessage(err)
 
-        responseProbe.expectMessage(ShutdownSequencersResponse.Success)
-        verify(sequencerUtil).shutdownSequencers(policy)
-      }
+      verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
+    }
+  }
 
-      s"return LocationServiceError if location service fails for $policyName | ESW-326, ESW-345, ESW-166, ESW-324" in {
-        when(sequencerUtil.shutdownSequencers(policy)).thenReturn(Future.successful(locationServiceFailure))
-        val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
+  "ShutdownSubsystemSequencers" must {
+    val responseProbe = TestProbe[ShutdownSequencersResponse]()
+    val shutdownMsg   = ShutdownSubsystemSequencers(ESW, responseProbe.ref)
+    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
+      when(sequencerUtil.shutdownSubsystemSequencers(ESW)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
-        smRef ! ShutdownSequencers(policy, shutdownSequencerResponseProbe.ref)
-        shutdownSequencerResponseProbe.expectMessage(locationServiceFailure)
+      // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
+      assertState(Idle)
+      smRef ! shutdownMsg
+      assertState(Processing)
+      assertState(Idle)
 
-        verify(sequencerUtil).shutdownSequencers(policy)
-      }
+      responseProbe.expectMessage(ShutdownSequencersResponse.Success)
+      verify(sequencerUtil).shutdownSubsystemSequencers(ESW)
+    }
+
+    s"return LocationServiceError if location service fails for | ESW-326, ESW-345, ESW-166, ESW-324" in {
+      val err = LocationServiceError("error")
+      when(sequencerUtil.shutdownSubsystemSequencers(ESW)).thenReturn(Future.successful(err))
+
+      smRef ! shutdownMsg
+      responseProbe.expectMessage(err)
+
+      verify(sequencerUtil).shutdownSubsystemSequencers(ESW)
+    }
+  }
+
+  "ShutdownObsModeSequencers" must {
+    val responseProbe = TestProbe[ShutdownSequencersResponse]()
+    val shutdownMsg   = ShutdownObsModeSequencers(darkNight, responseProbe.ref)
+    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
+      when(sequencerUtil.shutdownObsModeSequencers(darkNight)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
+
+      // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
+      assertState(Idle)
+      smRef ! shutdownMsg
+      assertState(Processing)
+      assertState(Idle)
+
+      responseProbe.expectMessage(ShutdownSequencersResponse.Success)
+      verify(sequencerUtil).shutdownObsModeSequencers(darkNight)
+    }
+
+    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324" in {
+      val err = LocationServiceError("error")
+      when(sequencerUtil.shutdownObsModeSequencers(darkNight)).thenReturn(Future.successful(err))
+
+      smRef ! shutdownMsg
+      responseProbe.expectMessage(err)
+
+      verify(sequencerUtil).shutdownObsModeSequencers(darkNight)
+    }
+  }
+
+  "ShutdownAllSequencers" must {
+    val responseProbe = TestProbe[ShutdownSequencersResponse]()
+    val shutdownMsg   = ShutdownAllSequencers(responseProbe.ref)
+    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
+      when(sequencerUtil.shutdownAllSequencers()).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
+
+      // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
+      assertState(Idle)
+      smRef ! shutdownMsg
+      assertState(Processing)
+      assertState(Idle)
+
+      responseProbe.expectMessage(ShutdownSequencersResponse.Success)
+      verify(sequencerUtil).shutdownAllSequencers()
+    }
+
+    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324" in {
+      val err = LocationServiceError("error")
+      when(sequencerUtil.shutdownAllSequencers()).thenReturn(Future.successful(err))
+
+      smRef ! shutdownMsg
+      responseProbe.expectMessage(err)
+
+      verify(sequencerUtil).shutdownAllSequencers()
     }
   }
 
@@ -276,47 +339,44 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "transition sm from Idle -> Processing -> Idle state and return success on shutdown | ESW-338, ESW-342" in {
       val prefix = Prefix(ESW, "primary")
 
-      val singleShutdownPolicy = SingleSequenceComponent(prefix)
-      when(sequenceComponentUtil.shutdown(singleShutdownPolicy))
+      when(sequenceComponentUtil.shutdownSequenceComponent(prefix))
         .thenReturn(future(1.second, ShutdownSequenceComponentResponse.Success))
 
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
       // STATE TRANSITION: Idle -> ShutdownSequenceComponents -> Processing -> Idle
       assertState(Idle)
-      smRef ! ShutdownSequenceComponents(SingleSequenceComponent(prefix), shutdownSequenceComponentResponseProbe.ref)
+      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
       assertState(Processing)
       assertState(Idle)
 
       shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
-      verify(sequenceComponentUtil).shutdown(singleShutdownPolicy)
+      verify(sequenceComponentUtil).shutdownSequenceComponent(prefix)
     }
 
     "return Success when shutting down all sequence components | ESW-346" in {
-      when(sequenceComponentUtil.shutdown(AllSequenceComponents))
+      when(sequenceComponentUtil.shutdownAllSequenceComponents())
         .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-      smRef ! ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseProbe.ref)
+      smRef ! ShutdownAllSequenceComponents(shutdownSequenceComponentResponseProbe.ref)
       shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
 
-      verify(sequenceComponentUtil).shutdown(AllSequenceComponents)
+      verify(sequenceComponentUtil).shutdownAllSequenceComponents()
     }
 
     "return LocationServiceError if LocationServiceError encountered while shutting down sequence components | ESW-338,ESW-346" in {
       val prefix = Prefix(ESW, "primary")
+      val error  = LocationServiceError("location service error")
 
-      val error          = LocationServiceError("location service error")
-      val shutdownPolicy = SingleSequenceComponent(prefix)
-
-      when(sequenceComponentUtil.shutdown(shutdownPolicy)).thenReturn(Future.successful(error))
+      when(sequenceComponentUtil.shutdownSequenceComponent(prefix)).thenReturn(Future.successful(error))
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-      smRef ! ShutdownSequenceComponents(shutdownPolicy, shutdownSequenceComponentResponseProbe.ref)
+      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
       shutdownSequenceComponentResponseProbe.expectMessage(error)
 
-      verify(sequenceComponentUtil).shutdown(shutdownPolicy)
+      verify(sequenceComponentUtil).shutdownSequenceComponent(prefix)
     }
   }
 
@@ -509,6 +569,5 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  private def akkaLocation(componentId: ComponentId) =
-    AkkaLocation(AkkaConnection(componentId), URI.create("uri"))
+  private def akkaLocation(componentId: ComponentId) = AkkaLocation(AkkaConnection(componentId), URI.create("uri"))
 }

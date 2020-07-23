@@ -44,13 +44,28 @@ class SequenceManagerBehavior(
 
   private def idle(self: SelfRef): SMBehavior =
     receive[SequenceManagerIdleMsg](Idle) {
-      case Configure(obsMode, replyTo)                    => configure(obsMode, self, replyTo)
-      case ShutdownSequencers(policy, replyTo)            => shutdownSequencers(policy, self, replyTo)
+      case Configure(obsMode, replyTo) => configure(obsMode, self, replyTo)
+
+      // Shutdown sequencers
+      case ShutdownSequencer(subsystem, obsMode, replyTo) =>
+        sequencerUtil.shutdownSequencer(subsystem, obsMode).map(self ! ProcessingComplete(_)); processing(self, replyTo)
+      case ShutdownSubsystemSequencers(subsystem, replyTo) =>
+        sequencerUtil.shutdownSubsystemSequencers(subsystem).map(self ! ProcessingComplete(_)); processing(self, replyTo)
+      case ShutdownObsModeSequencers(obsMode, replyTo) =>
+        sequencerUtil.shutdownObsModeSequencers(obsMode).map(self ! ProcessingComplete(_)); processing(self, replyTo)
+      case ShutdownAllSequencers(replyTo) =>
+        sequencerUtil.shutdownAllSequencers().map(self ! ProcessingComplete(_)); processing(self, replyTo)
+
       case StartSequencer(subsystem, obsMode, replyTo)    => startSequencer(obsMode, subsystem, self, replyTo)
       case RestartSequencer(subsystem, obsMode, replyTo)  => restartSequencer(subsystem, obsMode, self, replyTo)
       case SpawnSequenceComponent(machine, name, replyTo) => spawnSequenceComponent(machine, name, self, replyTo)
-      case ShutdownSequenceComponents(policy, replyTo)    => shutdownSequenceComponents(policy, self, replyTo)
-      case Provision(replyTo)                             => provision(self, replyTo)
+
+      case ShutdownSequenceComponent(prefix, replyTo) =>
+        sequenceComponentUtil.shutdownSequenceComponent(prefix).map(self ! ProcessingComplete(_)); processing(self, replyTo)
+      case ShutdownAllSequenceComponents(replyTo) =>
+        sequenceComponentUtil.shutdownAllSequenceComponents().map(self ! ProcessingComplete(_)); processing(self, replyTo)
+
+      case Provision(replyTo) => provision(self, replyTo)
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -84,15 +99,6 @@ class SequenceManagerBehavior(
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
-
-  private def shutdownSequencers(
-      policy: ShutdownSequencersPolicy,
-      self: SelfRef,
-      replyTo: ActorRef[ShutdownSequencersResponse]
-  ): SMBehavior = {
-    sequencerUtil.shutdownSequencers(policy).map(self ! ProcessingComplete(_))
-    processing(self, replyTo)
-  }
 
   private def startSequencer(
       obsMode: ObsMode,
@@ -130,15 +136,6 @@ class SequenceManagerBehavior(
       replyTo: ActorRef[SpawnSequenceComponentResponse]
   ): SMBehavior = {
     agentUtil.spawnSequenceComponent(machine, name).map(self ! ProcessingComplete(_))
-    processing(self, replyTo)
-  }
-
-  private def shutdownSequenceComponents(
-      policy: ShutdownSequenceComponentsPolicy,
-      self: SelfRef,
-      replyTo: ActorRef[ShutdownSequenceComponentResponse]
-  ): SMBehavior = {
-    sequenceComponentUtil.shutdown(policy).map(self ! ProcessingComplete(_))
     processing(self, replyTo)
   }
 

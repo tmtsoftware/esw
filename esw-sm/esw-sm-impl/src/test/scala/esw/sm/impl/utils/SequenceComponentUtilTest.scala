@@ -19,7 +19,6 @@ import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
 import esw.sm.api.protocol.AgentStatusResponses.SequenceComponentStatus
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
 import esw.sm.impl.config.Sequencers
@@ -76,8 +75,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
         .thenReturn(Future.successful(Right(sequenceComponentLocation(prefixStr))))
       when(mockSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
 
-      val singleShutdownPolicy = SingleSequenceComponent(Prefix(prefixStr))
-      seqCompUtil.shutdown(singleShutdownPolicy).futureValue should ===(ShutdownSequenceComponentResponse.Success)
+      seqCompUtil.shutdownSequenceComponent(Prefix(prefixStr)).futureValue should ===(ShutdownSequenceComponentResponse.Success)
 
       verify(locationServiceUtil).find(akkaConnection)
       verify(mockSeqCompImpl).shutdown()
@@ -94,8 +92,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       when(locationServiceUtil.find(connection))
         .thenReturn(Future.successful(Left(LocationNotFound("error"))))
 
-      val singleShutdownPolicy = SingleSequenceComponent(Prefix(prefixStr))
-      seqCompUtil.shutdown(singleShutdownPolicy).futureValue should ===(LocationServiceError("error"))
+      seqCompUtil.shutdownSequenceComponent(Prefix(prefixStr)).futureValue should ===(LocationServiceError("error"))
 
       verify(locationServiceUtil).find(connection)
       verify(mockSeqCompImpl, never).shutdown()
@@ -119,7 +116,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       when(eswSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
       when(irisSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
 
-      seqCompUtil.shutdown(AllSequenceComponents).futureValue should ===(ShutdownSequenceComponentResponse.Success)
+      seqCompUtil.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
 
       verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
       verify(eswSeqCompImpl).shutdown()
@@ -135,7 +132,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("error"))))
 
-      seqCompUtil.shutdown(AllSequenceComponents).futureValue should ===(LocationServiceError("error"))
+      seqCompUtil.shutdownAllSequenceComponents().futureValue should ===(LocationServiceError("error"))
 
       verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
       verify(mockSeqCompImpl, never).shutdown()

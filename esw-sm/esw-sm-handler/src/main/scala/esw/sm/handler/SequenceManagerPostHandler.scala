@@ -17,15 +17,22 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi, securityDi
   import sequenceManager._
   override def handle(request: SequenceManagerPostRequest): Route =
     request match {
-      case GetRunningObsModes                    => complete(getRunningObsModes)
-      case GetAgentStatus                        => complete(getAgentStatus)
-      case Configure(obsMode)                    => sPost(complete(configure(obsMode)))
-      case Provision                             => sPost(complete(provision()))
-      case StartSequencer(subsystem, obsMode)    => sPost(complete(startSequencer(subsystem, obsMode)))
-      case RestartSequencer(subsystem, obsMode)  => sPost(complete(restartSequencer(subsystem, obsMode)))
-      case ShutdownSequencers(policy)            => sPost(complete(shutdownSequencers(policy)))
+      case GetRunningObsModes                   => complete(getRunningObsModes)
+      case GetAgentStatus                       => complete(getAgentStatus)
+      case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
+      case Provision                            => sPost(complete(provision()))
+      case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
+      case RestartSequencer(subsystem, obsMode) => sPost(complete(restartSequencer(subsystem, obsMode)))
+
+      // Shutdown sequencers
+      case ShutdownSequencer(subsystem, obsMode)  => sPost(complete(shutdownSequencer(subsystem, obsMode)))
+      case ShutdownSubsystemSequencers(subsystem) => sPost(complete(shutdownSubsystemSequencers(subsystem)))
+      case ShutdownObsModeSequencers(obsMode)     => sPost(complete(shutdownObsModeSequencers(obsMode)))
+      case ShutdownAllSequencers                  => sPost(complete(shutdownAllSequencers()))
+
       case SpawnSequenceComponent(machine, name) => sPost(complete(spawnSequenceComponent(machine, name)))
-      case ShutdownSequenceComponents(policy)    => sPost(complete(shutdownSequenceComponents(policy)))
+      case ShutdownSequenceComponent(prefix)     => sPost(complete(shutdownSequenceComponent(prefix)))
+      case ShutdownAllSequenceComponents         => sPost(complete(shutdownAllSequenceComponents()))
     }
 
   def sPost(route: => Route): Route = securityDirectives.sPost(EswUserRolePolicy())(_ => route)

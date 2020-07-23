@@ -13,10 +13,16 @@ object SequenceManagerPostRequest {
   case class StartSequencer(subsystem: Subsystem, obsMode: ObsMode)   extends SequenceManagerPostRequest
   case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode) extends SequenceManagerPostRequest
 
-  case class ShutdownSequencers(policy: ShutdownSequencersPolicy) extends SequenceManagerPostRequest
+  // Shutdown sequencers
+  case class ShutdownSequencer(subsystem: Subsystem, obsMode: ObsMode) extends SequenceManagerPostRequest
+  case class ShutdownSubsystemSequencers(subsystem: Subsystem)         extends SequenceManagerPostRequest
+  case class ShutdownObsModeSequencers(obsMode: ObsMode)               extends SequenceManagerPostRequest
+  case object ShutdownAllSequencers                                    extends SequenceManagerPostRequest
 
-  case class SpawnSequenceComponent(machine: Prefix, name: String)                extends SequenceManagerPostRequest
-  case class ShutdownSequenceComponents(policy: ShutdownSequenceComponentsPolicy) extends SequenceManagerPostRequest
+  case class SpawnSequenceComponent(machine: Prefix, name: String) extends SequenceManagerPostRequest
+
+  case class ShutdownSequenceComponent(prefix: Prefix) extends SequenceManagerPostRequest
+  case object ShutdownAllSequenceComponents            extends SequenceManagerPostRequest
 
   case object GetAgentStatus extends SequenceManagerPostRequest
 }

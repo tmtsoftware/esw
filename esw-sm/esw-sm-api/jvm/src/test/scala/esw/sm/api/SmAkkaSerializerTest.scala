@@ -14,7 +14,6 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol.AgentStatusResponses.{AgentStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
@@ -56,13 +55,13 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       GetSequenceManagerState(getSmStateRef),
       StartSequencer(ESW, obsMode, startSequencerResponseRef),
       RestartSequencer(ESW, obsMode, restartSequencerResponseRef),
-      ShutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode), shutdownSequencersResponseRef),
-      ShutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(ESW), shutdownSequencersResponseRef),
-      ShutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode), shutdownSequencersResponseRef),
-      ShutdownSequencers(ShutdownSequencersPolicy.AllSequencers, shutdownSequencersResponseRef),
+      ShutdownSequencer(ESW, obsMode, shutdownSequencersResponseRef),
+      ShutdownSubsystemSequencers(ESW, shutdownSequencersResponseRef),
+      ShutdownObsModeSequencers(obsMode, shutdownSequencersResponseRef),
+      ShutdownAllSequencers(shutdownSequencersResponseRef),
       SpawnSequenceComponent(agent, "seq_comp", spawnSequenceComponentResponseRef),
-      ShutdownSequenceComponents(SingleSequenceComponent(Prefix(ESW, "primary")), shutdownSequenceComponentResponseRef),
-      ShutdownSequenceComponents(AllSequenceComponents, shutdownSequenceComponentResponseRef),
+      ShutdownSequenceComponent(Prefix(ESW, "primary"), shutdownSequenceComponentResponseRef),
+      ShutdownAllSequenceComponents(shutdownSequenceComponentResponseRef),
       GetAgentStatus(getAgentResponseRef),
       Provision(provisionResponseRef)
     )

@@ -15,15 +15,14 @@ trait SequenceManagerApi {
   def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse]
 
   def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse]
-  def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse]
   def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse]
+  def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse]
   def shutdownAllSequencers(): Future[ShutdownSequencersResponse]
-  private[sm] def shutdownSequencers(shutdownSequencersPolicy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse]
 
   def spawnSequenceComponent(machine: Prefix, name: String): Future[SpawnSequenceComponentResponse]
+
   def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
   def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse]
-  private[sm] def shutdownSequenceComponents(policy: ShutdownSequenceComponentsPolicy): Future[ShutdownSequenceComponentResponse]
 
   def getAgentStatus: Future[AgentStatusResponse]
 }

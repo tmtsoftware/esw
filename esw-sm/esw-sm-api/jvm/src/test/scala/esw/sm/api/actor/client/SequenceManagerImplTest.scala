@@ -31,17 +31,25 @@ class SequenceManagerImplTest extends BaseTestSuite {
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
-      case SequenceManagerMsg.Configure(_, replyTo)                  => replyTo ! configureResponse
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)            => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo)       => replyTo ! Idle
-      case SequenceManagerMsg.StartSequencer(_, _, replyTo)          => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)        => replyTo ! restartSequencerResponse
-      case SequenceManagerMsg.ShutdownSequencers(_, replyTo)         => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo)  => replyTo ! spawnSequenceComponentResponse
-      case SequenceManagerMsg.ShutdownSequenceComponents(_, replyTo) => replyTo ! shutdownSequenceComponentResponse
-      case SequenceManagerMsg.Provision(replyTo)                     => replyTo ! provisionResponse
-      case SequenceManagerMsg.GetAgentStatus(replyTo)                => replyTo ! getAgentStatusResponse
-      case SequenceManagerMsg.ProcessingComplete(_)                  =>
+      case SequenceManagerMsg.Configure(_, replyTo)            => replyTo ! configureResponse
+      case SequenceManagerMsg.GetRunningObsModes(replyTo)      => replyTo ! getRunningObsModesResponse
+      case SequenceManagerMsg.GetSequenceManagerState(replyTo) => replyTo ! Idle
+      case SequenceManagerMsg.StartSequencer(_, _, replyTo)    => replyTo ! startSequencerResponse
+      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)  => replyTo ! restartSequencerResponse
+
+      case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)        => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ShutdownSubsystemSequencers(_, replyTo) => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ShutdownObsModeSequencers(_, replyTo)   => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)          => replyTo ! shutdownSequencersResponse
+
+      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo) => replyTo ! spawnSequenceComponentResponse
+
+      case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo)  => replyTo ! shutdownSequenceComponentResponse
+      case SequenceManagerMsg.ShutdownAllSequenceComponents(replyTo) => replyTo ! shutdownSequenceComponentResponse
+
+      case SequenceManagerMsg.Provision(replyTo)      => replyTo ! provisionResponse
+      case SequenceManagerMsg.GetAgentStatus(replyTo) => replyTo ! getAgentStatusResponse
+      case SequenceManagerMsg.ProcessingComplete(_)   =>
     }
     Behaviors.same
   }

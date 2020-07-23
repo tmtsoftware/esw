@@ -30,33 +30,25 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
     postClient.requestResponse[RestartSequencerResponse](RestartSequencer(subsystem, obsMode))
 
   override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(subsystem, obsMode))
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencer(subsystem, obsMode))
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(subsystem))
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSubsystemSequencers(subsystem))
 
   override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownObsModeSequencers(obsMode))
 
   override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.AllSequencers)
-
-  override def shutdownSequencers(shutdownSequencersPolicy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
-    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencers(shutdownSequencersPolicy))
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownAllSequencers)
 
   override def spawnSequenceComponent(machine: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
     postClient.requestResponse[SpawnSequenceComponentResponse](SpawnSequenceComponent(machine, sequenceComponentName))
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
-    shutdownSequenceComponents(ShutdownSequenceComponentsPolicy.SingleSequenceComponent(prefix))
+    postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownSequenceComponent(prefix))
 
   override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
-    shutdownSequenceComponents(ShutdownSequenceComponentsPolicy.AllSequenceComponents)
-
-  override private[sm] def shutdownSequenceComponents(
-      policy: ShutdownSequenceComponentsPolicy
-  ): Future[ShutdownSequenceComponentResponse] =
-    postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownSequenceComponents(policy))
+    postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownAllSequenceComponents)
 
   override def getAgentStatus: Future[AgentStatusResponse] = postClient.requestResponse[AgentStatusResponse](GetAgentStatus)
 }

@@ -43,33 +43,25 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
     )
 
   override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.SingleSequencer(subsystem, obsMode))
+    smRef ? (ShutdownSequencer(subsystem, obsMode, _))
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.SubsystemSequencers(subsystem))
+    smRef ? (ShutdownSubsystemSequencers(subsystem, _))
 
   override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.ObsModeSequencers(obsMode))
+    smRef ? (ShutdownObsModeSequencers(obsMode, _))
 
   override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
-    shutdownSequencers(ShutdownSequencersPolicy.AllSequencers)
-
-  override def shutdownSequencers(shutdownSequencersPolicy: ShutdownSequencersPolicy): Future[ShutdownSequencersResponse] =
-    smRef ? (ShutdownSequencers(shutdownSequencersPolicy, _))
+    smRef ? ShutdownAllSequencers
 
   override def spawnSequenceComponent(machine: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
     smRef ? (SpawnSequenceComponent(machine, sequenceComponentName, _))
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
-    shutdownSequenceComponents(ShutdownSequenceComponentsPolicy.SingleSequenceComponent(prefix))
+    smRef ? (ShutdownSequenceComponent(prefix, _))
 
   override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
-    shutdownSequenceComponents(ShutdownSequenceComponentsPolicy.AllSequenceComponents)
-
-  override private[sm] def shutdownSequenceComponents(
-      policy: ShutdownSequenceComponentsPolicy
-  ): Future[ShutdownSequenceComponentResponse] =
-    smRef ? (ShutdownSequenceComponents(policy, _))
+    smRef ? ShutdownAllSequenceComponents
 
   override def getAgentStatus: Future[AgentStatusResponse] = smRef ? GetAgentStatus
 }

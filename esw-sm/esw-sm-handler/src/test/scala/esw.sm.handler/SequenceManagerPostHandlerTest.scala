@@ -11,7 +11,6 @@ import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.AgentStatusResponses.AgentStatus
 import esw.sm.api.protocol.SequenceManagerPostRequest._
-import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
@@ -77,41 +76,38 @@ class SequenceManagerPostHandlerTest
     }
 
     "return shutdown sequencer success for shutdownSequencer request | ESW-171" in {
-      val policy = ShutdownSequencersPolicy.SingleSequencer(ESW, obsMode)
-      when(sequenceManagerApi.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+      when(sequenceManagerApi.shutdownSequencer(ESW, obsMode)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequencers(policy).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequencers(policy)
+      Post("/post-endpoint", ShutdownSequencer(ESW, obsMode).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode)
         responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
 
     "return success for shutdownSubsystemSequencers request | ESW-171" in {
-      val policy = ShutdownSequencersPolicy.SubsystemSequencers(ESW)
-      when(sequenceManagerApi.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+      when(sequenceManagerApi.shutdownSubsystemSequencers(ESW)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequencers(policy).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequencers(policy)
+      Post("/post-endpoint", ShutdownSubsystemSequencers(ESW).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSubsystemSequencers(ESW)
         responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
 
     "return success for shutdownObsModeSequencers request | ESW-171" in {
-      val policy = ShutdownSequencersPolicy.ObsModeSequencers(obsMode)
-      when(sequenceManagerApi.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+      when(sequenceManagerApi.shutdownObsModeSequencers(obsMode))
+        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequencers(policy).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequencers(policy)
+      Post("/post-endpoint", ShutdownObsModeSequencers(obsMode).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownObsModeSequencers(obsMode)
         responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
 
     "return shutdown all sequencer success for shutdownAllSequencer request | ESW-171" in {
-      val policy = ShutdownSequencersPolicy.AllSequencers
-      when(sequenceManagerApi.shutdownSequencers(policy)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+      when(sequenceManagerApi.shutdownAllSequencers()).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequencers(policy).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequencers(policy)
+      Post("/post-endpoint", ShutdownAllSequencers.narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownAllSequencers()
         responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
@@ -128,21 +124,21 @@ class SequenceManagerPostHandlerTest
 
     "return shutdown sequence component success for shutdownSequenceComponent request | ESW-338" in {
       val prefix = Prefix(ESW, obsMode.name)
-      when(sequenceManagerApi.shutdownSequenceComponents(SingleSequenceComponent(prefix)))
+      when(sequenceManagerApi.shutdownSequenceComponent(prefix))
         .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequenceComponents(SingleSequenceComponent(prefix)).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequenceComponents(SingleSequenceComponent(prefix))
+      Post("/post-endpoint", ShutdownSequenceComponent(prefix).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSequenceComponent(prefix)
         responseAs[ShutdownSequenceComponentResponse] should ===(ShutdownSequenceComponentResponse.Success)
       }
     }
 
     "return shutdown sequence component success for shutdownAllSequenceComponent request | ESW-346" in {
-      when(sequenceManagerApi.shutdownSequenceComponents(AllSequenceComponents))
+      when(sequenceManagerApi.shutdownAllSequenceComponents())
         .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequenceComponents(AllSequenceComponents).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequenceComponents(AllSequenceComponents)
+      Post("/post-endpoint", ShutdownAllSequenceComponents.narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownAllSequenceComponents()
         responseAs[ShutdownSequenceComponentResponse] should ===(ShutdownSequenceComponentResponse.Success)
       }
     }

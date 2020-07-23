@@ -22,8 +22,13 @@ object SequenceManagerMsg {
   case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[RestartSequencerResponse])
       extends SequenceManagerIdleMsg
 
-  case class ShutdownSequencers(policy: ShutdownSequencersPolicy, replyTo: ActorRef[ShutdownSequencersResponse])
+  case class ShutdownSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[ShutdownSequencersResponse])
       extends SequenceManagerIdleMsg
+  case class ShutdownSubsystemSequencers(subsystem: Subsystem, replyTo: ActorRef[ShutdownSequencersResponse])
+      extends SequenceManagerIdleMsg
+  case class ShutdownObsModeSequencers(obsMode: ObsMode, replyTo: ActorRef[ShutdownSequencersResponse])
+      extends SequenceManagerIdleMsg
+  case class ShutdownAllSequencers(replyTo: ActorRef[ShutdownSequencersResponse]) extends SequenceManagerIdleMsg
 
   case class Provision(replyTo: ActorRef[ProvisionResponse]) extends SequenceManagerIdleMsg
 
@@ -33,10 +38,9 @@ object SequenceManagerMsg {
       replyTo: ActorRef[SpawnSequenceComponentResponse]
   ) extends SequenceManagerIdleMsg
 
-  case class ShutdownSequenceComponents(
-      policy: ShutdownSequenceComponentsPolicy,
-      replyTo: ActorRef[ShutdownSequenceComponentResponse]
-  ) extends SequenceManagerIdleMsg
+  case class ShutdownSequenceComponent(prefix: Prefix, replyTo: ActorRef[ShutdownSequenceComponentResponse])
+      extends SequenceManagerIdleMsg
+  case class ShutdownAllSequenceComponents(replyTo: ActorRef[ShutdownSequenceComponentResponse]) extends SequenceManagerIdleMsg
 
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
