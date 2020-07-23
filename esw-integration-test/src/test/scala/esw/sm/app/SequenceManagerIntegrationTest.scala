@@ -385,6 +385,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // start required agents to provision
     val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
+    BinaryFetcherUtil.fetchBinaryFor(channel)
     val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
     val irisAgentPrefix = spawnAgent(AgentSettings(1.minute, channel), IRIS)
 
@@ -396,7 +397,10 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     sequenceManager.provision().futureValue should ===(ProvisionResponse.Success)
 
-    locationService.list(SequenceComponent).futureValue.size shouldBe 3
+    val sequenceCompLocations = locationService.list(SequenceComponent).futureValue
+    sequenceCompLocations.size shouldBe 3
+    sequenceCompLocations.count(_.prefix.subsystem == ESW) shouldBe 2
+    sequenceCompLocations.count(_.prefix.subsystem == IRIS) shouldBe 1
 
     sequenceManager.shutdownAllSequenceComponents().futureValue
   }

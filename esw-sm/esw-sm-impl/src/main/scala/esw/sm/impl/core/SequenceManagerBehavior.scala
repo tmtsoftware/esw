@@ -26,6 +26,7 @@ import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success}
 
 class SequenceManagerBehavior(
     sequenceManagerConfig: SequenceManagerConfig,
@@ -143,9 +144,10 @@ class SequenceManagerBehavior(
 
   private def provision(self: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
     provisionConfigProvider()
-      .flatMap(agentUtil.provision)
-      .recover(err => ProvisionResponse.ConfigurationFailure(err.getMessage))
-      .map(self ! ProcessingComplete(_))
+      .onComplete {
+        case Failure(err)   => self ! ProcessingComplete(ProvisionResponse.ConfigurationFailure(err.getMessage))
+        case Success(value) => agentUtil.provision(value).map(self ! ProcessingComplete(_))
+      }
 
     processing(self, replyTo)
   }
