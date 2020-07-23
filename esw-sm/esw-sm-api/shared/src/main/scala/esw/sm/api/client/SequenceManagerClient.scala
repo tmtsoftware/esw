@@ -58,5 +58,5 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   ): Future[ShutdownSequenceComponentResponse] =
     postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownSequenceComponents(policy))
 
-  override def getAgentStatus: Future[GetAgentStatusResponse] = postClient.requestResponse[GetAgentStatusResponse](GetAgentStatus)
+  override def getAgentStatus: Future[AgentStatusResponse] = postClient.requestResponse[AgentStatusResponse](GetAgentStatus)
 }

@@ -13,7 +13,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
-import esw.sm.api.protocol.AgentStatus.SequenceComponentStatus
+import esw.sm.api.protocol.AgentStatusResponses.SequenceComponentStatus
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
@@ -74,16 +74,17 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = sequenceComponentApi(loc).restartScript()
 
-  def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[SequenceComponentStatus] =
+  def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[List[SequenceComponentStatus]] =
     Future
       .traverse(seqCompIds) { seqComp =>
         locationServiceUtil.find(AkkaConnection(seqComp)).flatMap {
           //ignore sequence components for which can't be resolved in location service
-          case Left(_)                => Future.successful(List.empty)
-          case Right(seqCompLocation) => sequenceComponentApi(seqCompLocation).status.map(s => List(seqComp -> s.response))
+          case Left(_) => Future.successful(List.empty)
+          case Right(seqCompLocation) =>
+            sequenceComponentApi(seqCompLocation).status.map(s => List(SequenceComponentStatus(seqComp, s.response)))
         }
       }
-      .map(_.flatten.toMap)
+      .map(_.flatten)
 
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil

@@ -17,6 +17,7 @@ import esw.ocs.api.models.SequenceComponentState.Running
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
+import esw.sm.api.protocol.AgentStatusResponses.SequenceComponentStatus
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
@@ -391,7 +392,8 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       when(eswSeqComp.status)
         .thenReturn(Future.successful(GetStatusResponse(sequencerLocation)))
 
-      val expectedResponse = Map(eswSeqCompId -> sequencerLocation)
+      val expectedResponse =
+        List(SequenceComponentStatus(eswSeqCompId, sequencerLocation))
 
       seqCompUtil.getSequenceComponentStatus(List(eswSeqCompId, tcsSeqCompId)).futureValue should ===(expectedResponse)
 
@@ -406,7 +408,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
           mock[SequenceComponentImpl]
       }
 
-      val expectedResponse = Map.empty[ComponentId, Option[AkkaLocation]]
+      val expectedResponse = List.empty[SequenceComponentStatus]
 
       seqCompUtil.getSequenceComponentStatus(List.empty[ComponentId]).futureValue should ===(expectedResponse)
     }

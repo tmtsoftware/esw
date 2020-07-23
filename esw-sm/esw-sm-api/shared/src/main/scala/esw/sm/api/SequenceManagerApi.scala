@@ -25,5 +25,5 @@ trait SequenceManagerApi {
   def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse]
   private[sm] def shutdownSequenceComponents(policy: ShutdownSequenceComponentsPolicy): Future[ShutdownSequenceComponentResponse]
 
-  def getAgentStatus: Future[GetAgentStatusResponse]
+  def getAgentStatus: Future[AgentStatusResponse]
 }

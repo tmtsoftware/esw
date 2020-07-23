@@ -14,6 +14,7 @@ import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
+import esw.sm.api.protocol.AgentStatusResponses.{AgentStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
@@ -30,6 +31,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
   override protected def afterEach(): Unit  = TestSetup.cleanup()
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   "start sequence manager and register akka + http locations| ESW-171, ESW-172" in {
     // resolving sequence manager fails for Akka and Http
@@ -394,6 +397,41 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManager.provision().futureValue should ===(ProvisionResponse.Success)
 
     locationService.list(SequenceComponent).futureValue.size shouldBe 3
+
+    sequenceManager.shutdownAllSequenceComponents().futureValue
+  }
+
+  "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349" in {
+    // start required agents
+    val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
+    val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
+    val irisAgentPrefix = spawnAgent(AgentSettings(1.minute, channel), IRIS)
+
+    val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix)
+
+    sequenceManager.spawnSequenceComponent(eswAgentPrefix, "primary").futureValue
+    sequenceManager.spawnSequenceComponent(irisAgentPrefix, "primary").futureValue
+
+    sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT).futureValue
+
+    val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
+
+    val agentStatus = List(
+      AgentStatus(
+        ComponentId(irisAgentPrefix, Machine),
+        List(
+          SequenceComponentStatus(ComponentId(Prefix(IRIS, "primary"), SequenceComponent), Some(sequencerLocation))
+        )
+      ),
+      AgentStatus(
+        ComponentId(eswAgentPrefix, Machine),
+        List(
+          SequenceComponentStatus(ComponentId(Prefix(ESW, "primary"), SequenceComponent), None)
+        )
+      )
+    )
+
+    sequenceManager.getAgentStatus.futureValue should ===(AgentStatusResponse.Success(agentStatus))
 
     sequenceManager.shutdownAllSequenceComponents().futureValue
   }

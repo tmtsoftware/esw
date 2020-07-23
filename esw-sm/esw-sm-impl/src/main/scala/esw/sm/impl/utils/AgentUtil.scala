@@ -9,6 +9,7 @@ import esw.agent.api._
 import esw.agent.client.AgentClient
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
+import esw.sm.api.protocol.AgentStatusResponses.AgentToSeqCompsMap
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.{SpawnSequenceComponentFailed, Success}
 import esw.sm.api.protocol.{ProvisionResponse, SpawnSequenceComponentResponse}
@@ -29,14 +30,13 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil, agentAllocator: AgentA
       .flatMapE(provisionOn(_, provisionConfig))
       .mapToAdt(spawnResToProvisionRes, identity)
 
-  def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[Map[ComponentId, List[ComponentId]]] =
+  def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[List[AgentToSeqCompsMap]] =
     Future
       .traverse(agents) { agent =>
         makeAgentClient(agent).getAgentStatus
           .map(filterRunningSeqComps)
-          .map(seqComps => agent.connection.componentId -> seqComps)
+          .map(seqComps => AgentToSeqCompsMap(agent.connection.componentId, seqComps))
       }
-      .map(_.toMap)
 
   private def provisionOn(machines: List[AkkaLocation], provisionConfig: ProvisionConfig) =
     Future

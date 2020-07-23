@@ -15,6 +15,7 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg}
+import esw.sm.api.protocol.AgentStatusResponses.AgentStatus
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
@@ -175,19 +176,20 @@ class SequenceManagerBehavior(
 
   // todo: Extract in class
   private def getAgentStatus(
-      replyTo: ActorRef[GetAgentStatusResponse]
+      replyTo: ActorRef[AgentStatusResponse]
   ): Future[Unit] = {
     locationServiceUtil
       .listAkkaLocationsBy(Machine)
       .flatMapRight { agentLocations =>
-        agentUtil.getSequenceComponentsRunningOn(agentLocations).flatMap { agentToSeqCompMap =>
-          Future.traverse(agentToSeqCompMap.toList) {
-            case (agent, seqComps) =>
-              sequenceComponentUtil.getSequenceComponentStatus(seqComps).map(seqCompStatus => agent -> seqCompStatus)
+        agentUtil.getSequenceComponentsRunningOn(agentLocations).flatMap { agentToSeqCompsList =>
+          Future.traverse(agentToSeqCompsList) { agentToSeqComp =>
+            sequenceComponentUtil
+              .getSequenceComponentStatus(agentToSeqComp.seqComps)
+              .map(seqCompStatus => AgentStatus(agentToSeqComp.agentId, seqCompStatus))
           }
         }
       }
-      .mapToAdt(mapping => GetAgentStatusResponse.Success(mapping.toMap), e => LocationServiceError(e.msg))
+      .mapToAdt(agentStatusList => AgentStatusResponse.Success(agentStatusList), e => LocationServiceError(e.msg))
       .map(replyTo ! _)
   }
 

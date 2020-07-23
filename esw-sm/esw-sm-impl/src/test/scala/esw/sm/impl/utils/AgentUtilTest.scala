@@ -14,6 +14,7 @@ import esw.agent.api.{AgentStatus, Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
+import esw.sm.api.protocol.AgentStatusResponses.AgentToSeqCompsMap
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ProvisionResponse.NoMachineFoundForSubsystems
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
@@ -253,9 +254,9 @@ class AgentUtilTest extends BaseTestSuite {
       when(cswAgentClient.getAgentStatus).thenReturn(Future.successful(cswAgentStatus))
 
       // expected map will include sequence components which are in running state
-      val expectedResponse: Map[ComponentId, List[ComponentId]] = Map(
-        eswAgent.connection.componentId -> List(eswPrimarySeqCompId),
-        cswAgent.connection.componentId -> List()
+      val expectedResponse: List[AgentToSeqCompsMap] = List(
+        AgentToSeqCompsMap(eswAgent.connection.componentId, List(eswPrimarySeqCompId)),
+        AgentToSeqCompsMap(cswAgent.connection.componentId, List())
       )
 
       val seqComponents = agentUtil.getSequenceComponentsRunningOn(List(eswAgent, cswAgent)).futureValue
@@ -267,7 +268,7 @@ class AgentUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup._
 
-      val expectedResponse: Map[ComponentId, List[ComponentId]] = Map()
+      val expectedResponse: List[AgentToSeqCompsMap] = List()
 
       val seqComponents = agentUtil.getSequenceComponentsRunningOn(List.empty).futureValue
 

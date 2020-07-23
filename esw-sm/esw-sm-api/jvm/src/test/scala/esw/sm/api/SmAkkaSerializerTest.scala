@@ -12,6 +12,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.protocol.AgentStatusResponses.{AgentStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ShutdownSequenceComponentsPolicy.{AllSequenceComponents, SingleSequenceComponent}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
@@ -42,7 +43,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val restartSequencerResponseRef          = TestProbe[RestartSequencerResponse]().ref
     val spawnSequenceComponentResponseRef    = TestProbe[SpawnSequenceComponentResponse]().ref
     val shutdownSequenceComponentResponseRef = TestProbe[ShutdownSequenceComponentResponse]().ref
-    val getAgentResponseRef                  = TestProbe[GetAgentStatusResponse]().ref
+    val getAgentResponseRef                  = TestProbe[AgentStatusResponse]().ref
     val provisionResponseRef                 = TestProbe[ProvisionResponse]().ref
 
     val obsMode = ObsMode("IRIS_DarkNight")
@@ -187,18 +188,23 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   }
 
   "should use sm serializer for GetAgentStatusResponse (de)serialization" in {
-    val agentStatus = Map(
-      ComponentId(Prefix(ESW, "machine1"), Machine) ->
-        Map(
-          ComponentId(Prefix(ESW, "primary"), SequenceComponent) -> Some(
-            AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "darkNight"), Sequencer)), URI.create("uri"))
+    val agentStatus = List(
+      AgentStatus(
+        ComponentId(Prefix(ESW, "machine1"), Machine),
+        List(
+          SequenceComponentStatus(
+            ComponentId(Prefix(ESW, "primary"), SequenceComponent),
+            Some(
+              AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "darkNight"), Sequencer)), URI.create("uri"))
+            )
           )
         )
+      )
     )
 
     val testData = Table(
       "Sequence Manager GetAgentStatusResponse models",
-      GetAgentStatusResponse.Success(agentStatus),
+      AgentStatusResponse.Success(agentStatus),
       LocationServiceError("error")
     )
 
