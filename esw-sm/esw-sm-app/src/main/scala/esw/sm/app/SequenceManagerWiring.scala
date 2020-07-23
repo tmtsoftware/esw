@@ -59,10 +59,10 @@ class SequenceManagerWiring(obsModeConfigPath: Path, provisionConfigPath: Path) 
   private lazy val logger: Logger                           = loggerFactory.getLogger
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
-  private lazy val agentAllocator             = new AgentAllocator()
-  private lazy val agentUtil                  = new AgentUtil(locationServiceUtil, agentAllocator)
   private lazy val sequenceComponentAllocator = new SequenceComponentAllocator()
   private lazy val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator)
+  private lazy val agentAllocator             = new AgentAllocator()
+  private lazy val agentUtil                  = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator)
   private lazy val sequencerUtil              = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
   private lazy val configParser = new SequenceManagerConfigParser(configUtils)

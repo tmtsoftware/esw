@@ -9,16 +9,34 @@ import esw.agent.api._
 import esw.agent.client.AgentClient
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
-import esw.sm.api.protocol.AgentStatusResponses.AgentToSeqCompsMap
+import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, AgentToSeqCompsMap}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.{SpawnSequenceComponentFailed, Success}
-import esw.sm.api.protocol.{ProvisionResponse, SpawnSequenceComponentResponse}
+import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse, SpawnSequenceComponentResponse}
 import esw.sm.impl.config.ProvisionConfig
 
 import scala.concurrent.Future
 
-class AgentUtil(locationServiceUtil: LocationServiceUtil, agentAllocator: AgentAllocator)(implicit actorSystem: ActorSystem[_]) {
+class AgentUtil(
+    locationServiceUtil: LocationServiceUtil,
+    sequenceComponentUtil: SequenceComponentUtil,
+    agentAllocator: AgentAllocator
+)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
+
+  def getAllAgentStatus: Future[AgentStatusResponse] =
+    locationServiceUtil
+      .listAkkaLocationsBy(Machine)
+      .flatMapRight(getSequenceComponentsRunningOn(_).flatMap(getAllSeqCompsStatus))
+      .mapToAdt(agentStatusList => AgentStatusResponse.Success(agentStatusList), e => LocationServiceError(e.msg))
+
+  private def getAllSeqCompsStatus(agentToSeqCompsList: List[AgentToSeqCompsMap]): Future[List[AgentSeqCompsStatus]] = {
+    Future.traverse(agentToSeqCompsList) { agentToSeqComp =>
+      sequenceComponentUtil
+        .getSequenceComponentStatus(agentToSeqComp.seqComps)
+        .map(seqCompStatus => AgentSeqCompsStatus(agentToSeqComp.agentId, seqCompStatus))
+    }
+  }
 
   def spawnSequenceComponent(machine: Prefix, seqCompName: String): Future[SpawnSequenceComponentResponse] =
     getAgent(machine).flatMapToAdt(spawnSeqComp(_, Prefix(machine.subsystem, seqCompName)), identity)
@@ -30,7 +48,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil, agentAllocator: AgentA
       .flatMapE(provisionOn(_, provisionConfig))
       .mapToAdt(spawnResToProvisionRes, identity)
 
-  def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[List[AgentToSeqCompsMap]] =
+  private def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[List[AgentToSeqCompsMap]] =
     Future
       .traverse(agents) { agent =>
         makeAgentClient(agent).getAgentStatus

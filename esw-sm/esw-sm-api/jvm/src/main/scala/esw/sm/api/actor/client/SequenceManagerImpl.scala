@@ -63,7 +63,7 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
     smRef ? ShutdownAllSequenceComponents
 
-  override def getAgentStatus: Future[AgentStatusResponse] = smRef ? GetAgentStatus
+  override def getAgentStatus: Future[AgentStatusResponse] = smRef ? GetAllAgentStatus
 }
 
 object SequenceManagerTimeout {

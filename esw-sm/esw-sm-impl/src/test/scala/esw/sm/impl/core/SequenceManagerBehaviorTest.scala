@@ -16,7 +16,7 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, AgentToSeqCompsMap, SequenceComponentStatus}
+import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
@@ -429,7 +429,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "GetAgentStatus" must {
+  "GetAllAgentStatus" must {
     "return agent status successfully | ESW-349" in {
       val eswMachine1 = ComponentId(Prefix(ESW, "machine1"), Machine)
       val eswMachine2 = ComponentId(Prefix(ESW, "machine2"), Machine)
@@ -439,14 +439,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val eswSeqComp2 = ComponentId(Prefix(ESW, "secondary"), SequenceComponent)
       val tcsSeqComp1 = ComponentId(Prefix(TCS, "primary"), SequenceComponent)
 
-      val agentLocations = List(akkaLocation(eswMachine1), akkaLocation(eswMachine2), akkaLocation(tcsMachine1))
-
-      val agentToSeqCompMap = List(
-        AgentToSeqCompsMap(eswMachine1, List(eswSeqComp1, eswSeqComp2)),
-        AgentToSeqCompsMap(eswMachine2, List()),
-        AgentToSeqCompsMap(tcsMachine1, List(tcsSeqComp1))
-      )
-
       val eswMachine1SeqComps =
         List(
           SequenceComponentStatus(eswSeqComp1, Some(akkaLocation(ComponentId(Prefix(ESW, "darkNight"), Sequencer)))),
@@ -455,15 +447,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val tcsMachine1SeqComps =
         List(SequenceComponentStatus(tcsSeqComp1, Some(akkaLocation(ComponentId(Prefix(TCS, "darkNight"), Sequencer)))))
 
-      when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(agentLocations))
-      when(agentUtil.getSequenceComponentsRunningOn(agentLocations)).thenReturn(Future.successful(agentToSeqCompMap))
-      when(sequenceComponentUtil.getSequenceComponentStatus(List(eswSeqComp1, eswSeqComp2)))
-        .thenReturn(Future.successful(eswMachine1SeqComps))
-      when(sequenceComponentUtil.getSequenceComponentStatus(List.empty)).thenReturn(Future.successful(List.empty))
-      when(sequenceComponentUtil.getSequenceComponentStatus(List(tcsSeqComp1))).thenReturn(
-        Future.successful(tcsMachine1SeqComps)
-      )
-
       val expectedResponse = AgentStatusResponse.Success(
         List(
           AgentSeqCompsStatus(eswMachine1, eswMachine1SeqComps),
@@ -471,31 +454,30 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
           AgentSeqCompsStatus(tcsMachine1, tcsMachine1SeqComps)
         )
       )
+
+      when(agentUtil.getAllAgentStatus).thenReturn(Future.successful(expectedResponse))
+
       val getAgentStatusResponseProbe = TestProbe[AgentStatusResponse]()
 
       assertState(Idle)
-      smRef ! GetAgentStatus(getAgentStatusResponseProbe.ref)
+      smRef ! GetAllAgentStatus(getAgentStatusResponseProbe.ref)
       assertState(Idle)
 
       getAgentStatusResponseProbe.expectMessage(expectedResponse)
 
-      verify(locationServiceUtil).listAkkaLocationsBy(Machine)
-      verify(agentUtil).getSequenceComponentsRunningOn(agentLocations)
-      verify(sequenceComponentUtil).getSequenceComponentStatus(List(eswSeqComp1, eswSeqComp2))
-      verify(sequenceComponentUtil).getSequenceComponentStatus(List.empty)
-      verify(sequenceComponentUtil).getSequenceComponentStatus(List(tcsSeqComp1))
+      verify(agentUtil).getAllAgentStatus
     }
 
     "return LocationServiceError if location service gives error | ESW-349" in {
-      when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureLeft(RegistrationListingFailed("error")))
+      when(agentUtil.getAllAgentStatus).thenReturn(Future.successful(LocationServiceError("error")))
 
       val getAgentStatusResponseProbe = TestProbe[AgentStatusResponse]()
 
-      smRef ! GetAgentStatus(getAgentStatusResponseProbe.ref)
+      smRef ! GetAllAgentStatus(getAgentStatusResponseProbe.ref)
 
       getAgentStatusResponseProbe.expectMessage(LocationServiceError("error"))
 
-      verify(locationServiceUtil).listAkkaLocationsBy(Machine)
+      verify(agentUtil).getAllAgentStatus
     }
   }
 

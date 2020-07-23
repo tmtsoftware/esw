@@ -62,7 +62,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       SpawnSequenceComponent(agent, "seq_comp", spawnSequenceComponentResponseRef),
       ShutdownSequenceComponent(Prefix(ESW, "primary"), shutdownSequenceComponentResponseRef),
       ShutdownAllSequenceComponents(shutdownSequenceComponentResponseRef),
-      GetAgentStatus(getAgentResponseRef),
+      GetAllAgentStatus(getAgentResponseRef),
       Provision(provisionResponseRef)
     )
 

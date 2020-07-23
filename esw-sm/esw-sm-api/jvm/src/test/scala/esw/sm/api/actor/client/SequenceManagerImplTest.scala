@@ -47,9 +47,9 @@ class SequenceManagerImplTest extends BaseTestSuite {
       case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo)  => replyTo ! shutdownSequenceComponentResponse
       case SequenceManagerMsg.ShutdownAllSequenceComponents(replyTo) => replyTo ! shutdownSequenceComponentResponse
 
-      case SequenceManagerMsg.Provision(replyTo)      => replyTo ! provisionResponse
-      case SequenceManagerMsg.GetAgentStatus(replyTo) => replyTo ! getAgentStatusResponse
-      case SequenceManagerMsg.ProcessingComplete(_)   =>
+      case SequenceManagerMsg.Provision(replyTo)         => replyTo ! provisionResponse
+      case SequenceManagerMsg.GetAllAgentStatus(replyTo) => replyTo ! getAgentStatusResponse
+      case SequenceManagerMsg.ProcessingComplete(_)      =>
     }
     Behaviors.same
   }
