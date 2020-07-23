@@ -405,7 +405,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManager.shutdownAllSequenceComponents().futureValue
   }
 
-  "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349" in {
+  "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349" ignore {
     // start required agents
     val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
     val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
