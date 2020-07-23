@@ -14,7 +14,7 @@ import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
-import esw.sm.api.protocol.AgentStatusResponses.{AgentStatus, SequenceComponentStatus}
+import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
@@ -405,7 +405,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManager.shutdownAllSequenceComponents().futureValue
   }
 
-  "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349" ignore {
+  "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349" in {
     // start required agents
     val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
     val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
@@ -421,13 +421,13 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
 
     val expectedStatus = List(
-      AgentStatus(
+      AgentSeqCompsStatus(
         ComponentId(irisAgentPrefix, Machine),
         List(
           SequenceComponentStatus(ComponentId(Prefix(IRIS, "primary"), SequenceComponent), Some(sequencerLocation))
         )
       ),
-      AgentStatus(
+      AgentSeqCompsStatus(
         ComponentId(eswAgentPrefix, Machine),
         List(
           SequenceComponentStatus(ComponentId(Prefix(ESW, "primary"), SequenceComponent), None)
@@ -436,9 +436,9 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     )
 
     val actualResponse = sequenceManager.getAgentStatus.futureValue
-    val actualStatus   = actualResponse.asInstanceOf[AgentStatusResponse.Success].agentStatus
+    val actualStatus   = actualResponse.asInstanceOf[AgentStatusResponse.Success].response
     actualStatus.size should ===(expectedStatus.size)
-    actualStatus.contains(expectedStatus) should ===(true)
+    actualStatus.diff(expectedStatus) should ===(List.empty[AgentSeqCompsStatus])
 
     sequenceManager.shutdownAllSequenceComponents().futureValue
   }

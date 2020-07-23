@@ -9,7 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
-import esw.sm.api.protocol.AgentStatusResponses.AgentStatus
+import esw.sm.api.protocol.AgentStatusResponses.AgentSeqCompsStatus
 import esw.sm.api.protocol.SequenceManagerPostRequest._
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
@@ -158,7 +158,7 @@ class SequenceManagerPostHandlerTest
     }
 
     "return agent status for all running agents | ESW-349" in {
-      val response = AgentStatusResponse.Success(List.empty[AgentStatus])
+      val response = AgentStatusResponse.Success(List.empty[AgentSeqCompsStatus])
       when(sequenceManagerApi.getAgentStatus).thenReturn(Future.successful(response))
 
       Post("/post-endpoint", GetAgentStatus.narrow) ~> route ~> check {

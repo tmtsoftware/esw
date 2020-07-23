@@ -12,7 +12,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.protocol.AgentStatusResponses.{AgentStatus, SequenceComponentStatus}
+import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
@@ -188,7 +188,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
 
   "should use sm serializer for GetAgentStatusResponse (de)serialization" in {
     val agentStatus = List(
-      AgentStatus(
+      AgentSeqCompsStatus(
         ComponentId(Prefix(ESW, "machine1"), Machine),
         List(
           SequenceComponentStatus(

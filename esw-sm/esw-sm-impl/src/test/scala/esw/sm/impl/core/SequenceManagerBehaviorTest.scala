@@ -16,7 +16,7 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.protocol.AgentStatusResponses.{AgentStatus, AgentToSeqCompsMap, SequenceComponentStatus}
+import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, AgentToSeqCompsMap, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
@@ -466,9 +466,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedResponse = AgentStatusResponse.Success(
         List(
-          AgentStatus(eswMachine1, eswMachine1SeqComps),
-          AgentStatus(eswMachine2, List.empty),
-          AgentStatus(tcsMachine1, tcsMachine1SeqComps)
+          AgentSeqCompsStatus(eswMachine1, eswMachine1SeqComps),
+          AgentSeqCompsStatus(eswMachine2, List.empty),
+          AgentSeqCompsStatus(tcsMachine1, tcsMachine1SeqComps)
         )
       )
       val getAgentStatusResponseProbe = TestProbe[AgentStatusResponse]()

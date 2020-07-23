@@ -15,7 +15,7 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg}
-import esw.sm.api.protocol.AgentStatusResponses.AgentStatus
+import esw.sm.api.protocol.AgentStatusResponses.AgentSeqCompsStatus
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
@@ -184,7 +184,7 @@ class SequenceManagerBehavior(
           Future.traverse(agentToSeqCompsList) { agentToSeqComp =>
             sequenceComponentUtil
               .getSequenceComponentStatus(agentToSeqComp.seqComps)
-              .map(seqCompStatus => AgentStatus(agentToSeqComp.agentId, seqCompStatus))
+              .map(seqCompStatus => AgentSeqCompsStatus(agentToSeqComp.agentId, seqCompStatus))
           }
         }
       }

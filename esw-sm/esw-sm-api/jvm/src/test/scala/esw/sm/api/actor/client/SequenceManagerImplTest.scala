@@ -11,7 +11,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.protocol.AgentStatusResponses.AgentStatus
+import esw.sm.api.protocol.AgentStatusResponses.AgentSeqCompsStatus
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 
@@ -27,7 +27,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val spawnSequenceComponentResponse                            = SpawnSequenceComponentResponse.Success(sequenceComponentId)
   private val shutdownSequenceComponentResponse                         = ShutdownSequenceComponentResponse.Success
   private val provisionResponse                                         = ProvisionResponse.Success
-  private val getAgentStatusResponse                                    = AgentStatusResponse.Success(List.empty[AgentStatus])
+  private val getAgentStatusResponse                                    = AgentStatusResponse.Success(List.empty[AgentSeqCompsStatus])
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {

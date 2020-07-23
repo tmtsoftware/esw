@@ -4,7 +4,7 @@ import csw.location.api.models.ComponentId
 import csw.prefix.models.Subsystem
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.protocol.AgentStatusResponses.AgentStatus
+import esw.sm.api.protocol.AgentStatusResponses.AgentSeqCompsStatus
 
 private[protocol] sealed trait SmFailure extends Throwable
 
@@ -105,7 +105,7 @@ object ProvisionResponse {
 sealed trait AgentStatusResponse extends SmResponse
 
 object AgentStatusResponse {
-  case class Success(agentStatus: List[AgentStatus]) extends AgentStatusResponse
+  case class Success(response: List[AgentSeqCompsStatus]) extends AgentStatusResponse
 
   sealed trait Failure extends SmFailure with AgentStatusResponse
 }
