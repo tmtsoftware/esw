@@ -161,7 +161,7 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "shutdownSequencer" must {
-    "shutdown the given sequencer and return Done | ESW-326" in {
+    "shutdown the given sequencer and return Done | ESW-326, ESW-351" in {
       when(locationServiceUtil.findSequencer(ESW, darkNightObsMode)).thenReturn(futureRight(eswDarkNightSequencerLoc))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswPrimarySeqCompLoc)).thenReturn(Future.successful(Ok))
@@ -172,7 +172,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).unloadScript(eswPrimarySeqCompLoc)
     }
 
-    "return Success even if sequencer is not running | ESW-326" in {
+    "return Success even if sequencer is not running | ESW-326, ESW-351" in {
       // mimic the exception thrown from LocationServiceUtil.findSequencer
       val findLocationFailed = futureLeft(LocationNotFound("location service error"))
       when(locationServiceUtil.findSequencer(ESW, darkNightObsMode)).thenReturn(findLocationFailed)
@@ -183,7 +183,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(eswSequencerApi, never).getSequenceComponent
     }
 
-    "return Failure response when location service returns RegistrationListingFailed error | ESW-326" in {
+    "return Failure response when location service returns RegistrationListingFailed error | ESW-326, ESW-351" in {
       when(locationServiceUtil.findSequencer(ESW, darkNightObsMode))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
@@ -194,7 +194,7 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "shutdownSubsystemSequencers" must {
-    "stop all the sequencers running for specified subsystem | ESW-345" in {
+    "stop all the sequencers running for specified subsystem | ESW-345, ESW-351" in {
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, eswClearSkiesSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent)
@@ -210,7 +210,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).unloadScript(eswSecondarySeqCompLoc)
     }
 
-    "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-345" in {
+    "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-345, ESW-351" in {
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
@@ -221,7 +221,7 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "shutdownObsModeSequencers" must {
-    "stop all the sequencers running for specified Obs Mode | ESW-166" in {
+    "stop all the sequencers running for specified Obs Mode | ESW-166, ESW-351" in {
       when(locationServiceUtil.listAkkaLocationsBy(darkNightObsMode.name, Sequencer))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, tcsDarkNightSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
@@ -237,7 +237,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).unloadScript(tcsPrimarySeqCompLoc)
     }
 
-    "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-166" in {
+    "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-166, ESW-351" in {
       when(locationServiceUtil.listAkkaLocationsBy(darkNightObsMode.name, Sequencer))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
@@ -249,7 +249,7 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "shutdownAllSequencers" must {
-    "stop all the sequencers running | ESW-324" in {
+    "stop all the sequencers running | ESW-324, ESW-351" in {
       when(locationServiceUtil.listAkkaLocationsBy(Sequencer))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, tcsDarkNightSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
@@ -263,7 +263,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).unloadScript(tcsPrimarySeqCompLoc)
     }
 
-    "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-324" in {
+    "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-324, ESW-351" in {
       when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
       sequencerUtil.shutdownAllSequencers().futureValue should ===(LocationServiceError("Error"))

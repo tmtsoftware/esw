@@ -63,7 +63,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
   }
 
   "shutdown" must {
-    "return success when shutdown of single sequence component is successful | ESW-338" in {
+    "return success when shutdown of single sequence component is successful | ESW-338, ESW-351" in {
       val mockSeqCompImpl = mock[SequenceComponentImpl]
       val seqCompUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
         override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentImpl =
@@ -81,7 +81,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       verify(mockSeqCompImpl).shutdown()
     }
 
-    "return error when location service returns error while shutting down single sequencer | ESW-338" in {
+    "return error when location service returns error while shutting down single sequencer | ESW-338, ESW-351" in {
       val mockSeqCompImpl = mock[SequenceComponentImpl]
       val seqCompUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
         override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentImpl =
@@ -98,7 +98,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       verify(mockSeqCompImpl, never).shutdown()
     }
 
-    "return success when shutting down all sequence components is successful | ESW-346" in {
+    "return success when shutting down all sequence components is successful | ESW-346, ESW-351" in {
 
       val eswSeqCompLoc   = sequenceComponentLocation("ESW.primary")
       val irisSeqCompLoc  = sequenceComponentLocation("IRIS.primary")
@@ -123,7 +123,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       verify(irisSeqCompImpl).shutdown()
     }
 
-    "return error when location service returns error while shutting down all sequence components | ESW-346" in {
+    "return error when location service returns error while shutting down all sequence components | ESW-346, ESW-351" in {
       val mockSeqCompImpl = mock[SequenceComponentImpl]
       val seqCompUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
         override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentImpl =

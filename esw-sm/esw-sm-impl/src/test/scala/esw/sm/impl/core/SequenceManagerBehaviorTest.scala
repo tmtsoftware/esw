@@ -189,7 +189,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "ShutdownSequencer" must {
     val responseProbe = TestProbe[ShutdownSequencersResponse]()
     val shutdownMsg   = ShutdownSequencer(ESW, darkNight, responseProbe.ref)
-    s"transition sm from Idle -> Processing -> Idle state and stop| ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
+    s"transition sm from Idle -> Processing -> Idle state and stop| ESW-326, ESW-345, ESW-166, ESW-324, ESW-342, ESW-351" in {
       when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
       // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
@@ -202,7 +202,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
     }
 
-    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324" in {
+    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324, ESW-351" in {
       val err = LocationServiceError("error")
       when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(Future.successful(err))
 
@@ -216,7 +216,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "ShutdownSubsystemSequencers" must {
     val responseProbe = TestProbe[ShutdownSequencersResponse]()
     val shutdownMsg   = ShutdownSubsystemSequencers(ESW, responseProbe.ref)
-    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
+    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342, ESW-351" in {
       when(sequencerUtil.shutdownSubsystemSequencers(ESW)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
       // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
@@ -229,7 +229,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil).shutdownSubsystemSequencers(ESW)
     }
 
-    s"return LocationServiceError if location service fails for | ESW-326, ESW-345, ESW-166, ESW-324" in {
+    s"return LocationServiceError if location service fails for | ESW-326, ESW-345, ESW-166, ESW-324, ESW-351" in {
       val err = LocationServiceError("error")
       when(sequencerUtil.shutdownSubsystemSequencers(ESW)).thenReturn(Future.successful(err))
 
@@ -243,7 +243,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "ShutdownObsModeSequencers" must {
     val responseProbe = TestProbe[ShutdownSequencersResponse]()
     val shutdownMsg   = ShutdownObsModeSequencers(darkNight, responseProbe.ref)
-    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
+    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342, ESW-351" in {
       when(sequencerUtil.shutdownObsModeSequencers(darkNight)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
       // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
@@ -256,7 +256,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil).shutdownObsModeSequencers(darkNight)
     }
 
-    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324" in {
+    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324, ESW-351" in {
       val err = LocationServiceError("error")
       when(sequencerUtil.shutdownObsModeSequencers(darkNight)).thenReturn(Future.successful(err))
 
@@ -270,7 +270,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "ShutdownAllSequencers" must {
     val responseProbe = TestProbe[ShutdownSequencersResponse]()
     val shutdownMsg   = ShutdownAllSequencers(responseProbe.ref)
-    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342" in {
+    s"transition sm from Idle -> Processing -> Idle state and stop | ESW-326, ESW-345, ESW-166, ESW-324, ESW-342, ESW-351" in {
       when(sequencerUtil.shutdownAllSequencers()).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
       // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
@@ -283,7 +283,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil).shutdownAllSequencers()
     }
 
-    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324" in {
+    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324, ESW-351" in {
       val err = LocationServiceError("error")
       when(sequencerUtil.shutdownAllSequencers()).thenReturn(Future.successful(err))
 
@@ -336,7 +336,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "ShutdownSequenceComponents" must {
-    "transition sm from Idle -> Processing -> Idle state and return success on shutdown | ESW-338, ESW-342" in {
+    "transition sm from Idle -> Processing -> Idle state and return success on shutdown | ESW-338, ESW-342, ESW-351" in {
       val prefix = Prefix(ESW, "primary")
 
       when(sequenceComponentUtil.shutdownSequenceComponent(prefix))
@@ -354,7 +354,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequenceComponentUtil).shutdownSequenceComponent(prefix)
     }
 
-    "return Success when shutting down all sequence components | ESW-346" in {
+    "return Success when shutting down all sequence components | ESW-346, ESW-351" in {
       when(sequenceComponentUtil.shutdownAllSequenceComponents())
         .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
@@ -366,7 +366,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequenceComponentUtil).shutdownAllSequenceComponents()
     }
 
-    "return LocationServiceError if LocationServiceError encountered while shutting down sequence components | ESW-338,ESW-346" in {
+    "return LocationServiceError if LocationServiceError encountered while shutting down sequence components | ESW-338,ESW-346, ESW-351" in {
       val prefix = Prefix(ESW, "primary")
       val error  = LocationServiceError("location service error")
 

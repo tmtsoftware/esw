@@ -46,7 +46,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     resolveHTTPLocation(sequenceManagerPrefix, Service).prefix shouldBe sequenceManagerPrefix
   }
 
-  "configure SH, send sequence to master sequencer and cleanup for provided observation mode | ESW-162, ESW-164, ESW-166, ESW-171, ESW-178" in {
+  "configure SH, send sequence to master sequencer and cleanup for provided observation mode | ESW-162, ESW-164, ESW-166, ESW-171, ESW-178, ESW-351" in {
     val eswSeqCompPrefix   = Prefix(ESW, "primary")
     val irisSeqCompPrefix  = Prefix(IRIS, "primary")
     val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
@@ -80,7 +80,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     assertThatSeqCompIsLoadedWithScript(irisSeqCompPrefix)
     assertThatSeqCompIsLoadedWithScript(aoeswSeqCompPrefix)
 
-    // *************** Cleanup for observing mode ********************
+    // *************** Cleanup for observing mode - ESW-351 ********************
     val response = sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
 
     // assert for Successful Cleanup
@@ -154,7 +154,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
-  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326, ESW-171, ESW-167" in {
+  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326, ESW-171, ESW-167, ESW-351" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"), Prefix(ESW, "secondary"), Prefix(AOESW, "primary"))
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
@@ -190,6 +190,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     resolveSequenceComponentLocation(Prefix(ESW, "secondary"))
     resolveSequenceComponentLocation(Prefix(AOESW, "primary"))
 
+    // ESW-351
     val shutdownResponse2 = sequenceManagerClient.shutdownSequencer(AOESW, IRIS_CAL).futureValue
     shutdownResponse2 should ===(ShutdownSequencersResponse.Success)
 
@@ -237,7 +238,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     secondRestartResponse should ===(LocationServiceError(s"Could not find location matching connection: $connection"))
   }
 
-  "shutdown running sequencers for given subsystem | ESW-345" in {
+  "shutdown running sequencers for given subsystem | ESW-345, ESW-351" in {
     val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT.name)
     val wfosCalPrefix       = Prefix(WFOS, WFOS_CAL.name)
 
@@ -248,7 +249,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
     resolveAkkaLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
 
-    // shutdown all ESW sequencers that are running
+    //ESW-351 - shutdown all ESW sequencers that are running
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
     sequenceManagerClient.shutdownSubsystemSequencers(ESW).futureValue should ===(ShutdownSequencersResponse.Success)
 
@@ -259,7 +260,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     resolveAkkaLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
   }
 
-  "shutdown all the running sequencers | ESW-324, ESW-171" in {
+  "shutdown all the running sequencers | ESW-324, ESW-171, ESW-351" in {
     val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT.name)
     val irisCalPrefix       = Prefix(ESW, IRIS_CAL.name)
 
@@ -270,7 +271,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
     resolveAkkaLocation(irisCalPrefix, Sequencer) should ===(calSequencerL)
 
-    // shutdown all the sequencers that are running
+    //ESW-351 - shutdown all the sequencers that are running
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
     sequenceManagerClient.shutdownAllSequencers().futureValue should ===(ShutdownSequencersResponse.Success)
 
@@ -321,7 +322,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     response should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)))
   }
 
-  "spawn sequence component on given machine with given name and shutdown for given prefix | ESW-337, ESW-338" in {
+  "spawn sequence component on given machine with given name and shutdown for given prefix | ESW-337, ESW-338, ESW-351" in {
     val seqCompName         = "seq_comp"
     val seqCompPrefix       = Prefix(ESW, seqCompName)
     val expectedComponentId = ComponentId(seqCompPrefix, SequenceComponent)
@@ -347,12 +348,12 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     //ESW-337 verify that sequence component is now spawned
     resolveSequenceComponentLocation(seqCompPrefix)
 
-    //ESW-338 shutdown sequence component
+    //ESW-351, ESW-338 shutdown sequence component
     sequenceManagerClient.shutdownSequenceComponent(seqCompPrefix).futureValue should ===(
       ShutdownSequenceComponentResponse.Success
     )
 
-    //ESW-338 verify that sequence component is shutdown
+    //ESW-351, ESW-338 verify that sequence component is shutdown
     intercept[Exception](resolveSequenceComponentLocation(seqCompPrefix))
   }
 
