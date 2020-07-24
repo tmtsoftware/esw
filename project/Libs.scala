@@ -3,29 +3,29 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "a36f8db"
+  private val MSocketVersion = "69b9245"
 
-  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0"
+  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.3"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
-  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.14.4" // MIT License
-  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
+  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.14.8" // MIT License
+  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
   val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.2") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl"       % MSocketVersion
-  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.4"
+  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.5"
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
 
-  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.3.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "9374d69"
+  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "7fd5623"
 
-  val `ammonite` = "com.lihaoyi" % "ammonite" % "2.1.4" cross CrossVersion.full
+  val `ammonite` = "com.lihaoyi" % "ammonite" % "2.2.0" cross CrossVersion.full
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "333e6ca" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "211aa2d" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
@@ -55,7 +55,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.6"
+  private val Version     = "2.6.8"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
@@ -67,7 +67,7 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.2.0-M1" //all akka is Apache License 2.0
+  private val Version = "10.2.0-RC2" //all akka is Apache License 2.0
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
@@ -86,7 +86,7 @@ object Borer {
 
 object Kotlin {
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % "1.3.72"
-  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.7"
+  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.8"
   val kotlintest        = "io.kotlintest"         % "kotlintest-core"         % "3.4.2"
   val mockk             = "io.mockk"              % "mockk"                   % "1.10.0"
 }

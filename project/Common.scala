@@ -1,3 +1,4 @@
+import com.timushev.sbt.updates.UpdatesPlugin.autoImport._
 import com.typesafe.sbt.site.SitePlugin.autoImport.siteDirectory
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
 import org.tmt.sbt.docs.DocKeys._
@@ -47,9 +48,8 @@ object Common extends AutoPlugin {
         "-Xlint:_,-missing-interpolator",
         "-Ywarn-dead-code",
         "-Xsource:3",
-        "-Wconf:any:warning-verbose"
-        //      "-Xfuture"
-        //      "-Xprint:typer"
+        "-Wconf:any:warning-verbose",
+        "-Xasync"
       ),
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
     )
@@ -66,6 +66,8 @@ object Common extends AutoPlugin {
     else Seq(Tests.Argument("-oDF"))
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
+    dependencyUpdatesFilter -= moduleFilter(organization = "com.github.tmtsoftware.csw"),
+    dependencyUpdatesFilter -= moduleFilter(organization = "com.github.tmtsoftware.msocket"),
     testOptions in Test ++= reporterOptions,
     publishArtifact in (Test, packageBin) := true,
     version := {
