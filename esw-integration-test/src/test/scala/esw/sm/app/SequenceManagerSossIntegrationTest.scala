@@ -11,7 +11,7 @@ import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
-import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequencersResponse}
+import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequencersResponse, Unhandled}
 
 class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 
@@ -38,7 +38,6 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
       configureResponse should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)))
 
       configureResponse match {
-        case e: ConfigureResponse.Failure => throw new RuntimeException(e.getMessage) // unreachable because of above assertion
         case ConfigureResponse.Success(id) =>
           val location = resolveHTTPLocation(id.prefix, id.componentType)
 
@@ -48,6 +47,8 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
           // ESW-146 : Verify command handler of the script is called
           val event = eventSubscriber.get(EventKey(Prefix(ESW, "IRIS_cal"), EventName("event-1"))).futureValue
           event.isInvalid shouldBe false
+        case e: ConfigureResponse.Failure => throw new RuntimeException(e.getMessage) // unreachable because of above assertion
+        case e: Unhandled                 => throw new RuntimeException(e.msg)        // unreachable because of above assertion
       }
 
       sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe a[ShutdownSequencersResponse.Success.type]

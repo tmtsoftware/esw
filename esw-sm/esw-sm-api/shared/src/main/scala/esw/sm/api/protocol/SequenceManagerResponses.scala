@@ -109,3 +109,18 @@ object AgentStatusResponse {
 
   sealed trait Failure extends SmFailure with AgentStatusResponse
 }
+
+final case class Unhandled(state: String, messageType: String, msg: String)
+    extends ConfigureResponse
+    with StartSequencerResponse
+    with RestartSequencerResponse
+    with ShutdownSequencersResponse
+    with ShutdownSequenceComponentResponse
+    with SpawnSequenceComponentResponse
+    with ProvisionResponse
+    with AgentStatusResponse
+
+object Unhandled {
+  def apply(state: String, messageType: String): Unhandled =
+    new Unhandled(state, messageType, s"Sequence Manager can not accept '$messageType' message in '${state}'")
+}

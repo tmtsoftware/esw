@@ -12,7 +12,7 @@ import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg}
+import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
@@ -162,7 +162,9 @@ class SequenceManagerBehavior(
     Behaviors.receiveMessage {
       case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
       case msg: T             => handler(msg)
-      case _                  => Behaviors.unhandled
+      case msg: UnhandleableSequenceManagerMsg =>
+        msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName);
+        Behaviors.same
     }
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =

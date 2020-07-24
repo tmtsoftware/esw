@@ -11,7 +11,11 @@ sealed trait SequenceManagerMsg
 
 sealed trait SequenceManagerRemoteMsg extends SequenceManagerMsg with SmAkkaSerializable
 
-sealed trait SequenceManagerIdleMsg extends SequenceManagerRemoteMsg
+sealed trait UnhandleableSequenceManagerMsg extends SequenceManagerRemoteMsg {
+  def replyTo: ActorRef[Unhandled]
+}
+
+sealed trait SequenceManagerIdleMsg extends SequenceManagerRemoteMsg with UnhandleableSequenceManagerMsg
 sealed trait CommonMessage          extends SequenceManagerRemoteMsg
 
 object SequenceManagerMsg {

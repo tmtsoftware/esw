@@ -12,8 +12,8 @@ import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
 import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
@@ -542,6 +542,53 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       provisionResponseProbe.expectMessage(provisionResponse)
     }
   }
+
+  "Processing -> Unhandled" must {
+    "return Unhandled if msg is unhandled in processing state | ESW-349" in {
+      // hold configure completion by delay of 60 seconds. So SM will remain in processing state
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(60.seconds, Right(List.empty)))
+
+      val configureProbe = TestProbe[ConfigureResponse]()
+
+      assertState(Idle)
+      smRef ! Configure(darkNight, configureProbe.ref)
+
+      // assert that SM is in Processing state
+      assertState(Processing)
+
+      // Assert that following msgs are getting unhandled response back in processing state
+      assertUnhandled(
+        Processing,
+        ShutdownAllSequencers,
+        Configure(clearSkies, _),
+        ShutdownSequencer(ESW, darkNight, _),
+        ShutdownObsModeSequencers(clearSkies, _),
+        ShutdownSubsystemSequencers(ESW, _),
+        StartSequencer(ESW, darkNight, _),
+        RestartSequencer(ESW, darkNight, _),
+        SpawnSequenceComponent(Prefix(ESW, "machine1"), "primary", _),
+        ShutdownSequenceComponent(Prefix(ESW, "primary"), _),
+        ShutdownAllSequenceComponents,
+        Provision
+      )
+    }
+  }
+
+  private def assertUnhandled[T >: Unhandled <: SmResponse](
+      state: SequenceManagerState,
+      msg: ActorRef[T] => UnhandleableSequenceManagerMsg
+  ): Unit = {
+    val probe                  = TestProbe[T]()
+    val sequenceManagerMessage = msg(probe.ref)
+    smRef ! sequenceManagerMessage
+    probe.expectMessage(Unhandled(state.entryName, sequenceManagerMessage.getClass.getSimpleName))
+  }
+
+  private def assertUnhandled[T >: Unhandled <: SmResponse](
+      state: SequenceManagerState,
+      msgs: (ActorRef[T] => UnhandleableSequenceManagerMsg)*
+  ): Unit =
+    msgs.foreach(assertUnhandled(state, _))
 
   private def assertState(state: SequenceManagerState) = {
     val stateProbe = TestProbe[SequenceManagerState]()
