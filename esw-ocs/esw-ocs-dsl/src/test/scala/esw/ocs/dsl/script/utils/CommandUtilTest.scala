@@ -12,7 +12,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
-import esw.commons.{BaseTestSuite, Timeouts}
+import esw.commons.Timeouts
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.{ExecutionException, Future}
 

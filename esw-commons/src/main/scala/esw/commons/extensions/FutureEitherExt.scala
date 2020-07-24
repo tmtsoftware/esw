@@ -9,6 +9,8 @@ import scala.util.control.NonFatal
 object FutureEitherExt {
   implicit class FutureEitherOps[+L, R](private val futureEither: Future[Either[L, R]]) extends AnyVal {
     def mapRight[R1](f: R => R1)(implicit executor: ExecutionContext): Future[Either[L, R1]] = futureEither.map(_.map(f))
+    def mapRightE[L1 >: L, R1](f: R => Either[L1, R1])(implicit executor: ExecutionContext): Future[Either[L1, R1]] =
+      futureEither.flatMapE(r => Future.successful(f(r)))
 
     def mapLeft[L1](f: L => L1)(implicit executor: ExecutionContext): Future[Either[L1, R]] = futureEither.map(_.left.map(f))
 
@@ -18,7 +20,7 @@ object FutureEitherExt {
     def flatMapRight[R1](f: R => Future[R1])(implicit executor: ExecutionContext): Future[Either[L, R1]] =
       flatMapE(f(_).map(Right(_)))
 
-    def flatMapE[R1, L1 >: L](f: R => Future[Either[L1, R1]])(implicit executor: ExecutionContext): Future[Either[L1, R1]] =
+    def flatMapE[L1 >: L, R1](f: R => Future[Either[L1, R1]])(implicit executor: ExecutionContext): Future[Either[L1, R1]] =
       futureEither.flatMap {
         case Left(l)  => Future.successful(Left(l))
         case Right(r) => f(r)

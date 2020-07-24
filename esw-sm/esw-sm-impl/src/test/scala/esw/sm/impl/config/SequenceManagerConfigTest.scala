@@ -1,30 +1,37 @@
 package esw.sm.impl.config
 
 import csw.prefix.models.Subsystem._
+import esw.ocs.api.models.ObsMode
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
 class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeCheckedTripleEquals {
 
-  private val DarkNight             = "darknight"
-  private val ClearSkies            = "clearskies"
-  private val sequencerStartRetries = 1
+  private val DarkNight  = ObsMode("darknight")
+  private val ClearSkies = ObsMode("clearskies")
+
+  private val esw: Resource     = Resource(ESW)
+  private val tcs: Resource     = Resource(TCS)
+  private val aoesw: Resource   = Resource(AOESW)
+  private val iris: Resource    = Resource(IRIS)
+  private val nfiraos: Resource = Resource(NFIRAOS)
+
   private val ConfigMap = Map(
-    DarkNight  -> ObsModeConfig(Resources("r1", "r2"), Sequencers(ESW, TCS)),
-    ClearSkies -> ObsModeConfig(Resources("r3", "r4"), Sequencers(AOESW, IRIS))
+    DarkNight  -> ObsModeConfig(Resources(esw, tcs), Sequencers(ESW, TCS)),
+    ClearSkies -> ObsModeConfig(Resources(aoesw, iris), Sequencers(AOESW, IRIS))
   )
 
   "Resources needed for observing mode" must {
-    "create from strings" in {
-      val resources = Resources("IRIS", "WFOS")
-      resources.resources should ===(Set("IRIS", "WFOS"))
+    "create from one or more resource" in {
+      val resources = Resources(iris, tcs)
+      resources.resources should ===(Set(iris, tcs))
     }
 
-    "check conflictsWithAny resources | ESW-168, ESW-170" in {
-      val resources               = Resources("IRIS", "WFOS")
-      val conflictingResources    = Resources("IRIS", "AOS")
-      val nonConflictingResources = Resources("TCS", "NFIRAOS")
+    "check conflictsWithAny resources | ESW-168, ESW-170, ESW-179" in {
+      val resources               = Resources(iris, esw)
+      val conflictingResources    = Resources(iris, aoesw)
+      val nonConflictingResources = Resources(tcs, nfiraos)
 
       resources.conflictsWithAny(Set(conflictingResources)) should ===(true)
       resources.conflictsWithAny(Set(nonConflictingResources)) should ===(false)
@@ -42,26 +49,26 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
   "Resources for SequenceManagerConfig" must {
 
     "return resources if obsMode present in map | ESW-162" in {
-      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, sequencerStartRetries)
-      sequenceManagerConfig.resources(DarkNight) should ===(Some(Resources("r1", "r2")))
+      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
+      sequenceManagerConfig.resources(DarkNight) should ===(Some(Resources(esw, tcs)))
     }
 
     "return ConfigurationMissing if obsMode not present in map while fetching Resources | ESW-162" in {
-      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, sequencerStartRetries)
-      sequenceManagerConfig.resources("RandomObsMode") should ===(None)
+      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
+      sequenceManagerConfig.resources(ObsMode("RandomObsMode")) should ===(None)
     }
   }
 
   "Sequencers for SequenceManagerConfig" must {
 
     "return sequencers if obsMode present in map | ESW-162" in {
-      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, sequencerStartRetries)
+      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
       sequenceManagerConfig.sequencers(DarkNight) should ===(Some(Sequencers(ESW, TCS)))
     }
 
     "return ConfigurationMissing if obsMode not present in map while fetching Sequencers | ESW-162" in {
-      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, sequencerStartRetries)
-      sequenceManagerConfig.sequencers("RandomObsMode") should ===(None)
+      val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
+      sequenceManagerConfig.sequencers(ObsMode("RandomObsMode")) should ===(None)
     }
   }
 }

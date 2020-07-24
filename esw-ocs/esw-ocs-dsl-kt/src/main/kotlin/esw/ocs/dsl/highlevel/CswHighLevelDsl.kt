@@ -6,6 +6,7 @@ import csw.params.events.EventKey
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
 import esw.commons.utils.location.LocationServiceUtil
+import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.epics.*
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
@@ -33,7 +34,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
     fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =
             Hcd(Prefix(subsystem, compName), defaultTimeout)
 
-    fun Sequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration = 10.hours): RichSequencer
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration = 10.hours): RichSequencer
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
@@ -89,12 +90,12 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
     private fun richComponent(prefix: Prefix, componentType: ComponentType, defaultTimeout: Duration): RichComponent =
             RichComponent(prefix, componentType, lockUnlockUtil, commandUtil, actorSystem, defaultTimeout, coroutineScope)
 
-    private fun richSequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer =
-            RichSequencer(subsystem, observingMode, { s, o -> scriptContext.sequencerApiFactory().apply(s, o) }, defaultTimeout, coroutineScope)
+    private fun richSequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration): RichSequencer =
+            RichSequencer(subsystem, obsMode, { s, o -> scriptContext.sequencerApiFactory().apply(s, o) }, defaultTimeout, coroutineScope)
 
     override fun Assembly(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, Assembly, defaultTimeout)
     override fun Hcd(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, HCD, defaultTimeout)
-    override fun Sequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, observingMode, defaultTimeout)
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, obsMode, defaultTimeout)
 
     /************* Fsm helpers **********/
     override suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm =

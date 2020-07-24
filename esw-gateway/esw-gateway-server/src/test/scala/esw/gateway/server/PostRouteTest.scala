@@ -23,12 +23,12 @@ import csw.params.core.models.{Id, ObsId}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Subsystem.IRIS
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.BaseTestSuite
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
+import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.api.models.{GenericError, ServiceError}
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}

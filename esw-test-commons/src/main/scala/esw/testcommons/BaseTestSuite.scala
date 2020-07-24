@@ -1,4 +1,4 @@
-package esw.commons
+package esw.testcommons
 
 import akka.actor.typed.ActorSystem
 import org.mockito.MockitoSugar

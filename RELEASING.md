@@ -23,6 +23,9 @@ Refer RELEASING.md in `csw` repository.
     **Note** - The version in `notes` should be of format `v1.0.0`
 1. Update top-level `CHANGELOG.md`
 1. Update top-level `README.md`
+1. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `CHANGELOG.md`
+1. Add changes mention in `CHANGELOG.md` of `esw-contract` in the change section of `README.md` of `esw-contract`
+1. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `README.md`
 1. Exclude projects from `build.sbt` which you do not want to release
 1. Update `msocket` and `csw` version in `Lib.scala`  
 1. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)

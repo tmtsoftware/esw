@@ -7,6 +7,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.*
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.isFailed
@@ -20,13 +21,13 @@ import kotlin.time.Duration
 
 class RichSequencer(
         internal val subsystem: Subsystem,
-        private val observingMode: String,
-        private val sequencerApiFactory: (Subsystem, String) -> CompletionStage<SequencerApi>,
+        private val obsMode: ObsMode,
+        private val sequencerApiFactory: (Subsystem, ObsMode) -> CompletionStage<SequencerApi>,
         private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
 
-    private suspend fun sequencerAdmin() = sequencerApiFactory(subsystem, observingMode).await()
+    private suspend fun sequencerAdmin() = sequencerApiFactory(subsystem, obsMode).await()
 
     suspend fun submit(sequence: Sequence, resumeOnError: Boolean = false): SubmitResponse {
         val submitResponse: SubmitResponse = sequencerAdmin().submit(sequence).toJava().await()

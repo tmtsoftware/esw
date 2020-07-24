@@ -6,17 +6,18 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
 
 class OnlineOfflineHandlerTest extends EswTestKit(EventServer) {
 
   private val ocsSubsystem               = ESW
-  private val ocsObservingMode           = "onlineFlag"
+  private val ocsObsMode                 = ObsMode("onlineFlag")
   private var ocsSequencer: SequencerApi = _
 
   override def beforeEach(): Unit = {
-    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObservingMode)
+    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
   }
 
   "onOnline/onOffline handler should be called again if goOnline/goOffline message received while sequencer is online/offline respectively | ESW-287" in {

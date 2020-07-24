@@ -25,25 +25,32 @@ trait KeycloakUtils extends BaseTestSuite {
   lazy val gatewayUser3Password                                = "gateway-user3"
   lazy val gatewayRoleApsEng                                   = "gateway-user4"
   lazy val gatewayUser4Password                                = "gateway-user4"
+  lazy val smRoleEswUserEng                                    = "sm-user1"
+  lazy val smUser1Password                                     = "sm-user1"
   lazy val serverTimeout: FiniteDuration                       = 3.minutes
   lazy val keycloakPort: Int                                   = SocketUtils.getFreePort
   lazy val tokenWithIrisUserIrisEngRoles: () => Option[String] = getToken(gatewayRoleIrisUserIrisEng, gatewayUser1Password)
   lazy val tokenWithTcsUserRole: () => Option[String]          = getToken(gatewayRoleTcsUser, gatewayUser2Password)
   lazy val tokenWithIrisUserRole: () => Option[String]         = getToken(gatewayRoleIrisUser, gatewayUser3Password)
   lazy val tokenWithApsEngRole: () => Option[String]           = getToken(gatewayRoleApsEng, gatewayUser4Password)
+  lazy val tokenWithEswUserRole: () => Option[String]          = getToken(smRoleEswUserEng, smUser1Password)
 
   lazy val irisUserRole = "IRIS-user"
   lazy val irisEngRole  = "IRIS-eng"
   lazy val apsEngRole   = "APS-eng"
   lazy val tcsUserRole  = "TCS-user"
+  lazy val eswUserRole  = "ESW-user"
 
-  private lazy val `esw-gateway-server`: Client = Client(
-    "esw-gateway-server",
-    "bearer-only"
+  private lazy val frontEndClientId = "tmt-frontend-app"
+
+  private lazy val `tmt-frontend-app`: Client =
+    Client(frontEndClientId, "public", implicitFlowEnabled = true, passwordGrantEnabled = true, authorizationEnabled = false)
+
+  private lazy val userWithEswUserRole = ApplicationUser(
+    smRoleEswUserEng,
+    smUser1Password,
+    realmRoles = Set(eswUserRole)
   )
-
-  private lazy val `esw-gateway-client`: Client =
-    Client("esw-gateway-client", "public", implicitFlowEnabled = true, passwordGrantEnabled = true, authorizationEnabled = false)
 
   private lazy val userWithIrisEngAndIrisUserRole = ApplicationUser(
     gatewayRoleIrisUserIrisEng,
@@ -73,16 +80,17 @@ trait KeycloakUtils extends BaseTestSuite {
     userWithIrisEngAndIrisUserRole,
     userWithTcsUserRole,
     userWithIrisUserRole,
-    userWithApsEngRole
+    userWithApsEngRole,
+    userWithEswUserRole
   )
   private lazy val defaultGatewayData: KeycloakData = KeycloakData(
     AdminUser("admin", "admin"),
     realms = Set(
       Realm(
-        "TMT-test",
-        clients = Set(`esw-gateway-server`, `esw-gateway-client`),
+        "TMT",
+        clients = Set(`tmt-frontend-app`),
         users = users,
-        realmRoles = Set(irisUserRole, irisEngRole, tcsUserRole, apsEngRole)
+        realmRoles = Set(irisUserRole, irisEngRole, tcsUserRole, apsEngRole, eswUserRole)
       )
     )
   )
@@ -102,7 +110,7 @@ trait KeycloakUtils extends BaseTestSuite {
     keycloakStopHandle.foreach(_.stop())
   }
 
-  def getToken(tokenUserName: String, tokenPassword: String, client: String = "esw-gateway-client"): () => Some[String] = { () =>
+  def getToken(tokenUserName: String, tokenPassword: String, client: String = frontEndClientId): () => Some[String] = { () =>
     Some(
       BearerToken
         .fromServer(
@@ -110,7 +118,7 @@ trait KeycloakUtils extends BaseTestSuite {
           port = keycloakPort,
           username = tokenUserName,
           password = tokenPassword,
-          realm = "TMT-test",
+          realm = "TMT",
           client = client
         )
         .token

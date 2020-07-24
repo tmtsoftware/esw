@@ -10,11 +10,12 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError.LocationServiceError
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation}
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.ExecutionContext
 
@@ -32,7 +33,7 @@ class SequenceComponentImplTest extends BaseTestSuite {
     case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse; Behaviors.same
     case GetStatus(replyTo)        => replyTo ! getStatusResponse; Behaviors.same
     case UnloadScript(replyTo)     => replyTo ! Ok; Behaviors.same
-    case Restart(replyTo)          => replyTo ! restartResponse; Behaviors.same
+    case RestartScript(replyTo)    => replyTo ! restartResponse; Behaviors.same
     case Stop                      => Behaviors.stopped
     case Shutdown(replyTo)         => replyTo ! Ok; Behaviors.stopped
   }
@@ -46,11 +47,11 @@ class SequenceComponentImplTest extends BaseTestSuite {
   private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponentLocation)
 
   "LoadScript | ESW-103" in {
-    sequenceComponentClient.loadScript(Subsystem.ESW, "darknight").futureValue should ===(loadScriptResponse)
+    sequenceComponentClient.loadScript(Subsystem.ESW, ObsMode("darknight")).futureValue should ===(loadScriptResponse)
   }
 
   "Restart | ESW-141" in {
-    sequenceComponentClient.restart().futureValue should ===(restartResponse)
+    sequenceComponentClient.restartScript().futureValue should ===(restartResponse)
   }
 
   "GetStatus | ESW-103" in {

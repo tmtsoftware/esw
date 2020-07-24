@@ -15,6 +15,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.UnloadScript
+import esw.ocs.api.models.ObsMode
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.Await
@@ -31,7 +32,7 @@ object TestClient extends App {
   implicit val sched: Scheduler = system.scheduler
 
   private val akkaLocation: AkkaLocation = new LocationServiceUtil(_locationService)
-    .findSequencer(IRIS, "darknight")
+    .findSequencer(IRIS, ObsMode("darknight"))
     .futureValue
     .toOption
     .get

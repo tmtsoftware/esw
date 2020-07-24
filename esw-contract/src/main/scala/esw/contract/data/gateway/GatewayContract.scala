@@ -2,6 +2,7 @@ package esw.contract.data.gateway
 
 import akka.Done
 import csw.alarm.models.AlarmSeverity
+import csw.contract.ResourceFetcher
 import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
 import csw.logging.models.LogMetadata
@@ -20,21 +21,12 @@ import esw.gateway.api.protocol.PostRequest.{
   SetLogLevel
 }
 import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
-import esw.gateway.api.protocol.{
-  EmptyEventKeys,
-  EventServerUnavailable,
-  GatewayException,
-  InvalidComponent,
-  InvalidMaxFrequency,
-  PostRequest,
-  SetAlarmSeverityFailure,
-  WebsocketRequest
-}
+import esw.gateway.api.protocol._
 import esw.ocs.api.protocol.OkOrUnhandledResponse
-import io.bullet.borer.Encoder
 
 object GatewayContract extends GatewayCodecs with GatewayData {
-  val models: ModelSet = ModelSet(
+
+  private val models: ModelSet = ModelSet.models(
     ModelType[Event](observeEvent, systemEvent),
     ModelType(AlarmSeverity),
     ModelType(prefix),
@@ -51,10 +43,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     )
   )
 
-  implicit def httpEnc[Sub <: PostRequest]: Encoder[Sub]           = SubTypeCodec.encoder(postRequestValue)
-  implicit def websocketEnc[Sub <: WebsocketRequest]: Encoder[Sub] = SubTypeCodec.encoder(websocketRequestCodecValue)
-
-  val httpRequests: ModelSet = ModelSet(
+  private val httpRequests: ModelSet = ModelSet.requests[PostRequest](
     ModelType(postComponentCommand),
     ModelType(postSequencerCommand),
     ModelType(publishEvent),
@@ -65,14 +54,14 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     ModelType(getLogMetadata)
   )
 
-  val websocketRequests: ModelSet = ModelSet(
+  private val websocketRequests: ModelSet = ModelSet.requests[WebsocketRequest](
     ModelType(websocketComponentCommand),
     ModelType(websocketSequencerCommand),
     ModelType(subscribe),
     ModelType(subscribeWithPattern)
   )
 
-  val httpEndpoints: List[Endpoint] = List(
+  private val httpEndpoints: List[Endpoint] = List(
     Endpoint(
       name[ComponentCommand],
       name[ValidateResponse],
@@ -97,7 +86,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     Endpoint(name[GetLogMetadata], name[LogMetadata])
   )
 
-  val webSocketEndpoints: List[Endpoint] = List(
+  private val webSocketEndpoints: List[Endpoint] = List(
     Endpoint(
       name[WebsocketRequest.ComponentCommand],
       name[SubmitResponse],
@@ -116,9 +105,12 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     Endpoint(name[SubscribeWithPattern], name[Event], List(name[InvalidMaxFrequency]))
   )
 
+  private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("gateway-service/README.md"))
+
   val service: Service = Service(
     `http-contract` = Contract(httpEndpoints, httpRequests),
     `websocket-contract` = Contract(webSocketEndpoints, websocketRequests),
-    models = models
+    models = models,
+    readme = readme
   )
 }

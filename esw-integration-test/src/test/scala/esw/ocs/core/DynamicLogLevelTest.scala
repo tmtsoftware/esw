@@ -8,6 +8,7 @@ import csw.logging.models.codecs.LoggingCodecs
 import csw.prefix.models.Subsystem.ESW
 import esw.gateway.api.clients.AdminClient
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
@@ -17,7 +18,7 @@ class DynamicLogLevelTest extends EswTestKit(Gateway) with LoggingCodecs with Ga
   override def beforeAll(): Unit = {
     super.beforeAll()
     LoggingSystemFactory.start("logging", "version", "localhost", actorSystem)
-    sequencerLocation = spawnSequencer(ESW, "darknight")
+    sequencerLocation = spawnSequencer(ESW, ObsMode("darknight"))
   }
 
   "get/set log level for sequencer dynamically using gateway | ESW-183" in {

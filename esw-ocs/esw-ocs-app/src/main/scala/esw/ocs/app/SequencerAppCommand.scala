@@ -4,6 +4,7 @@ import caseapp.core.Error
 import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, HelpMessage, ExtraName => Short}
 import csw.prefix.models.Subsystem
+import esw.ocs.api.models.ObsMode
 
 import scala.util.Try
 
@@ -18,6 +19,11 @@ object SequencerAppCommand {
     SimpleArgParser.from[Subsystem]("subsystem") { subsystemStr =>
       Try(Right(Subsystem.withNameInsensitive(subsystemStr)))
         .getOrElse(Left(Error.Other(s"Subsystem [$subsystemStr] is invalid")))
+    }
+
+  implicit val obsModeParser: SimpleArgParser[ObsMode] =
+    SimpleArgParser.from[ObsMode]("obsMode") { obsModeName =>
+      Right(ObsMode(obsModeName))
     }
 
   @CommandName("seqcomp")
@@ -42,7 +48,10 @@ object SequencerAppCommand {
       seqSubsystem: Option[Subsystem],
       @HelpMessage("observing mode, ex: darknight")
       @Short("m")
-      mode: String
+      obsMode: ObsMode,
+      @HelpMessage("simulation mode")
+      @Short("simulation")
+      simulation: Boolean = false
   ) extends SequencerAppCommand
 
 }

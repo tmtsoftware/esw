@@ -14,6 +14,7 @@ import csw.prefix.models.Subsystem.{CSW, ESW}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, OkOrUnhandled, ScriptResponseOrUnhandled, SequencerLocation}
 import esw.ocs.testkit.EswTestKit
@@ -45,7 +46,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val probe      = TestProbe[ScriptResponseOrUnhandled]()
-      seqCompRef ! LoadScript(ESW, "darknight", probe.ref)
+      seqCompRef ! LoadScript(ESW, ObsMode("darknight"), probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
       val response          = probe.expectMessageType[SequencerLocation]
@@ -105,7 +106,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val subsystem               = "ESW"
       val name                    = "primary"
       val unexpectedSubsystem     = CSW
-      val observingMode           = "darknight"
+      val obsMode                 = ObsMode("darknight")
       val sequenceComponentPrefix = Prefix(ESW, name)
 
       // start Sequence Component
@@ -121,7 +122,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val loadScriptResponse: ScriptResponseOrUnhandled =
         seqCompRef
-          .ask((ref: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(unexpectedSubsystem, observingMode, ref))(
+          .ask((ref: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(unexpectedSubsystem, obsMode, ref))(
             timeout,
             schedulerFromActorSystem
           )
@@ -130,7 +131,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       loadScriptResponse match {
         case error: ScriptError.LoadingScriptFailed =>
           error shouldEqual ScriptError.LoadingScriptFailed(
-            s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]"
+            s"Script configuration missing for [${unexpectedSubsystem.name}] with [${obsMode.name}]"
           )
         case _ => throw new RuntimeException("test failed as this test expects ScriptError")
       }
@@ -157,17 +158,17 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val subsystem          = "ESW"
       val name               = "primary"
       val sequencerSubsystem = "esw"
-      val observingMode      = "darknight"
+      val obsMode            = "darknight"
 
       // start Sequencer"
-      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", sequencerSubsystem, "-m", observingMode))
+      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", sequencerSubsystem, "-m", obsMode))
 
       // verify sequence component is started and can be resolved
       val sequenceComponentPrefix = Prefix(s"$subsystem.$name")
       resolveSequenceComponentLocation(sequenceComponentPrefix)
 
       // verify that sequencer is started and able to process sequence command
-      val connection        = AkkaConnection(ComponentId(Prefix(ESW, observingMode), ComponentType.Sequencer))
+      val connection        = AkkaConnection(ComponentId(Prefix(ESW, obsMode), ComponentType.Sequencer))
       val sequencerLocation = locationService.resolve(connection, 5.seconds).futureValue.value
 
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
@@ -177,11 +178,11 @@ class SequencerAppIntegrationTest extends EswTestKit {
     }
 
     "start sequencer with provided mandatory subsystem, mode register it with location service | ESW-103, ESW-279" in {
-      val subsystem     = "ESW"
-      val observingMode = "darknight"
+      val subsystem = "ESW"
+      val obsMode   = "darknight"
 
       // start Sequencer
-      SequencerApp.main(Array("sequencer", "-s", subsystem, "-m", observingMode))
+      SequencerApp.main(Array("sequencer", "-s", subsystem, "-m", obsMode))
 
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
@@ -189,20 +190,33 @@ class SequencerAppIntegrationTest extends EswTestKit {
       sequenceComponentLocation.prefix.toString.contains("ESW.ESW_") shouldEqual true
 
       // verify that sequencer is started and able to process sequence command
-      resolveSequencerLocation(Prefix(ESW, observingMode))
+      resolveSequencerLocation(Prefix(ESW, obsMode))
     }
 
     "throw exception if ScriptError is returned | ESW-102, ESW-136, ESW-279" in {
       val subsystem           = "esw"
       val name                = "primary"
       val unexpectedSubsystem = "CSW"
-      val observingMode       = "darknight"
+      val obsMode             = "darknight"
 
       val exception = intercept[RuntimeException] {
-        SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", unexpectedSubsystem, "-m", observingMode))
+        SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", unexpectedSubsystem, "-m", obsMode))
       }
 
-      exception.getMessage shouldEqual s"Failed to start with error: Script configuration missing for [$unexpectedSubsystem] with [$observingMode]"
+      exception.getMessage shouldEqual s"Failed to start with error: Script configuration missing for [$unexpectedSubsystem] with [$obsMode]"
+    }
+
+    "start sequencer in simulation mode | ESW-149" in {
+      val subsystem = "esw"
+      val name      = "primary"
+      val obsMode   = "random"
+
+      //there is no script for esw.random mode but sequencer should start with esw.random as a simulation script
+      //starting sequencer in simulation mode
+      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-m", obsMode, "--simulation"))
+
+      // assert sequencer has started
+      resolveSequencerLocation(Prefix(ESW, obsMode))
     }
   }
 }

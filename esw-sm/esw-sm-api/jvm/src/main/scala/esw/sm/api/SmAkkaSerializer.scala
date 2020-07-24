@@ -7,6 +7,7 @@ import csw.commons.CborAkkaSerializer
 import esw.sm.api.actor.codecs.SequenceManagerMsgCodecs
 import esw.sm.api.actor.messages.SequenceManagerRemoteMsg
 import esw.sm.api.codecs.SmAkkaSerializable
+import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.protocol._
 
 class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
@@ -17,12 +18,14 @@ class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
   override def identifier: Int = 29945
 
   register[SequenceManagerRemoteMsg]
-  register[CleanupResponse]
   register[StartSequencerResponse]
-  register[ShutdownSequencerResponse]
+  register[ShutdownSequenceComponentResponse]
   register[RestartSequencerResponse]
-  register[ShutdownAllSequencersResponse]
+  register[ShutdownSequencersResponse]
   register[GetRunningObsModesResponse]
+  register[SpawnSequenceComponentResponse]
   register[ConfigureResponse]
+  register[AgentStatusResponse]
   register[SequenceManagerState]
+  register[ProvisionResponse]
 }

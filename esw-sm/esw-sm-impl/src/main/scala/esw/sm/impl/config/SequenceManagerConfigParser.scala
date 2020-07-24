@@ -2,7 +2,7 @@ package esw.sm.impl.config
 
 import java.nio.file.Path
 
-import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
+import com.typesafe.config.ConfigRenderOptions
 import csw.config.client.commons.ConfigUtils
 import io.bullet.borer._
 
@@ -12,19 +12,21 @@ import scala.concurrent.{ExecutionContext, Future}
 //(Map observing mode to Resources and Sequencers)
 class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
   import ConfigCodecs._
+  private val EswSmKey           = "esw-sm"
+  private val ObsModesKey        = "obsModes"
+  private val ProvisionConfigKey = "provision"
 
-  private val ESW_SM                  = "esw-sm"
-  private val SEQUENCER_START_RETRIES = "sequencerStartRetries"
+  def readObsModeConfig(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
+    readConfig[SequenceManagerConfig](ObsModesKey, configFilePath, isLocal)
+
+  def readProvisionConfig(configFilePath: Path, isLocal: Boolean): Future[ProvisionConfig] =
+    readConfig[ProvisionConfig](ProvisionConfigKey, configFilePath, isLocal)
 
   // Reads config file from config service or local filesystem
-  def read(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
-    configUtils.getConfig(configFilePath, isLocal).map(parseConfig)
-
-  private def parseConfig(config: Config): SequenceManagerConfig = {
-    // pick retries from provided config. If not present then pick from application.conf of esw-sm-app as fallback
-    val configWithRetries = config.withFallback(ConfigFactory.load().withOnlyPath(s"$ESW_SM.$SEQUENCER_START_RETRIES"))
-    val configStr         = configWithRetries.getConfig(ESW_SM).root().render(ConfigRenderOptions.concise())
-
-    Json.decode(configStr.getBytes).to[SequenceManagerConfig].value
+  private def readConfig[T: Decoder](key: String, configFilePath: Path, isLocal: Boolean): Future[T] = {
+    configUtils.getConfig(configFilePath, isLocal).map { config =>
+      val configStr = config.getConfig(s"$EswSmKey.$key").root().render(ConfigRenderOptions.concise())
+      Json.decode(configStr.getBytes).to[T].value
+    }
   }
 }

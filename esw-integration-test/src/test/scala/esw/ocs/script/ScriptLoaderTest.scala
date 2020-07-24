@@ -10,6 +10,7 @@ import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.core.SequenceOperator
@@ -27,7 +28,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val sequenceOperatorFactory = () => mock[SequenceOperator]
   private val iEventService           = mock[IEventService]
   private val iAlarmService           = mock[IAlarmService]
-  private val sequencerClientFactory  = mock[(Subsystem, String) => CompletionStage[SequencerApi]]
+  private val sequencerClientFactory  = mock[(Subsystem, ObsMode) => CompletionStage[SequencerApi]]
   private val prefix                  = mock[Prefix]
   private val config                  = mock[Config]
   private val heartbeatInterval       = Duration.ofSeconds(3)
@@ -49,7 +50,7 @@ class ScriptLoaderTest extends BaseTestSuite {
 
   "load" must {
 
-    "load script class if subsystem and observingMode is provided | ESW-102, ESW-136" in {
+    "load script class if subsystem and obsMode is provided | ESW-102, ESW-136" in {
       val loader: ScriptApi =
         ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", scriptContext)
       loader shouldBe a[ScriptDsl]

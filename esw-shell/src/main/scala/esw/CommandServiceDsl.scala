@@ -13,6 +13,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerImpl
+import esw.ocs.api.models.ObsMode
 
 import scala.concurrent.Future
 
@@ -22,9 +23,9 @@ class CommandServiceDsl(val shellWiring: ShellWiring) {
   import typedSystem.executionContext
   private val locationUtil: LocationServiceUtil = new LocationServiceUtil(shellWiring.cswContext.locationService)
 
-  def sequencerCommandService(subsystem: Subsystem, observingMode: String): SequencerApi =
+  def sequencerCommandService(subsystem: Subsystem, obsMode: ObsMode): SequencerApi =
     locationUtil
-      .findSequencer(subsystem, observingMode)
+      .findSequencer(subsystem, obsMode)
       .map(e => new SequencerImpl(throwLeft(e).sequencerRef))
       .await()
 

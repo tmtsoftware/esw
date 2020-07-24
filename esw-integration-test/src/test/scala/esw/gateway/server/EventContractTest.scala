@@ -14,7 +14,7 @@ import esw.gateway.api.protocol.GatewayException
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
-class EventGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
+class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
   //Event
   private val a1: Array[Int] = Array(1, 2, 3, 4, 5)

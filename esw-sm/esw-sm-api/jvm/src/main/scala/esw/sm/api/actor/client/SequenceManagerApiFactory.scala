@@ -3,7 +3,7 @@ package esw.sm.api.actor.client
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
-import csw.location.api.models.{AkkaLocation, HttpLocation, Location, TcpLocation}
+import csw.location.api.models.{AkkaLocation, HttpLocation}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.client.SequenceManagerClient
 import esw.sm.api.codecs.SequenceManagerHttpCodec
@@ -13,21 +13,18 @@ import msocket.impl.post.HttpPostTransport
 
 object SequenceManagerApiFactory {
 
-  def make(location: Location)(implicit actorSystem: ActorSystem[_]): SequenceManagerApi = {
-    location match {
-      case _: TcpLocation =>
-        throw new RuntimeException("Only AkkaLocation and HttpLocation can be used to access SequenceManager")
-      case akkaLoc: AkkaLocation => new SequenceManagerImpl(akkaLoc)
-      case httpLoc: HttpLocation => httpClient(httpLoc)
-    }
-  }
+  // todo: should this be exposed to all?
+  def makeAkkaClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]): SequenceManagerApi =
+    new SequenceManagerImpl(akkaLocation)
 
-  private def httpClient(httpLocation: HttpLocation)(implicit actorSystem: ActorSystem[_]): SequenceManagerClient = {
+  def makeHttpClient(httpLocation: HttpLocation, tokenFactory: () => Option[String])(implicit
+      actorSystem: ActorSystem[_]
+  ): SequenceManagerApi = {
     import SequenceManagerHttpCodec._
 
     val baseUri    = httpLocation.uri.toString
     val postUri    = Uri(baseUri).withPath(Path("/post-endpoint")).toString()
-    val postClient = new HttpPostTransport[SequenceManagerPostRequest](postUri, ContentType.Json, () => None)
+    val postClient = new HttpPostTransport[SequenceManagerPostRequest](postUri, ContentType.Json, tokenFactory)
     new SequenceManagerClient(postClient)
   }
 }

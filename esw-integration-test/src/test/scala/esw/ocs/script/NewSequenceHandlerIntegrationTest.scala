@@ -9,12 +9,13 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.LGSF
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
 
 class NewSequenceHandlerIntegrationTest extends EswTestKit(EventServer) {
 
-  private val obsMode  = "darknight"
+  private val obsMode  = ObsMode("darknight")
   private val command  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val sequence = Sequence(command)
 

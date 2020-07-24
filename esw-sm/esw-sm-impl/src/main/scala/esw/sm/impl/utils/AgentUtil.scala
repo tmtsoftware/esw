@@ -1,60 +1,102 @@
 package esw.sm.impl.utils
 
-import akka.actor.typed.ActorSystem
-import csw.location.api.models.ComponentId
+import akka.actor.typed.{ActorSystem, Scheduler}
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.{Prefix, Subsystem}
-import esw.agent.api.{Failed, Spawned}
+import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.prefix.models.Prefix
+import esw.agent.api._
 import esw.agent.client.AgentClient
-import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.utils.location.EswLocationError.LocationNotFound
-import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
-import esw.ocs.api.SequenceComponentApi
-import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.sm.api.protocol.AgentError
+import esw.commons.utils.location.LocationServiceUtil
+import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, AgentToSeqCompsMap}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.SpawnSequenceComponentResponse.{SpawnSequenceComponentFailed, Success}
+import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse, SpawnSequenceComponentResponse}
+import esw.sm.impl.config.ProvisionConfig
 
 import scala.concurrent.Future
-import scala.util.Random
 
-class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
+class AgentUtil(
+    locationServiceUtil: LocationServiceUtil,
+    sequenceComponentUtil: SequenceComponentUtil,
+    agentAllocator: AgentAllocator
+)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
-  def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
-    val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
-    getAgent
-      .mapLeft(error => LocationServiceError(error.msg))
-      .flatMapE(spawnSeqComp(_, sequenceComponentPrefix))
-  }
-
-  private[utils] def getAgent: Future[Either[EswLocationError, AgentClient]] = {
+  def getAllAgentStatus: Future[AgentStatusResponse] =
     locationServiceUtil
-      .listAkkaLocationsBy(ESW, Machine)
-      // find ESW agent randomly from list of ESW agents (machines).
-      // If this ESW machine fails to spawn sequence component, in retry attempt randomly picking ESW agent would help.
-      // if locations are empty then locations(Random.nextInt(locations.length)).prefix will throw exception,
-      // it is handled in mapError block
-      .flatMapRight(locations => makeAgent(locations(Random.nextInt(locations.length)).prefix))
-      .mapError(_ => LocationNotFound(s"Could not find agent matching $ESW"))
+      .listAkkaLocationsBy(Machine)
+      .flatMapRight(getSequenceComponentsRunningOn(_).flatMap(getAllSeqCompsStatus))
+      .mapToAdt(agentStatusList => AgentStatusResponse.Success(agentStatusList), e => LocationServiceError(e.msg))
+
+  private def getAllSeqCompsStatus(agentToSeqCompsList: List[AgentToSeqCompsMap]): Future[List[AgentSeqCompsStatus]] = {
+    Future.traverse(agentToSeqCompsList) { agentToSeqComp =>
+      sequenceComponentUtil
+        .getSequenceComponentStatus(agentToSeqComp.seqComps)
+        .map(seqCompStatus => AgentSeqCompsStatus(agentToSeqComp.agentId, seqCompStatus))
+    }
   }
 
-  private[utils] def makeAgent(prefix: Prefix): Future[AgentClient] =
-    AgentClient.make(prefix, locationServiceUtil.locationService)
+  def spawnSequenceComponent(machine: Prefix, seqCompName: String): Future[SpawnSequenceComponentResponse] =
+    getAgent(machine).flatMapToAdt(spawnSeqComp(_, Prefix(machine.subsystem, seqCompName)), identity)
+
+  def provision(provisionConfig: ProvisionConfig): Future[ProvisionResponse] =
+    locationServiceUtil
+      .listAkkaLocationsBy(Machine)
+      .mapLeft(e => LocationServiceError(e.msg))
+      .flatMapE(provisionOn(_, provisionConfig))
+      .mapToAdt(spawnResToProvisionRes, identity)
+
+  private def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[List[AgentToSeqCompsMap]] =
+    Future
+      .traverse(agents) { agent =>
+        makeAgentClient(agent).getAgentStatus
+          .map(filterRunningSeqComps)
+          .map(seqComps => AgentToSeqCompsMap(agent.connection.componentId, seqComps))
+      }
+
+  private def provisionOn(machines: List[AkkaLocation], provisionConfig: ProvisionConfig) =
+    Future
+      .successful(agentAllocator.allocate(provisionConfig, machines))
+      .flatMapRight(spawnComponentsByMapping)
+
+  private def spawnComponentsByMapping(mappings: List[(Prefix, AkkaLocation)]) =
+    Future.traverse(mappings) { case (prefix, machine) => makeAgentClient(machine).spawnSequenceComponent(prefix) }
+
+  private def spawnResToProvisionRes(responses: List[SpawnResponse]): ProvisionResponse = {
+    // todo: error msg should have which component failed and on which machine and remove this object creation
+    val failedResponses = responses.collect { case Failed(msg) => SpawnSequenceComponentFailed(msg) }
+
+    if (failedResponses.isEmpty) ProvisionResponse.Success
+    else ProvisionResponse.SpawningSequenceComponentsFailed(failedResponses.map(_.msg))
+  }
 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
       .spawnSequenceComponent(seqCompPrefix)
-      .flatMap {
-        case Spawned     => resolveSeqComp(seqCompPrefix)
-        case Failed(msg) => Future.successful(Left(AgentError.SpawnSequenceComponentFailed(msg)))
+      .map {
+        case Spawned     => Success(ComponentId(seqCompPrefix, SequenceComponent))
+        case Failed(msg) => SpawnSequenceComponentFailed(msg)
       }
 
-  private def resolveSeqComp(seqCompPrefix: Prefix) =
+  private[utils] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =
     locationServiceUtil
-      .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), within = Timeouts.DefaultResolveLocationDuration)
-      .mapRight(loc => new SequenceComponentImpl(loc))
-      .mapLeft(e => LocationServiceError(e.msg))
+      .find(AkkaConnection(ComponentId(prefix, Machine)))
+      .mapRight(location => makeAgentClient(location))
+      .mapLeft(error => LocationServiceError(error.msg))
+
+  private[utils] def makeAgentClient(loc: AkkaLocation): AgentClient = {
+    implicit val sch: Scheduler = actorSystem.scheduler
+    new AgentClient(loc)
+  }
+
+  private def filterRunningSeqComps(agentStatus: AgentStatus) =
+    agentStatus.componentStatus
+      .filter { case (compId, status) => isRunningSeqComp(compId, status) }
+      .keys
+      .toList
+
+  private def isRunningSeqComp(compId: ComponentId, status: ComponentStatus) =
+    compId.componentType == SequenceComponent && status == ComponentStatus.Running
 }

@@ -8,6 +8,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLo
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
+import esw.ocs.api.models.ObsMode
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,11 +27,11 @@ trait LocationUtils extends BaseTestSuite {
 
   def resolveSequencerLocation(prefix: Prefix): AkkaLocation = resolveAkkaLocation(prefix, ComponentType.Sequencer)
 
-  def resolveSequencerLocation(subsystem: Subsystem, observingMode: String): AkkaLocation =
-    resolveSequencerLocation(Prefix(subsystem, observingMode))
+  def resolveSequencerLocation(subsystem: Subsystem, obsMode: ObsMode): AkkaLocation =
+    resolveSequencerLocation(Prefix(subsystem, obsMode.name))
 
-  def resolveSequencer(subsystem: Subsystem, observingMode: String): ActorRef[SequencerMsg] =
-    resolveSequencerLocation(subsystem, observingMode).uri.toActorRef.unsafeUpcast[SequencerMsg]
+  def resolveSequencer(subsystem: Subsystem, obsMode: ObsMode): ActorRef[SequencerMsg] =
+    resolveSequencerLocation(subsystem, obsMode).uri.toActorRef.unsafeUpcast[SequencerMsg]
 
   def resolveSequenceComponentLocation(prefix: Prefix): AkkaLocation =
     resolveAkkaLocation(prefix, ComponentType.SequenceComponent)

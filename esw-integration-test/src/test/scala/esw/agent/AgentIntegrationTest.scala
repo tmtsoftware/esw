@@ -5,42 +5,42 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.IRIS
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
 import esw.agent.app.AgentSettings
-import esw.agent.app.process.cs.Coursier
 import esw.agent.client.AgentClient
+import esw.ocs.api.actor.client.SequenceComponentImpl
+import esw.ocs.api.models.ObsMode
+import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
-import org.scalatest.BeforeAndAfterAll
+import esw.{BinaryFetcherUtil, GitUtil}
 
 import scala.concurrent.duration.DurationLong
 
-class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with LocationServiceCodecs {
+class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
 
-  private lazy val agentClient      = AgentClient.make(agentPrefix, locationService).futureValue
-  private val irisPrefix            = Prefix("esw.iris")
-  private val irisCompId            = ComponentId(irisPrefix, SequenceComponent)
-  private val irisSeqCompConnection = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
-  private val redisPrefix           = Prefix(s"esw.event_server")
-  private val redisCompId           = ComponentId(redisPrefix, Service)
-  private val appVersion            = Some("0f56561")
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
+  private val irisPrefix               = Prefix("esw.iris")
+  private val irisCompId               = ComponentId(irisPrefix, SequenceComponent)
+  private val irisSeqCompConnection    = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
+  private val redisPrefix              = Prefix(s"esw.event_server")
+  private val redisCompId              = ComponentId(redisPrefix, Service)
+  private val appVersion               = GitUtil.latestCommitSHA("esw")
+  private var agentPrefix: Prefix      = _
+  private var agentClient: AgentClient = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val channel = "file://" + getClass.getResource("/apps.json").getPath
-    spawnAgent(AgentSettings(1.minute, channel))
-
-    // provision app binary for specified version
-    new ProcessBuilder(Coursier.ocsApp(appVersion).fetch(channel): _*)
-      .inheritIO()
-      .start()
-      .waitFor()
+    val channel: String = "file://" + getClass.getResource("/apps.json").getPath
+    agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
+    BinaryFetcherUtil.fetchBinaryFor(channel, Some(appVersion))
+    agentClient = AgentClient.make(agentPrefix, locationService).futureValue
   }
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
+
   //ESW-325: spawns sequence component via agent using coursier with provided sha
-  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, appVersion)
+  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some(appVersion))
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
@@ -48,10 +48,19 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
       agentLocation should not be empty
     }
 
-    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message | ESW-237, ESW-276, ESW-325" in {
+    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325" in {
+      val darknight = ObsMode("darknight")
       spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
       // Verify registration in location service
-      locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should not be empty
+      val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
+      seqCompLoc.connection shouldBe irisSeqCompConnection
+
+      // start sequencer i.e. load IRIS darknight script
+      val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
+      val loadScriptResponse = seqCompApi.loadScript(IRIS, darknight).futureValue
+
+      // verify sequencer location from load script and looked up from location service is the same
+      loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
 
       agentClient.killComponent(ComponentId(irisPrefix, SequenceComponent)).futureValue should ===(Killed)
       // Verify not registered in location service

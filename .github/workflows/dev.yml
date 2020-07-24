@@ -40,6 +40,20 @@ jobs:
       - name: Install Redis
         run: sudo apt-get install redis-server
 
+      - name: Install CS native
+        run: |
+          curl -fLo cs https://git.io/coursier-cli-linux
+          chmod +x cs
+          sudo mv cs /usr/local/bin
+          cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json
+
+      - name: Install Kotlin
+        run: |
+          curl -s https://get.sdkman.io | bash
+          source "/home/runner/.sdkman/bin/sdkman-init.sh"
+          sdk install kotlin
+          sudo ln -s $(which kotlinc) /usr/local/bin/kotlinc
+
       - name: Build
         run: |
           sbt scalafmtCheck
@@ -47,7 +61,7 @@ jobs:
           sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Tests
-        run: sbt -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
@@ -67,7 +81,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          ./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json rtm:d1c8c7e -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+          ./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
 
       - name: Upload RTM
         if: always()
