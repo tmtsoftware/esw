@@ -379,7 +379,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     locationService.list(SequenceComponent).futureValue should ===(List.empty)
   }
 
-  "provision should start sequence components as mentioned in config file | ESW-346" in {
+  "provision should start sequence components as mentioned in config file | ESW-346" ignore {
     val path: Path      = Paths.get(ClassLoader.getSystemResource("smProvisionConfig.conf").toURI)
     val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix, provisionConfigPath = path)
 
