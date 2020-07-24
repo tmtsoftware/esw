@@ -57,9 +57,9 @@ object TestSetup extends EswTestKit {
       tokenFactory: () => Option[String]
   ): SequenceManagerApi = {
     val authConfigS = """
-      |auth-config { 
-      |  realm = TMT-test
-      |  client-id = esw-sequence-manager
+      |auth-config {
+      |  realm = TMT
+      |  client-id = tmt-backend-app
       |}""".stripMargin
 
     val _system: ActorSystem[SpawnProtocol.Command] =
