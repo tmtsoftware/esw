@@ -3,8 +3,8 @@ package esw.sm.api.actor.messages
 import akka.actor.typed.ActorRef
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.SequenceManagerState
 import esw.sm.api.codecs.SmAkkaSerializable
+import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.protocol._
 
 sealed trait SequenceManagerMsg

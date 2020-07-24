@@ -1,4 +1,4 @@
-package esw.sm.api.protocol
+package esw.sm.api.models
 
 import csw.location.api.models.{AkkaLocation, ComponentId}
 

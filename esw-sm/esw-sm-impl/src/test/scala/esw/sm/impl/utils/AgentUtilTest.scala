@@ -14,7 +14,7 @@ import esw.agent.api.{AgentStatus, Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ProvisionResponse.NoMachineFoundForSubsystems
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed

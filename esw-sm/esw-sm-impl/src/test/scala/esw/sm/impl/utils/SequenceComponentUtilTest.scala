@@ -17,7 +17,7 @@ import esw.ocs.api.models.SequenceComponentState.Running
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
-import esw.sm.api.protocol.AgentStatusResponses.SequenceComponentStatus
+import esw.sm.api.models.AgentStatusResponses.SequenceComponentStatus
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}

@@ -9,9 +9,9 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.protocol.AgentStatusResponses.AgentSeqCompsStatus
+import esw.sm.api.models.AgentStatusResponses.AgentSeqCompsStatus
+import esw.sm.api.models.SequenceManagerState.Idle
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 

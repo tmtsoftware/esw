@@ -12,11 +12,11 @@ import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.SequenceManagerState
+import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed

@@ -2,9 +2,9 @@ package esw.sm.api.actor.codecs
 
 import csw.command.client.cbor.MessageCodecs
 import csw.prefix.codecs.CommonCodecs
-import esw.sm.api.SequenceManagerState
 import esw.sm.api.actor.messages.SequenceManagerRemoteMsg
 import esw.sm.api.codecs.SequenceManagerCodecs
+import esw.sm.api.models.SequenceManagerState
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 

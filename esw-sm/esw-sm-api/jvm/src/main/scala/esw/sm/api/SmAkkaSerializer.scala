@@ -7,6 +7,7 @@ import csw.commons.CborAkkaSerializer
 import esw.sm.api.actor.codecs.SequenceManagerMsgCodecs
 import esw.sm.api.actor.messages.SequenceManagerRemoteMsg
 import esw.sm.api.codecs.SmAkkaSerializable
+import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.protocol._
 
 class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)

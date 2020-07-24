@@ -12,7 +12,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.SequenceManagerState
+import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError

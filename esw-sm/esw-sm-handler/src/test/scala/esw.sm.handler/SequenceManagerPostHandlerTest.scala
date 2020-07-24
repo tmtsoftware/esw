@@ -9,7 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
-import esw.sm.api.protocol.AgentStatusResponses.AgentSeqCompsStatus
+import esw.sm.api.models.AgentStatusResponses.AgentSeqCompsStatus
 import esw.sm.api.protocol.SequenceManagerPostRequest._
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite

@@ -4,7 +4,7 @@ import csw.location.api.models.ComponentId
 import csw.prefix.models.Subsystem
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.protocol.AgentStatusResponses.AgentSeqCompsStatus
+import esw.sm.api.models.AgentStatusResponses.AgentSeqCompsStatus
 
 private[protocol] sealed trait SmFailure extends Throwable
 

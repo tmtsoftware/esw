@@ -2,7 +2,7 @@ package esw.sm.api.codecs
 
 import csw.location.api.codec.LocationCodecs
 import esw.ocs.api.codecs.OcsCodecs
-import esw.sm.api.protocol.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
 import esw.sm.api.protocol._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.{deriveAllCodecs, deriveCodec}

@@ -1,4 +1,4 @@
-package esw.sm.api
+package esw.sm.api.models
 
 import enumeratum.{Enum, EnumEntry}
 import esw.sm.api.codecs.SmAkkaSerializable
