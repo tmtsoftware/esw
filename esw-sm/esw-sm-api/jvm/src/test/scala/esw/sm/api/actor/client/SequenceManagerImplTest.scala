@@ -11,7 +11,6 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.SequenceManagerState
-import esw.sm.api.models.SequenceManagerState.Idle
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 
