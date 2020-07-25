@@ -1,115 +1,99 @@
 package esw.sm.api.actor.client
 
-import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.location.api.extensions.ActorExtension._
-import csw.location.api.models.ComponentType.Service
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.models.SequenceManagerState
-import esw.sm.api.protocol._
+import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.testcommons.BaseTestSuite
 
 class SequenceManagerImplTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
-  private val configureResponse                                   = mock[ConfigureResponse]
-  private val getRunningObsModesResponse                          = mock[GetRunningObsModesResponse]
-  private val startSequencerResponse                              = mock[StartSequencerResponse]
-  private val shutdownSequencersResponse                          = mock[ShutdownSequencersResponse]
-  private val restartSequencerResponse                            = mock[RestartSequencerResponse]
-  private val spawnSequenceComponentResponse                      = mock[SpawnSequenceComponentResponse]
-  private val shutdownSequenceComponentResponse                   = mock[ShutdownSequenceComponentResponse]
-  private val provisionResponse                                   = mock[ProvisionResponse]
-  private val getAgentStatusResponse                              = mock[AgentStatusResponse]
-  private val smState                                             = mock[SequenceManagerState]
-
-  private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
-    msg match {
-      case SequenceManagerMsg.Configure(_, replyTo)            => replyTo ! configureResponse
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)      => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo) => replyTo ! smState
-      case SequenceManagerMsg.StartSequencer(_, _, replyTo)    => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)  => replyTo ! restartSequencerResponse
-
-      case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)        => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownSubsystemSequencers(_, replyTo) => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownObsModeSequencers(_, replyTo)   => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)          => replyTo ! shutdownSequencersResponse
-
-      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo) => replyTo ! spawnSequenceComponentResponse
-
-      case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo)  => replyTo ! shutdownSequenceComponentResponse
-      case SequenceManagerMsg.ShutdownAllSequenceComponents(replyTo) => replyTo ! shutdownSequenceComponentResponse
-
-      case SequenceManagerMsg.Provision(replyTo)         => replyTo ! provisionResponse
-      case SequenceManagerMsg.GetAllAgentStatus(replyTo) => replyTo ! getAgentStatusResponse
-      case SequenceManagerMsg.ProcessingComplete(_)      =>
-    }
-    Behaviors.same
-  }
-
-  private val smRef           = system.systemActorOf(mockedBehavior, "sm")
-  private val location        = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI)
-  private val sequenceManager = new SequenceManagerImpl(location)
-  private val obsMode         = ObsMode("IRIS_DarkNight")
-  private val seqCompPrefix   = Prefix(ESW, "primary")
+  private val testKit: ActorTestKit                               = ActorTestKit()
+  val probe: TestProbe[SequenceManagerMsg]                        = testKit.createTestProbe[SequenceManagerMsg]()
+  private val sequenceManager                                     = new SequenceManagerImpl(probe.ref)
+  private val obsMode                                             = ObsMode("IRIS_DarkNight")
+  private val seqCompPrefix                                       = Prefix(ESW, "primary")
 
   "SequenceManagerImpl" must {
     "configure" in {
-      sequenceManager.configure(obsMode).futureValue shouldBe configureResponse
+      sequenceManager.configure(obsMode)
+      val configure = probe.expectMessageType[Configure]
+      configure.obsMode shouldBe obsMode
     }
 
     "startSequencer" in {
-      sequenceManager.startSequencer(ESW, obsMode).futureValue shouldBe startSequencerResponse
+      sequenceManager.startSequencer(ESW, obsMode)
+      val startSequencer = probe.expectMessageType[StartSequencer]
+      startSequencer.obsMode shouldBe obsMode
+      startSequencer.subsystem shouldBe ESW
     }
 
     "restartSequencer" in {
-      sequenceManager.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
+      sequenceManager.restartSequencer(ESW, obsMode)
+      val restartSequencer = probe.expectMessageType[RestartSequencer]
+      restartSequencer.obsMode shouldBe obsMode
+      restartSequencer.subsystem shouldBe ESW
     }
 
     "shutdownSequencer | ESW-326" in {
-      sequenceManager.shutdownSequencer(ESW, obsMode).futureValue shouldBe shutdownSequencersResponse
+      sequenceManager.shutdownSequencer(ESW, obsMode)
+      val shutdownSequencer = probe.expectMessageType[ShutdownSequencer]
+      shutdownSequencer.obsMode shouldBe obsMode
+      shutdownSequencer.subsystem shouldBe ESW
     }
 
     "shutdownSubsystemSequencers | ESW-345" in {
-      sequenceManager.shutdownSubsystemSequencers(ESW).futureValue shouldBe shutdownSequencersResponse
+      sequenceManager.shutdownSubsystemSequencers(ESW)
+      val shutdownSubsystemSequencers = probe.expectMessageType[ShutdownSubsystemSequencers]
+      shutdownSubsystemSequencers.subsystem shouldBe ESW
     }
 
     "shutdownObsModeSequencers | ESW-166" in {
-      sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe shutdownSequencersResponse
+      sequenceManager.shutdownObsModeSequencers(obsMode)
+      val shutdownSubsystemSequencers = probe.expectMessageType[ShutdownObsModeSequencers]
+      shutdownSubsystemSequencers.obsMode shouldBe obsMode
     }
 
     "shutdownAllSequencers | ESW-324" in {
-      sequenceManager.shutdownAllSequencers().futureValue shouldBe shutdownSequencersResponse
+      sequenceManager.shutdownAllSequencers()
+      probe.expectMessageType[ShutdownAllSequencers]
     }
 
     "getRunningObsModes" in {
-      sequenceManager.getRunningObsModes.futureValue shouldBe getRunningObsModesResponse
+      sequenceManager.getRunningObsModes
+      probe.expectMessageType[GetRunningObsModes]
     }
 
     "shutdownSequenceComponent | ESW-338" in {
-      sequenceManager.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe shutdownSequenceComponentResponse
+      sequenceManager.shutdownSequenceComponent(seqCompPrefix)
+      val shutdownSequenceComponent = probe.expectMessageType[ShutdownSequenceComponent]
+      shutdownSequenceComponent.prefix shouldBe seqCompPrefix
     }
 
     "shutdownAllSequenceComponents | ESW-346" in {
-      sequenceManager.shutdownAllSequenceComponents().futureValue shouldBe shutdownSequenceComponentResponse
+      sequenceManager.shutdownAllSequenceComponents()
+      probe.expectMessageType[ShutdownAllSequenceComponents]
     }
 
     "spawnSequenceComponent | ESW-337" in {
       val agent = Prefix("tcs.primary")
-      sequenceManager.spawnSequenceComponent(agent, "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
+      sequenceManager.spawnSequenceComponent(agent, "seq_comp")
+      val spawnSequenceComponent = probe.expectMessageType[SpawnSequenceComponent]
+      spawnSequenceComponent.machine shouldBe agent
+      spawnSequenceComponent.sequenceComponentName shouldBe "seq_comp"
     }
 
     "getAgentStatus | ESW-349" in {
-      sequenceManager.getAgentStatus.futureValue shouldBe getAgentStatusResponse
+      sequenceManager.getAgentStatus
+      probe.expectMessageType[GetAllAgentStatus]
     }
 
     "provision | ESW-346" in {
-      sequenceManager.provision().futureValue shouldBe provisionResponse
+      sequenceManager.provision()
+      probe.expectMessageType[Provision]
     }
   }
 }

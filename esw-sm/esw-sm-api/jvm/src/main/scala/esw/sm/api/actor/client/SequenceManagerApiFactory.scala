@@ -10,12 +10,14 @@ import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.SequenceManagerPostRequest
 import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
+import csw.location.api.extensions.URIExtension.RichURI
+import esw.sm.api.actor.messages.SequenceManagerMsg
 
 object SequenceManagerApiFactory {
 
   // todo: should this be exposed to all?
   def makeAkkaClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]): SequenceManagerApi =
-    new SequenceManagerImpl(akkaLocation)
+    new SequenceManagerImpl(akkaLocation.uri.toActorRef.unsafeUpcast[SequenceManagerMsg])
 
   def makeHttpClient(httpLocation: HttpLocation, tokenFactory: () => Option[String])(implicit
       actorSystem: ActorSystem[_]

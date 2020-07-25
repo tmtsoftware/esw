@@ -17,11 +17,11 @@ import esw.sm.api.protocol._
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
+class SequenceManagerImpl(smRef: ActorRef[SequenceManagerMsg])(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
 
   implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
-  private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
+//  private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
     smRef ? (Configure(obsMode, _))
