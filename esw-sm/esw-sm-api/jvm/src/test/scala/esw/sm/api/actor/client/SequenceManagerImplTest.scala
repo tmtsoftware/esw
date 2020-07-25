@@ -6,13 +6,15 @@ import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
-import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
+
+import scala.util.Random
 
 class SequenceManagerImplTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
@@ -26,28 +28,34 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val provisionResponse                                   = mock[ProvisionResponse]
   private val getAgentStatusResponse                              = mock[AgentStatusResponse]
   private val smState                                             = mock[SequenceManagerState]
+  private val obsMode                                             = ObsMode(randomString5)
+  private val seqCompPrefix                                       = Prefix(randomSubsystem, randomString5)
+  private val subsystem                                           = randomSubsystem
+  private val agent                                               = Prefix(randomSubsystem, randomString5)
+  private val seqCompName                                         = randomString5
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
-      case SequenceManagerMsg.Configure(_, replyTo)            => replyTo ! configureResponse
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)      => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo) => replyTo ! smState
-      case SequenceManagerMsg.StartSequencer(_, _, replyTo)    => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)  => replyTo ! restartSequencerResponse
+      case SequenceManagerMsg.Configure(`obsMode`, replyTo)                     => replyTo ! configureResponse
+      case SequenceManagerMsg.GetRunningObsModes(replyTo)                       => replyTo ! getRunningObsModesResponse
+      case SequenceManagerMsg.GetSequenceManagerState(replyTo)                  => replyTo ! smState
+      case SequenceManagerMsg.StartSequencer(`subsystem`, `obsMode`, replyTo)   => replyTo ! startSequencerResponse
+      case SequenceManagerMsg.RestartSequencer(`subsystem`, `obsMode`, replyTo) => replyTo ! restartSequencerResponse
 
-      case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)        => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownSubsystemSequencers(_, replyTo) => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownObsModeSequencers(_, replyTo)   => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)          => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ShutdownSequencer(`subsystem`, `obsMode`, replyTo) => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ShutdownSubsystemSequencers(`subsystem`, replyTo)  => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ShutdownObsModeSequencers(`obsMode`, replyTo)      => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)                     => replyTo ! shutdownSequencersResponse
 
-      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo) => replyTo ! spawnSequenceComponentResponse
+      case SequenceManagerMsg.SpawnSequenceComponent(`agent`, `seqCompName`, replyTo) => replyTo ! spawnSequenceComponentResponse
 
-      case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo)  => replyTo ! shutdownSequenceComponentResponse
-      case SequenceManagerMsg.ShutdownAllSequenceComponents(replyTo) => replyTo ! shutdownSequenceComponentResponse
+      case SequenceManagerMsg.ShutdownSequenceComponent(`seqCompPrefix`, replyTo) => replyTo ! shutdownSequenceComponentResponse
+      case SequenceManagerMsg.ShutdownAllSequenceComponents(replyTo)              => replyTo ! shutdownSequenceComponentResponse
 
       case SequenceManagerMsg.Provision(replyTo)         => replyTo ! provisionResponse
       case SequenceManagerMsg.GetAllAgentStatus(replyTo) => replyTo ! getAgentStatusResponse
       case SequenceManagerMsg.ProcessingComplete(_)      =>
+      case msg                                           => println(s"$msg not handled")
     }
     Behaviors.same
   }
@@ -55,8 +63,12 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val smRef           = system.systemActorOf(mockedBehavior, "sm")
   private val location        = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI)
   private val sequenceManager = new SequenceManagerImpl(location)
-  private val obsMode         = ObsMode("IRIS_DarkNight")
-  private val seqCompPrefix   = Prefix(ESW, "primary")
+
+  private def randomString5 = Random.nextString(5)
+  private def randomSubsystem = {
+    val allSubsystems = Subsystem.values
+    allSubsystems(Random.nextInt(allSubsystems.size))
+  }
 
   "SequenceManagerImpl" must {
     "configure" in {
@@ -64,19 +76,19 @@ class SequenceManagerImplTest extends BaseTestSuite {
     }
 
     "startSequencer" in {
-      sequenceManager.startSequencer(ESW, obsMode).futureValue shouldBe startSequencerResponse
+      sequenceManager.startSequencer(subsystem, obsMode).futureValue shouldBe startSequencerResponse
     }
 
     "restartSequencer" in {
-      sequenceManager.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
+      sequenceManager.restartSequencer(subsystem, obsMode).futureValue shouldBe restartSequencerResponse
     }
 
     "shutdownSequencer | ESW-326" in {
-      sequenceManager.shutdownSequencer(ESW, obsMode).futureValue shouldBe shutdownSequencersResponse
+      sequenceManager.shutdownSequencer(subsystem, obsMode).futureValue shouldBe shutdownSequencersResponse
     }
 
     "shutdownSubsystemSequencers | ESW-345" in {
-      sequenceManager.shutdownSubsystemSequencers(ESW).futureValue shouldBe shutdownSequencersResponse
+      sequenceManager.shutdownSubsystemSequencers(subsystem).futureValue shouldBe shutdownSequencersResponse
     }
 
     "shutdownObsModeSequencers | ESW-166" in {
@@ -100,8 +112,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
     }
 
     "spawnSequenceComponent | ESW-337" in {
-      val agent = Prefix("tcs.primary")
-      sequenceManager.spawnSequenceComponent(agent, "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
+      sequenceManager.spawnSequenceComponent(agent, seqCompName).futureValue shouldBe spawnSequenceComponentResponse
     }
 
     "getAgentStatus | ESW-349" in {
