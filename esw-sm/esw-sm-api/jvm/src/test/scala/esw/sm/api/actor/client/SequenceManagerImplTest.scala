@@ -5,35 +5,34 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.models.AgentStatusResponses.AgentSeqCompsStatus
+import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.models.SequenceManagerState.Idle
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 
 class SequenceManagerImplTest extends BaseTestSuite {
-  private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
-  private val sequencerComponentId: ComponentId                         = ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)
-  private val sequenceComponentId: ComponentId                          = ComponentId(Prefix("tcs.seq_comp"), ComponentType.SequenceComponent)
-  private val configureResponse                                         = ConfigureResponse.Success(sequencerComponentId)
-  private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set(ObsMode("IRIS_DarkNight"), ObsMode("WFOS_cal")))
-  private val startSequencerResponse                                    = StartSequencerResponse.Started(sequencerComponentId)
-  private val shutdownSequencersResponse                                = ShutdownSequencersResponse.Success
-  private val restartSequencerResponse                                  = RestartSequencerResponse.Success(sequencerComponentId)
-  private val spawnSequenceComponentResponse                            = SpawnSequenceComponentResponse.Success(sequenceComponentId)
-  private val shutdownSequenceComponentResponse                         = ShutdownSequenceComponentResponse.Success
-  private val provisionResponse                                         = ProvisionResponse.Success
-  private val getAgentStatusResponse                                    = AgentStatusResponse.Success(List.empty[AgentSeqCompsStatus])
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
+  private val configureResponse                                   = mock[ConfigureResponse]
+  private val getRunningObsModesResponse                          = mock[GetRunningObsModesResponse]
+  private val startSequencerResponse                              = mock[StartSequencerResponse]
+  private val shutdownSequencersResponse                          = mock[ShutdownSequencersResponse]
+  private val restartSequencerResponse                            = mock[RestartSequencerResponse]
+  private val spawnSequenceComponentResponse                      = mock[SpawnSequenceComponentResponse]
+  private val shutdownSequenceComponentResponse                   = mock[ShutdownSequenceComponentResponse]
+  private val provisionResponse                                   = mock[ProvisionResponse]
+  private val getAgentStatusResponse                              = mock[AgentStatusResponse]
+  private val smState                                             = mock[SequenceManagerState]
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
       case SequenceManagerMsg.Configure(_, replyTo)            => replyTo ! configureResponse
       case SequenceManagerMsg.GetRunningObsModes(replyTo)      => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo) => replyTo ! Idle
+      case SequenceManagerMsg.GetSequenceManagerState(replyTo) => replyTo ! smState
       case SequenceManagerMsg.StartSequencer(_, _, replyTo)    => replyTo ! startSequencerResponse
       case SequenceManagerMsg.RestartSequencer(_, _, replyTo)  => replyTo ! restartSequencerResponse
 
