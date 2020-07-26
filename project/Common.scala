@@ -44,12 +44,15 @@ object Common extends AutoPlugin {
         "-feature",
         "-unchecked",
         "-deprecation",
-        if (enableFatalWarnings.value) "-Xfatal-warnings" else "",
+        //-W Options
+        "-Wdead-code",
+        if (enableFatalWarnings.value) "-Wconf:any:error" else "-Wconf:any:warning-verbose",
+        //-X Options
         "-Xlint:_,-missing-interpolator",
-        "-Ywarn-dead-code",
         "-Xsource:3",
-        "-Wconf:any:warning-verbose",
+        "-Xcheckinit",
         "-Xasync"
+        // -Y options are rarely needed, please look for -W equivalents
       ),
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
     )
