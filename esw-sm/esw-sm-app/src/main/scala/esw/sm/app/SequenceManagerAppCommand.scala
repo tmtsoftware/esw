@@ -18,6 +18,11 @@ object SequenceManagerAppCommand {
       @HelpMessage(
         "Config file path which has mapping of subsystems and number of sequence components to start while provisioning"
       )
-      provisionConfigPath: Path
+      provisionConfigPath: Path,
+      @ExtraName("l")
+      @HelpMessage(
+        "Option to specify whether config is to be read locally or remotely"
+      )
+      isLocal: Option[Boolean]
   ) extends SequenceManagerAppCommand
 }
