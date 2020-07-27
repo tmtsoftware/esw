@@ -3,6 +3,7 @@ package esw.sm.app
 import java.io.File
 import java.nio.file.{Files, Path, Paths}
 
+import akka.actor.typed.Scheduler
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
@@ -10,6 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.BinaryFetcherUtil
 import esw.agent.app.AgentSettings
+import esw.agent.client.AgentClient
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
@@ -380,30 +382,44 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     locationService.list(SequenceComponent).futureValue should ===(List.empty)
   }
 
-  "provision should start sequence components as mentioned in config file | ESW-346" ignore {
-    val path: Path      = Paths.get(ClassLoader.getSystemResource("smProvisionConfig.conf").toURI)
-    val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix, provisionConfigPath = path)
+  "provision should start sequence components as mentioned in config file at that time | ESW-346" in {
+    val configPath = File.createTempFile("tmp-provision-config", ".conf").toPath
+    Files.write(configPath, "esw-sm {\n  provision {\n    ESW: 1 \n    IRIS: 1\n  }\n}".getBytes())
+    val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix, provisionConfigPath = configPath)
 
-    // start required agents to provision
+    // start required agents to provision and verify they are running
     val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
     BinaryFetcherUtil.fetchBinaryFor(channel)
     val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
     val irisAgentPrefix = spawnAgent(AgentSettings(1.minute, channel), IRIS)
+    resolveAkkaLocation(eswAgentPrefix, Machine) shouldBe a[AkkaLocation]
+    resolveAkkaLocation(irisAgentPrefix, Machine) shouldBe a[AkkaLocation]
 
-    resolveAkkaLocation(eswAgentPrefix, Machine)
-    resolveAkkaLocation(irisAgentPrefix, Machine)
-
-    // verify no sequence components are started
-    locationService.list(SequenceComponent).futureValue should ===(List.empty)
+    locationService.list(SequenceComponent).futureValue.size shouldBe 0
 
     sequenceManager.provision().futureValue should ===(ProvisionResponse.Success)
 
+    //verify seq comps are started as per the config
     val sequenceCompLocations = locationService.list(SequenceComponent).futureValue
-    sequenceCompLocations.size shouldBe 3
-    sequenceCompLocations.count(_.prefix.subsystem == ESW) shouldBe 2
+    sequenceCompLocations.size shouldBe 2
+    sequenceCompLocations.count(_.prefix.subsystem == ESW) shouldBe 1
     sequenceCompLocations.count(_.prefix.subsystem == IRIS) shouldBe 1
 
-    sequenceManager.shutdownAllSequenceComponents().futureValue
+    //clean up the provisioned sequence components
+    sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
+    locationService.list(SequenceComponent).futureValue.size shouldBe 0
+    assertNoSeqCompsAreRunningOn(eswAgentPrefix)
+
+    Files.write(configPath, "esw-sm {\n  provision {\n    ESW: 1  }\n}".getBytes()) // update the config file
+
+    sequenceManager.provision().futureValue should ===(ProvisionResponse.Success) //again provision
+
+    // verify seq comps are started as per the updated conf
+    val seqCompLocationsPostUpdate = locationService.list(SequenceComponent).futureValue
+    seqCompLocationsPostUpdate.size shouldBe 1
+    seqCompLocationsPostUpdate.head.prefix.subsystem shouldBe ESW
+
+    sequenceManager.shutdownAllSequenceComponents().futureValue //clean up
   }
 
   "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349" in {
@@ -456,6 +472,15 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val getStatusResponse = seqCompStatus.asInstanceOf[GetStatusResponse]
     if (isSeqCompAvailable) getStatusResponse.response shouldBe None // assert sequence component is available
     else getStatusResponse.response.isDefined shouldBe true          // assert sequence components is busy
+  }
+
+  private def assertNoSeqCompsAreRunningOn(agentPrefix: Prefix) = {
+    implicit val scheduler: Scheduler = actorSystem.scheduler
+    val client                        = new AgentClient(resolveAkkaLocation(agentPrefix, Machine))
+    eventually {
+      val agentStatus = client.getAgentStatus.futureValue
+      agentStatus.componentStatus.keys.count(_.componentType == SequenceComponent) shouldBe 0
+    }
   }
 
 }

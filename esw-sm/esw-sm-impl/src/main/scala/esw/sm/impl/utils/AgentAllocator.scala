@@ -27,7 +27,7 @@ class AgentAllocator {
     val prefixes = configToSeqComps(subsystem, count)
     subsystemMachines.get(subsystem).map(roundRobinOn(_, prefixes))
   }
-
+// todo: think on the naming of seq comps
   private def configToSeqComps(subsystem: Subsystem, noOfSeqComps: Int) =
     (1 to noOfSeqComps).map(i => Prefix(subsystem, s"${subsystem}_$i"))
 
