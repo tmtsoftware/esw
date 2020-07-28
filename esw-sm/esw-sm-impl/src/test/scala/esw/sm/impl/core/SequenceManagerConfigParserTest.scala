@@ -1,6 +1,6 @@
 package esw.sm.impl.core
 
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
@@ -10,6 +10,7 @@ import csw.prefix.models.Subsystem._
 import esw.ocs.api.models.ObsMode
 import esw.sm.impl.config._
 import esw.testcommons.BaseTestSuite
+import io.bullet.borer.Borer.Error
 import io.bullet.borer.Borer.Error.InvalidInputData
 import org.scalatest.prop.TableDrivenPropertyChecks
 
@@ -92,6 +93,19 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
         config.futureValue should ===(ProvisionConfig(Map(ESW -> 3, IRIS -> 2, TCS -> 1)))
         verify(configUtils).getConfig(inputFilePath = path, isLocal = getConfigArg)
       }
+    }
+
+    "throw exception if count of sequence components for any subsystem is Zero or less | ESW-346" in {
+      val configStr  = "esw-sm {\n  provision {\n    ESW: 0 }\n}"
+      val testConfig = ConfigFactory.parseString(configStr)
+      val path       = mock[Path]
+
+      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
+
+      val exception: Error[_] = intercept[Error.General[_]] {
+        sequenceManagerConfigParser.readProvisionConfig(path, isLocal = Some(true)).awaitResult
+      }
+      exception.getCause shouldBe a[IllegalArgumentException]
     }
 
     "throw exception if config file has invalid provision config structure | ESW-346" in {
