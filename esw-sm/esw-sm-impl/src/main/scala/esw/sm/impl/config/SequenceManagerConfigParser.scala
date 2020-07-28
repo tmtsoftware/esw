@@ -16,15 +16,15 @@ class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: Executi
   private val ObsModesKey        = "obsModes"
   private val ProvisionConfigKey = "provision"
 
-  def readObsModeConfig(configFilePath: Path, isLocal: Option[Boolean]): Future[SequenceManagerConfig] =
+  def readObsModeConfig(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
     readConfig[SequenceManagerConfig](ObsModesKey, configFilePath, isLocal)
 
-  def readProvisionConfig(configFilePath: Path, isLocal: Option[Boolean]): Future[ProvisionConfig] =
+  def readProvisionConfig(configFilePath: Path, isLocal: Boolean): Future[ProvisionConfig] =
     readConfig[ProvisionConfig](ProvisionConfigKey, configFilePath, isLocal)
 
   // Reads config file from config service or local filesystem
-  private def readConfig[T: Decoder](key: String, configFilePath: Path, isLocal: Option[Boolean]): Future[T] = {
-    configUtils.getConfig(configFilePath, isLocal.getOrElse(true)).map { config =>
+  private def readConfig[T: Decoder](key: String, configFilePath: Path, isLocal: Boolean): Future[T] = {
+    configUtils.getConfig(configFilePath, isLocal).map { config =>
       val configStr = config.getConfig(s"$EswSmKey.$key").root().render(ConfigRenderOptions.concise())
       Json.decode(configStr.getBytes).to[T].value
     }

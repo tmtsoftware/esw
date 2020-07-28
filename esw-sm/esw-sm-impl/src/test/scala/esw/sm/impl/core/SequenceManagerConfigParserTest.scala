@@ -36,9 +36,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
   "readObsModeConfig" must {
     val args = Table(
       ("readObsModeConfigArg", "getConfigArg", "fileLocation"),
-      (Some(true), true, "local"),
-      (Some(false), false, "remote"),
-      (None, true, "local as default")
+      (true, true, "local"),
+      (false, false, "remote")
     )
 
     forAll(args) { (readObsModeConfigArg, getConfigArg, fileLocation) =>
@@ -69,7 +68,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
       when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
 
       intercept[InvalidInputData[Any]](
-        sequenceManagerConfigParser.readObsModeConfig(isLocal = Some(true), configFilePath = path).awaitResult
+        sequenceManagerConfigParser.readObsModeConfig(isLocal = true, configFilePath = path).awaitResult
       )
     }
   }
@@ -77,9 +76,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
   "readProvisionConfig" must {
     val args = Table(
       ("readObsModeConfigArg", "getConfigArg", "fileLocation"),
-      (Some(true), true, "local"),
-      (Some(false), false, "remote"),
-      (None, true, "local as default")
+      (true, true, "local"),
+      (false, false, "remote")
     )
 
     forAll(args) { (readObsModeConfigArg, getConfigArg, fileLocation) =>
@@ -114,7 +112,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
       when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
 
       intercept[InvalidInputData[Any]](
-        sequenceManagerConfigParser.readProvisionConfig(configFilePath = path, isLocal = Some(true)).awaitResult
+        sequenceManagerConfigParser.readProvisionConfig(configFilePath = path, isLocal = true).awaitResult
       )
     }
   }
@@ -127,11 +125,11 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
     when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.failed(expectedException))
 
     val obsModeConfigException = intercept[RuntimeException](
-      sequenceManagerConfigParser.readObsModeConfig(isLocal = Some(true), configFilePath = path).awaitResult
+      sequenceManagerConfigParser.readObsModeConfig(isLocal = true, configFilePath = path).awaitResult
     )
 
     val provisionConfigException = intercept[RuntimeException](
-      sequenceManagerConfigParser.readProvisionConfig(isLocal = Some(true), configFilePath = path).awaitResult
+      sequenceManagerConfigParser.readProvisionConfig(isLocal = true, configFilePath = path).awaitResult
     )
 
     obsModeConfigException should ===(expectedException)

@@ -28,7 +28,7 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
   def start(
       obsModeConfigPath: Path,
       provisionConfigPath: Path,
-      isConfigLocal: Option[Boolean],
+      isConfigLocal: Boolean,
       startLogging: Boolean
   ): SequenceManagerWiring = {
     val sequenceManagerWiring = new SequenceManagerWiring(obsModeConfigPath, provisionConfigPath, isConfigLocal)

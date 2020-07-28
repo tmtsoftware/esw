@@ -43,7 +43,7 @@ import msocket.impl.post.PostRouteFactory
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
-class SequenceManagerWiring(obsModeConfigPath: Path, provisionConfigPath: Path, isLocal: Option[Boolean]) {
+class SequenceManagerWiring(obsModeConfigPath: Path, provisionConfigPath: Path, isLocal: Boolean) {
   private[sm] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(actorSystem)
@@ -129,10 +129,11 @@ private[sm] object SequenceManagerWiring {
   def apply(
       obsModeConfig: Path,
       provisionConfig: Path,
+      isLocal: Boolean,
       _actorSystem: ActorSystem[SpawnProtocol.Command],
       _securityDirectives: SecurityDirectives
   ): SequenceManagerWiring =
-    new SequenceManagerWiring(obsModeConfig, provisionConfig, Some(true)) {
+    new SequenceManagerWiring(obsModeConfig, provisionConfig, isLocal) {
       override private[sm] lazy val actorSystem        = _actorSystem
       override private[sm] lazy val securityDirectives = _securityDirectives
     }

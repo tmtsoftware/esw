@@ -21,8 +21,8 @@ object SequenceManagerAppCommand {
       provisionConfigPath: Path,
       @ExtraName("l")
       @HelpMessage(
-        "Option to specify whether config is to be read locally or remotely"
+        "Option value will be true if config is to be read locally or false if from remote server"
       )
-      isLocal: Option[Boolean]
+      local: Boolean = false
   ) extends SequenceManagerAppCommand
 }

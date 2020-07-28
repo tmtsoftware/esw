@@ -151,7 +151,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val provisionConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smProvisionConfig.conf").toURI)
 
     val exception = intercept[RuntimeException](
-      SequenceManagerApp.main(Array("start", "-o", "sm-config.conf", "-p", provisionConfigPath.toAbsolutePath.toString))
+      SequenceManagerApp.main(Array("start", "-o", "sm-config.conf", "-p", provisionConfigPath.toAbsolutePath.toString, "--local"))
     )
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
