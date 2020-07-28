@@ -62,11 +62,19 @@ class AgentUtil(
       .flatMapRight(spawnComponentsByMapping)
 
   private def spawnComponentsByMapping(mappings: List[(Prefix, AkkaLocation)]) =
-    Future.traverse(mappings) { case (prefix, machine) => makeAgentClient(machine).spawnSequenceComponent(prefix) }
+    Future.traverse(mappings) {
+      case (seqCompPrefix, machine) =>
+        makeAgentClient(machine)
+          .spawnSequenceComponent(seqCompPrefix)
+          .map(SpawnResponseWithInfo(seqCompPrefix, machine.prefix, _))
+    }
 
-  private def spawnResToProvisionRes(responses: List[SpawnResponse]): ProvisionResponse = {
-    // todo: error msg should have which component failed and on which machine and remove this object creation
-    val failedResponses = responses.collect { case Failed(msg) => SpawnSequenceComponentFailed(msg) }
+  private def spawnResToProvisionRes(responses: List[SpawnResponseWithInfo]): ProvisionResponse = {
+    val failedResponses = responses.collect {
+      case SpawnResponseWithInfo(seqComp, machine, Failed(msg)) =>
+        val errorMsg = s"Failed to spawn Sequence component: $seqComp on Machine: $machine. Error msg: $msg"
+        SpawnSequenceComponentFailed(errorMsg)
+    }
 
     if (failedResponses.isEmpty) ProvisionResponse.Success
     else ProvisionResponse.SpawningSequenceComponentsFailed(failedResponses.map(_.msg))
@@ -99,4 +107,6 @@ class AgentUtil(
 
   private def isRunningSeqComp(compId: ComponentId, status: ComponentStatus) =
     compId.componentType == SequenceComponent && status == ComponentStatus.Running
+
+  private[utils] case class SpawnResponseWithInfo(seqComp: Prefix, machine: Prefix, response: SpawnResponse)
 }

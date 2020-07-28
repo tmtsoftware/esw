@@ -188,9 +188,13 @@ class AgentUtilTest extends BaseTestSuite {
       when(agentClient.spawnSequenceComponent(eswSeqComp1Prefix, None)).thenReturn(Future.successful(Spawned))
       when(agentClient.spawnSequenceComponent(eswSeqComp2Prefix, None)).thenReturn(Future.successful(Failed(errorMsg)))
 
-      agentUtil.provision(provisionConfig).futureValue should ===(
-        ProvisionResponse.SpawningSequenceComponentsFailed(List(errorMsg))
-      )
+      val response = agentUtil.provision(provisionConfig).futureValue
+      response shouldBe a[ProvisionResponse.SpawningSequenceComponentsFailed]
+      val failureMgs = response.asInstanceOf[ProvisionResponse.SpawningSequenceComponentsFailed].failureResponses.head
+      // assert that failure msg has necessary info
+      failureMgs.contains(eswPrimaryMachine.prefix.toString()) shouldBe true
+      failureMgs.contains(eswSeqComp2Prefix.toString()) shouldBe true
+      failureMgs.contains(errorMsg) shouldBe true
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
