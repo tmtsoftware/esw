@@ -38,21 +38,24 @@ object TestSetup extends EswTestKit {
       prefix: Prefix,
       tokenFactory: () => Option[String],
       obsModeConfigPath: Path = obsModeConfigPath,
-      provisionConfigPath: Path = provisionConfigPath
+      provisionConfigPath: Path = provisionConfigPath,
+      isConfigLocal: Boolean = true
   ): SequenceManagerApi =
-    startSequenceManager(prefix, obsModeConfigPath, provisionConfigPath, authDisabled = false, tokenFactory)
+    startSequenceManager(prefix, obsModeConfigPath, provisionConfigPath, isConfigLocal, authDisabled = false, tokenFactory)
 
   def startSequenceManager(
       prefix: Prefix,
       obsModeConfigPath: Path = obsModeConfigPath,
-      provisionConfigPath: Path = provisionConfigPath
+      provisionConfigPath: Path = provisionConfigPath,
+      isConfigLocal: Boolean = true
   ): SequenceManagerApi =
-    startSequenceManager(prefix, obsModeConfigPath, provisionConfigPath, authDisabled = true, () => None)
+    startSequenceManager(prefix, obsModeConfigPath, provisionConfigPath, isConfigLocal, authDisabled = true, () => None)
 
   private def startSequenceManager(
       prefix: Prefix,
       obsModeConfig: Path,
       provisionConfig: Path,
+      isConfigLocal: Boolean,
       authDisabled: Boolean,
       tokenFactory: () => Option[String]
   ): SequenceManagerApi = {
@@ -71,7 +74,7 @@ object TestSetup extends EswTestKit {
       else config
 
     val securityDirectives = SecurityDirectives(authConfig, locationService)
-    val wiring             = SequenceManagerWiring(obsModeConfig, provisionConfig, isLocal = true, _system, securityDirectives)
+    val wiring             = SequenceManagerWiring(obsModeConfig, provisionConfig, isConfigLocal, _system, securityDirectives)
     wiring.start()
     seqManagerWirings += wiring
     val smLocation = resolveHTTPLocation(prefix, Service)

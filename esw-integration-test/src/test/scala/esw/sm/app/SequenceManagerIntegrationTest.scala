@@ -4,11 +4,15 @@ import java.io.File
 import java.nio.file.{Files, Path, Paths}
 
 import akka.actor.typed.Scheduler
+import csw.config.api.scaladsl.ConfigService
+import csw.config.api.{ConfigData, TokenFactory}
+import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
+import csw.testkit.ConfigTestKit
 import esw.BinaryFetcherUtil
 import esw.agent.app.AgentSettings
 import esw.agent.client.AgentClient
@@ -26,10 +30,11 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class SequenceManagerIntegrationTest extends EswTestKit {
-  private val WFOS_CAL              = ObsMode("WFOS_Cal")
-  private val IRIS_CAL              = ObsMode("IRIS_Cal")
-  private val IRIS_DARKNIGHT        = ObsMode("IRIS_Darknight")
-  private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
+  private val WFOS_CAL                     = ObsMode("WFOS_Cal")
+  private val IRIS_CAL                     = ObsMode("IRIS_Cal")
+  private val IRIS_DARKNIGHT               = ObsMode("IRIS_Darknight")
+  private val sequenceManagerPrefix        = Prefix(ESW, "sequence_manager")
+  private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
   override protected def afterEach(): Unit  = TestSetup.cleanup()
@@ -92,6 +97,45 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     assertThatSeqCompIsAvailable(eswSeqCompPrefix)
     assertThatSeqCompIsAvailable(irisSeqCompPrefix)
     assertThatSeqCompIsAvailable(aoeswSeqCompPrefix)
+  }
+
+  "configure SH using config file from config service | ESW-357" in {
+    // start config server
+    configTestKit.startConfigServer()
+
+    val factory = mock[TokenFactory]
+    when(factory.getToken).thenReturn("valid")
+    val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
+    configTestKit.initSvnRepo()
+    val configFilePath = Path.of("/tmt/test/smConfig.conf")
+    val obsModeConfig: String =
+      """
+        esw-sm {
+        |  obsModes: {
+        |    IRIS_Cal: {
+        |      resources: [IRIS]
+        |      sequencers: [IRIS]
+        |    }
+        |  }
+        |}
+        |""".stripMargin
+    // create obsMode config file on config server
+    adminApi.create(configFilePath, ConfigData.fromString(obsModeConfig), annex = false, "First commit").futureValue
+
+    val irisSeqCompPrefix  = Prefix(IRIS, "primary")
+    TestSetup.startSequenceComponents(irisSeqCompPrefix)
+
+    //ESW-357 Starts SM and returns SM Http client.
+    val sequenceManagerClient =
+      TestSetup.startSequenceManager(sequenceManagerPrefix, obsModeConfigPath = configFilePath, isConfigLocal = false)
+
+    // assert for Successful Configuration
+    sequenceManagerClient.configure(IRIS_CAL).futureValue shouldBe a[ConfigureResponse.Success]
+
+    // Test cleanup
+    sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
+    configTestKit.deleteServerFiles()
+    configTestKit.terminateServer()
   }
 
   "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170, ESW-171, ESW-179, ESW-178" in {
