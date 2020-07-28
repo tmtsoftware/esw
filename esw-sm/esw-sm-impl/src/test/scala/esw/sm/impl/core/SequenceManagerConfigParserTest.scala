@@ -101,7 +101,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
       when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
 
       val exception: Error[_] = intercept[Error.General[_]] {
-        sequenceManagerConfigParser.readProvisionConfig(path, isLocal = Some(true)).awaitResult
+        sequenceManagerConfigParser.readProvisionConfig(path, isLocal = true).awaitResult
       }
       exception.getCause shouldBe a[IllegalArgumentException]
     }
