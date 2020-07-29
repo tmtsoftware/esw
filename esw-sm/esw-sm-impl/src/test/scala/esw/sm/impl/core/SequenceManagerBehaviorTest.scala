@@ -362,6 +362,18 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequenceComponentUtil).shutdownAllSequenceComponents()
     }
 
+    "return LocationServiceError if LocationServiceError encountered while shutting down all sequence components | ESW-346, ESW-351" in {
+      when(sequenceComponentUtil.shutdownAllSequenceComponents())
+        .thenReturn(Future.successful(LocationServiceError("error")))
+
+      val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
+
+      smRef ! ShutdownAllSequenceComponents(shutdownSequenceComponentResponseProbe.ref)
+      shutdownSequenceComponentResponseProbe.expectMessage(LocationServiceError("error"))
+
+      verify(sequenceComponentUtil).shutdownAllSequenceComponents()
+    }
+
     "return LocationServiceError if LocationServiceError encountered while shutting down sequence components | ESW-338,ESW-346, ESW-351" in {
       val prefix = Prefix(ESW, "primary")
       val error  = LocationServiceError("location service error")
