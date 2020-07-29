@@ -4,7 +4,7 @@ import akka.actor.typed.ActorRef
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models.SequenceManagerState
+import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol._
 
 sealed trait SequenceManagerMsg
@@ -34,7 +34,7 @@ object SequenceManagerMsg {
       extends SequenceManagerIdleMsg
   case class ShutdownAllSequencers(replyTo: ActorRef[ShutdownSequencersResponse]) extends SequenceManagerIdleMsg
 
-  case class Provision(replyTo: ActorRef[ProvisionResponse]) extends SequenceManagerIdleMsg
+  case class Provision(config: ProvisionConfig, replyTo: ActorRef[ProvisionResponse]) extends SequenceManagerIdleMsg
 
   case class SpawnSequenceComponent(
       machine: Prefix,

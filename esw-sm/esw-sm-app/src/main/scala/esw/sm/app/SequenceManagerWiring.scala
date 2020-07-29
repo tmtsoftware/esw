@@ -43,7 +43,7 @@ import msocket.impl.post.PostRouteFactory
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
-class SequenceManagerWiring(obsModeConfigPath: Path, provisionConfigPath: Path, isLocal: Boolean) {
+class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean) {
   private[sm] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(actorSystem)
@@ -65,15 +65,15 @@ class SequenceManagerWiring(obsModeConfigPath: Path, provisionConfigPath: Path, 
   private lazy val agentUtil                  = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator)
   private lazy val sequencerUtil              = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
-  private lazy val configParser = new SequenceManagerConfigParser(configUtils)
   private lazy val obsModeConfig =
-    Await.result(configParser.readObsModeConfig(obsModeConfigPath, isLocal), Timeouts.DefaultTimeout)
-  private val provisionConfigProvider = () => configParser.readProvisionConfig(provisionConfigPath, isLocal)
+    Await.result(
+      new SequenceManagerConfigParser(configUtils).read(obsModeConfigPath, isLocal),
+      Timeouts.DefaultTimeout
+    )
 
   private lazy val sequenceManagerBehavior =
     new SequenceManagerBehavior(
       obsModeConfig,
-      provisionConfigProvider,
       locationServiceUtil,
       agentUtil,
       sequencerUtil,
@@ -128,12 +128,11 @@ class SequenceManagerWiring(obsModeConfigPath: Path, provisionConfigPath: Path, 
 private[sm] object SequenceManagerWiring {
   def apply(
       obsModeConfig: Path,
-      provisionConfig: Path,
       isLocal: Boolean,
       _actorSystem: ActorSystem[SpawnProtocol.Command],
       _securityDirectives: SecurityDirectives
   ): SequenceManagerWiring =
-    new SequenceManagerWiring(obsModeConfig, provisionConfig, isLocal) {
+    new SequenceManagerWiring(obsModeConfig, isLocal) {
       override private[sm] lazy val actorSystem        = _actorSystem
       override private[sm] lazy val securityDirectives = _securityDirectives
     }

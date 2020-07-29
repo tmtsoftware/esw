@@ -2,13 +2,14 @@ package esw.sm.api.protocol
 
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
+import esw.sm.api.models.ProvisionConfig
 
 sealed trait SequenceManagerPostRequest
 
 object SequenceManagerPostRequest {
-  case class Configure(obsMode: ObsMode) extends SequenceManagerPostRequest
-  case object Provision                  extends SequenceManagerPostRequest
-  case object GetRunningObsModes         extends SequenceManagerPostRequest
+  case class Configure(obsMode: ObsMode)        extends SequenceManagerPostRequest
+  case class Provision(config: ProvisionConfig) extends SequenceManagerPostRequest
+  case object GetRunningObsModes                extends SequenceManagerPostRequest
 
   case class StartSequencer(subsystem: Subsystem, obsMode: ObsMode)   extends SequenceManagerPostRequest
   case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode) extends SequenceManagerPostRequest

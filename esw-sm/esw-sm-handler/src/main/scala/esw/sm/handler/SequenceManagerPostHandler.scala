@@ -20,7 +20,7 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi, securityDi
       case GetRunningObsModes                   => complete(getRunningObsModes)
       case GetAgentStatus                       => complete(getAgentStatus)
       case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
-      case Provision                            => sPost(complete(provision()))
+      case Provision(config)                    => sPost(complete(provision(config)))
       case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
       case RestartSequencer(subsystem, obsMode) => sPost(complete(restartSequencer(subsystem, obsMode)))
 

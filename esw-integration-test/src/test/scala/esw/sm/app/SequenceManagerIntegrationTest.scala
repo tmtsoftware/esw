@@ -1,7 +1,7 @@
 package esw.sm.app
 
 import java.io.File
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Path}
 
 import akka.actor.typed.Scheduler
 import csw.config.api.scaladsl.ConfigService
@@ -21,6 +21,7 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
@@ -187,11 +188,10 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   }
 
   "throw exception if obs mode config or provision config file is missing | ESW-162, ESW-160, ESW-171, ESW-346" in {
-    val provisionConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smProvisionConfig.conf").toURI)
 
     val exception = intercept[RuntimeException](
       SequenceManagerApp.main(
-        Array("start", "-o", "sm-config.conf", "-p", provisionConfigPath.toAbsolutePath.toString, "--local")
+        Array("start", "-o", "sm-config.conf", "--local")
       )
     )
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
@@ -423,10 +423,9 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     locationService.list(SequenceComponent).futureValue should ===(List.empty)
   }
 
-  "provision should start sequence components as mentioned in config file at that time | ESW-346" in {
-    val configPath = File.createTempFile("tmp-provision-config", ".conf").toPath
-    Files.write(configPath, "esw-sm {\n  provision {\n    ESW: 1 \n    IRIS: 1\n  }\n}".getBytes())
-    val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix, provisionConfigPath = configPath)
+  "provision should start sequence components as given in provision config | ESW-346" in {
+    val provisionConfig = ProvisionConfig(Map(ESW -> 1, IRIS -> 1))
+    val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix)
 
     // start required agents to provision and verify they are running
     val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
@@ -438,7 +437,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     locationService.list(SequenceComponent).futureValue.size shouldBe 0
 
-    sequenceManager.provision().futureValue should ===(ProvisionResponse.Success)
+    sequenceManager.provision(provisionConfig).futureValue should ===(ProvisionResponse.Success)
 
     //verify seq comps are started as per the config
     val sequenceCompLocations = locationService.list(SequenceComponent).futureValue
@@ -450,17 +449,6 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
     locationService.list(SequenceComponent).futureValue.size shouldBe 0
     assertNoSeqCompsAreRunningOn(eswAgentPrefix)
-
-    Files.write(configPath, "esw-sm {\n  provision {\n    ESW: 1  }\n}".getBytes()) // update the config file
-
-    sequenceManager.provision().futureValue should ===(ProvisionResponse.Success) //again provision
-
-    // verify seq comps are started as per the updated conf
-    val seqCompLocationsPostUpdate = locationService.list(SequenceComponent).futureValue
-    seqCompLocationsPostUpdate.size shouldBe 1
-    seqCompLocationsPostUpdate.head.prefix.subsystem shouldBe ESW
-
-    sequenceManager.shutdownAllSequenceComponents().futureValue //clean up
   }
 
   "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349" in {

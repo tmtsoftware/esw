@@ -1,6 +1,6 @@
 package esw.sm.impl.core
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
@@ -10,7 +10,6 @@ import csw.prefix.models.Subsystem._
 import esw.ocs.api.models.ObsMode
 import esw.sm.impl.config._
 import esw.testcommons.BaseTestSuite
-import io.bullet.borer.Borer.Error
 import io.bullet.borer.Borer.Error.InvalidInputData
 import org.scalatest.prop.TableDrivenPropertyChecks
 
@@ -33,7 +32,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
     super.afterEach()
   }
 
-  "readObsModeConfig" must {
+  "read" must {
     val args = Table(
       ("readObsModeConfigArg", "getConfigArg", "fileLocation"),
       (true, true, "local"),
@@ -49,7 +48,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
 
         when(configUtils.getConfig(inputFilePath = path, isLocal = getConfigArg)).thenReturn(Future.successful(testConfig))
 
-        val config = sequenceManagerConfigParser.readObsModeConfig(configFilePath = path, isLocal = readObsModeConfigArg)
+        val config = sequenceManagerConfigParser.read(configFilePath = path, isLocal = readObsModeConfigArg)
 
         val expectedConfig = SequenceManagerConfig(
           Map(
@@ -68,56 +67,12 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
       when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
 
       intercept[InvalidInputData[Any]](
-        sequenceManagerConfigParser.readObsModeConfig(isLocal = true, configFilePath = path).awaitResult
+        sequenceManagerConfigParser.read(isLocal = true, configFilePath = path).awaitResult
       )
     }
   }
 
-  "readProvisionConfig" must {
-    val args = Table(
-      ("readObsModeConfigArg", "getConfigArg", "fileLocation"),
-      (true, true, "local"),
-      (false, false, "remote")
-    )
-
-    forAll(args) { (readObsModeConfigArg, getConfigArg, fileLocation) =>
-      s"read provision config file from $fileLocation | ESW-346" in {
-        val path       = Paths.get("testProvisionConfig.conf")
-        val testConfig = ConfigFactory.parseResources(path.getFileName.toString)
-        when(configUtils.getConfig(inputFilePath = path, isLocal = getConfigArg)).thenReturn(Future.successful(testConfig))
-
-        val config = sequenceManagerConfigParser.readProvisionConfig(configFilePath = path, isLocal = readObsModeConfigArg)
-
-        config.futureValue should ===(ProvisionConfig(Map(ESW -> 3, IRIS -> 2, TCS -> 1)))
-        verify(configUtils).getConfig(inputFilePath = path, isLocal = getConfigArg)
-      }
-    }
-
-    "throw exception if count of sequence components for any subsystem is Zero or less | ESW-346" in {
-      val configStr  = "esw-sm {\n  provision {\n    ESW: 0 }\n}"
-      val testConfig = ConfigFactory.parseString(configStr)
-      val path       = mock[Path]
-
-      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
-
-      val exception: Error[_] = intercept[Error.General[_]] {
-        sequenceManagerConfigParser.readProvisionConfig(path, isLocal = true).awaitResult
-      }
-      exception.getCause shouldBe a[IllegalArgumentException]
-    }
-
-    "throw exception if config file has invalid provision config structure | ESW-346" in {
-      val path       = Paths.get("invalidProvisionConfig.conf")
-      val testConfig = ConfigFactory.parseResources(path.getFileName.toString)
-      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
-
-      intercept[InvalidInputData[Any]](
-        sequenceManagerConfigParser.readProvisionConfig(configFilePath = path, isLocal = true).awaitResult
-      )
-    }
-  }
-
-  "readObsModeConfig and readProvisionConfig must throw exception if it fails to read config | ESW-162, ESW-160, ESW-346" in {
+  "throw exception if it fails to read config | ESW-162, ESW-160, ESW-346" in {
     val path              = Paths.get("testObsModeConfig.conf")
     val expectedException = new RuntimeException("Failed to read config")
 
@@ -125,15 +80,10 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
     when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.failed(expectedException))
 
     val obsModeConfigException = intercept[RuntimeException](
-      sequenceManagerConfigParser.readObsModeConfig(isLocal = true, configFilePath = path).awaitResult
-    )
-
-    val provisionConfigException = intercept[RuntimeException](
-      sequenceManagerConfigParser.readProvisionConfig(isLocal = true, configFilePath = path).awaitResult
+      sequenceManagerConfigParser.read(isLocal = true, configFilePath = path).awaitResult
     )
 
     obsModeConfigException should ===(expectedException)
-    provisionConfigException should ===(expectedException)
   }
 
   implicit class FutureOps[T](f: Future[T]) {

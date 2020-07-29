@@ -4,6 +4,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.SequenceManagerPostRequest._
 import esw.sm.api.protocol._
 import msocket.api.Transport
@@ -17,8 +18,8 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
     postClient.requestResponse[ConfigureResponse](Configure(obsMode))
 
-  override def provision(): Future[ProvisionResponse] =
-    postClient.requestResponse[ProvisionResponse](Provision)
+  override def provision(config: ProvisionConfig): Future[ProvisionResponse] =
+    postClient.requestResponse[ProvisionResponse](Provision(config))
 
   override def getRunningObsModes: Future[GetRunningObsModesResponse] =
     postClient.requestResponse[GetRunningObsModesResponse](GetRunningObsModes)

@@ -6,6 +6,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerHttpCodec
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.SequenceManagerPostRequest.{GetRunningObsModes, _}
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
@@ -36,14 +37,16 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return provision success for provision request | ESW-346" in {
+
+      val provisionConfig = ProvisionConfig(Map(ESW -> 1))
       when(
-        postClient.requestResponse[ProvisionResponse](argsEq(Provision))(
+        postClient.requestResponse[ProvisionResponse](argsEq(Provision(provisionConfig)))(
           any[Decoder[ProvisionResponse]](),
           any[Encoder[ProvisionResponse]]()
         )
       ).thenReturn(Future.successful(ProvisionResponse.Success))
 
-      client.provision().futureValue shouldBe ProvisionResponse.Success
+      client.provision(provisionConfig).futureValue shouldBe ProvisionResponse.Success
     }
 
     "return configure success response for configure request" in {

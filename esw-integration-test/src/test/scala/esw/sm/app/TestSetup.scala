@@ -31,30 +31,26 @@ object TestSetup extends EswTestKit {
       seqCompWirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName)))
     }
 
-  val obsModeConfigPath: Path   = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
-  val provisionConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smProvisionConfig.conf").toURI)
+  val obsModeConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
 
   def startSequenceManagerAuthEnabled(
       prefix: Prefix,
       tokenFactory: () => Option[String],
       obsModeConfigPath: Path = obsModeConfigPath,
-      provisionConfigPath: Path = provisionConfigPath,
       isConfigLocal: Boolean = true
   ): SequenceManagerApi =
-    startSequenceManager(prefix, obsModeConfigPath, provisionConfigPath, isConfigLocal, authDisabled = false, tokenFactory)
+    startSequenceManager(prefix, obsModeConfigPath, isConfigLocal, authDisabled = false, tokenFactory)
 
   def startSequenceManager(
       prefix: Prefix,
       obsModeConfigPath: Path = obsModeConfigPath,
-      provisionConfigPath: Path = provisionConfigPath,
       isConfigLocal: Boolean = true
   ): SequenceManagerApi =
-    startSequenceManager(prefix, obsModeConfigPath, provisionConfigPath, isConfigLocal, authDisabled = true, () => None)
+    startSequenceManager(prefix, obsModeConfigPath, isConfigLocal, authDisabled = true, () => None)
 
   private def startSequenceManager(
       prefix: Prefix,
       obsModeConfig: Path,
-      provisionConfig: Path,
       isConfigLocal: Boolean,
       authDisabled: Boolean,
       tokenFactory: () => Option[String]
@@ -74,7 +70,7 @@ object TestSetup extends EswTestKit {
       else config
 
     val securityDirectives = SecurityDirectives(authConfig, locationService)
-    val wiring             = SequenceManagerWiring(obsModeConfig, provisionConfig, isConfigLocal, _system, securityDirectives)
+    val wiring             = SequenceManagerWiring(obsModeConfig, isConfigLocal, _system, securityDirectives)
     wiring.start()
     seqManagerWirings += wiring
     val smLocation = resolveHTTPLocation(prefix, Service)

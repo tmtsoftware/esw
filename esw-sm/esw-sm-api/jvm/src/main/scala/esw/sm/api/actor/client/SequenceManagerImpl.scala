@@ -12,6 +12,7 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol._
 
 import scala.concurrent.Future
@@ -26,7 +27,7 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
     smRef ? (Configure(obsMode, _))
 
-  override def provision(): Future[ProvisionResponse] = smRef ? Provision
+  override def provision(config: ProvisionConfig): Future[ProvisionResponse] = smRef ? (Provision(config, _))
 
   override def getRunningObsModes: Future[GetRunningObsModesResponse] = smRef ? GetRunningObsModes
 

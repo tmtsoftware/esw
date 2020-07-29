@@ -10,7 +10,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.models.SequenceManagerState
+import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 
@@ -33,6 +33,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val subsystem                                           = randomSubsystem
   private val agent                                               = Prefix(randomSubsystem, randomString5)
   private val seqCompName                                         = randomString5
+  private val provisionConfig                                     = ProvisionConfig(Map(ESW -> 1))
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
@@ -52,10 +53,10 @@ class SequenceManagerImplTest extends BaseTestSuite {
       case SequenceManagerMsg.ShutdownSequenceComponent(`seqCompPrefix`, replyTo) => replyTo ! shutdownSequenceComponentResponse
       case SequenceManagerMsg.ShutdownAllSequenceComponents(replyTo)              => replyTo ! shutdownSequenceComponentResponse
 
-      case SequenceManagerMsg.Provision(replyTo)         => replyTo ! provisionResponse
-      case SequenceManagerMsg.GetAllAgentStatus(replyTo) => replyTo ! getAgentStatusResponse
-      case SequenceManagerMsg.ProcessingComplete(_)      =>
-      case msg                                           => println(s"$msg not handled")
+      case SequenceManagerMsg.Provision(`provisionConfig`, replyTo) => replyTo ! provisionResponse
+      case SequenceManagerMsg.GetAllAgentStatus(replyTo)            => replyTo ! getAgentStatusResponse
+      case SequenceManagerMsg.ProcessingComplete(_)                 =>
+      case msg                                                      => println(s"$msg not handled")
     }
     Behaviors.same
   }
@@ -120,7 +121,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
     }
 
     "provision | ESW-346" in {
-      sequenceManager.provision().futureValue shouldBe provisionResponse
+      sequenceManager.provision(provisionConfig).futureValue shouldBe provisionResponse
     }
   }
 }

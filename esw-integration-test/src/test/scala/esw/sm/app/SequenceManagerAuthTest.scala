@@ -8,6 +8,7 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 import esw.sm.api.SequenceManagerApi
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol._
 import msocket.impl.HttpError
 import org.scalatest.prop.Tables.Table
@@ -16,16 +17,17 @@ import scala.concurrent.{Await, Future}
 
 class SequenceManagerAuthTest extends EswTestKit(AAS) {
 
-  private val smPrefix       = Prefix(ESW, "sequence_manager")
-  private val IRIS_CAL       = ObsMode("IRIS_Cal")
-  private val IRIS_Darknight = ObsMode("IRIS_Darknight")
-  private val WFOS_Cal       = ObsMode("WFOS_Cal")
-  private val seqCompPrefix  = Prefix(ESW, "primary")
+  private val smPrefix        = Prefix(ESW, "sequence_manager")
+  private val IRIS_CAL        = ObsMode("IRIS_Cal")
+  private val IRIS_Darknight  = ObsMode("IRIS_Darknight")
+  private val WFOS_Cal        = ObsMode("WFOS_Cal")
+  private val seqCompPrefix   = Prefix(ESW, "primary")
+  private val provisionConfig = ProvisionConfig(Map(ESW -> 1))
 
   private val testCases = Table[String, SequenceManagerApi => Future[Any]](
     ("Name", "Command"),
     ("configure", _.configure(IRIS_CAL)),
-    ("provision", _.provision()),
+    ("provision", _.provision(provisionConfig)),
     ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
     ("shutdownSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),

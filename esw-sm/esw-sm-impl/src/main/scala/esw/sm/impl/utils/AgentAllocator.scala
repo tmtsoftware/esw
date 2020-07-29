@@ -3,8 +3,8 @@ package esw.sm.impl.utils
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.ListEitherExt.ListEitherOps
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse.NoMachineFoundForSubsystems
-import esw.sm.impl.config.ProvisionConfig
 
 class AgentAllocator {
   def allocate(

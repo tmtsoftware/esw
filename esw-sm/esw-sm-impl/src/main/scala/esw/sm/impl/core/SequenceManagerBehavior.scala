@@ -13,23 +13,21 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
-import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
+import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
 import esw.sm.api.protocol._
-import esw.sm.impl.config.{ObsModeConfig, ProvisionConfig, Resources, SequenceManagerConfig}
+import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
 import scala.reflect.ClassTag
-import scala.util.{Failure, Success}
 
 class SequenceManagerBehavior(
     sequenceManagerConfig: SequenceManagerConfig,
-    provisionConfigProvider: () => Future[ProvisionConfig],
     locationServiceUtil: LocationServiceUtil,
     agentUtil: AgentUtil,
     sequencerUtil: SequencerUtil,
@@ -63,8 +61,7 @@ class SequenceManagerBehavior(
         sequenceComponentUtil.shutdownSequenceComponent(prefix).map(self ! ProcessingComplete(_)); processing(self, replyTo)
       case ShutdownAllSequenceComponents(replyTo) =>
         sequenceComponentUtil.shutdownAllSequenceComponents().map(self ! ProcessingComplete(_)); processing(self, replyTo)
-
-      case Provision(replyTo) => provision(self, replyTo)
+      case Provision(config, replyTo) => provision(config, self, replyTo)
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -138,13 +135,8 @@ class SequenceManagerBehavior(
     processing(self, replyTo)
   }
 
-  private def provision(self: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
-    provisionConfigProvider()
-      .onComplete {
-        case Failure(err)   => self ! ProcessingComplete(ProvisionResponse.ConfigurationFailure(err.getMessage))
-        case Success(value) => agentUtil.provision(value).map(self ! ProcessingComplete(_))
-      }
-
+  private def provision(config: ProvisionConfig, self: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
+    agentUtil.provision(config).map(self ! ProcessingComplete(_))
     processing(self, replyTo)
   }
 

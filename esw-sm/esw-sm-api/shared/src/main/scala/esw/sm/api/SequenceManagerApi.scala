@@ -2,13 +2,14 @@ package esw.sm.api
 
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol._
 
 import scala.concurrent.Future
 
 trait SequenceManagerApi {
   def configure(obsMode: ObsMode): Future[ConfigureResponse]
-  def provision(): Future[ProvisionResponse]
+  def provision(config: ProvisionConfig): Future[ProvisionResponse]
   def getRunningObsModes: Future[GetRunningObsModesResponse]
 
   def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse]

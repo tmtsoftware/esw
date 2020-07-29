@@ -12,15 +12,11 @@ import scala.concurrent.{ExecutionContext, Future}
 //(Map observing mode to Resources and Sequencers)
 class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
   import ConfigCodecs._
-  private val EswSmKey           = "esw-sm"
-  private val ObsModesKey        = "obsModes"
-  private val ProvisionConfigKey = "provision"
+  private val EswSmKey    = "esw-sm"
+  private val ObsModesKey = "obsModes"
 
-  def readObsModeConfig(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
+  def read(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
     readConfig[SequenceManagerConfig](ObsModesKey, configFilePath, isLocal)
-
-  def readProvisionConfig(configFilePath: Path, isLocal: Boolean): Future[ProvisionConfig] =
-    readConfig[ProvisionConfig](ProvisionConfigKey, configFilePath, isLocal)
 
   // Reads config file from config service or local filesystem
   private def readConfig[T: Decoder](key: String, configFilePath: Path, isLocal: Boolean): Future[T] = {

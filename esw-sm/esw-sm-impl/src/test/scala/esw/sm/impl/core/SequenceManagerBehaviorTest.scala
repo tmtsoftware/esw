@@ -15,8 +15,8 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
-import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
+import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
@@ -47,15 +47,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     )
   )
 
-  private var provisionConfig                              = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
-  private val provisionConfProvider                        = () => Future.successful(provisionConfig)
   private val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
   private val agentUtil: AgentUtil                         = mock[AgentUtil]
   private val sequencerUtil: SequencerUtil                 = mock[SequencerUtil]
   private val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
   private val sequenceManagerBehavior = new SequenceManagerBehavior(
     config,
-    provisionConfProvider,
     locationServiceUtil,
     agentUtil,
     sequencerUtil,
@@ -67,7 +64,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   override protected def beforeEach(): Unit = {
-    provisionConfig = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
     reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil, agentUtil)
   }
 
@@ -483,11 +479,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "provision" must {
     "transition from Idle -> Processing -> Idle and return provision success | ESW-346" in {
+      val provisionConfig = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
       when(agentUtil.provision(provisionConfig)).thenReturn(future(1.second, ProvisionResponse.Success))
       val provisionResponseProbe = TestProbe[ProvisionResponse]()
 
       assertState(Idle)
-      smRef ! Provision(provisionResponseProbe.ref)
+      smRef ! Provision(provisionConfig, provisionResponseProbe.ref)
       assertState(Processing)
       assertState(Idle)
 
@@ -495,49 +492,13 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       provisionResponseProbe.expectMessage(ProvisionResponse.Success)
     }
 
-    "read updated configuration on every provision msg | ESW-346" in {
-      when(agentUtil.provision(provisionConfig)).thenReturn(future(1.second, ProvisionResponse.Success))
-      val provisionResponseProbe1 = TestProbe[ProvisionResponse]()
-      smRef ! Provision(provisionResponseProbe1.ref)
-      assertState(Idle)
-
-      verify(agentUtil).provision(provisionConfig)
-      provisionResponseProbe1.expectMessage(ProvisionResponse.Success)
-
-      // update provision config
-      val newProvisionConfig = ProvisionConfig(Map(IRIS -> 2, TCS -> 4))
-      provisionConfig = newProvisionConfig
-
-      val provisionResponseProbe2 = TestProbe[ProvisionResponse]()
-      when(agentUtil.provision(newProvisionConfig)).thenReturn(future(1.second, ProvisionResponse.Success))
-
-      smRef ! Provision(provisionResponseProbe2.ref)
-      assertState(Idle)
-
-      verify(agentUtil).provision(newProvisionConfig)
-      provisionResponseProbe2.expectMessage(ProvisionResponse.Success)
-    }
-
-    "give ConfigurationFailure if config provider gives error | ESW-346" in {
-      val errorMsg = "config reading failed"
-      val provider = () => Future.failed(new RuntimeException(errorMsg))
-      val smBeh =
-        new SequenceManagerBehavior(config, provider, locationServiceUtil, agentUtil, sequencerUtil, sequenceComponentUtil)
-      val smRef: ActorRef[SequenceManagerMsg] = actorSystem.systemActorOf(smBeh.setup, "test_actor1")
-
-      val provisionResponseProbe = TestProbe[ProvisionResponse]()
-      smRef ! Provision(provisionResponseProbe.ref)
-      assertState(Idle)
-
-      provisionResponseProbe.expectMessage(ProvisionResponse.ConfigurationFailure(errorMsg))
-    }
-
     "return ProvisionResponse given by agentUtil.provision | ESW-346" in {
+      val provisionConfig   = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
       val provisionResponse = ProvisionResponse.NoMachineFoundForSubsystems(Set(ESW))
       when(agentUtil.provision(provisionConfig)).thenReturn(Future.successful(provisionResponse))
 
       val provisionResponseProbe = TestProbe[ProvisionResponse]()
-      smRef ! Provision(provisionResponseProbe.ref)
+      smRef ! Provision(provisionConfig, provisionResponseProbe.ref)
       assertState(Idle)
       provisionResponseProbe.expectMessage(provisionResponse)
     }
@@ -548,7 +509,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       // hold configure completion by delay of 60 seconds. So SM will remain in processing state
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(60.seconds, Right(List.empty)))
 
-      val configureProbe = TestProbe[ConfigureResponse]()
+      val configureProbe  = TestProbe[ConfigureResponse]()
+      val provisionConfig = ProvisionConfig(Map(ESW -> 2, IRIS -> 2))
 
       assertState(Idle)
       smRef ! Configure(darkNight, configureProbe.ref)
@@ -569,7 +531,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         SpawnSequenceComponent(Prefix(ESW, "machine1"), "primary", _),
         ShutdownSequenceComponent(Prefix(ESW, "primary"), _),
         ShutdownAllSequenceComponents,
-        Provision
+        Provision(provisionConfig, _)
       )
     }
   }

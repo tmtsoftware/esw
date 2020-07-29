@@ -10,6 +10,7 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.models.AgentStatusResponses.AgentSeqCompsStatus
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.SequenceManagerPostRequest._
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
@@ -29,6 +30,7 @@ class SequenceManagerPostHandlerTest
   lazy val route: Route                              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
   private val obsMode                                = ObsMode("IRIS_darknight")
   private val componentId                            = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
+  private val provisionConfig                        = ProvisionConfig(Map(ESW -> 1))
 
   override def clientContentType: ContentType = ContentType.Json
 
@@ -47,10 +49,10 @@ class SequenceManagerPostHandlerTest
     }
 
     "return provision success for provision request | ESW-346" in {
-      when(sequenceManagerApi.provision()).thenReturn(Future.successful(ProvisionResponse.Success))
+      when(sequenceManagerApi.provision(provisionConfig)).thenReturn(Future.successful(ProvisionResponse.Success))
 
-      Post("/post-endpoint", Provision.narrow) ~> route ~> check {
-        verify(sequenceManagerApi).provision()
+      Post("/post-endpoint", Provision(provisionConfig).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).provision(provisionConfig)
         responseAs[ProvisionResponse] should ===(ProvisionResponse.Success)
       }
     }

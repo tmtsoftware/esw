@@ -10,10 +10,10 @@ import esw.agent.client.AgentClient
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, AgentToSeqCompsMap}
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.{SpawnSequenceComponentFailed, Success}
 import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse, SpawnSequenceComponentResponse}
-import esw.sm.impl.config.ProvisionConfig
 
 import scala.concurrent.Future
 

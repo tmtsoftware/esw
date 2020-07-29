@@ -7,8 +7,8 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse.NoMachineFoundForSubsystems
-import esw.sm.impl.config.ProvisionConfig
 import esw.testcommons.BaseTestSuite
 
 class AgentAllocatorTest extends BaseTestSuite {

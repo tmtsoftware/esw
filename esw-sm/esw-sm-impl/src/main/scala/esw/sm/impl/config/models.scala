@@ -26,7 +26,3 @@ case class SequenceManagerConfig(obsModes: Map[ObsMode, ObsModeConfig]) {
   def sequencers(obsMode: ObsMode): Option[Sequencers]       = obsModeConfig(obsMode).map(_.sequencers)
   def obsModeConfig(obsMode: ObsMode): Option[ObsModeConfig] = obsModes.get(obsMode)
 }
-
-case class ProvisionConfig(config: Map[Subsystem, Int]) {
-  require(config.forall(_._2 > 0), "Invalid Provision config: Count of sequence components cannot be Zero or less than Zero")
-}

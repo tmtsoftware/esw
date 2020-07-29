@@ -12,8 +12,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models.SequenceManagerState
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
@@ -48,6 +48,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
 
     val obsMode = ObsMode("IRIS_DarkNight")
     val agent   = Prefix(ESW, "agent1")
+    val config  = ProvisionConfig(Map(ESW -> 1))
 
     val testData = Table(
       "SequenceManagerRemoteMsg models",
@@ -64,7 +65,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       ShutdownSequenceComponent(Prefix(ESW, "primary"), shutdownSequenceComponentResponseRef),
       ShutdownAllSequenceComponents(shutdownSequenceComponentResponseRef),
       GetAllAgentStatus(getAgentResponseRef),
-      Provision(provisionResponseRef)
+      Provision(config, provisionResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>
