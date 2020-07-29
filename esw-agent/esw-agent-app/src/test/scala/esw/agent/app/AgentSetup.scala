@@ -3,6 +3,7 @@ package esw.agent.app
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 
+import akka.Done
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
@@ -12,8 +13,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api.{AgentCommand, SpawnResponse}
-import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.process.ProcessExecutor
+import esw.agent.app.process.{ProcessExecutor, ProcessManager}
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
 import scala.concurrent.duration.{FiniteDuration, _}
@@ -27,6 +27,7 @@ class AgentSetup extends BaseTestSuite {
 
   val locationService: LocationService = mock[LocationService]
   val processExecutor: ProcessExecutor = mock[ProcessExecutor]
+  val processManager: ProcessManager   = mock[ProcessManager]
   val process: Process                 = mock[Process]
   val processHandle: ProcessHandle     = mock[ProcessHandle]
   val logger: Logger                   = mock[Logger]
@@ -70,13 +71,18 @@ class AgentSetup extends BaseTestSuite {
     val future = new CompletableFuture[Process]()
     scheduler.scheduleOnce(dieAfter, () => future.complete(process))
     when(process.onExit()).thenReturn(future)
+
+    val future2 = new CompletableFuture[ProcessHandle]()
+    scheduler.scheduleOnce(dieAfter, () => future2.complete(processHandle))
+    when(processHandle.onExit()).thenReturn(future2)
     when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
   }
 
   def mockLocationServiceForRedis(registrationDuration: FiniteDuration = 0.seconds): Unit = {
     when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
     when(locationService.register(redisRegistration)).thenReturn(
-      delayedFuture(RegistrationResult.from(redisLocation, con => locationService.unregister(con)), registrationDuration)
+      delayedFuture(RegistrationResult.from(redisLocation, locationService.unregister), registrationDuration)
     )
+    when(locationService.unregister(redisConn)).thenReturn(Future.successful(Done))
   }
 }

@@ -2,6 +2,7 @@ package esw.agent.app
 
 import java.net.URI
 
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.TcpConnection
@@ -42,7 +43,7 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.failed(new RuntimeException(err)))
 
       agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(Failed(err))
+      probe.expectMessage(Failed(s"Failed to verify component registration in location service, reason: $err"))
 
       //ensure component is NOT registered
       verify(locationService, never).register(redisRegistration)
@@ -56,7 +57,9 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
         .thenReturn(redisLocationF)
 
       agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(Failed("can not spawn component when it is already registered in location service"))
+      probe.expectMessage(
+        Failed(s"Component ${componentId.fullName} is already registered with location service at location $redisLocation")
+      )
 
       //ensure component is NOT registered
       verify(locationService, never).register(redisRegistration)
@@ -108,7 +111,7 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       mockSuccessfulProcess()
 
       agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(Failed("registration encountered an issue or timed out"))
+      probe.expectMessage(Failed(s"Failed to register component ${componentId.fullName} with location service, reason: failure"))
 
       //ensure component is registered
       verify(locationService).register(redisRegistration)
@@ -128,17 +131,18 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       when(locationService.register(redisRegistration)).thenReturn(
         delayedFuture(RegistrationResult.from(redisLocation, con => locationService.unregister(con)), 2.seconds)
       )
+      when(locationService.unregister(redisConn)).thenReturn(Future.successful(Done))
 
       mockSuccessfulProcess(dieAfter = 500.millis)
 
       agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(3.seconds, Failed("process died before registration"))
+      probe.expectMessage(Failed("Process terminated before registration was successful"))
 
       //ensure component is registered
       verify(locationService).register(redisRegistration)
 
       //ensure component is unregistered later
-      verify(locationService, timeout(1000)).unregister(redisConn)
+      verify(locationService, timeout(1000).times(2)).unregister(redisConn)
     }
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
@@ -146,15 +150,15 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       val spawner       = TestProbe[SpawnResponse]()
       val killer        = TestProbe[KillResponse]()
 
-      mockLocationServiceForRedis(registrationDuration = 5.seconds)
-      mockSuccessfulProcess(dieAfter = 2.seconds)
+      mockLocationServiceForRedis(registrationDuration = 1.seconds)
+      mockSuccessfulProcess(dieAfter = 100.millis)
 
       agentActorRef ! spawnRedis(spawner.ref)
-      Thread.sleep(500)
+      Thread.sleep(200)
       agentActorRef ! KillComponent(killer.ref, componentId)
 
-      spawner.expectMessage(Failed("Aborted"))
       killer.expectMessage(Killed)
+      spawner.expectMessage(Failed("Process terminated before registration was successful"))
     }
   }
 }

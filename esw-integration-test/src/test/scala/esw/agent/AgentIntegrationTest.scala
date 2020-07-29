@@ -75,7 +75,7 @@ class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
       agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
     }
 
-    "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
+    "return Failed to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" ignore {
       val spawnResponseF = spawnSequenceComponent(irisPrefix)
       agentClient.killComponent(irisCompId).futureValue should ===(Killed)
       spawnResponseF.futureValue should ===(Failed("Aborted"))

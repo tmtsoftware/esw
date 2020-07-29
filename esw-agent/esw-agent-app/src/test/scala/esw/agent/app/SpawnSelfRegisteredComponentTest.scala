@@ -1,5 +1,6 @@
 package esw.agent.app
 
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
@@ -11,7 +12,6 @@ import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
-//todo: fix test names
 class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
   "SpawnSelfRegistered" must {
@@ -19,8 +19,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor1")
       val probe         = TestProbe[SpawnResponse]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqCompLocationF)
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
 
       mockSuccessfulProcess()
 
@@ -31,23 +30,25 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
     "reply 'Failed' and not spawn new process when call to location service fails" in {
       val agentActorRef = spawnAgentActor(name = "test-actor2")
       val probe         = TestProbe[SpawnResponse]()
-      val err           = "Failed to resolve componet"
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.failed(new RuntimeException(err)))
+      val err           = "Failed to resolve component"
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.failed(new RuntimeException(err)))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
-      probe.expectMessage(Failed(err))
+      probe.expectMessage(Failed(s"Failed to verify component registration in location service, reason: $err"))
     }
 
     "reply 'Failed' and not spawn new process when it is already registered with location service | ESW-237" in {
       val agentActorRef = spawnAgentActor(name = "test-actor3")
       val probe         = TestProbe[SpawnResponse]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(seqCompLocationF)
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
-      probe.expectMessage(Failed("can not spawn component when it is already registered in location service"))
+      probe.expectMessage(
+        Failed(
+          s"Component ${seqCompComponentId.fullName} is already registered with location service at location $seqCompLocation"
+        )
+      )
     }
 
     "reply 'Failed' and not spawn new process when it is already spawned on the agent | ESW-237" in {
@@ -55,8 +56,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[SpawnResponse]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqCompLocationF)
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
 
       mockSuccessfulProcess()
 
@@ -71,8 +71,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor5")
       val probe         = TestProbe[SpawnResponse]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqCompLocationF)
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
       when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Left("failure"))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
@@ -83,26 +82,29 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor6")
       val probe         = TestProbe[SpawnResponse]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None))
 
       mockSuccessfulProcess()
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
-      probe.expectMessage(Failed("registration encountered an issue or timed out"))
+      probe.expectMessage(Failed(s"Component ${seqCompComponentId.fullName} is not registered with location service"))
     }
 
-    "reply 'Failed' when the process is spawned but exits before registration | ESW-237" in {
+    "reply 'Failed' when the process is started but exits before registration | ESW-237" in {
       val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 3.seconds), "test-actor7")
       val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(None, 15.seconds))
+        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.second))
+      when(locationService.unregister(seqCompConn)).thenReturn(Future.successful(Done))
 
-      mockSuccessfulProcess(dieAfter = 2.seconds)
+      mockSuccessfulProcess(dieAfter = 100.millis)
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
-      probe.expectMessage(10.seconds, Failed("process died before registration"))
+      probe.expectMessage(Failed("Process terminated before registration was successful"))
+
+      // onProcessExit and reconcile
+      verify(locationService, times(2)).unregister(seqCompConn)
     }
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
@@ -113,13 +115,15 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       val spawner = TestProbe[SpawnResponse]()
       val killer  = TestProbe[KillResponse]()
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 5.seconds))
-      mockSuccessfulProcess(dieAfter = 2.seconds)
+        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 2.seconds))
+      when(locationService.unregister(seqCompConn)).thenReturn(Future.successful(Done))
+
+      mockSuccessfulProcess(dieAfter = 1.seconds)
 
       agentActorRef ! SpawnSequenceComponent(spawner.ref, seqCompPrefix)
-      Thread.sleep(800)
+      Thread.sleep(200)
       agentActorRef ! KillComponent(killer.ref, seqCompComponentId)
-      spawner.expectMessage(Failed("Aborted"))
+      spawner.expectMessage(Failed("Process terminated before registration was successful"))
       killer.expectMessage(Killed)
     }
   }

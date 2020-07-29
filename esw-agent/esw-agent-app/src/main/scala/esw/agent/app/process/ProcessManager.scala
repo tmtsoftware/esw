@@ -5,14 +5,14 @@ import java.util.concurrent.atomic.AtomicReference
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.PhaseBeforeServiceUnbind
-import akka.actor.typed.ActorSystem
+import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
-import esw.agent.api.AgentCommand.SpawnCommand
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
+import esw.agent.api.AgentCommand.{ProcessExited, SpawnCommand}
 import esw.agent.api.ComponentStatus.{Initializing, Running, Stopping}
 import esw.agent.api._
 import esw.agent.app.AgentSettings
@@ -23,6 +23,7 @@ import esw.agent.app.process.redis.Redis
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.util.Try
 import scala.util.control.NonFatal
 
 class ProcessManager(
@@ -36,41 +37,52 @@ class ProcessManager(
   import command._
   import system.executionContext
 
-  private val status  = new AtomicReference[ComponentStatus](Initializing)
-  private val process = new AtomicReference[Option[Process]](None)
+  private val status        = new AtomicReference[ComponentStatus](Initializing)
+  private val process       = new AtomicReference[Option[Process]](None)
+  private val componentName = componentId.fullName
 
   private val executableCommand: List[String] = command match {
     case SpawnSequenceComponent(_, _, version) => Coursier.ocsApp(version).launch(coursierChannel, commandArgs)
     case _: SpawnRedis                         => Redis.server :: commandArgs
   }
 
-  def spawn: Future[SpawnResponse] =
+  def spawn(agentActor: ActorRef[AgentCommand]): Future[SpawnResponse] =
     verifyComponentIsNotAlreadyRegistered
-      .flatMapE(_ => startComponent)
-      .flatMapE(_ => waitForComponentRegistration.mapRight(_ => status.set(Running)))
+      .flatMapE(_ => startComponent(agentActor))
+      .flatMapE(_ => waitForComponentRegistration.flatMapE(_ => reconcile))
       .mapToAdt(_ => Spawned, e => { logger.warn(e); Failed(e) })
 
   def getStatus: ComponentStatus = status.get()
 
-  def kill: Future[KillResponse] =
-    killProcess.zipWith(unregisterComponent)((_, _) => Killed).recover {
-      case NonFatal(e) => Failed(s"Failed to kill component ID $componentId, reason: $e")
+  // un-registration is done as a part of process.onComplete callback
+  def kill: Future[KillResponse] = {
+    status.set(Stopping)
+    killProcess.map(_ => Killed).recover {
+      case NonFatal(e) => Failed(s"Failed to kill component $componentName, reason: $e")
     }
+  }
 
   private def verifyComponentIsNotAlreadyRegistered: Future[Either[String, Unit]] =
     checkRegistration(0.seconds) {
       case None    => Right(())
-      case Some(l) => Left(s"Component Id $componentId is already registered with location service at location $l")
+      case Some(l) => Left(s"Component $componentName is already registered with location service at location $l")
     }
 
-  private def startComponent =
+  private def startComponent(agentActor: ActorRef[AgentCommand]) =
     Future.successful(
-      processExecutor.runCommand(executableCommand, prefix).map { p => process.set(Some(p)); unregisterCompOnProcessExit(p) }
+      processExecutor.runCommand(executableCommand, prefix).map { p => process.set(Some(p)); onProcessExit(p, agentActor) }
     )
+
+  private def reconcile =
+    if (process.get().isEmpty) {
+      status.set(Stopping)
+      unregisterComponent.transform(_ => Try(Left("Process terminated before registration was successful")))
+    }
+    else { status.set(Running); Future.successful(Right(())) }
 
   private def waitForComponentRegistration: Future[Either[String, Unit]] =
     command match {
-      case _: SpawnSelfRegistered       => isComponentRegistered(durationToWaitForComponentRegistration)
+      case _: SpawnSelfRegistered       => waitForRegistration(durationToWaitForComponentRegistration)
       case cmd: SpawnManuallyRegistered => registerComponent(cmd.registration)
     }
 
@@ -82,7 +94,7 @@ class ProcessManager(
 
   private def registerComponent(registration: Registration): Future[Either[String, Unit]] =
     locationService.register(registration).map { r => Right(addUnRegistrationHook(r)) }.recover {
-      case NonFatal(e) => Left(s"Failed to register component ID $componentId with location service, reason: ${e.getMessage}")
+      case NonFatal(e) => Left(s"Failed to register component $componentName with location service, reason: ${e.getMessage}")
     }
 
   private def unregisterComponent: Future[Done] = locationService.unregister(connection)
@@ -94,18 +106,20 @@ class ProcessManager(
       case NonFatal(e) => Left(s"Failed to verify component registration in location service, reason: ${e.getMessage}")
     }
 
-  private def isComponentRegistered(timeout: FiniteDuration): Future[Either[String, Unit]] =
+  private def waitForRegistration(timeout: FiniteDuration): Future[Either[String, Unit]] =
     checkRegistration(timeout) {
       case Some(_) => Right(())
-      case None    => Left(s"Component Id $componentId is not registered with location service")
+      case None    => Left(s"Component $componentName is not registered with location service")
     }
 
-  private def unregisterCompOnProcessExit(p: Process): Unit =
+  private def onProcessExit(p: Process, agentActor: ActorRef[AgentCommand]): Unit =
     p.onComplete { _ =>
-      logger.warn(s"Process exited with exit value: ${p.exitValue()}, unregistering component ID $componentId")
+      process.set(None)
+      logger.warn(s"Process exited with exit value: ${p.exitValue()}, unregistering component $componentName")
+      agentActor ! ProcessExited(componentId)
       unregisterComponent
     }
 
   private def killProcess: Future[Unit] =
-    process.get().fold(Future.successful(()))(_.kill(10.seconds).map(_ => { process.set(None); status.set(Stopping) }))
+    process.get().fold(Future.successful(()))(_.kill(10.seconds).map(_ => process.set(None)))
 }
