@@ -20,6 +20,7 @@ import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
+import esw.sm.api.actor.client.SequenceManagerApiFactory
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
@@ -99,7 +100,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     assertThatSeqCompIsAvailable(aoeswSeqCompPrefix)
   }
 
-  "configure SH using config file from config service | ESW-357" in {
+  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170, ESW-171, ESW-179, ESW-178, ESW-357" in {
     // start config server
     configTestKit.startConfigServer()
 
@@ -112,9 +113,17 @@ class SequenceManagerIntegrationTest extends EswTestKit {
       """
         esw-sm {
         |  obsModes: {
+        |    IRIS_Darknight: {
+        |      resources: [IRIS, TCS, NFIRAOS]
+        |      sequencers: [IRIS, ESW, TCS]
+        |    },
         |    IRIS_Cal: {
-        |      resources: [IRIS]
-        |      sequencers: [IRIS]
+        |      resources: [IRIS, NSCU, NFIRAOS]
+        |      sequencers: [IRIS, ESW, AOESW]
+        |    },
+        |    WFOS_Cal: {
+        |      resources: [WFOS]
+        |      sequencers: [WFOS, ESW]
         |    }
         |  }
         |}
@@ -122,23 +131,6 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // create obsMode config file on config server
     adminApi.create(configFilePath, ConfigData.fromString(obsModeConfig), annex = false, "First commit").futureValue
 
-    val irisSeqCompPrefix  = Prefix(IRIS, "primary")
-    TestSetup.startSequenceComponents(irisSeqCompPrefix)
-
-    //ESW-357 Starts SM and returns SM Http client.
-    val sequenceManagerClient =
-      TestSetup.startSequenceManager(sequenceManagerPrefix, obsModeConfigPath = configFilePath, isConfigLocal = false)
-
-    // assert for Successful Configuration
-    sequenceManagerClient.configure(IRIS_CAL).futureValue shouldBe a[ConfigureResponse.Success]
-
-    // Test cleanup
-    sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
-    configTestKit.deleteServerFiles()
-    configTestKit.terminateServer()
-  }
-
-  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170, ESW-171, ESW-179, ESW-178" in {
     TestSetup.startSequenceComponents(
       Prefix(ESW, "primary"),
       Prefix(ESW, "secondary"),
@@ -147,7 +139,9 @@ class SequenceManagerIntegrationTest extends EswTestKit {
       Prefix(WFOS, "primary"),
       Prefix(TCS, "primary")
     )
-    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
+    // ESW-357 read SM config from remote config server
+    val sequenceManagerClient =
+      TestSetup.startSequenceManager(sequenceManagerPrefix, obsModeConfigPath = configFilePath, isConfigLocal = false)
 
     // Configure for "IRIS_Cal" observing mode should be successful as the resources are available
     sequenceManagerClient.configure(IRIS_CAL).futureValue shouldBe a[ConfigureResponse.Success]
@@ -163,6 +157,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // Test cleanup
     sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
     sequenceManagerClient.shutdownObsModeSequencers(WFOS_CAL).futureValue
+    configTestKit.deleteServerFiles()
+    configTestKit.terminateServer()
   }
 
   "Use ESW sequence components as fallback for other subsystems and give error if enough components are not available| ESW-164, ESW-171, ESW-340" in {
