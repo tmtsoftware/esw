@@ -8,10 +8,10 @@ import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
 import csw.location.api.scaladsl.RegistrationResult
+import esw.agent.api.AgentCommand.GetComponentStatus
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
-import esw.agent.api.AgentCommand.{GetComponentStatus, KillComponent}
-import esw.agent.api.ComponentStatus.{Initializing, NotAvailable, Running, Stopping}
+import esw.agent.api.ComponentStatus.{Initializing, NotAvailable, Running}
 import esw.agent.api._
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
@@ -76,22 +76,6 @@ class GetComponentStatusTest extends AgentSetup {
       probe.expectMessage(Running)
     }
 
-    "reply 'Stopping' when process is stopping | ESW-286" in {
-      val agentActorRef = spawnAgentActor(name = "test-actor5")
-      val spawner       = TestProbe[SpawnResponse]()
-      val killer        = TestProbe[KillResponse]()
-      val probe         = TestProbe[ComponentStatus]()
-
-      mockSuccessfulProcess(5.seconds)
-      mockLocationService()
-
-      agentActorRef ! spawnComponent(spawner.ref)
-      Thread.sleep(200)
-      agentActorRef ! KillComponent(killer.ref, componentId)
-      Thread.sleep(100)
-      agentActorRef ! getStatus(probe.ref)
-      probe.expectMessage(Stopping)
-    }
   }
 
   "GetComponentStatus (self registered)" must {
@@ -151,22 +135,6 @@ class GetComponentStatusTest extends AgentSetup {
       probe.expectMessage(Running)
     }
 
-    "reply 'Stopping' when process is stopping | ESW-286" in {
-      val agentActorRef = spawnAgentActor(name = "test-actor10")
-      val spawner       = TestProbe[SpawnResponse]()
-      val killer        = TestProbe[KillResponse]()
-      val probe         = TestProbe[ComponentStatus]()
-
-      mockSuccessfulProcess(5.seconds)
-      mockLocationService()
-
-      agentActorRef ! spawnComponent(spawner.ref)
-      Thread.sleep(200)
-      agentActorRef ! KillComponent(killer.ref, componentId)
-      Thread.sleep(100)
-      agentActorRef ! getStatus(probe.ref)
-      probe.expectMessage(Stopping)
-    }
   }
 
   private def mockLocationService(

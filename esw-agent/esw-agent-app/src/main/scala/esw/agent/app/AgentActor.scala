@@ -6,8 +6,12 @@ import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
 import esw.agent.api.ComponentStatus.NotAvailable
-import esw.agent.api.{AgentCommand, AgentStatus, Failed}
+import esw.agent.api._
+import esw.agent.app.ext.FutureEitherExt.FutureEitherOps
 import esw.agent.app.process.{ProcessExecutor, ProcessManager}
+
+import scala.concurrent.Future
+import scala.util.chaining.scalaUtilChainingOps
 
 class AgentActor(
     locationService: LocationService,
@@ -21,44 +25,44 @@ class AgentActor(
   private[agent] def behavior(state: AgentState): Behaviors.Receive[AgentCommand] =
     Behaviors.receive[AgentCommand] { (ctx, command) =>
       import ctx.executionContext
+      val processManager = new ProcessManager(locationService, processExecutor, agentSettings)(ctx.system)
+
+      def swap[M](x: Option[Future[M]]): Future[Option[M]] = Future.sequence(x.toList).map(_.headOption)
+
       command match {
         //already spawning or registered
         case cmd: SpawnCommand if state.exist(cmd.componentId) =>
-          val message = "given component is already in process"
-          warn(message, Map("prefix" -> cmd.componentId.prefix))
-          cmd.replyTo ! Failed(message)
+          val failed = Failed(s"Component ${cmd.componentId.fullName} is already running on this agent").tap(m => warn(m.msg))
+          cmd.replyTo ! failed
           Behaviors.same
 
         //happy path
         case cmd: SpawnCommand =>
-          val processManager = new ProcessManager(locationService, processExecutor, agentSettings, logger, cmd)(ctx.system)
-          processManager.spawn(ctx.self).map(cmd.replyTo ! _)
-          behavior(state.add(cmd.componentId, processManager))
+          val spawnRes = processManager.spawn(cmd, ctx.self)
+          spawnRes
+            .mapRight { process =>
+              ctx.self ! UpdateComponentState(cmd.componentId, ComponentState(Some(process)))
+              cmd.replyTo ! Spawned
+            }
+            .mapLeft(cmd.replyTo ! Failed(_))
+
+          behavior(state.add(cmd.componentId, ComponentState(None)))
 
         case KillComponent(replyTo, componentId) =>
-          state.components.get(componentId) match {
-            case Some(processManager) =>
-              processManager.kill.map { kr =>
-                ctx.self ! ProcessExited(componentId)
-                replyTo ! kr
-              }
-            case None =>
-              val message = "given component id is not running on this agent"
-              error(message, Map("prefix" -> componentId.prefix))
-              replyTo ! Failed(message)
-          }
+          lazy val failed = Failed(s"Component ${componentId.fullName} is not running on this agent").tap(m => warn(m.msg))
+          swap(state.components.get(componentId).flatMap(_.process.map(processManager.kill)))
+            .map(_.fold[KillResponse](failed)(identity))
+            .map(replyTo ! _)
           Behaviors.same
 
+        case UpdateComponentState(componentId, componentState) => behavior(state.add(componentId, componentState))
+
         case GetComponentStatus(replyTo, componentId) =>
-          state.components.get(componentId) match {
-            case Some(processManager) => replyTo ! processManager.getStatus
-            case None                 => replyTo ! NotAvailable
-          }
+          replyTo ! state.components.get(componentId).fold[ComponentStatus](NotAvailable)(_.status)
           Behaviors.same
 
         case GetAgentStatus(replyTo) =>
-          val status = state.components.view.mapValues(_.getStatus).toMap
-          replyTo ! AgentStatus(status)
+          replyTo ! AgentStatus(state.components.view.mapValues(_.status).toMap)
           Behaviors.same
 
         //process has exited and child actor died
@@ -67,9 +71,9 @@ class AgentActor(
     }
 }
 
-private[agent] case class AgentState(components: Map[ComponentId, ProcessManager]) {
-  def add(componentId: ComponentId, processManager: ProcessManager): AgentState =
-    copy(components = components + (componentId -> processManager))
+private[agent] case class AgentState(components: Map[ComponentId, ComponentState]) {
+  def add(componentId: ComponentId, componentState: ComponentState): AgentState =
+    copy(components = components + (componentId -> componentState))
   def remove(componentId: ComponentId): AgentState = copy(components = components - componentId)
   def exist(componentId: ComponentId): Boolean     = components.contains(componentId)
 }

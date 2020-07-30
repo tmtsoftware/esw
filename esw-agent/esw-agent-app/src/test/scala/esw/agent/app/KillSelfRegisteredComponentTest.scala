@@ -1,6 +1,5 @@
 package esw.agent.app
 
-import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
@@ -37,32 +36,6 @@ class KillSelfRegisteredComponentTest extends AgentSetup {
       killer.expectMessage(Killed)
     }
 
-    "reply 'Failed' when component is waiting registration confirmation | ESW-276" in {
-      val agentActorRef = spawnAgentActor(name = "test-actor3")
-      val probe1        = TestProbe[SpawnResponse]()
-      val probe2        = TestProbe[KillResponse]()
-      //this will actor remains in waiting state
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.second))
-
-      when(locationService.unregister(seqCompConn)).thenReturn(Future.successful(Done))
-
-      mockSuccessfulProcess(dieAfter = 10.millis)
-
-      //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, seqCompPrefix)
-      //it should not be registered
-      probe1.expectNoMessage(100.millis)
-
-      //stop the component
-      agentActorRef ! KillComponent(probe2.ref, seqCompComponentId)
-      //ensure it is stopped gracefully
-      probe2.expectMessage(Killed)
-      probe1.expectMessage(Failed("Process terminated before registration was successful"))
-
-      verify(locationService, times(2)).unregister(seqCompConn)
-    }
-
     "reply 'Killed' after process termination, when process is already stopping by another message | ESW-276" in {
       val agentActorRef = spawnAgentActor(agentSettings, "test-actor6")
       val spawnProbe    = TestProbe[SpawnResponse]()
@@ -92,10 +65,11 @@ class KillSelfRegisteredComponentTest extends AgentSetup {
       val probe         = TestProbe[KillResponse]()
 
       //try to stop the component
-      agentActorRef ! KillComponent(probe.ref, ComponentId(Prefix("ESW.invalid"), SequenceComponent))
+      val id = ComponentId(Prefix("ESW.invalid"), SequenceComponent)
+      agentActorRef ! KillComponent(probe.ref, id)
 
       //verify that response is Failure
-      probe.expectMessage(Failed("given component id is not running on this agent"))
+      probe.expectMessage(Failed(s"Component ${id.fullName} is not running on this agent"))
     }
   }
 }

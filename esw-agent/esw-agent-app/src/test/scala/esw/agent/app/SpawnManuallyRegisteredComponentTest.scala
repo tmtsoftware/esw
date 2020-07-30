@@ -1,22 +1,13 @@
 package esw.agent.app
 
-import java.net.URI
-
-import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import csw.location.api.models.ComponentType.Service
-import csw.location.api.models.Connection.TcpConnection
-import csw.location.api.models.{ComponentId, TcpLocation, TcpRegistration}
-import csw.location.api.scaladsl.RegistrationResult
 import csw.prefix.models.Prefix
-import esw.agent.api.AgentCommand.KillComponent
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api._
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
 import scala.concurrent.Future
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 
 class SpawnManuallyRegisteredComponentTest extends AgentSetup {
 
@@ -77,7 +68,7 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       agentActorRef ! spawnRedis(probe2.ref)
 
       probe1.expectMessage(Spawned)
-      probe2.expectMessage(Failed("given component is already in process"))
+      probe2.expectMessage(Failed(s"Component ${redisConn.componentId.fullName} is already running on this agent"))
 
       //ensure redis is registered once
       verify(locationService).register(redisRegistration)
@@ -115,50 +106,6 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
 
       //ensure component is registered
       verify(locationService).register(redisRegistration)
-    }
-
-    "Unregister when process is spawned but exits before registration and registration is later succeeded | ESW-237" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 4.seconds), "test-actor7")
-      // fixme: remove duplication
-      val probe             = TestProbe[SpawnResponse]()
-      val prefix            = Prefix("csw.redis")
-      val redisConn         = TcpConnection(ComponentId(prefix, Service))
-      val redisRegistration = TcpRegistration(redisConn, 100)
-      val redisLocation     = TcpLocation(redisConn, new URI("some"))
-      val spawnRedis        = SpawnRedis(_, prefix, 100, List.empty)
-
-      when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
-      when(locationService.register(redisRegistration)).thenReturn(
-        delayedFuture(RegistrationResult.from(redisLocation, con => locationService.unregister(con)), 2.seconds)
-      )
-      when(locationService.unregister(redisConn)).thenReturn(Future.successful(Done))
-
-      mockSuccessfulProcess(dieAfter = 500.millis)
-
-      agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(Failed("Process terminated before registration was successful"))
-
-      //ensure component is registered
-      verify(locationService).register(redisRegistration)
-
-      //ensure component is unregistered later
-      verify(locationService, timeout(1000).times(2)).unregister(redisConn)
-    }
-
-    "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 7.seconds), "test-actor8")
-      val spawner       = TestProbe[SpawnResponse]()
-      val killer        = TestProbe[KillResponse]()
-
-      mockLocationServiceForRedis(registrationDuration = 1.seconds)
-      mockSuccessfulProcess(dieAfter = 100.millis)
-
-      agentActorRef ! spawnRedis(spawner.ref)
-      Thread.sleep(200)
-      agentActorRef ! KillComponent(killer.ref, componentId)
-
-      killer.expectMessage(Killed)
-      spawner.expectMessage(Failed("Process terminated before registration was successful"))
     }
   }
 }

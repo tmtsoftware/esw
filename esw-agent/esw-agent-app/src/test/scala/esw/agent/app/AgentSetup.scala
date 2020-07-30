@@ -68,6 +68,7 @@ class AgentSetup extends BaseTestSuite {
     when(process.pid()).thenReturn(Random.nextInt(1000).abs)
     when(process.toHandle).thenReturn(processHandle)
     when(process.exitValue()).thenReturn(exitCode)
+    when(process.isAlive).thenReturn(true)
     val future = new CompletableFuture[Process]()
     scheduler.scheduleOnce(dieAfter, () => future.complete(process))
     when(process.onExit()).thenReturn(future)

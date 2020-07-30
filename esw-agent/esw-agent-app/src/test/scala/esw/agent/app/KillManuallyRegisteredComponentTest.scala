@@ -33,27 +33,7 @@ class KillManuallyRegisteredComponentTest extends AgentSetup {
       probe2.expectMessage(10.seconds, Killed)
 
       //ensure component was unregistered
-      verify(locationService).unregister(redisConn)
-    }
-
-    "reply 'Killed' when registration is being performed | ESW-276" in {
-      val agentActorRef = spawnAgentActor(name = "test-actor5")
-      val probe1        = TestProbe[SpawnResponse]()
-      val probe2        = TestProbe[KillResponse]()
-
-      mockLocationServiceForRedis(1.second) //this will ensure actor remains in registering state
-      mockSuccessfulProcess(dieAfter = 10.millis)
-
-      //start a component
-      agentActorRef ! spawnRedis(probe1.ref)
-      probe1.expectNoMessage(100.millis)
-
-      //stop the component
-      agentActorRef ! KillComponent(probe2.ref, componentId)
-      probe2.expectMessage(Killed)
-      probe1.expectMessage(Failed("Process terminated before registration was successful"))
-
-      verify(locationService, times(2)).unregister(redisConn)
+      verify(locationService, timeout(1000)).unregister(redisConn)
     }
 
     "reply 'Killed' when process is already stopping by another message [Idempotent] | ESW-276" in {
@@ -87,10 +67,11 @@ class KillManuallyRegisteredComponentTest extends AgentSetup {
       val probe         = TestProbe[KillResponse]()
 
       //try to stop the component
-      agentActorRef ! KillComponent(probe.ref, ComponentId(Prefix("ESW.invalid"), Service))
+      val id = ComponentId(Prefix("ESW.invalid"), Service)
+      agentActorRef ! KillComponent(probe.ref, id)
 
       //verify that response is Failure
-      probe.expectMessage(Failed("given component id is not running on this agent"))
+      probe.expectMessage(Failed(s"Component ${id.fullName} is not running on this agent"))
 
       //ensure component was NOT unregistered
       verify(locationService, never).unregister(redisConn)

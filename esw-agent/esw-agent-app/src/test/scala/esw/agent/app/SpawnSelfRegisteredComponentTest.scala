@@ -1,16 +1,14 @@
 package esw.agent.app
 
-import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
-import esw.agent.api.AgentCommand.KillComponent
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api._
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
 import scala.concurrent.Future
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 
 class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
@@ -64,7 +62,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       agentActorRef ! SpawnSequenceComponent(probe2.ref, seqCompPrefix)
 
       probe1.expectMessage(Spawned)
-      probe2.expectMessage(Failed("given component is already in process"))
+      probe2.expectMessage(Failed(s"Component ${seqCompComponentId.fullName} is already running on this agent"))
     }
 
     "reply 'Failed' when process fails to spawn | ESW-237" in {
@@ -88,43 +86,6 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
       probe.expectMessage(Failed(s"Component ${seqCompComponentId.fullName} is not registered with location service"))
-    }
-
-    "reply 'Failed' when the process is started but exits before registration | ESW-237" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 3.seconds), "test-actor7")
-      val probe         = TestProbe[SpawnResponse]()
-
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.second))
-      when(locationService.unregister(seqCompConn)).thenReturn(Future.successful(Done))
-
-      mockSuccessfulProcess(dieAfter = 100.millis)
-
-      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
-      probe.expectMessage(Failed("Process terminated before registration was successful"))
-
-      // onProcessExit and reconcile
-      verify(locationService, times(2)).unregister(seqCompConn)
-    }
-
-    "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
-      val agentActorRef = spawnAgentActor(
-        agentSettings.copy(durationToWaitForComponentRegistration = 7.seconds),
-        "test-actor8"
-      )
-      val spawner = TestProbe[SpawnResponse]()
-      val killer  = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 2.seconds))
-      when(locationService.unregister(seqCompConn)).thenReturn(Future.successful(Done))
-
-      mockSuccessfulProcess(dieAfter = 1.seconds)
-
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, seqCompPrefix)
-      Thread.sleep(200)
-      agentActorRef ! KillComponent(killer.ref, seqCompComponentId)
-      spawner.expectMessage(Failed("Process terminated before registration was successful"))
-      killer.expectMessage(Killed)
     }
   }
 }
