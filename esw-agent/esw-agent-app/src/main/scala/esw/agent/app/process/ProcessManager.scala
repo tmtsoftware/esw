@@ -8,7 +8,7 @@ import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.client.scaladsl.GenericLoggerFactory
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.api.AgentCommand.{ProcessExited, SpawnCommand}
 import esw.agent.api._
@@ -47,8 +47,9 @@ class ProcessManager(
 
   private def executableCommand(command: SpawnCommand): List[String] =
     command match {
-      case SpawnSequenceComponent(_, _, version) => Coursier.ocsApp(version).launch(coursierChannel, command.commandArgs)
-      case _: SpawnRedis                         => Redis.server :: command.commandArgs
+      case SpawnSequenceComponent(_, _, version)  => Coursier.ocsApp(version).launch(coursierChannel, command.commandArgs)
+      case SpawnSequenceManager(_, _, _, version) => Coursier.smApp(version).launch(coursierChannel, command.commandArgs)
+      case _: SpawnRedis                          => Redis.server :: command.commandArgs
     }
 
   private def verifyComponentIsNotAlreadyRegistered(connection: Connection): Future[Either[String, Unit]] =

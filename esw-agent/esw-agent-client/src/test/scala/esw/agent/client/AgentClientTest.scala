@@ -1,6 +1,7 @@
 package esw.agent.client
 
 import java.net.URI
+import java.nio.file.Path
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
@@ -111,6 +112,16 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
       val agentClient             = new AgentClient(agentLocation)
       val componentId             = ComponentId(Prefix("esw.comp"), Service)
       agentClient.getAgentStatus.futureValue should ===(AgentStatus(Map(componentId -> Stopping)))
+    }
+  }
+
+  "spawnSequenceManager" should {
+    "send spawnSequenceManager message to agent and return a future with agent response | ESW-180" in {
+      val agentRef                = system.systemActorOf(stubAgent, "test-agent6")
+      val agentLocation           = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_6"), Machine)), agentRef.toURI)
+      implicit val sch: Scheduler = system.scheduler
+      val agentClient             = new AgentClient(agentLocation)
+      agentClient.spawnSequenceManager(Path.of("obsMode.conf"), isConfigLocal = false).futureValue should ===(Spawned)
     }
   }
 
