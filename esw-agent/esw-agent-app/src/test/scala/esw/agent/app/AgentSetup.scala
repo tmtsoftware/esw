@@ -27,10 +27,9 @@ class AgentSetup extends BaseTestSuite {
 
   val locationService: LocationService = mock[LocationService]
   val processExecutor: ProcessExecutor = mock[ProcessExecutor]
-  val processManager: ProcessManager   = mock[ProcessManager]
   val process: Process                 = mock[Process]
   val processHandle: ProcessHandle     = mock[ProcessHandle]
-  val logger: Logger                   = mock[Logger]
+  implicit val logger: Logger          = mock[Logger]
   val agentSettings: AgentSettings     = AgentSettings(15.seconds, Cs.channel)
 
   val prefix: Prefix                                    = Prefix("csw.component")
@@ -57,11 +56,10 @@ class AgentSetup extends BaseTestSuite {
     reset(locationService, processExecutor, process, logger)
   }
 
-  def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String = "test-actor"): ActorRef[AgentCommand] =
-    system.systemActorOf(
-      new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty),
-      name
-    )
+  def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String = "test-actor"): ActorRef[AgentCommand] = {
+    val processManager: ProcessManager = new ProcessManager(locationService, processExecutor, agentSettings)
+    system.systemActorOf(new AgentActor(processManager).behavior(AgentState.empty), name)
+  }
 
   def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
     val promise = Promise[T]()

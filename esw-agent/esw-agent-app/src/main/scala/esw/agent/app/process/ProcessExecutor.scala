@@ -7,8 +7,8 @@ import scala.util.Try
 import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
-class ProcessExecutor(output: ProcessOutput, logger: Logger) {
-  import logger._
+class ProcessExecutor(output: ProcessOutput)(implicit log: Logger) {
+  import log._
 
   def runCommand(command: List[String], prefix: Prefix): Either[String, Process] =
     Try {

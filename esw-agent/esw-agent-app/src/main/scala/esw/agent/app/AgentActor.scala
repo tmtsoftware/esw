@@ -2,37 +2,29 @@ package esw.agent.app
 
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.models.ComponentId
-import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
 import esw.agent.api.ComponentStatus.NotAvailable
 import esw.agent.api._
 import esw.agent.app.ext.FutureEitherExt.FutureEitherOps
-import esw.agent.app.process.{ProcessExecutor, ProcessManager}
+import esw.agent.app.process.ProcessManager
 
 import scala.concurrent.Future
 import scala.util.chaining.scalaUtilChainingOps
 
-class AgentActor(
-    locationService: LocationService,
-    processExecutor: ProcessExecutor,
-    agentSettings: AgentSettings,
-    logger: Logger
-) {
-
-  import logger._
+class AgentActor(processManager: ProcessManager)(implicit log: Logger) {
+  import log._
 
   private[agent] def behavior(state: AgentState): Behaviors.Receive[AgentCommand] =
     Behaviors.receive[AgentCommand] { (ctx, command) =>
       import ctx.executionContext
-      val processManager = new ProcessManager(locationService, processExecutor, agentSettings)(ctx.system)
 
       def swap[M](x: Option[Future[M]]): Future[Option[M]] = Future.sequence(x.toList).map(_.headOption)
 
       command match {
         //already spawning or registered
         case cmd: SpawnCommand if state.exist(cmd.componentId) =>
-          val failed = Failed(s"Component ${cmd.componentId.fullName} is already running on this agent").tap(m => warn(m.msg))
+          val failed = Failed(s"Component ${cmd.componentId.fullName} is already running on this agent".tap(warn(_)))
           cmd.replyTo ! failed
           Behaviors.same
 
@@ -49,7 +41,7 @@ class AgentActor(
           behavior(state.add(cmd.componentId, ComponentState(None)))
 
         case KillComponent(replyTo, componentId) =>
-          lazy val failed = Failed(s"Component ${componentId.fullName} is not running on this agent").tap(m => warn(m.msg))
+          lazy val failed = Failed(s"Component ${componentId.fullName} is not running on this agent".tap(warn(_)))
           swap(state.components.get(componentId).flatMap(_.process.map(processManager.kill)))
             .map(_.fold[KillResponse](failed)(identity))
             .map(replyTo ! _)

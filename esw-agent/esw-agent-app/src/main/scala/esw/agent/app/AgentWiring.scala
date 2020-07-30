@@ -15,7 +15,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand
-import esw.agent.app.process.{ProcessExecutor, ProcessOutput}
+import esw.agent.app.process.{ProcessExecutor, ProcessManager, ProcessOutput}
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
@@ -23,7 +23,7 @@ import scala.concurrent.{Await, Future}
 // $COVERAGE-OFF$
 class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   implicit lazy val timeout: Timeout = Timeout(10.seconds)
-  lazy val log: Logger               = new LoggerFactory(prefix).getLogger
+  implicit lazy val log: Logger      = new LoggerFactory(prefix).getLogger
 
   private[agent] val agentConnection: AkkaConnection = AkkaConnection(ComponentId(prefix, ComponentType.Machine))
 
@@ -34,8 +34,9 @@ class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   implicit lazy val scheduler: Scheduler    = typedSystem.scheduler
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
   lazy val processOutput                    = new ProcessOutput()
-  lazy val processExecutor                  = new ProcessExecutor(processOutput, log)
-  lazy val agentActor                       = new AgentActor(locationService, processExecutor, agentSettings, log)
+  lazy val processExecutor                  = new ProcessExecutor(processOutput)
+  lazy val processManager                   = new ProcessManager(locationService, processExecutor, agentSettings)
+  lazy val agentActor                       = new AgentActor(processManager)
 
   lazy val lazyAgentRegistration: Future[RegistrationResult] =
     locationService.register(AkkaRegistrationFactory.make(agentConnection, agentRef.toURI))
