@@ -1,10 +1,13 @@
 package esw.agent.api
 
+import java.nio.file.Path
+
 import akka.actor.typed.ActorRef
-import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 
 sealed trait AgentCommand extends AgentAkkaSerializable
@@ -33,6 +36,18 @@ object AgentCommand {
           extends SpawnSelfRegistered {
         override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
         override val commandArgs: List[String]  = List("seqcomp", "-s", prefix.subsystem.name, "-n", prefix.componentName)
+      }
+
+      case class SpawnSequenceManager(
+          replyTo: ActorRef[SpawnResponse],
+          obsModeConfigPath: Path,
+          isConfigLocal: Boolean,
+          version: Option[String] = None
+      ) extends SpawnSelfRegistered {
+        override val prefix: Prefix             = Prefix(ESW, "sequence_manager")
+        override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, Service))
+        private val command                     = List("start", "-o", obsModeConfigPath.toString)
+        override val commandArgs: List[String]  = if (isConfigLocal) command :+ "-l" else command
       }
     }
 

@@ -10,7 +10,7 @@ import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand.SpawnCommand
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.api.ComponentStatus.{Initializing, Running, Stopping}
 import esw.agent.api.{Failed, KillResponse, Killed, Spawned}
@@ -36,8 +36,9 @@ class ProcessActor(
   import logger._
 
   private val executableCommand: List[String] = command match {
-    case SpawnSequenceComponent(_, _, version) => Coursier.ocsApp(version).launch(coursierChannel, commandArgs)
-    case _: SpawnRedis                         => Redis.server :: commandArgs
+    case SpawnSequenceComponent(_, _, version)  => Coursier.ocsApp(version).launch(coursierChannel, commandArgs)
+    case SpawnSequenceManager(_, _, _, version) => Coursier.smApp(version).launch(coursierChannel, commandArgs)
+    case _: SpawnRedis                          => Redis.server :: commandArgs
   }
   private val aborted = Failed("Aborted")
 

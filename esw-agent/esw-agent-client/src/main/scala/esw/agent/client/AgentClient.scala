@@ -1,5 +1,7 @@
 package esw.agent.client
 
+import java.nio.file.Path
+
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler}
 import akka.util.Timeout
@@ -9,9 +11,9 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.api._
 
 import scala.concurrent.Future
@@ -24,6 +26,9 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
 
   def spawnSequenceComponent(prefix: Prefix, version: Option[String] = None): Future[SpawnResponse] =
     agentRef ? (SpawnSequenceComponent(_, prefix, version))
+
+  def spawnSequenceManager(obsModeConfigPath: Path, isConfigLocal: Boolean): Future[SpawnResponse] =
+    agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal))
 
   def spawnRedis(prefix: Prefix, port: Int, redisArguments: List[String]): Future[SpawnResponse] =
     agentRef ? (SpawnRedis(_, prefix, port, redisArguments))
