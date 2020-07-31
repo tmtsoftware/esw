@@ -15,7 +15,6 @@ import esw.commons.utils.location.EswLocationError.{
   RegistrationError,
   RegistrationListingFailed
 }
-import esw.ocs.api.models.ObsMode
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -106,14 +105,14 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
 
   private[esw] def resolveSequencer(
       subsystem: Subsystem,
-      obsMode: ObsMode,
+      obsMode: String,
       within: FiniteDuration
   ): Future[Either[FindLocationError, AkkaLocation]] =
-    resolve(AkkaConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)), within)
+    resolve(AkkaConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)), within)
 
   private[esw] def findSequencer(
       subsystem: Subsystem,
-      obsMode: ObsMode
+      obsMode: String
   ): Future[Either[FindLocationError, AkkaLocation]] =
-    find(AkkaConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
+    find(AkkaConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
 }

@@ -91,7 +91,10 @@ private[ocs] class SequencerWiring(
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
   private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: ObsMode) => //todo: revisit timeout value
-    locationServiceUtil.resolveSequencer(_subsystem, _obsMode, Timeouts.DefaultTimeout).mapRight(SequencerApiFactory.make).toJava
+    locationServiceUtil
+      .resolveSequencer(_subsystem, _obsMode.name, Timeouts.DefaultTimeout)
+      .mapRight(SequencerApiFactory.make)
+      .toJava
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,

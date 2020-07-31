@@ -34,7 +34,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
-      .findSequencer(subsystem, obsMode)
+      .findSequencer(subsystem, obsMode.name)
       .flatMapToAdt(restartSequencer, e => LocationServiceError(e.msg))
 
   def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
@@ -68,7 +68,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       })
 
   private def getSequencer(subsystem: Subsystem, obsMode: ObsMode) =
-    locationServiceUtil.findSequencer(subsystem, obsMode).mapRight(List(_))
+    locationServiceUtil.findSequencer(subsystem, obsMode.name).mapRight(List(_))
   private def getSubsystemSequencers(subsystem: Subsystem) = locationServiceUtil.listAkkaLocationsBy(subsystem, Sequencer)
   private def getObsModeSequencers(obsMode: ObsMode)       = locationServiceUtil.listAkkaLocationsBy(obsMode.name, Sequencer)
   private def getAllSequencers                             = locationServiceUtil.listAkkaLocationsBy(Sequencer)
