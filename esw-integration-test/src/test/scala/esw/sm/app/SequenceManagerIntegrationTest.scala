@@ -507,7 +507,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   private def agentHasComponent(agentLoc: AkkaLocation, seqCompPrefix: Prefix): Unit = {
     implicit val sch: Scheduler = actorSystem.scheduler
-    new AgentClient(agentLoc).getAgentStatus.futureValue.componentStatus.keys should contain
+    new AgentClient(agentLoc).getAgentStatus.futureValue.statuses.keys should contain
     models.ComponentId(seqCompPrefix, SequenceComponent)
   }
 

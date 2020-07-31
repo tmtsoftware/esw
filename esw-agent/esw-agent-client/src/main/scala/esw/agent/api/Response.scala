@@ -20,4 +20,4 @@ object ComponentStatus {
   case object NotAvailable extends ComponentStatus
 }
 
-case class AgentStatus(componentStatus: Map[ComponentId, ComponentStatus]) extends Response
+case class AgentStatus(statuses: Map[ComponentId, ComponentStatus]) extends Response

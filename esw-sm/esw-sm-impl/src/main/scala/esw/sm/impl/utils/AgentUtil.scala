@@ -101,7 +101,7 @@ class AgentUtil(
   }
 
   private def filterRunningSeqComps(agentStatus: AgentStatus) =
-    agentStatus.componentStatus
+    agentStatus.statuses
       .filter { case (compId, status) => isRunningSeqComp(compId, status) }
       .keys
       .toList
