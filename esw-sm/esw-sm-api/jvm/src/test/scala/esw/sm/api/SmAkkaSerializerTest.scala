@@ -48,7 +48,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
 
     val obsMode = ObsMode("IRIS_DarkNight")
     val agent   = Prefix(ESW, "agent1")
-    val config  = ProvisionConfig(Map(ESW -> 1))
+    val config  = ProvisionConfig(Map(agent -> 1))
 
     val testData = Table(
       "SequenceManagerRemoteMsg models",
@@ -239,7 +239,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       "Sequence Manager Provision response models",
       ProvisionResponse.Success,
       ProvisionResponse.ConfigurationFailure("configuration reading failed"),
-      ProvisionResponse.NoMachineFoundForSubsystems(Set(ESW)),
+      ProvisionResponse.CouldNotFindMachines(Set(Prefix(ESW, "primary"))),
       ProvisionResponse.SpawningSequenceComponentsFailed(List("spawning sequence component falied")),
       LocationServiceError("location service error")
     )

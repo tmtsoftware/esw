@@ -42,6 +42,7 @@ class SequenceManagerBehavior(
   private def idle(self: SelfRef): SMBehavior =
     receive[SequenceManagerIdleMsg](Idle) {
       case Configure(obsMode, replyTo) => configure(obsMode, self, replyTo)
+      case Provision(config, replyTo)  => provision(config, self, replyTo)
 
       // Shutdown sequencers
       case ShutdownSequencer(subsystem, obsMode, replyTo) =>
@@ -61,7 +62,6 @@ class SequenceManagerBehavior(
         sequenceComponentUtil.shutdownSequenceComponent(prefix).map(self ! ProcessingComplete(_)); processing(self, replyTo)
       case ShutdownAllSequenceComponents(replyTo) =>
         sequenceComponentUtil.shutdownAllSequenceComponents().map(self ! ProcessingComplete(_)); processing(self, replyTo)
-      case Provision(config, replyTo) => provision(config, self, replyTo)
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -155,7 +155,7 @@ class SequenceManagerBehavior(
       case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
       case msg: T             => handler(msg)
       case msg: UnhandleableSequenceManagerMsg =>
-        msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName);
+        msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName)
         Behaviors.same
     }
 

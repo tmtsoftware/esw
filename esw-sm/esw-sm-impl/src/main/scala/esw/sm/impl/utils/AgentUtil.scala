@@ -61,9 +61,10 @@ class AgentUtil(
       .successful(agentAllocator.allocate(provisionConfig, machines))
       .flatMapRight(spawnComponentsByMapping)
 
-  private def spawnComponentsByMapping(mappings: List[(Prefix, AkkaLocation)]) =
+  private def spawnComponentsByMapping(mappings: List[(AkkaLocation, Prefix)]) =
     Future.traverse(mappings) {
-      case (seqCompPrefix, machine) =>
+      case (machine, seqCompPrefix) =>
+        // todo : use spawnSeqComp method  here
         makeAgentClient(machine)
           .spawnSequenceComponent(seqCompPrefix)
           .map(SpawnResponseWithInfo(seqCompPrefix, machine.prefix, _))

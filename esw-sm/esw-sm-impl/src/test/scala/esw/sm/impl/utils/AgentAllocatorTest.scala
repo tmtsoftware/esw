@@ -8,7 +8,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol.ProvisionResponse.NoMachineFoundForSubsystems
+import esw.sm.api.protocol.ProvisionResponse.CouldNotFindMachines
 import esw.testcommons.BaseTestSuite
 
 class AgentAllocatorTest extends BaseTestSuite {
@@ -20,42 +20,45 @@ class AgentAllocatorTest extends BaseTestSuite {
   val allocator = new AgentAllocator()
 
   "allocate" must {
-    "return a mapping of seq comp prefix -> machine on which it will be spawned | ESW-346" in {
-      val config   = ProvisionConfig(Map(ESW -> 2, IRIS -> 1))
+    "return a mapping of machine -> seq comp prefix for given config | ESW-346" in {
+      val config   = ProvisionConfig(Map(eswPrimaryM.prefix -> 2, irisPrimaryM.prefix -> 1))
       val machines = List(eswPrimaryM, irisPrimaryM)
-      val mapping  = allocator.allocate(config, machines).rightValue
+
+      val mapping = allocator.allocate(config, machines).rightValue
 
       mapping.size shouldBe 3
       mapping should contain allElementsOf List(
-        Prefix(ESW, "ESW_1")   -> eswPrimaryM,
-        Prefix(ESW, "ESW_2")   -> eswPrimaryM,
-        Prefix(IRIS, "IRIS_1") -> irisPrimaryM
+        eswPrimaryM  -> Prefix(ESW, "ESW_1"),
+        eswPrimaryM  -> Prefix(ESW, "ESW_2"),
+        irisPrimaryM -> Prefix(IRIS, "IRIS_1")
       )
     }
 
     "distribute required number of sequence components on available machines equally | ESW-346" in {
-      val config   = ProvisionConfig(Map(ESW -> 5, IRIS -> 2))
+      val config   = ProvisionConfig(Map(eswPrimaryM.prefix -> 3, eswSecondaryM.prefix -> 2, irisPrimaryM.prefix -> 2))
       val machines = List(eswPrimaryM, eswSecondaryM, irisPrimaryM)
-      val mapping  = allocator.allocate(config, machines).rightValue
+
+      val mapping = allocator.allocate(config, machines).rightValue
 
       mapping.size shouldBe 7
       mapping should contain allElementsOf List(
         //-------- on ESW primary machine ----------
-        Prefix(ESW, "ESW_1") -> eswPrimaryM,
-        Prefix(ESW, "ESW_3") -> eswPrimaryM,
-        Prefix(ESW, "ESW_5") -> eswPrimaryM,
+        eswPrimaryM -> Prefix(ESW, "ESW_1"),
+        eswPrimaryM -> Prefix(ESW, "ESW_2"),
+        eswPrimaryM -> Prefix(ESW, "ESW_3"),
         //-------- on ESW secondary machine --------
-        Prefix(ESW, "ESW_4") -> eswSecondaryM,
-        Prefix(ESW, "ESW_2") -> eswSecondaryM,
+        eswSecondaryM -> Prefix(ESW, "ESW_4"),
+        eswSecondaryM -> Prefix(ESW, "ESW_5"),
         //-------- on IRIS primary machine ---------
-        Prefix(IRIS, "IRIS_1") -> irisPrimaryM,
-        Prefix(IRIS, "IRIS_2") -> irisPrimaryM
+        irisPrimaryM -> Prefix(IRIS, "IRIS_1"),
+        irisPrimaryM -> Prefix(IRIS, "IRIS_2")
       )
     }
 
-    "return NoMachineFoundForSubsystems if subsystem to provision does not have machine available | ESW-346" in {
-      val config = ProvisionConfig(Map(ESW -> 1, IRIS -> 1))
-      allocator.allocate(config, List(eswPrimaryM)).leftValue shouldBe NoMachineFoundForSubsystems(Set(IRIS))
+    "return CouldNotFindMachines if there is not machine with given machine | ESW-346" in {
+      val config = ProvisionConfig(Map(eswPrimaryM.prefix -> 1, irisPrimaryM.prefix -> 1))
+
+      allocator.allocate(config, List(eswPrimaryM)).leftValue shouldBe CouldNotFindMachines(Set(irisPrimaryM.prefix))
     }
   }
 }
