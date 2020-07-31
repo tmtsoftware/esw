@@ -6,8 +6,8 @@ import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
 import esw.agent.api.ComponentStatus.NotAvailable
 import esw.agent.api._
-import esw.agent.app.ext.FutureEitherExt.FutureEitherOps
 import esw.agent.app.process.ProcessManager
+import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
 import scala.concurrent.Future
 import scala.util.chaining.scalaUtilChainingOps

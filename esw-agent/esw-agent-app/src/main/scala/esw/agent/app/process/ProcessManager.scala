@@ -11,7 +11,7 @@ import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSe
 import esw.agent.api.AgentCommand.{ProcessExited, SpawnCommand}
 import esw.agent.api._
 import esw.agent.app.AgentSettings
-import esw.agent.app.ext.FutureEitherExt.FutureEitherOps
+import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.agent.app.ext.ProcessExt.ProcessOps
 import esw.agent.app.process.cs.Coursier
 import esw.agent.app.process.redis.Redis

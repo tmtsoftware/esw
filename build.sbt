@@ -141,6 +141,7 @@ lazy val `esw-agent-app` = project
   .settings(libraryDependencies ++= Dependencies.AgentApp.value)
   .dependsOn(
     `esw-agent-client`,
+    `esw-commons`,
     `esw-test-commons` % Test
   )
 

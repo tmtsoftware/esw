@@ -9,7 +9,6 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.extensions.EitherExt._
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.actor.messages._
 import esw.ocs.api.models.{ObsMode, SequenceComponentState}
@@ -54,7 +53,7 @@ class SequenceComponentBehavior(
   ): Behavior[SequenceComponentMsg] = {
     val sequenceComponentLocation = AkkaLocation(akkaConnection, ctx.self.toURI)
     val sequencerServer           = sequencerServerFactory.make(subsystem, obsMode, sequenceComponentLocation)
-    val registrationResult        = sequencerServer.start().mapToAdt(location => SequencerLocation(location), identity)
+    val registrationResult        = sequencerServer.start().fold(identity, SequencerLocation)
     replyTo ! registrationResult
 
     registrationResult match {
