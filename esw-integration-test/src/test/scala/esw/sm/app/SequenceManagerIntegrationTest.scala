@@ -14,7 +14,6 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
-import esw.BinaryFetcherUtil
 import esw.agent.app.AgentSettings
 import esw.agent.client.AgentClient
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
@@ -27,6 +26,7 @@ import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceE
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
+import esw.{BinaryFetcherUtil, GitUtil}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -37,6 +37,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   private val IRIS_DARKNIGHT               = ObsMode("IRIS_Darknight")
   private val sequenceManagerPrefix        = Prefix(ESW, "sequence_manager")
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
+  private val ocsAppVersion                = GitUtil.latestCommitSHA("esw")
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
   override protected def afterEach(): Unit  = TestSetup.cleanup()
@@ -372,7 +373,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val expectedComponentId = ComponentId(seqCompPrefix, SequenceComponent)
 
     //spawn ESW agent
-    val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
+    val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
     val agentPrefix     = spawnAgent(AgentSettings(1.minute, channel))
     BinaryFetcherUtil.fetchBinaryFor(channel)
 
@@ -426,7 +427,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   "provision should start sequence components as given in provision config | ESW-346" in {
     // start required agents to provision and verify they are running
-    val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
+    val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
     BinaryFetcherUtil.fetchBinaryFor(channel)
     val eswAgentPrefix    = spawnAgent(AgentSettings(1.minute, channel), ESW)
     val irisAgentPrefix   = spawnAgent(AgentSettings(1.minute, channel), IRIS)

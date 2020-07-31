@@ -1,24 +1,27 @@
 package esw.agent
 
+import java.nio.file.Paths
+
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.IRIS
+import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.api.ComponentStatus.Running
-import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
+import esw.agent.api.{AgentStatus, Killed, Spawned}
 import esw.agent.app.AgentSettings
 import esw.agent.client.AgentClient
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.AAS
 import esw.{BinaryFetcherUtil, GitUtil}
 
 import scala.concurrent.duration.DurationLong
 
-class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
+class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
 
   private val irisPrefix               = Prefix("esw.iris")
   private val irisCompId               = ComponentId(irisPrefix, SequenceComponent)
@@ -31,9 +34,9 @@ class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val channel: String = "file://" + getClass.getResource("/apps.json").getPath
+    val channel: String = BinaryFetcherUtil.eswChannel(appVersion)
     agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
-    BinaryFetcherUtil.fetchBinaryFor(channel, Some(appVersion))
+    BinaryFetcherUtil.fetchBinaryFor(channel)
     agentClient = AgentClient.make(agentPrefix, locationService).futureValue
   }
 
@@ -67,20 +70,24 @@ class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
 
+    "return Spawned on SpawnSequenceManager | ESW-180" in {
+      val obsModeConfigPath = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
+      // spawn sequence manager
+      agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true).futureValue should ===(Spawned)
+
+      // Verify registration in location service
+      val seqManagerConnection = AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))
+      locationService.resolve(seqManagerConnection, 5.seconds).futureValue.value
+
+      agentClient.killComponent(ComponentId(Prefix(ESW, "sequence_manager"), Service)).futureValue
+    }
+
     "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237, ESW-325" in {
       agentClient.spawnRedis(redisPrefix, 6380, List.empty).futureValue should ===(Spawned)
       // Verify registration in location service
       locationService.resolve(TcpConnection(ComponentId(redisPrefix, Service)), 5.seconds).futureValue should not be empty
 
       agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
-    }
-
-    "return Failed to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" ignore {
-      val spawnResponseF = spawnSequenceComponent(irisPrefix)
-      agentClient.killComponent(irisCompId).futureValue should ===(Killed)
-      spawnResponseF.futureValue should ===(Failed("Aborted"))
-      // Verify not registered in location service
-      locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should ===(None)
     }
 
     "return status of components available on agent for a GetAgentStatus message | ESW-286" in {
