@@ -5,16 +5,13 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.api.AgentCommand.{ProcessExited, SpawnCommand}
 import esw.agent.api._
 import esw.agent.app.AgentSettings
-import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.agent.app.ext.ProcessExt.ProcessOps
-import esw.agent.app.process.cs.Coursier
-import esw.agent.app.process.redis.Redis
+import esw.agent.app.ext.SpawnCommandExt.SpawnCommandOps
+import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -28,8 +25,8 @@ class ProcessManager(
     agentSettings: AgentSettings
 )(implicit system: ActorSystem[_], log: Logger) {
   import agentSettings._
-  import system.executionContext
   import log._
+  import system.executionContext
 
   def spawn(command: SpawnCommand, agentActor: ActorRef[AgentCommand]): Future[Either[String, Process]] =
     verifyComponentIsNotAlreadyRegistered(command.connection)
@@ -40,13 +37,6 @@ class ProcessManager(
   def kill(process: Process): Future[KillResponse] =
     process.kill(10.seconds).map(_ => Killed).recover {
       case NonFatal(e) => Failed(s"Failed to kill component process, reason: $e".tap(warn(_)))
-    }
-
-  private def executableCommand(command: SpawnCommand): List[String] =
-    command match {
-      case SpawnSequenceComponent(_, _, version)  => Coursier.ocsApp(version).launch(coursierChannel, command.commandArgs)
-      case SpawnSequenceManager(_, _, _, version) => Coursier.smApp(version).launch(coursierChannel, command.commandArgs)
-      case _: SpawnRedis                          => Redis.server :: command.commandArgs
     }
 
   private def verifyComponentIsNotAlreadyRegistered(connection: Connection): Future[Either[String, Unit]] =
@@ -60,7 +50,7 @@ class ProcessManager(
   private def startComponent(command: SpawnCommand, agentActor: ActorRef[AgentCommand]) =
     Future.successful(
       processExecutor
-        .runCommand(executableCommand(command), command.prefix)
+        .runCommand(command.executableCommandStr(coursierChannel), command.prefix)
         .map(_.tap(onProcessExit(_, command.connection, agentActor)))
     )
 
