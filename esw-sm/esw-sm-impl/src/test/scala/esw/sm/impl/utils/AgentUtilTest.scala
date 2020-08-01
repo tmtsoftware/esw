@@ -59,13 +59,16 @@ class AgentUtilTest extends BaseTestSuite {
       import setup._
 
       val componentName = "testComp"
-      val prefix        = Prefix(TCS, componentName)
-      val spawnFailed   = Failed("failed to spawn sequence component")
+      val seqCompPrefix = Prefix(TCS, componentName)
+      val agentPrefix   = Prefix(TCS, "primary")
+      val spawnFailed   = Failed("failed")
 
-      when(agentClient.spawnSequenceComponent(prefix, None)).thenReturn(Future.successful(spawnFailed))
+      when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(spawnFailed))
 
-      agentUtil.spawnSequenceComponent(prefix, componentName).futureValue should ===(
-        SpawnSequenceComponentFailed(spawnFailed.msg)
+      agentUtil.spawnSequenceComponent(agentPrefix, componentName).futureValue should ===(
+        SpawnSequenceComponentFailed(
+          s"Failed to spawn Sequence component: $seqCompPrefix on Machine: $agentPrefix, reason: ${spawnFailed.msg}"
+        )
       )
     }
 

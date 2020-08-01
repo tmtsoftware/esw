@@ -1,6 +1,6 @@
 package esw.sm.impl.utils
 
-import akka.actor.typed.{ActorSystem, Scheduler}
+import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
@@ -12,6 +12,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, AgentToSeqCompsMap}
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.ProvisionResponse.SpawningSequenceComponentsFailed
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.{SpawnSequenceComponentFailed, Success}
 import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse, SpawnSequenceComponentResponse}
 
@@ -39,14 +40,13 @@ class AgentUtil(
   }
 
   def spawnSequenceComponent(machine: Prefix, seqCompName: String): Future[SpawnSequenceComponentResponse] =
-    getAgent(machine).flatMapToAdt(spawnSeqComp(_, Prefix(machine.subsystem, seqCompName)), identity)
+    getAgent(machine).flatMapE(spawnSeqComp(machine, _, Prefix(machine.subsystem, seqCompName))).mapToAdt(identity, identity)
 
   def provision(provisionConfig: ProvisionConfig): Future[ProvisionResponse] =
     locationServiceUtil
       .listAkkaLocationsBy(Machine)
       .mapLeft(e => LocationServiceError(e.msg))
-      .flatMapE(provisionOn(_, provisionConfig))
-      .mapToAdt(spawnResToProvisionRes, identity)
+      .flatMapToAdt(provisionOn(_, provisionConfig), identity)
 
   private def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[List[AgentToSeqCompsMap]] =
     Future
@@ -60,33 +60,26 @@ class AgentUtil(
     Future
       .successful(agentAllocator.allocate(provisionConfig, machines))
       .flatMapRight(spawnComponentsByMapping)
+      .mapToAdt(identity, identity)
 
-  private def spawnComponentsByMapping(mappings: List[(AkkaLocation, Prefix)]) =
-    Future.traverse(mappings) {
-      case (machine, seqCompPrefix) =>
-        // todo : use spawnSeqComp method  here
-        makeAgentClient(machine)
-          .spawnSequenceComponent(seqCompPrefix)
-          .map(SpawnResponseWithInfo(seqCompPrefix, machine.prefix, _))
-    }
+  private def spawnComponentsByMapping(mappings: List[(AkkaLocation, Prefix)]): Future[ProvisionResponse] =
+    Future
+      .traverse(mappings) {
+        case (machine, seqCompPrefix) =>
+          spawnSeqComp(machine.prefix, makeAgentClient(machine), seqCompPrefix).map(_.fold(e => Some(e.msg), _ => None))
+      }
+      .map(_.flatten)
+      .map(errs => if (errs.isEmpty) ProvisionResponse.Success else SpawningSequenceComponentsFailed(errs))
 
-  private def spawnResToProvisionRes(responses: List[SpawnResponseWithInfo]): ProvisionResponse = {
-    val failedResponses = responses.collect {
-      case SpawnResponseWithInfo(seqComp, machine, Failed(msg)) =>
-        val errorMsg = s"Failed to spawn Sequence component: $seqComp on Machine: $machine. Error msg: $msg"
-        SpawnSequenceComponentFailed(errorMsg)
-    }
-
-    if (failedResponses.isEmpty) ProvisionResponse.Success
-    else ProvisionResponse.SpawningSequenceComponentsFailed(failedResponses.map(_.msg))
-  }
-
-  private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
+  private def spawnSeqComp(machine: Prefix, agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
       .spawnSequenceComponent(seqCompPrefix)
       .map {
-        case Spawned     => Success(ComponentId(seqCompPrefix, SequenceComponent))
-        case Failed(msg) => SpawnSequenceComponentFailed(msg)
+        case Spawned => Right(Success(ComponentId(seqCompPrefix, SequenceComponent)))
+        case Failed(msg) =>
+          Left(
+            SpawnSequenceComponentFailed(s"Failed to spawn Sequence component: $seqCompPrefix on Machine: $machine, reason: $msg")
+          )
       }
 
   private[utils] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =
@@ -95,19 +88,11 @@ class AgentUtil(
       .mapRight(location => makeAgentClient(location))
       .mapLeft(error => LocationServiceError(error.msg))
 
-  private[utils] def makeAgentClient(loc: AkkaLocation): AgentClient = {
-    implicit val sch: Scheduler = actorSystem.scheduler
-    new AgentClient(loc)
-  }
+  private[utils] def makeAgentClient(loc: AkkaLocation): AgentClient = new AgentClient(loc)
 
   private def filterRunningSeqComps(agentStatus: AgentStatus) =
-    agentStatus.statuses
-      .filter { case (compId, status) => isRunningSeqComp(compId, status) }
-      .keys
-      .toList
+    agentStatus.statuses.filter { case (compId, status) => isRunningSeqComp(compId, status) }.keys.toList
 
   private def isRunningSeqComp(compId: ComponentId, status: ComponentStatus) =
     compId.componentType == SequenceComponent && status == ComponentStatus.Running
-
-  private[utils] case class SpawnResponseWithInfo(seqComp: Prefix, machine: Prefix, response: SpawnResponse)
 }

@@ -3,7 +3,6 @@ package esw.sm.app
 import java.io.File
 import java.nio.file.{Files, Path}
 
-import akka.actor.typed.Scheduler
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
@@ -506,7 +505,6 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   }
 
   private def agentHasComponent(agentLoc: AkkaLocation, seqCompPrefix: Prefix): Unit = {
-    implicit val sch: Scheduler = actorSystem.scheduler
     new AgentClient(agentLoc).getAgentStatus.futureValue.statuses.keys should contain
     models.ComponentId(seqCompPrefix, SequenceComponent)
   }
