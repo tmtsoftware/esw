@@ -36,7 +36,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.getRunningObsModes.futureValue shouldBe GetRunningObsModesResponse.Success(Set(obsMode))
     }
 
-    "return provision success for provision request | ESW-346" in {
+    "return provision success for provision request | ESW-347" in {
 
       val provisionConfig = ProvisionConfig(Map(Prefix(ESW, "primary") -> 1))
       when(

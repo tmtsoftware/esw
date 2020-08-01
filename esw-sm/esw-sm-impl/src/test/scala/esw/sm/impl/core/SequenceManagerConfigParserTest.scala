@@ -72,7 +72,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
     }
   }
 
-  "throw exception if it fails to read config | ESW-162, ESW-160, ESW-346" in {
+  "throw exception if it fails to read config | ESW-162, ESW-160" in {
     val path              = Paths.get("testObsModeConfig.conf")
     val expectedException = new RuntimeException("Failed to read config")
 

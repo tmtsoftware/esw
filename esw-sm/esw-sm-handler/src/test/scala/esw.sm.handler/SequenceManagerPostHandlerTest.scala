@@ -48,7 +48,7 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return provision success for provision request | ESW-346" in {
+    "return provision success for provision request | ESW-347" in {
       when(sequenceManagerApi.provision(provisionConfig)).thenReturn(Future.successful(ProvisionResponse.Success))
 
       Post("/post-endpoint", Provision(provisionConfig).narrow) ~> route ~> check {

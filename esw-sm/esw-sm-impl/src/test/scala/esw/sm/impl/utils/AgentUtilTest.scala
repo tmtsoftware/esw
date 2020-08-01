@@ -145,7 +145,7 @@ class AgentUtilTest extends BaseTestSuite {
     val eswPrimaryMachine  = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Machine)), uri)
     val irisPrimaryMachine = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "primary"), Machine)), uri)
 
-    "start required number sequence components on available machines for given subsystems | ESW-346" in {
+    "start required number sequence components on available machines for given subsystems | ESW-347" in {
       val locationServiceUtil                          = mock[LocationServiceUtil]
       val agentAllocator                               = mock[AgentAllocator]
       val eswClient                                    = mock[AgentClient]
@@ -174,7 +174,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(irisClient).spawnSequenceComponent(irisSeqComp1Prefix, None)
     }
 
-    "return SpawningSequenceComponentsFailed if agent fails to spawn sequence component | ESW-346" in {
+    "return SpawningSequenceComponentsFailed if agent fails to spawn sequence component | ESW-347" in {
       val setup = new TestSetup()
       import setup._
 
@@ -202,7 +202,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(agentClient).spawnSequenceComponent(eswSeqComp2Prefix, None)
     }
 
-    "return LocationServiceError if location service gives error | ESW-346" in {
+    "return LocationServiceError if location service gives error | ESW-347" in {
       val setup = new TestSetup()
       import setup._
       val errorMsg = "listing failed"
@@ -215,7 +215,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
     }
 
-    "return NoMachineFoundForSubsystems if any subsystem does not have machine available | ESW-346" in {
+    "return NoMachineFoundForSubsystems if any subsystem does not have machine available | ESW-347" in {
       val setup = new TestSetup()
       import setup._
       val provisionConfig = ProvisionConfig(Map(Prefix(ESW, "primary") -> 1, Prefix(IRIS, "primary") -> 1))

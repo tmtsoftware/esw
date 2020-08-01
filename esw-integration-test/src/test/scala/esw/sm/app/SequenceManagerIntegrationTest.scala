@@ -189,7 +189,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
   }
 
-  "throw exception if obs mode config or provision config file is missing | ESW-162, ESW-160, ESW-171, ESW-346" in {
+  "throw exception if obs mode config file is missing | ESW-162, ESW-160, ESW-171" in {
 
     val exception = intercept[RuntimeException](
       SequenceManagerApp.main(
@@ -425,7 +425,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     locationService.list(SequenceComponent).futureValue should ===(List.empty)
   }
 
-  "provision should start sequence components as given in provision config | ESW-346" in {
+  "provision should start sequence components as given in provision config | ESW-347" in {
     // start required agents to provision and verify they are running
     val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
     BinaryFetcherUtil.fetchBinaryFor(channel)
