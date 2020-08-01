@@ -20,27 +20,13 @@ class AgentAllocatorTest extends BaseTestSuite {
   val allocator = new AgentAllocator()
 
   "allocate" must {
+
     "return a mapping of machine -> seq comp prefix for given config | ESW-347" in {
-      val config   = ProvisionConfig(Map(eswPrimaryM.prefix -> 2, irisPrimaryM.prefix -> 1))
-      val machines = List(eswPrimaryM, irisPrimaryM)
-
-      val mapping = allocator.allocate(config, machines).rightValue
-
-      mapping.size shouldBe 3
-      mapping should contain allElementsOf List(
-        eswPrimaryM  -> Prefix(ESW, "ESW_1"),
-        eswPrimaryM  -> Prefix(ESW, "ESW_2"),
-        irisPrimaryM -> Prefix(IRIS, "IRIS_1")
-      )
-    }
-
-    "distribute required number of sequence components on available machines equally | ESW-347" in {
       val config   = ProvisionConfig(Map(eswPrimaryM.prefix -> 3, eswSecondaryM.prefix -> 2, irisPrimaryM.prefix -> 2))
       val machines = List(eswPrimaryM, eswSecondaryM, irisPrimaryM)
 
       val mapping = allocator.allocate(config, machines).rightValue
 
-      mapping.size shouldBe 7
       mapping should contain allElementsOf List(
         //-------- on ESW primary machine ----------
         eswPrimaryM -> Prefix(ESW, "ESW_1"),
@@ -56,9 +42,11 @@ class AgentAllocatorTest extends BaseTestSuite {
     }
 
     "return CouldNotFindMachines if there is not machine with given machine | ESW-347" in {
-      val config = ProvisionConfig(Map(eswPrimaryM.prefix -> 1, irisPrimaryM.prefix -> 1))
+      val config = ProvisionConfig(Map(eswPrimaryM.prefix -> 1, eswSecondaryM.prefix -> 1, irisPrimaryM.prefix -> 1))
 
-      allocator.allocate(config, List(eswPrimaryM)).leftValue shouldBe CouldNotFindMachines(Set(irisPrimaryM.prefix))
+      allocator.allocate(config, List(eswPrimaryM)).leftValue should ===(
+        CouldNotFindMachines(Set(eswSecondaryM.prefix, irisPrimaryM.prefix))
+      )
     }
   }
 }

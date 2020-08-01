@@ -1,43 +1,23 @@
 package esw.sm.impl.utils
 
 import csw.location.api.models.AkkaLocation
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.prefix.models.Prefix
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse.CouldNotFindMachines
+import esw.sm.impl.utils.AgentAllocator.AllocationResponse
 
 class AgentAllocator {
-  type AgentToSeqComp = (Prefix, Prefix)
-
-  def allocate(
-      provisionConfig: ProvisionConfig,
-      machines: List[AkkaLocation]
-  ): Either[CouldNotFindMachines, List[(AkkaLocation, Prefix)]] = {
-    def mapToMachines(agentPrefix: Prefix, seqComp: Prefix): Either[Prefix, (AkkaLocation, Prefix)] =
-      machines.find(_.prefix == agentPrefix).map((_, seqComp)).toRight(agentPrefix)
-
-    val mapping = provisionConfig.config
-      .groupBy(_._1.subsystem)
-      .toList
-      .flatMap { case (subsystem, subsystemConfig) => allocateForSubsystem(subsystem, subsystemConfig) }
-      .map { case (machineId, seqComp) => mapToMachines(machineId, seqComp) }
-
-    mapping.sequence.left.map(x => CouldNotFindMachines(x.toSet))
+  def allocate(provisionConfig: ProvisionConfig, machines: List[AkkaLocation]): AllocationResponse = {
+    val allocationResult = provisionConfig.agentToSeqCompMapping.map {
+      case (agentPrefix, seqCompPrefix) => machines.find(_.prefix == agentPrefix).map((_, seqCompPrefix)).toRight(agentPrefix)
+    }.sequence
+    allocationResult.left.map(p => CouldNotFindMachines(p.toSet))
   }
+}
 
-  private def allocateForSubsystem(subsystem: Subsystem, subsystemConfig: Map[Prefix, Int]): List[AgentToSeqComp] = {
-    var seqCompPrefixes = configToSeqComps(subsystem, subsystemConfig.values.sum)
-
-    subsystemConfig.toList.flatMap {
-      case (agentPrefix, count) =>
-        val (allocated, remaining) = seqCompPrefixes.splitAt(count)
-
-        seqCompPrefixes = remaining                                  // assign back remaining
-        allocated.map(seqCompPrefix => (agentPrefix, seqCompPrefix)) // return the allocated
-    }
-  }
-
-  private def configToSeqComps(subsystem: Subsystem, noOfSeqComps: Int) =
-    (1 to noOfSeqComps).map(i => Prefix(subsystem, s"${subsystem}_$i"))
-
+object AgentAllocator {
+  type SequenceComponentPrefix = Prefix
+  type AgentLocation           = AkkaLocation
+  type AllocationResponse      = Either[CouldNotFindMachines, List[(AkkaLocation, SequenceComponentPrefix)]]
 }
