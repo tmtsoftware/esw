@@ -113,13 +113,13 @@ class FutureEitherExtTest extends AnyWordSpec with TypeCheckedTripleEquals with 
 
     "convert scala Future[Either] to Java's CompletionStage[T]" in {
       val toJava = rightFuture.toJava
-      toJava shouldBe a[CompletionStage[Int]]
+      toJava shouldBe a[CompletionStage[_]]
       toJava.toCompletableFuture.get() should ===(42)
     }
 
     "throw an exception when left value present" in {
       val toJava = leftFuture.toJava
-      toJava shouldBe a[CompletionStage[Int]]
+      toJava shouldBe a[CompletionStage[_]]
       val exception = intercept[Exception] { toJava.toCompletableFuture.get() }
       exception.getCause shouldBe a[DivideByZero.type]
     }

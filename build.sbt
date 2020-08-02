@@ -59,7 +59,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("esw-ocs/esw-ocs-api"))
   .jvmConfigure(
-    _.enablePlugins(MaybeCoverage, PublishBintray)
+    _.enablePlugins(MaybeCoverage)
       .settings(libraryDependencies ++= Dependencies.OcsApiJvm.value)
       .dependsOn(`esw-test-commons` % Test)
   )
@@ -73,7 +73,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
 
 lazy val `esw-ocs-handler` = project
   .in(file("esw-ocs/esw-ocs-handler"))
-  .enablePlugins(MaybeCoverage, PublishBintray)
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsHandler.value
   )
@@ -84,7 +84,7 @@ lazy val `esw-ocs-handler` = project
 
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
-  .enablePlugins(MaybeCoverage, PublishBintray)
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value,
     fork in Test := true
@@ -97,6 +97,7 @@ lazy val `esw-ocs-impl` = project
 
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))
+  .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
   .dependsOn(
     `esw-ocs-api`.jvm,
@@ -106,7 +107,7 @@ lazy val `esw-ocs-dsl` = project
 
 lazy val `esw-ocs-dsl-kt` = project
   .in(file("esw-ocs/esw-ocs-dsl-kt"))
-  .enablePlugins(KotlinPlugin)
+  .enablePlugins(KotlinPlugin, MaybeCoverage)
   .settings(
     fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := "1.3.61",
@@ -152,7 +153,7 @@ lazy val `esw-agent-client` = project
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
-  .enablePlugins(PublishBintray, MaybeCoverage, EswBuildInfo)
+  .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(libraryDependencies ++= Dependencies.EswHttpCore.value)
 
 lazy val `esw-integration-test` = project
@@ -184,7 +185,7 @@ lazy val `esw-gateway` = project
 lazy val `esw-gateway-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("esw-gateway/esw-gateway-api"))
-  .jvmConfigure(_.settings(libraryDependencies += (Libs.`tmt-test-reporter` % Test)))
+  .jvmConfigure(_.enablePlugins(MaybeCoverage).settings(libraryDependencies += (Libs.`tmt-test-reporter` % Test)))
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
   .settings(fork := false)
@@ -196,6 +197,7 @@ lazy val `esw-gateway-api` = crossProject(JSPlatform, JVMPlatform)
 
 lazy val `esw-gateway-impl` = project
   .in(file("esw-gateway/esw-gateway-impl"))
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayImpl.value
   )
@@ -249,7 +251,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("esw-sm/esw-sm-api"))
   .jvmConfigure(
-    _.enablePlugins(MaybeCoverage, PublishBintray)
+    _.enablePlugins(MaybeCoverage)
       .settings(libraryDependencies ++= Dependencies.SmApiJvm.value)
       .dependsOn(`esw-commons`, `esw-test-commons` % Test, `esw-ocs-api`.jvm)
   )
@@ -264,12 +266,13 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
 
 lazy val `esw-sm-impl` = project
   .in(file("esw-sm/esw-sm-impl"))
-  .enablePlugins(MaybeCoverage, PublishBintray)
+  .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
   .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons`, `esw-test-commons` % Test)
 
 lazy val `esw-sm-handler` = project
   .in(file("esw-sm/esw-sm-handler"))
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.EswSmHandlers.value
   )
@@ -277,7 +280,7 @@ lazy val `esw-sm-handler` = project
 
 lazy val `esw-sm-app` = project
   .in(file("esw-sm/esw-sm-app"))
-  .enablePlugins(EswBuildInfo)
+  .enablePlugins(EswBuildInfo, MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.EswSmApp.value
   )
@@ -289,6 +292,7 @@ lazy val `esw-sm-app` = project
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))
+  .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.EswCommons.value)
   .dependsOn(`esw-test-commons` % Test)
 

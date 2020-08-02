@@ -166,6 +166,8 @@ object Dependencies {
       Csw.`csw-event-client`,
       Libs.caffeine,
       Csw.`csw-location-api`.value,
+      Libs.`mockito-scala`     % Test,
+      Libs.scalatest.value     % Test,
       Libs.`tmt-test-reporter` % Test
     )
   )

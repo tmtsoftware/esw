@@ -12,19 +12,6 @@ object NoPublish extends AutoPlugin {
     )
 }
 
-object PublishBintray extends AutoPlugin {
-  import bintray.BintrayPlugin
-  import BintrayPlugin.autoImport._
-
-  override def requires: Plugins = BintrayPlugin
-
-  override def projectSettings: Seq[Setting[_]] =
-    Seq(
-      bintrayOrganization := Some("twtmt"),
-      bintrayPackage := name.value
-    )
-}
-
 object EswBuildInfo extends AutoPlugin {
 
   import sbtbuildinfo.BuildInfoPlugin
