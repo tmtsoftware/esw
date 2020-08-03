@@ -17,7 +17,10 @@ trait AgentUtils {
 
   def spawnAgent(agentSettings: AgentSettings, subsystem: Subsystem = ESW): Prefix = {
     val agentPrefix = Prefix(subsystem, s"machine_${Random.nextInt().abs}")
-    val wiring      = AgentWiring.make(agentPrefix, agentSettings, actorSystem)
+    val system      = actorSystem
+    val wiring = new AgentWiring(agentPrefix, agentSettings) {
+      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
+    }
     agentWiring = Some(wiring)
     AgentApp.start(agentPrefix, wiring)
     agentPrefix

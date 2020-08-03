@@ -4,8 +4,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
-import esw.agent.app.BaseTestSuite
 import esw.agent.app.process.ProcessOutput.ConsoleWriter
+import esw.testcommons.BaseTestSuite
 import org.scalatest.time.{Millis, Seconds, Span}
 
 class ProcessOutputTest extends BaseTestSuite {

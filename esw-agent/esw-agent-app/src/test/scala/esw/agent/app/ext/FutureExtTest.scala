@@ -1,8 +1,8 @@
 package esw.agent.app.ext
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import esw.agent.app.BaseTestSuite
 import esw.agent.app.ext.FutureExt.FutureOps
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future, TimeoutException}
@@ -10,8 +10,6 @@ import scala.concurrent.{Await, Future, TimeoutException}
 class FutureExtTest extends BaseTestSuite {
   implicit private lazy val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "future-ext")
   import system.executionContext
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   override protected def afterAll(): Unit = {
     system.terminate()

@@ -16,6 +16,7 @@ import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedi
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.api.{AgentCommand, SpawnResponse}
 import esw.agent.app.process.{ProcessExecutor, ProcessManager}
+import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
 import scala.concurrent.duration.{FiniteDuration, _}
@@ -55,7 +56,7 @@ class AgentSetup extends BaseTestSuite {
   val seqManagerLocation: AkkaLocation                = AkkaLocation(seqManagerConn, new URI("some"))
   val seqManagerLocationF: Future[Some[AkkaLocation]] = Future.successful(Some(seqManagerLocation))
   val spawnSequenceManager: ActorRef[SpawnResponse] => SpawnSequenceManager =
-    SpawnSequenceManager(_, Paths.get("obsmode.conf"), isConfigLocal = true)
+    SpawnSequenceManager(_, Paths.get("obsmode.conf"), isConfigLocal = true, None)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

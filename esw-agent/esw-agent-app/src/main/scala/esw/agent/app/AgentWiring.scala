@@ -2,7 +2,7 @@ package esw.agent.app
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed._
-import akka.actor.typed.scaladsl.AskPattern.Askable
+import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.extensions.ActorExtension.RichActor
@@ -31,7 +31,6 @@ class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   lazy val actorRuntime: ActorRuntime                      = new ActorRuntime(actorSystem)
 
   import actorRuntime.typedSystem
-  implicit lazy val scheduler: Scheduler    = typedSystem.scheduler
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
   lazy val processOutput                    = new ProcessOutput()
   lazy val processExecutor                  = new ProcessExecutor(processOutput)
@@ -44,16 +43,4 @@ class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   lazy val agentRef: ActorRef[AgentCommand] =
     Await.result(typedSystem ? (Spawn(agentActor.behavior(AgentState.empty), "agent-actor", Props.empty, _)), timeout.duration)
 }
-
-object AgentWiring {
-  private[esw] def make(
-      prefix: Prefix,
-      agentSettings: AgentSettings,
-      _actorSystem: ActorSystem[SpawnProtocol.Command]
-  ): AgentWiring =
-    new AgentWiring(prefix, agentSettings) {
-      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
-    }
-}
-
 // $COVERAGE-ON$

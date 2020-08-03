@@ -1,6 +1,7 @@
 package esw.agent.app
 
 import com.typesafe.config.ConfigFactory
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationLong
 

@@ -8,8 +8,8 @@ import csw.prefix.models.Subsystem.IRIS
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.api.SpawnResponse
-import esw.agent.app.BaseTestSuite
 import esw.agent.app.ext.SpawnCommandExt.SpawnCommandOps
+import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
 
 class SpawnCommandExtTest extends BaseTestSuite {

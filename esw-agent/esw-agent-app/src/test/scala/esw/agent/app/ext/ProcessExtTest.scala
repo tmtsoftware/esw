@@ -4,8 +4,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.stream
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import esw.agent.app.BaseTestSuite
 import esw.agent.app.ext.ProcessExt.ProcessOps
+import esw.testcommons.BaseTestSuite
 import org.mockito.verification.VerificationMode
 import org.scalatest.TryValues._
 
