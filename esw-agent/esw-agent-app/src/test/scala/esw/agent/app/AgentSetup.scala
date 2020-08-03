@@ -88,7 +88,15 @@ class AgentSetup extends BaseTestSuite {
     when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
   }
 
-  def mockLocationServiceForRedis(registrationDuration: FiniteDuration = 0.seconds): Unit = {
+  def mockLocationService(registrationDuration: FiniteDuration = 0.seconds): Unit = {
+    // Sequence Component
+    when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
+
+    // Sequence Manager
+    when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration]))
+      .thenReturn(Future.successful(None), seqManagerLocationF)
+
+    // Redis
     when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
     when(locationService.register(redisRegistration)).thenReturn(
       delayedFuture(RegistrationResult.from(redisLocation, locationService.unregister), registrationDuration)

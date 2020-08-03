@@ -17,7 +17,7 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor1")
       val probe         = TestProbe[SpawnResponse]()
 
-      mockLocationServiceForRedis()
+      mockLocationService()
       mockSuccessfulProcess()
 
       agentActorRef ! spawnRedis(probe.ref)
@@ -61,7 +61,7 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[SpawnResponse]()
 
-      mockLocationServiceForRedis()
+      mockLocationService()
       mockSuccessfulProcess()
 
       agentActorRef ! spawnRedis(probe1.ref)
@@ -78,7 +78,7 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor5")
       val probe         = TestProbe[SpawnResponse]()
 
-      mockLocationServiceForRedis()
+      mockLocationService()
 
       when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Left("failure"))
 
