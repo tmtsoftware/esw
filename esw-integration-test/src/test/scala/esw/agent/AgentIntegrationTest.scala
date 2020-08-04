@@ -36,7 +36,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
     super.beforeAll()
     val channel: String = "file://" + getClass.getResource("/apps.json").getPath
     agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
-    BinaryFetcherUtil.fetchBinaryFor(channel)
+    BinaryFetcherUtil.fetchBinaryFor(channel, Some(appVersion))
     agentClient = AgentClient.make(agentPrefix, locationService).futureValue
   }
 
