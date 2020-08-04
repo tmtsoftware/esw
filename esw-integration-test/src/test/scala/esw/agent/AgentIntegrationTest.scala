@@ -34,7 +34,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val channel: String = BinaryFetcherUtil.eswChannel(appVersion)
+    val channel: String = "file://" + getClass.getResource("/apps.json").getPath
     agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
     BinaryFetcherUtil.fetchBinaryFor(channel)
     agentClient = AgentClient.make(agentPrefix, locationService).futureValue
@@ -73,7 +73,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
     "return Spawned on SpawnSequenceManager | ESW-180" in {
       val obsModeConfigPath = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
       // spawn sequence manager
-      agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true).futureValue should ===(Spawned)
+      agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, Some(appVersion)).futureValue should ===(Spawned)
 
       // Verify registration in location service
       val seqManagerConnection = AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))

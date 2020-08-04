@@ -44,7 +44,7 @@ object AgentCommand {
           replyTo: ActorRef[SpawnResponse],
           obsModeConfigPath: Path,
           isConfigLocal: Boolean,
-          version: Option[String] = None
+          version: Option[String]
       ) extends SpawnSelfRegistered {
         override val prefix: Prefix             = Prefix(ESW, "sequence_manager")
         override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, Service))

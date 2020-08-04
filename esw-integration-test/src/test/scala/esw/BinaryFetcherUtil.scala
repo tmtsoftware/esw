@@ -36,16 +36,6 @@ object BinaryFetcherUtil {
          |      "csw-networks.hostname.automatic": "on",
          |      "csw-logging.appender-config.file.baseLogPath": "/tmp"
          |    }
-         |  },
-         |  "sequence-manager": {
-         |    "repositories": ["jitpack", "central"],
-         |    "dependencies": [
-         |      "com.github.tmtsoftware.esw:esw-sm-app_2.13:$version"
-         |    ],
-         |    "properties": {
-         |      "csw-networks.hostname.automatic": "on",
-         |      "csw-logging.appender-config.file.baseLogPath": "/tmp"
-         |    }
          |  }
          |}
          |""".stripMargin

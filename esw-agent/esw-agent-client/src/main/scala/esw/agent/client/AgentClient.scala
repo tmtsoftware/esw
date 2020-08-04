@@ -26,8 +26,12 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
   def spawnSequenceComponent(prefix: Prefix, version: Option[String] = None): Future[SpawnResponse] =
     agentRef ? (SpawnSequenceComponent(_, prefix, version))
 
-  def spawnSequenceManager(obsModeConfigPath: Path, isConfigLocal: Boolean): Future[SpawnResponse] =
-    agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal))
+  def spawnSequenceManager(
+      obsModeConfigPath: Path,
+      isConfigLocal: Boolean,
+      version: Option[String] = None
+  ): Future[SpawnResponse] =
+    agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version))
 
   def spawnRedis(prefix: Prefix, port: Int, redisArguments: List[String]): Future[SpawnResponse] =
     agentRef ? (SpawnRedis(_, prefix, port, redisArguments))

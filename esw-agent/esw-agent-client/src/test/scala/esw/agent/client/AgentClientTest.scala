@@ -12,7 +12,9 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.api.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent, SpawnCommand}
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.api.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
 import esw.agent.api.ComponentStatus.{Running, Stopping}
 import esw.agent.api.{AgentCommand, AgentStatus, Killed, Spawned}
 import org.mockito.MockitoSugar
@@ -118,10 +120,12 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
   private def stubAgent: Behaviors.Receive[AgentCommand] =
     Behaviors.receiveMessagePartial[AgentCommand] { msg =>
       msg match {
-        case cmd: SpawnCommand              => cmd.replyTo ! Spawned
-        case KillComponent(replyTo, _)      => replyTo ! Killed
-        case GetComponentStatus(replyTo, _) => replyTo ! Running
-        case GetAgentStatus(replyTo)        => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
+        case SpawnSequenceManager(replyTo, _, _, _) => replyTo ! Spawned
+        case SpawnSequenceComponent(replyTo, _, _)  => replyTo ! Spawned
+        case SpawnRedis(replyTo, _, _, _)           => replyTo ! Spawned
+        case KillComponent(replyTo, _)              => replyTo ! Killed
+        case GetComponentStatus(replyTo, _)         => replyTo ! Running
+        case GetAgentStatus(replyTo)                => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
       }
       Behaviors.same
     }

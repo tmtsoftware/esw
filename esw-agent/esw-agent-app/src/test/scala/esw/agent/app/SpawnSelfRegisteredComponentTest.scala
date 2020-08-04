@@ -6,6 +6,7 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.api._
+import esw.agent.app.process.cs.Coursier
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
@@ -25,6 +26,10 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
       probe.expectMessage(Spawned)
+
+      val expectedCommand =
+        List(Coursier.cs, "launch", "--channel", Cs.channel, "ocs-app", "--", "seqcomp", "-s", "CSW", "-n", "component")
+      verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
     }
 
     "reply 'Failed' and not spawn new process when call to location service fails" in {
@@ -99,8 +104,12 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      agentActorRef ! SpawnSequenceManager(probe.ref, Path.of("obsMode.conf"), isConfigLocal = true)
+      agentActorRef ! SpawnSequenceManager(probe.ref, Path.of("obsMode.conf"), isConfigLocal = true, None)
       probe.expectMessage(Spawned)
+
+      val expectedCommand =
+        List(Coursier.cs, "launch", "--channel", Cs.channel, "sequence-manager", "--", "start", "-o", "obsMode.conf", "-l")
+      verify(processExecutor).runCommand(expectedCommand, seqManagerPrefix)
     }
   }
 }
