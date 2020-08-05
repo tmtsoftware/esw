@@ -8,6 +8,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.app.ext.ProcessExt.ProcessOps
+import esw.agent.app.process.cs.Coursier
 import esw.ocs.testkit.EswTestKit
 import esw.{BinaryFetcherUtil, GitUtil}
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
@@ -48,7 +49,8 @@ class SequencerScriptLauncherTest extends EswTestKit {
 
   override def beforeAll(): Unit = {
     // fetch upfront to prevent timing out
-    BinaryFetcherUtil.fetchBinaryFor(tmtCsChannel, Some(ocsAppVersion))
+    val version = Some(ocsAppVersion)
+    BinaryFetcherUtil.fetchBinaryFor(tmtCsChannel, Coursier.ocsApp(version), version)
     super.beforeAll()
   }
 

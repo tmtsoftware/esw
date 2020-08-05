@@ -14,6 +14,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
 import esw.agent.app.AgentSettings
+import esw.agent.app.process.cs.Coursier
 import esw.agent.client.AgentClient
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
@@ -374,7 +375,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     //spawn ESW agent
     val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
     val agentPrefix     = spawnAgent(AgentSettings(1.minute, channel))
-    BinaryFetcherUtil.fetchBinaryFor(channel)
+    BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(Some(ocsAppVersion)))
 
     //verify that agent is available
     resolveAkkaLocation(agentPrefix, Machine)
@@ -427,7 +428,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   "provision should start sequence components as given in provision config | ESW-347" in {
     // start required agents to provision and verify they are running
     val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
-    BinaryFetcherUtil.fetchBinaryFor(channel)
+    BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(Some(ocsAppVersion)))
     val eswAgentPrefix    = spawnAgent(AgentSettings(1.minute, channel), ESW)
     val irisAgentPrefix   = spawnAgent(AgentSettings(1.minute, channel), IRIS)
     val eswAgentLocation  = resolveAkkaLocation(eswAgentPrefix, Machine)

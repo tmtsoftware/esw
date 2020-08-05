@@ -11,6 +11,7 @@ import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Killed, Spawned}
 import esw.agent.app.AgentSettings
+import esw.agent.app.process.cs.Coursier
 import esw.agent.client.AgentClient
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
@@ -32,18 +33,21 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
   private var agentPrefix: Prefix      = _
   private var agentClient: AgentClient = _
 
+  private val eswVersion: Some[String] = Some(appVersion)
+
   override def beforeAll(): Unit = {
     super.beforeAll()
     val channel: String = "file://" + getClass.getResource("/apps.json").getPath
     agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
-    BinaryFetcherUtil.fetchBinaryFor(channel, Some(appVersion))
+    BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
+    BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
     agentClient = AgentClient.make(agentPrefix, locationService).futureValue
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   //ESW-325: spawns sequence component via agent using coursier with provided sha
-  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some(appVersion))
+  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, eswVersion)
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
@@ -73,7 +77,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
     "return Spawned on SpawnSequenceManager | ESW-180" in {
       val obsModeConfigPath = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
       // spawn sequence manager
-      agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, Some(appVersion)).futureValue should ===(Spawned)
+      agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, eswVersion).futureValue should ===(Spawned)
 
       // Verify registration in location service
       val seqManagerConnection = AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))
