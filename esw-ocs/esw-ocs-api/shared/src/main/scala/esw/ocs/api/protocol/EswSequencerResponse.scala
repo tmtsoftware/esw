@@ -60,23 +60,40 @@ object Unhandled {
   }
 }
 
-case class GoOnlineHookFailed(
-    msg: String = "Sequencer could not go online because online handlers failed to execute successfully"
-) extends GoOnlineResponse
+case class GoOnlineHookFailed(msg: String) extends GoOnlineResponse
 
-case class GoOfflineHookFailed(
-    msg: String = "Sequencer could not go offline because offline handlers failed to execute successfully"
-) extends GoOfflineResponse
+object GoOnlineHookFailed {
+  def apply(): GoOnlineHookFailed =
+    GoOnlineHookFailed("Sequencer could not go online because online handlers failed to execute successfully")
+}
 
-case class DiagnosticHookFailed(msg: String = "Sequencer failed to execute diagnostic mode handlers")
-    extends DiagnosticModeResponse
+case class GoOfflineHookFailed(msg: String) extends GoOfflineResponse
 
-case class OperationsHookFailed(msg: String = "Sequencer failed to execute operations mode handlers")
-    extends OperationsModeResponse
+object GoOfflineHookFailed {
+  def apply(): GoOfflineHookFailed =
+    GoOfflineHookFailed("Sequencer could not go offline because offline handlers failed to execute successfully")
+}
 
-case class NewSequenceHookFailed(
-    msg: String = "Sequence is not submitted because new sequence handler failed to execute successfully"
-) extends SequencerSubmitResponse
+case class DiagnosticHookFailed(msg: String) extends DiagnosticModeResponse
+
+object DiagnosticHookFailed {
+  def apply(): DiagnosticHookFailed =
+    DiagnosticHookFailed("Sequencer failed to execute diagnostic mode handlers")
+}
+
+case class OperationsHookFailed(msg: String) extends OperationsModeResponse
+
+object OperationsHookFailed {
+  def apply(): OperationsHookFailed =
+    OperationsHookFailed("Sequencer failed to execute operations mode handlers")
+}
+
+case class NewSequenceHookFailed(msg: String) extends SequencerSubmitResponse
+
+object NewSequenceHookFailed {
+  def apply(): NewSequenceHookFailed =
+    new NewSequenceHookFailed("Sequence is not submitted because new sequence handler failed to execute successfully")
+}
 
 sealed trait EditorError extends GenericResponse
 
