@@ -2,10 +2,15 @@ package esw.sm.app
 
 import java.nio.file.Path
 
+import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
+import esw.commons.Timeouts
 import esw.http.core.commons.EswCommandApp
 import esw.sm.app.SequenceManagerAppCommand.StartCommand
+
+import scala.concurrent.Await
+import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
 object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
@@ -32,9 +37,17 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
   ): SequenceManagerWiring = {
     val sequenceManagerWiring = new SequenceManagerWiring(obsModeConfigPath, isConfigLocal)
     import sequenceManagerWiring._
-    if (startLogging) actorRuntime.startLogging(progName, appVersion)
-    logResult(sequenceManagerWiring.start())
-    sequenceManagerWiring
+
+    try {
+      if (startLogging) actorRuntime.startLogging(progName, appVersion)
+      logResult(sequenceManagerWiring.start())
+      sequenceManagerWiring
+    }
+    catch {
+      case NonFatal(e) =>
+        Await.result(actorRuntime.shutdown(UnknownReason), Timeouts.DefaultTimeout)
+        throw e
+    }
   }
 }
 // $COVERAGE-ON$
