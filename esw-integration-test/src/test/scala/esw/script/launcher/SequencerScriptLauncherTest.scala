@@ -18,9 +18,10 @@ import scala.concurrent.duration.DurationInt
 
 class SequencerScriptLauncherTest extends EswTestKit {
 
-  private val className     = "SampleScript"
-  private val ocsAppVersion = GitUtil.latestCommitSHA("sequencer-scripts")
-  private val tmtCsChannel  = "https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
+  private val className = "SampleScript"
+
+  private val ocsAppVersion        = GitUtil.latestCommitSHA("esw")
+  private val tmtCsChannel: String = "file://" + getClass.getResource("/apps.json").getPath
 
   private val sampleScriptPath = getClass.getResource(s"/$className.kts").getPath
   private val projectRootPath  = Path(sampleScriptPath) / up / up / up / up / up
@@ -36,6 +37,7 @@ class SequencerScriptLauncherTest extends EswTestKit {
     processEnvironment.put("INTERFACE_NAME", "")        // keeping it blank will auto pick the interface name
     processEnvironment.put("PUBLIC_INTERFACE_NAME", "") // keeping it blank will auto pick the interface name
     processEnvironment.put("TMT_LOG_HOME", "/tmp/csw/")
+    processEnvironment.put("CS_CHANNEL", tmtCsChannel) // use local descriptor channel for testing
 
     process = builder.start() // start the launcher process
 

@@ -67,11 +67,14 @@ fi
 if [[ ${OBS_MODE} == "" ]]; then
   OBS_MODE="${CLASSNAME}"
 fi
+# check if channel is available in env (used in test)
+if [[ ${CS_CHANNEL} == "" ]]; then
+  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
+fi
 
 # ---------------- Compiling ------------------
 echo "[INFO] Compiling the script:" $FILE_PATH
 JARNAME=$CLASSNAME.jar
-CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
 
 kotlinc -jvm-target 1.8 -Xuse-experimental=kotlin.time.ExperimentalTime -classpath "$(cs fetch --channel $CS_CHANNEL ocs-app$VERSION --classpath)" $FILE_PATH -d $JARNAME
 
