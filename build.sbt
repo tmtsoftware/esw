@@ -24,7 +24,7 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-ocs-api`.js,
   `esw-gateway-api`.js,
   `esw-ocs-handler`,
-  `esw-agent`,
+  `esw-agent-api`.js,
   `esw-sm-api`.js,
   examples,
   `esw-shell`
@@ -146,8 +146,9 @@ lazy val `esw-agent-api` = crossProject(JSPlatform, JVMPlatform)
 
 lazy val `esw-agent-http` = project
   .in(file("esw-agent/esw-agent-http"))
+  .enablePlugins(EswBuildInfo)
   .settings(libraryDependencies ++= Dependencies.AgentHttp.value)
-  .dependsOn(`esw-agent-api`.jvm)
+  .dependsOn(`esw-agent-api`.jvm, `esw-http-core`)
 
 lazy val `esw-agent-app` = project
   .in(file("esw-agent/esw-agent-app"))

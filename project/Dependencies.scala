@@ -75,7 +75,8 @@ object Dependencies {
 
   val AgentHttp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`msocket-impl-jvm`
+      Libs.`msocket-impl-jvm`,
+      Csw.`csw-location-client`
     )
   )
 
