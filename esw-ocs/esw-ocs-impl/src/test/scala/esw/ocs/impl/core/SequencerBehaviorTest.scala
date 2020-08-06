@@ -88,7 +88,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       sequencerActor ! StartSequence(probe.ref)
       assertSequenceNotStarted()
       val res = probe.expectMessageType[SequencerSubmitResponse]
-      res should ===(NewSequenceHookFailed())
+      res should ===(NewSequenceHookFailed("New sequence handler failed to start successfully"))
 
       verify(script).executeNewSequenceHandler() // ESW-303: varifies newSequenceHandler is called
     }

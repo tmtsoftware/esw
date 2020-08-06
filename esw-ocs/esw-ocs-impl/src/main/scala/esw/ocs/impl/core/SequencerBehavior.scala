@@ -57,8 +57,9 @@ class SequencerBehavior(
     }
 
   // Starting point of the Sequencer
-  def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx => idle(SequencerData.initial(ctx.self)) }
-
+  def setup: Behavior[SequencerMsg]              = Behaviors.setup { ctx => idle(SequencerData.initial(ctx.self)) }
+  private lazy val SequenceFailedToStartMessage  = "New sequence handler failed to start successfully"
+  private lazy val SequenceFailedToSubmitMessage = "New sequence handler failed to submit successfully"
   // ******************* Sequencer Behaviors **************
 
   private def idle(data: SequencerData): Behavior[SequencerMsg] =
@@ -261,7 +262,7 @@ class SequencerBehavior(
   private def submitting(data: SequencerData): Behavior[SequencerMsg] =
     receive[SubmitMessage](Submitting, data) {
       case SubmitSuccessful(sequence, replyTo) => inProgress(data.createStepList(sequence).startSequence(replyTo))
-      case SubmitFailed(replyTo)               => replyTo ! NewSequenceHookFailed(); idle(data)
+      case SubmitFailed(replyTo)               => replyTo ! NewSequenceHookFailed(SequenceFailedToSubmitMessage); idle(data)
     }
 
   private def startSequence(
@@ -278,7 +279,8 @@ class SequencerBehavior(
   private def startingSequence(data: SequencerData): Behavior[SequencerMsg] =
     receive[StartingMessage](Starting, data) {
       case StartingSuccessful(replyTo) => inProgress(data.startSequence(replyTo))
-      case StartingFailed(replyTo)     => replyTo ! NewSequenceHookFailed(); loaded(data)
+      case StartingFailed(replyTo) =>
+        replyTo ! NewSequenceHookFailed(SequenceFailedToStartMessage); loaded(data)
     }
 
   private def handleCommonMessage[T <: SequencerMsg](
