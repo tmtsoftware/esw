@@ -28,6 +28,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
 
   private val models: ModelSet = ModelSet.models(
     ModelType[Event](observeEvent, systemEvent),
+    ModelType(alarmKey),
     ModelType(AlarmSeverity),
     ModelType(prefix),
     ModelType(eventKey),
@@ -40,8 +41,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
       eventServerUnavailable,
       invalidMaxFrequency,
       setAlarmSeverityFailure
-    ),
-    ModelType(alarmKey)
+    )
   )
 
   private val httpRequests: ModelSet = ModelSet.requests[PostRequest](

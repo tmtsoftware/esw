@@ -19,5 +19,5 @@ class AgentAllocator {
 object AgentAllocator {
   type SequenceComponentPrefix = Prefix
   type AgentLocation           = AkkaLocation
-  type AllocationResponse      = Either[CouldNotFindMachines, List[(AkkaLocation, SequenceComponentPrefix)]]
+  type AllocationResponse      = Either[CouldNotFindMachines, List[(AgentLocation, SequenceComponentPrefix)]]
 }

@@ -164,9 +164,9 @@ private[ocs] class SequencerWiring(
     }
 
     override def shutDown(): Done = {
-      val done = Await.result((sequencerRef ? Shutdown).map(_ => Done), Timeouts.DefaultTimeout)
+      Await.result(sequencerRef ? Shutdown, Timeouts.DefaultTimeout)
       actorSystem.terminate()
-      done
+      Await.result(actorSystem.whenTerminated, Timeouts.DefaultTimeout)
     }
   }
 }
