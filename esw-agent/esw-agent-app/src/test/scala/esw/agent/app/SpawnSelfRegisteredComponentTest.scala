@@ -24,7 +24,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix, None)
       probe.expectMessage(Spawned)
 
       val expectedCommand =
@@ -38,7 +38,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       val err           = "Failed to resolve component"
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.failed(new RuntimeException(err)))
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix, None)
       probe.expectMessage(Failed(s"Failed to verify component registration in location service, reason: $err"))
     }
 
@@ -48,7 +48,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix, None)
       probe.expectMessage(
         Failed(
           s"Component ${seqCompComponentId.fullName} is already registered with location service at location $seqCompLocation"
@@ -65,8 +65,8 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, seqCompPrefix)
-      agentActorRef ! SpawnSequenceComponent(probe2.ref, seqCompPrefix)
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, seqCompPrefix, None)
+      agentActorRef ! SpawnSequenceComponent(probe2.ref, seqCompPrefix, None)
 
       probe1.expectMessage(Spawned)
       probe2.expectMessage(Failed(s"Component ${seqCompComponentId.fullName} is already running on this agent"))
@@ -79,7 +79,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
       when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Left("failure"))
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix, None)
       probe.expectMessage(Failed("failure"))
     }
 
@@ -91,7 +91,7 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, seqCompPrefix, None)
       probe.expectMessage(Failed(s"Component ${seqCompComponentId.fullName} is not registered with location service"))
     }
 

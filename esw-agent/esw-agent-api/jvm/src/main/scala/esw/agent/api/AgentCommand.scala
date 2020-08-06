@@ -34,7 +34,7 @@ object AgentCommand {
     sealed trait SpawnSelfRegistered extends SpawnCommand
 
     object SpawnSelfRegistered {
-      case class SpawnSequenceComponent(replyTo: ActorRef[SpawnResponse], prefix: Prefix, version: Option[String] = None)
+      case class SpawnSequenceComponent(replyTo: ActorRef[SpawnResponse], prefix: Prefix, version: Option[String])
           extends SpawnSelfRegistered {
         override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
         override val commandArgs: List[String]  = List("seqcomp", "-s", prefix.subsystem.name, "-n", prefix.componentName)

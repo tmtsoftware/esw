@@ -132,24 +132,32 @@ lazy val `esw-ocs-app` = project
 lazy val `esw-agent` = project
   .in(file("esw-agent"))
   .aggregate(
+    `esw-agent-api`.js,
+    `esw-agent-api`.jvm,
     `esw-agent-app`,
-    `esw-agent-client`
+    `esw-agent-http`
   )
+
+lazy val `esw-agent-api` = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("esw-agent/esw-agent-api"))
+  .jvmSettings(libraryDependencies ++= Dependencies.AgentJVMApi.value)
+  .settings(libraryDependencies ++= Dependencies.AgentApi.value)
+
+lazy val `esw-agent-http` = project
+  .in(file("esw-agent/esw-agent-http"))
+  .settings(libraryDependencies ++= Dependencies.AgentHttp.value)
+  .dependsOn(`esw-agent-api`.jvm)
 
 lazy val `esw-agent-app` = project
   .in(file("esw-agent/esw-agent-app"))
   .enablePlugins(EswBuildInfo, MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentApp.value)
   .dependsOn(
-    `esw-agent-client`,
+    `esw-agent-api`.jvm,
     `esw-commons`,
     `esw-test-commons` % Test
   )
-
-lazy val `esw-agent-client` = project
-  .in(file("esw-agent/esw-agent-client"))
-  .enablePlugins(MaybeCoverage)
-  .settings(libraryDependencies ++= Dependencies.AgentClient.value)
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
@@ -168,7 +176,7 @@ lazy val `esw-integration-test` = project
     examples,
     `esw-ocs-app`,
     `esw-agent-app`,
-    `esw-agent-client`,
+    `esw-agent-api`.jvm,
     `esw-sm-app`,
     `esw-testkit`,
     `esw-test-commons` % Test
@@ -268,7 +276,7 @@ lazy val `esw-sm-impl` = project
   .in(file("esw-sm/esw-sm-impl"))
   .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
-  .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons`, `esw-test-commons` % Test)
+  .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-api`.jvm, `esw-commons`, `esw-test-commons` % Test)
 
 lazy val `esw-sm-handler` = project
   .in(file("esw-sm/esw-sm-handler"))

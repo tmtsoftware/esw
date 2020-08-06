@@ -65,6 +65,20 @@ object Dependencies {
     )
   )
 
+  val AgentApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Borer.`borer-core`.value,
+      Borer.`borer-derivation`.value,
+      Csw.`csw-location-api`.value
+    )
+  )
+
+  val AgentHttp: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Libs.`msocket-impl-jvm`
+    )
+  )
+
   val AgentApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
@@ -78,12 +92,9 @@ object Dependencies {
     )
   )
 
-  val AgentClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AgentJVMApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Borer.`borer-core`.value,
-      Borer.`borer-derivation`.value,
       Csw.`csw-prefix`.value,
-      Csw.`csw-location-api`.value,
       Akka.`akka-actor-typed`,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,

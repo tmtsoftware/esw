@@ -32,8 +32,8 @@ class GetAgentStatusTest extends AgentSetup {
         .thenReturn(delayedFuture(None, 2.seconds))
 
       //spawn two processes
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, prefix1)
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, prefix2)
+      agentActorRef ! SpawnSequenceComponent(spawner.ref, prefix1, None)
+      agentActorRef ! SpawnSequenceComponent(spawner.ref, prefix2, None)
 
       //get agent status
       agentActorRef ! GetAgentStatus(probe.ref)

@@ -48,7 +48,7 @@ class AgentSetup extends BaseTestSuite {
   val seqCompConn: AkkaConnection                                          = AkkaConnection(seqCompComponentId)
   val seqCompLocation: AkkaLocation                                        = AkkaLocation(seqCompConn, new URI("some"))
   val seqCompLocationF: Future[Some[AkkaLocation]]                         = Future.successful(Some(seqCompLocation))
-  val spawnSequenceComp: ActorRef[SpawnResponse] => SpawnSequenceComponent = SpawnSequenceComponent(_, seqCompPrefix)
+  val spawnSequenceComp: ActorRef[SpawnResponse] => SpawnSequenceComponent = SpawnSequenceComponent(_, seqCompPrefix, None)
 
   val seqManagerPrefix: Prefix                        = Prefix("esw.sequence_manager")
   val seqManagerComponentId: ComponentId              = ComponentId(seqManagerPrefix, Service)
