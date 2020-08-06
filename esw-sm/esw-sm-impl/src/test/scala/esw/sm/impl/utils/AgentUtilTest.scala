@@ -160,7 +160,7 @@ class AgentUtilTest extends BaseTestSuite {
           if (loc.prefix.subsystem == ESW) eswClient else irisClient
       }
 
-      val provisionConfig = ProvisionConfig(Map(eswPrimaryMachine.prefix -> 1, irisPrimaryMachine.prefix -> 1))
+      val provisionConfig = ProvisionConfig(eswPrimaryMachine.prefix -> 1, irisPrimaryMachine.prefix -> 1)
       val machines        = List(eswPrimaryMachine, irisPrimaryMachine)
       val mapping         = List(eswPrimaryMachine -> eswSeqComp1Prefix, irisPrimaryMachine -> irisSeqComp1Prefix)
 
@@ -182,7 +182,7 @@ class AgentUtilTest extends BaseTestSuite {
       import setup._
 
       val errorMsg        = "failed to spawn"
-      val provisionConfig = ProvisionConfig(Map(eswPrimaryMachine.prefix -> 2))
+      val provisionConfig = ProvisionConfig(eswPrimaryMachine.prefix -> 2)
       val machines        = List(eswPrimaryMachine)
       val mapping         = List(eswPrimaryMachine -> eswSeqComp1Prefix, eswPrimaryMachine -> eswSeqComp2Prefix)
 
@@ -212,7 +212,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.listAkkaLocationsBy(Machine))
         .thenReturn(Future.successful(Left(RegistrationListingFailed(errorMsg))))
 
-      val provisionConfig = ProvisionConfig(Map(Prefix(ESW, "primary") -> 2))
+      val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2)
       agentUtil.provision(provisionConfig).futureValue should ===(LocationServiceError(errorMsg))
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
@@ -221,7 +221,7 @@ class AgentUtilTest extends BaseTestSuite {
     "return NoMachineFoundForSubsystems if any subsystem does not have machine available | ESW-347" in {
       val setup = new TestSetup()
       import setup._
-      val provisionConfig = ProvisionConfig(Map(Prefix(ESW, "primary") -> 1, Prefix(IRIS, "primary") -> 1))
+      val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1, Prefix(IRIS, "primary") -> 1)
       val machines        = List(eswPrimaryMachine)
       val error           = CouldNotFindMachines(Set(Prefix(IRIS, "primary")))
       when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))

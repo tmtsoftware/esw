@@ -30,7 +30,7 @@ class SequenceManagerPostHandlerTest
   lazy val route: Route                              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
   private val obsMode                                = ObsMode("IRIS_darknight")
   private val componentId                            = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
-  private val provisionConfig                        = ProvisionConfig(Map(Prefix(ESW, "primary") -> 1))
+  private val provisionConfig                        = ProvisionConfig(Prefix(ESW, "primary") -> 1)
 
   override def clientContentType: ContentType = ContentType.Json
 

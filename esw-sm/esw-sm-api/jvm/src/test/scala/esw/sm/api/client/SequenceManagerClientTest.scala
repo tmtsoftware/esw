@@ -38,7 +38,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
 
     "return provision success for provision request | ESW-347" in {
 
-      val provisionConfig = ProvisionConfig(Map(Prefix(ESW, "primary") -> 1))
+      val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1)
       when(
         postClient.requestResponse[ProvisionResponse](argsEq(Provision(provisionConfig)))(
           any[Decoder[ProvisionResponse]](),

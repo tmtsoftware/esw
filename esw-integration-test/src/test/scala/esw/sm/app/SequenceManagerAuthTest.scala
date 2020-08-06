@@ -22,7 +22,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   private val IRIS_Darknight  = ObsMode("IRIS_Darknight")
   private val WFOS_Cal        = ObsMode("WFOS_Cal")
   private val seqCompPrefix   = Prefix(ESW, "primary")
-  private val provisionConfig = ProvisionConfig(Map(seqCompPrefix -> 1))
+  private val provisionConfig = ProvisionConfig(seqCompPrefix -> 1)
 
   private val testCases = Table[String, SequenceManagerApi => Future[Any]](
     ("Name", "Command"),

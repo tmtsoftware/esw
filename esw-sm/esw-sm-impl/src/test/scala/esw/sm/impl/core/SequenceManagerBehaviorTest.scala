@@ -491,7 +491,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "provision" must {
     "transition from Idle -> Processing -> Idle and return provision success | ESW-347" in {
-      val provisionConfig = ProvisionConfig(Map(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2))
+      val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
       when(agentUtil.provision(provisionConfig)).thenReturn(future(1.second, ProvisionResponse.Success))
       val provisionResponseProbe = TestProbe[ProvisionResponse]()
 
@@ -505,7 +505,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return ProvisionResponse given by agentUtil.provision | ESW-347" in {
-      val provisionConfig   = ProvisionConfig(Map(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2))
+      val provisionConfig   = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
       val provisionResponse = ProvisionResponse.CouldNotFindMachines(Set(Prefix(ESW, "primary")))
       when(agentUtil.provision(provisionConfig)).thenReturn(Future.successful(provisionResponse))
 
@@ -522,7 +522,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(60.seconds, Right(List.empty)))
 
       val configureProbe  = TestProbe[ConfigureResponse]()
-      val provisionConfig = ProvisionConfig(Map(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2))
+      val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
 
       assertState(Idle)
       smRef ! Configure(darkNight, configureProbe.ref)

@@ -22,7 +22,7 @@ class AgentAllocatorTest extends BaseTestSuite {
   "allocate" must {
 
     "return a mapping of machine -> seq comp prefix for given config | ESW-347" in {
-      val config   = ProvisionConfig(Map(eswPrimaryM.prefix -> 3, eswSecondaryM.prefix -> 2, irisPrimaryM.prefix -> 2))
+      val config   = ProvisionConfig(eswPrimaryM.prefix -> 3, eswSecondaryM.prefix -> 2, irisPrimaryM.prefix -> 2)
       val machines = List(eswPrimaryM, eswSecondaryM, irisPrimaryM)
 
       val mapping = allocator.allocate(config, machines).rightValue
@@ -42,7 +42,7 @@ class AgentAllocatorTest extends BaseTestSuite {
     }
 
     "return CouldNotFindMachines if there is not machine with given machine | ESW-347" in {
-      val config = ProvisionConfig(Map(eswPrimaryM.prefix -> 1, eswSecondaryM.prefix -> 1, irisPrimaryM.prefix -> 1))
+      val config = ProvisionConfig(eswPrimaryM.prefix -> 1, eswSecondaryM.prefix -> 1, irisPrimaryM.prefix -> 1)
 
       allocator.allocate(config, List(eswPrimaryM)).leftValue should ===(
         CouldNotFindMachines(Set(eswSecondaryM.prefix, irisPrimaryM.prefix))

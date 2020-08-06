@@ -33,7 +33,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val subsystem                                           = randomSubsystem
   private val agent                                               = Prefix(randomSubsystem, randomString5)
   private val seqCompName                                         = randomString5
-  private val provisionConfig                                     = ProvisionConfig(Map(seqCompPrefix -> 1))
+  private val provisionConfig                                     = ProvisionConfig(seqCompPrefix -> 1)
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {

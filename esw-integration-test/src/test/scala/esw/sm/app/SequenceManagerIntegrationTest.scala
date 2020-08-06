@@ -436,7 +436,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     locationService.list(SequenceComponent).futureValue.size shouldBe 0
 
-    val provisionConfig = ProvisionConfig(Map(eswAgentPrefix -> 1, irisAgentPrefix -> 1))
+    val provisionConfig = ProvisionConfig(eswAgentPrefix -> 1, irisAgentPrefix -> 1)
     val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix)
     sequenceManager.provision(provisionConfig).futureValue should ===(ProvisionResponse.Success)
 
