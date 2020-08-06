@@ -122,7 +122,7 @@ class SequencerBehavior(
       case GoOnlineSuccess(replyTo) =>
         replyTo ! Ok
         if (currentState == Offline) idle(data) else currentBehavior(data)
-      case GoOnlineFailed(replyTo) => replyTo ! GoOnlineHookFailed(); currentBehavior(data)
+      case GoOnlineFailed(replyTo) => replyTo ! GoOnlineHookFailed; currentBehavior(data)
     }
   }
 
@@ -150,7 +150,7 @@ class SequencerBehavior(
       case GoOfflineSuccess(replyTo) => replyTo ! Ok; offline(data.copy(stepList = None))
       case GoOfflineFailed(replyTo) =>
         val currentBehavior = stateMachine(currentState)
-        replyTo ! GoOfflineHookFailed(); currentBehavior(data)
+        replyTo ! GoOfflineHookFailed; currentBehavior(data)
     }
 
   // Only called from InProgress state. Method starts executing abort handlers and changes state to
@@ -221,7 +221,7 @@ class SequencerBehavior(
         replyTo ! Ok
       case Failure(e) =>
         error(s"Failed while executing diagnostic mode script handlers with error : ${e.getMessage}")
-        replyTo ! DiagnosticHookFailed()
+        replyTo ! DiagnosticHookFailed
     }
     Behaviors.same
   }
@@ -235,7 +235,7 @@ class SequencerBehavior(
         replyTo ! Ok
       case Failure(e) =>
         error(s"Failed while executing operations mode script handlers with error : ${e.getMessage}")
-        replyTo ! OperationsHookFailed()
+        replyTo ! OperationsHookFailed
     }
     Behaviors.same
   }

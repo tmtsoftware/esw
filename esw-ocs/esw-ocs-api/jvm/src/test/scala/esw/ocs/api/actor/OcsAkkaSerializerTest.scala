@@ -120,12 +120,12 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
 
     val testData = Table(
       "EswSequencerRemoteMessage models",
-      DiagnosticHookFailed(message),
-      GoOfflineHookFailed(message),
-      GoOnlineHookFailed(message),
+      DiagnosticHookFailed,
+      GoOfflineHookFailed,
+      GoOnlineHookFailed,
       IdDoesNotExist(id),
       NewSequenceHookFailed(message),
-      OperationsHookFailed(message),
+      OperationsHookFailed,
       PullNextResult(Step(setup)),
       SubmitResult(Completed(id)),
       Unhandled("state", "messageType")

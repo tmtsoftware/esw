@@ -142,11 +142,11 @@ class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest wit
     }
 
     "return GoOnlineHookFailed for GoOnline request | ESW-222" in {
-      when(sequencer.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed()))
+      when(sequencer.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed))
 
       Post("/post-endpoint", GoOnline.narrow) ~> route ~> check {
         verify(sequencer).goOnline()
-        responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed())
+        responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed)
       }
     }
 

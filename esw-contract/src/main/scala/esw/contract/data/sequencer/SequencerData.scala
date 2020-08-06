@@ -26,13 +26,13 @@ trait SequencerData extends CommandData {
   val idDoesNotExist: IdDoesNotExist = IdDoesNotExist(id)
   val cannotOperateOnAnInFlightOrFinishedStep: CannotOperateOnAnInFlightOrFinishedStep.type =
     CannotOperateOnAnInFlightOrFinishedStep
-  val stepList: StepList                         = StepList(sequence)
-  val goOnlineHookFailed: GoOnlineHookFailed     = GoOnlineHookFailed()
-  val goOfflineHookFailed: GoOfflineHookFailed   = GoOfflineHookFailed()
-  val diagnosticHookFailed: DiagnosticHookFailed = DiagnosticHookFailed()
-  val operationsHookFailed: OperationsHookFailed = OperationsHookFailed()
-  val akkaConnection: AkkaConnection             = AkkaConnection(ComponentId(prefix, ComponentType.Assembly))
-  val akkaLocation: AkkaLocation                 = AkkaLocation(akkaConnection, new URI("path"))
+  val stepList: StepList                              = StepList(sequence)
+  val goOnlineHookFailed: GoOnlineHookFailed.type     = GoOnlineHookFailed
+  val goOfflineHookFailed: GoOfflineHookFailed.type   = GoOfflineHookFailed
+  val diagnosticHookFailed: DiagnosticHookFailed.type = DiagnosticHookFailed
+  val operationsHookFailed: OperationsHookFailed.type = OperationsHookFailed
+  val akkaConnection: AkkaConnection                  = AkkaConnection(ComponentId(prefix, ComponentType.Assembly))
+  val akkaLocation: AkkaLocation                      = AkkaLocation(akkaConnection, new URI("path"))
 
   val loadSequence: LoadSequence                      = LoadSequence(sequence)
   val startSequence: StartSequence.type               = StartSequence

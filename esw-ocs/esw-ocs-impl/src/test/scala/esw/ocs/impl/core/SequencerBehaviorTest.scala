@@ -720,7 +720,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.offline(sequence)
       import sequencerSetup._
 
-      goOnlineAndAssertResponse(GoOnlineHookFailed(), Future.failed(new RuntimeException("GoOnline Hook Failed")))
+      goOnlineAndAssertResponse(GoOnlineHookFailed, Future.failed(new RuntimeException("GoOnline Hook Failed")))
       verify(script).executeGoOnline()
       assertSequencerState(Offline)
     }
@@ -762,7 +762,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       import sequencerSetup._
 
       when(script.executeGoOffline()).thenReturn(Future.failed(new RuntimeException("GoOffline Hook Failed")))
-      goOfflineAndAssertResponse(GoOfflineHookFailed())
+      goOfflineAndAssertResponse(GoOfflineHookFailed)
       verify(script).executeGoOffline()
       assertSequencerState(Idle)
     }
