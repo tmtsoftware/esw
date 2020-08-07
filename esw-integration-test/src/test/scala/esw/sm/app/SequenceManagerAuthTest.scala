@@ -4,15 +4,20 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{AOESW, ESW, IRIS, TCS}
+import esw.agent.app.AgentSettings
+import esw.agent.app.process.cs.Coursier
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol._
+import esw.{BinaryFetcherUtil, GitUtil}
 import msocket.impl.HttpError
+import org.scalactic.source
 import org.scalatest.prop.Tables.Table
 
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
 class SequenceManagerAuthTest extends EswTestKit(AAS) {
@@ -24,26 +29,27 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   private val seqCompPrefix   = Prefix(ESW, "primary")
   private val provisionConfig = ProvisionConfig(seqCompPrefix -> 1)
 
-  private val testCases = Table[String, SequenceManagerApi => Future[Any]](
-    ("Name", "Command"),
-    ("configure", _.configure(IRIS_CAL)),
-    ("provision", _.provision(provisionConfig)),
-    ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
-    ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
-    ("shutdownSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
-    ("shutdownSubsystemSequencers", _.shutdownSubsystemSequencers(ESW)),
-    ("shutdownObsModeSequencers", _.shutdownObsModeSequencers(IRIS_CAL)),
-    ("shutdownAllSequencers", _.shutdownAllSequencers()),
-    ("shutdownSequenceComponent", _.shutdownSequenceComponent(seqCompPrefix)),
-    ("shutdownAllSequenceComponents", _.shutdownAllSequenceComponents())
-  )
-
   override def afterEach(): Unit = {
     TestSetup.cleanup()
     super.afterEach()
   }
 
   "Sequence Manager" must {
+    //test cases for testing unauthenticated and unauthorised requests
+    val testCases = Table[String, SequenceManagerApi => Future[Any]](
+      ("Name", "Command"),
+      ("configure", _.configure(IRIS_CAL)),
+      ("provision", _.provision(provisionConfig)),
+      ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
+      ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
+      ("shutdownSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
+      ("shutdownSubsystemSequencers", _.shutdownSubsystemSequencers(ESW)),
+      ("shutdownObsModeSequencers", _.shutdownObsModeSequencers(IRIS_CAL)),
+      ("shutdownAllSequencers", _.shutdownAllSequencers()),
+      ("shutdownSequenceComponent", _.shutdownSequenceComponent(seqCompPrefix)),
+      ("shutdownAllSequenceComponents", _.shutdownAllSequenceComponents())
+    )
+
     testCases.foreach {
       case (name, action) =>
         s"return 401 when $name request does not have token | ESW-332" in {
@@ -134,18 +140,26 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
         .futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
 
-    "return 200 when shutdown all sequence components request has ESW_user role | ESW-332" in {
-      val eswSeqCompPrefix1 = Prefix(ESW, "primary")
-      val eswSeqCompPrefix2 = Prefix(ESW, "secondary")
+    "return 200 when provision and shutdown all sequence components request has ESW_user role | ESW-332, ESW-347" in {
+      //start ESW,IRIS agents
+      val ocsAppVersion   = GitUtil.latestCommitSHA("esw")
+      val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
+      BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(Some(ocsAppVersion)))
+      val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
+      val irisAgentPrefix = spawnAgent(AgentSettings(1.minute, channel), IRIS)
 
-      TestSetup.startSequenceComponents(eswSeqCompPrefix1, eswSeqCompPrefix2)
+      val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(smPrefix, tokenWithEswUserRole)
 
-      val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, tokenWithEswUserRole)
+      val patienceConfig = PatienceConfig(1.minute, 100.millis) //  increase test timeout because of provision
+      //provision components
+      sequenceManager
+        .provision(ProvisionConfig(eswAgentPrefix -> 1, irisAgentPrefix -> 1))
+        .futureValue(patienceConfig, implicitly[source.Position]) shouldBe ProvisionResponse.Success
 
       // shutdown sequence component
-      sequenceManagerApi
+      sequenceManager
         .shutdownAllSequenceComponents()
-        .futureValue shouldBe ShutdownSequenceComponentResponse.Success
+        .futureValue(patienceConfig, implicitly[source.Position]) shouldBe ShutdownSequenceComponentResponse.Success
     }
   }
 }
