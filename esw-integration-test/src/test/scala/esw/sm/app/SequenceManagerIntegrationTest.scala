@@ -102,37 +102,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     assertThatSeqCompIsAvailable(aoeswSeqCompPrefix)
   }
 
-  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170, ESW-171, ESW-179, ESW-178, ESW-357" in {
-    // start config server
-    configTestKit.startConfigServer()
-
-    val factory = mock[TokenFactory]
-    when(factory.getToken).thenReturn("valid")
-    val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
-    configTestKit.initSvnRepo()
-    val configFilePath = Path.of("/tmt/test/smConfig.conf")
-    val obsModeConfig: String =
-      """
-        esw-sm {
-        |  obsModes: {
-        |    IRIS_Darknight: {
-        |      resources: [IRIS, TCS, NFIRAOS]
-        |      sequencers: [IRIS, ESW, TCS]
-        |    },
-        |    IRIS_Cal: {
-        |      resources: [IRIS, NSCU, NFIRAOS]
-        |      sequencers: [IRIS, ESW, AOESW]
-        |    },
-        |    WFOS_Cal: {
-        |      resources: [WFOS]
-        |      sequencers: [WFOS, ESW]
-        |    }
-        |  }
-        |}
-        |""".stripMargin
-    // create obsMode config file on config server
-    adminApi.create(configFilePath, ConfigData.fromString(obsModeConfig), annex = false, "First commit").futureValue
-
+  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170, ESW-171, ESW-179, ESW-178" in {
     TestSetup.startSequenceComponents(
       Prefix(ESW, "primary"),
       Prefix(ESW, "secondary"),
@@ -141,9 +111,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
       Prefix(WFOS, "primary"),
       Prefix(TCS, "primary")
     )
-    // ESW-357 read SM config from remote config server
     val sequenceManagerClient =
-      TestSetup.startSequenceManager(sequenceManagerPrefix, obsModeConfigPath = configFilePath, isConfigLocal = false)
+      TestSetup.startSequenceManager(sequenceManagerPrefix)
 
     // Configure for "IRIS_Cal" observing mode should be successful as the resources are available
     sequenceManagerClient.configure(IRIS_CAL).futureValue shouldBe a[ConfigureResponse.Success]
@@ -159,6 +128,41 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // Test cleanup
     sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
     sequenceManagerClient.shutdownObsModeSequencers(WFOS_CAL).futureValue
+  }
+
+  "configure should read config file from remote config server | ESW-357" in {
+    // start config server
+    configTestKit.startConfigServer()
+
+    val obsMode = ObsMode("APS_Cal")
+    val factory = mock[TokenFactory]
+    when(factory.getToken).thenReturn("valid")
+    val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
+    configTestKit.initSvnRepo()
+    val configFilePath = Path.of("/tmt/test/smConfig.conf")
+    val obsModeConfig: String =
+      """
+        esw-sm {
+        |  obsModes: {
+        |    APS_Cal: {
+        |      resources: [ESW, TCS]
+        |      sequencers: [ESW]
+        |    }
+        |  }
+        |}
+        |""".stripMargin
+    // create obsMode config file on config server
+    adminApi.create(configFilePath, ConfigData.fromString(obsModeConfig), annex = false, "First commit").futureValue
+
+    TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
+    // Read SM config from remote config server
+    val sequenceManagerClient =
+      TestSetup.startSequenceManager(sequenceManagerPrefix, obsModeConfigPath = configFilePath, isConfigLocal = false)
+
+    sequenceManagerClient.configure(obsMode).futureValue shouldBe a[ConfigureResponse.Success]
+
+    // Test cleanup
+    sequenceManagerClient.shutdownObsModeSequencers(obsMode).futureValue
     configTestKit.deleteServerFiles()
     configTestKit.terminateServer()
   }
