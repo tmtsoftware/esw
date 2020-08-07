@@ -4,8 +4,8 @@ import java.nio.file.Path
 
 import csw.prefix.models.Prefix
 
-sealed trait AgentHttpMessage
+sealed trait AgentPostRequest
 
 case class SpawnSequenceManager(agentPrefix: Prefix, obsModeConfigPath: Path, isConfigLocal: Boolean, version: Option[String])
-    extends AgentHttpMessage
-case class SpawnSequenceComponent(agentPrefix: Prefix, prefix: Prefix, version: Option[String]) extends AgentHttpMessage
+    extends AgentPostRequest
+case class SpawnSequenceComponent(agentPrefix: Prefix, prefix: Prefix, version: Option[String]) extends AgentPostRequest

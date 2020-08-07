@@ -16,7 +16,7 @@ import esw.ocs.handler.SequencerWebsocketHandler
 import msocket.api.ContentType
 import msocket.impl.ws.WebsocketHandler
 
-class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, contentType: ContentType)
+class GatewayWebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, contentType: ContentType)
     extends WebsocketHandler[WebsocketRequest](contentType) {
 
   override def handle(request: WebsocketRequest): Source[Message, NotUsed] =

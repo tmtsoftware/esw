@@ -23,7 +23,7 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
-import esw.gateway.server.handlers.WebsocketHandlerImpl
+import esw.gateway.server.handlers.GatewayWebsocketHandlerImpl
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
@@ -49,7 +49,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   implicit val typedSystem: ActorSystem[_]             = system.toTyped
 
   private val eventApi: EventApi                             = new EventImpl(eventService, eventSubscriberUtil)
-  private def websocketHandlerImpl(contentType: ContentType) = new WebsocketHandlerImpl(resolver, eventApi, contentType)
+  private def websocketHandlerImpl(contentType: ContentType) = new GatewayWebsocketHandlerImpl(resolver, eventApi, contentType)
   private val route                                          = new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl).make()
   private val destination                                    = Prefix(TCS, "test")
 
