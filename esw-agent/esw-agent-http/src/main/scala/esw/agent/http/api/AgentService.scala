@@ -13,8 +13,8 @@ trait AgentService {
       agentPrefix: Prefix,
       obsModeConfigPath: Path,
       isConfigLocal: Boolean,
-      version: Option[String]
+      version: Option[String] = None
   ): Future[SpawnResponse]
 
-  def spawnSequenceComponent(agentPrefix: Prefix, prefix: Prefix, version: Option[String]): Future[SpawnResponse]
+  def spawnSequenceComponent(agentPrefix: Prefix, prefix: Prefix, version: Option[String] = None): Future[SpawnResponse]
 }

@@ -36,7 +36,7 @@ import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future
 
-class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
+class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
   override def clientContentType: ContentType = ContentType.Json
 

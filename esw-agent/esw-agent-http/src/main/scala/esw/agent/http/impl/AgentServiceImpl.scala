@@ -13,8 +13,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AgentService {
 
-  private implicit val ec: ExecutionContext    = actorSystem.executionContext
-  private def agentClient(agentPrefix: Prefix) = AgentClient.make(agentPrefix, locationService)
+  private implicit val ec: ExecutionContext = actorSystem.executionContext
+
+  private[impl] def agentClient(agentPrefix: Prefix): Future[AgentClient] = AgentClient.make(agentPrefix, locationService)
 
   override def spawnSequenceManager(
       agentPrefix: Prefix,

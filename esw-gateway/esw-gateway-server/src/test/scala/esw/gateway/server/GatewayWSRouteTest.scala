@@ -37,7 +37,7 @@ import msocket.impl.ws.WebsocketRouteFactory
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
+class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
   override def clientContentType: ContentType = ContentType.Json
 

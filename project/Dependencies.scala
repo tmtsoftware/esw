@@ -76,7 +76,11 @@ object Dependencies {
   val AgentHttp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-impl-jvm`,
-      Csw.`csw-location-client`
+      Csw.`csw-location-client`,
+      Libs.scalatest.value         % Test,
+      Libs.`mockito-scala`         % Test,
+      Libs.`tmt-test-reporter`     % Test,
+      AkkaHttp.`akka-http-testkit` % Test
     )
   )
 

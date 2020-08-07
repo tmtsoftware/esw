@@ -148,7 +148,7 @@ lazy val `esw-agent-http` = project
   .in(file("esw-agent/esw-agent-http"))
   .enablePlugins(EswBuildInfo)
   .settings(libraryDependencies ++= Dependencies.AgentHttp.value)
-  .dependsOn(`esw-agent-api`.jvm, `esw-http-core`)
+  .dependsOn(`esw-agent-api`.jvm, `esw-http-core`, `esw-test-commons` % Test)
 
 lazy val `esw-agent-app` = project
   .in(file("esw-agent/esw-agent-app"))
