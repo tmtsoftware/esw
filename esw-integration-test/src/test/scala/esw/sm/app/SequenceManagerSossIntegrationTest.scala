@@ -11,7 +11,8 @@ import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
-import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequencersResponse, Unhandled}
+import esw.sm.api.protocol.ConfigureResponse.Success
+import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequencersResponse}
 
 class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 
@@ -37,19 +38,17 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
       // verify ESW sequencer is considered as top level sequencer
       configureResponse should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)))
 
-      configureResponse match {
-        case ConfigureResponse.Success(id) =>
-          val location = resolveHTTPLocation(id.prefix, id.componentType)
+      val successResponse = configureResponse.asInstanceOf[Success]
+      val id              = successResponse.masterSequencerComponentId
 
-          // ESW-146 : Send Sequence to master sequencer. (TestScript5 is loaded in master sequencer)
-          SequencerApiFactory.make(location).submitAndWait(sequence).futureValue shouldBe a[Completed]
+      val location = resolveHTTPLocation(id.prefix, id.componentType)
 
-          // ESW-146 : Verify command handler of the script is called
-          val event = eventSubscriber.get(EventKey(Prefix(ESW, "IRIS_cal"), EventName("event-1"))).futureValue
-          event.isInvalid shouldBe false
-        case e: ConfigureResponse.Failure => throw new RuntimeException(e.getMessage) // unreachable because of above assertion
-        case e: Unhandled                 => throw new RuntimeException(e.msg)        // unreachable because of above assertion
-      }
+      // ESW-146 : Send Sequence to master sequencer. (TestScript5 is loaded in master sequencer)
+      SequencerApiFactory.make(location).submitAndWait(sequence).futureValue shouldBe a[Completed]
+
+      // ESW-146 : Verify command handler of the script is called
+      val event = eventSubscriber.get(EventKey(Prefix(ESW, "IRIS_cal"), EventName("event-1"))).futureValue
+      event.isInvalid shouldBe false
 
       sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe a[ShutdownSequencersResponse.Success.type]
     }

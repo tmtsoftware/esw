@@ -112,14 +112,14 @@ object AgentStatusResponse {
 }
 
 final case class Unhandled(state: String, messageType: String, msg: String)
-    extends ConfigureResponse
-    with StartSequencerResponse
-    with RestartSequencerResponse
-    with ShutdownSequencersResponse
-    with ShutdownSequenceComponentResponse
-    with SpawnSequenceComponentResponse
-    with ProvisionResponse
-    with AgentStatusResponse
+    extends ConfigureResponse.Failure
+    with StartSequencerResponse.Failure
+    with RestartSequencerResponse.Failure
+    with ShutdownSequencersResponse.Failure
+    with ShutdownSequenceComponentResponse.Failure
+    with SpawnSequenceComponentResponse.Failure
+    with ProvisionResponse.Failure
+    with AgentStatusResponse.Failure
 
 object Unhandled {
   def apply(state: String, messageType: String): Unhandled =
