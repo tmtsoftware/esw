@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "69b9245"
+  private val MSocketVersion = "ee8bbee"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.3"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
@@ -25,7 +25,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "10792cccc9f" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "2fcb6cb" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
@@ -67,16 +67,16 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.2.0-RC2" //all akka is Apache License 2.0
+  private val Version = "10.2.0" //all akka is Apache License 2.0
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
 
-  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.0.0"
+  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.0"
 }
 
 object Borer {
-  private val Version = "1.6.0"
+  private val Version = "1.6.1"
   private val Org     = "io.bullet"
 
   val `borer-core`        = dep(Org %%% "borer-core" % Version)

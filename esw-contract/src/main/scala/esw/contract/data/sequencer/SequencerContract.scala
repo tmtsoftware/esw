@@ -27,32 +27,32 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     ModelType(akkaLocation)
   )
 
-  private val httpRequests: ModelSet = ModelSet.requests[SequencerPostRequest](
-    ModelType(loadSequence),
-    ModelType(add),
-    ModelType(prepend),
-    ModelType(replace),
-    ModelType(insertAfter),
-    ModelType(delete),
-    ModelType(pause),
-    ModelType(resume),
-    ModelType(addBreakPoint),
-    ModelType(removeBreakPoint),
-    ModelType(reset),
-    ModelType(abortSequence),
-    ModelType(stop),
-    ModelType(submit),
-    ModelType(query),
-    ModelType(goOnline),
-    ModelType(goOffline),
-    ModelType(diagnosticMode),
-    ModelType(operationsMode),
-    ModelType(getSequenceComponent)
-  )
+  private val httpRequests = new RequestSet[SequencerPostRequest] {
+    requestType(loadSequence)
+    requestType(add)
+    requestType(prepend)
+    requestType(replace)
+    requestType(insertAfter)
+    requestType(delete)
+    requestType(pause)
+    requestType(resume)
+    requestType(addBreakPoint)
+    requestType(removeBreakPoint)
+    requestType(reset)
+    requestType(abortSequence)
+    requestType(stop)
+    requestType(submit)
+    requestType(query)
+    requestType(goOnline)
+    requestType(goOffline)
+    requestType(diagnosticMode)
+    requestType(operationsMode)
+    requestType(getSequenceComponent)
+  }
 
-  private val websocketRequests: ModelSet = ModelSet.requests[SequencerWebsocketRequest](
-    ModelType(sequencerQueryFinal)
-  )
+  private val websocketRequests = new RequestSet[SequencerWebsocketRequest] {
+    requestType(sequencerQueryFinal)
+  }
 
   private val httpEndpoints: List[Endpoint] = List(
     Endpoint(name[LoadSequence], name[OkOrUnhandledResponse]),

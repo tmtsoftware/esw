@@ -44,23 +44,23 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     )
   )
 
-  private val httpRequests: ModelSet = ModelSet.requests[PostRequest](
-    ModelType(postComponentCommand),
-    ModelType(postSequencerCommand),
-    ModelType(publishEvent),
-    ModelType(getEvent),
-    ModelType(setAlarmSeverity),
-    ModelType(log),
-    ModelType(setLogLevel),
-    ModelType(getLogMetadata)
-  )
+  private val httpRequests = new RequestSet[PostRequest] {
+    requestType(postComponentCommand)
+    requestType(postSequencerCommand)
+    requestType(publishEvent)
+    requestType(getEvent)
+    requestType(setAlarmSeverity)
+    requestType(log)
+    requestType(setLogLevel)
+    requestType(getLogMetadata)
+  }
 
-  private val websocketRequests: ModelSet = ModelSet.requests[WebsocketRequest](
-    ModelType(websocketComponentCommand),
-    ModelType(websocketSequencerCommand),
-    ModelType(subscribe),
-    ModelType(subscribeWithPattern)
-  )
+  private val websocketRequests = new RequestSet[WebsocketRequest] {
+    requestType(websocketComponentCommand)
+    requestType(websocketSequencerCommand)
+    requestType(subscribe)
+    requestType(subscribeWithPattern)
+  }
 
   private val httpEndpoints: List[Endpoint] = List(
     Endpoint(
