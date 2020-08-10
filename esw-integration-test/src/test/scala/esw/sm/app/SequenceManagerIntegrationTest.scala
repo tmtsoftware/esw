@@ -452,7 +452,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceCompLocations should not contain eswRunningSeqComp // ESW-358 verify the old seqComps are removed
 
     sequenceCompLocations.size shouldBe 2
-    sequenceCompLocations should contain allElementsOf List(eswNewSeqCompPrefix, irisNewSeqComp)
+    sequenceCompLocations.map(_.prefix) should contain allElementsOf List(eswNewSeqCompPrefix, irisNewSeqComp)
 
     agentHasComponent(eswAgentLocation, eswNewSeqCompPrefix)
     agentHasComponent(irisAgentLocation, irisNewSeqComp)
