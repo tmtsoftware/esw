@@ -38,9 +38,15 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   private val sequenceManagerPrefix        = Prefix(ESW, "sequence_manager")
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
   private val ocsAppVersion                = GitUtil.latestCommitSHA("esw")
+  private val testCsChannel: String        = BinaryFetcherUtil.eswChannel(ocsAppVersion)
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
   override protected def afterEach(): Unit  = TestSetup.cleanup()
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    BinaryFetcherUtil.fetchBinaryFor(testCsChannel, Coursier.ocsApp(Some(ocsAppVersion)))
+  }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
@@ -377,9 +383,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val expectedComponentId = ComponentId(seqCompPrefix, SequenceComponent)
 
     //spawn ESW agent
-    val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
-    val agentPrefix     = spawnAgent(AgentSettings(1.minute, channel))
-    BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(Some(ocsAppVersion)))
+    val agentPrefix = spawnAgent(AgentSettings(1.minute, testCsChannel))
 
     //verify that agent is available
     resolveAkkaLocation(agentPrefix, Machine)
@@ -431,10 +435,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   "provision should shutdown all running seq comps and start new as given in provision config | ESW-347, ESW-358" in {
     // start required agents to provision and verify they are running
-    val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
-    BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(Some(ocsAppVersion)))
-    val eswAgentPrefix    = spawnAgent(AgentSettings(1.minute, channel), ESW)
-    val irisAgentPrefix   = spawnAgent(AgentSettings(1.minute, channel), IRIS)
+    val eswAgentPrefix    = spawnAgent(AgentSettings(1.minute, testCsChannel), ESW)
+    val irisAgentPrefix   = spawnAgent(AgentSettings(1.minute, testCsChannel), IRIS)
     val eswAgentLocation  = resolveAkkaLocation(eswAgentPrefix, Machine)
     val irisAgentLocation = resolveAkkaLocation(irisAgentPrefix, Machine)
 
@@ -463,9 +465,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349" in {
     // start required agents
-    val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
-    val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
-    val irisAgentPrefix = spawnAgent(AgentSettings(1.minute, channel), IRIS)
+    val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, testCsChannel), ESW)
+    val irisAgentPrefix = spawnAgent(AgentSettings(1.minute, testCsChannel), IRIS)
 
     val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix)
 
