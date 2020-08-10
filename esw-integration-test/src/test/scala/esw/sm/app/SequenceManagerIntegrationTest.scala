@@ -451,8 +451,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val irisNewSeqComp      = Prefix(IRIS, "IRIS_1")
     //verify seq comps are started as per the config
     val sequenceCompLocations = locationService.list(SequenceComponent).futureValue
-    sequenceCompLocations should not contain eswRunningSeqComp // ESW-358 verify the old seqComps are removed
-
+    sequenceCompLocations.map(_.prefix) should not contain eswRunningSeqComp // ESW-358 verify the old seqComps are removed
     sequenceCompLocations.size shouldBe 2
     sequenceCompLocations.map(_.prefix) should contain allElementsOf List(eswNewSeqCompPrefix, irisNewSeqComp)
 
