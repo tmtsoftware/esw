@@ -53,7 +53,7 @@ class GatewayAuthTest extends EswTestKit(AAS) {
   }
 
   override def afterAll(): Unit = {
-    gatewayServerWiring.httpService.shutdown(UnknownReason).futureValue
+    gatewayServerWiring.wiring.cswWiring.actorRuntime.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
 
@@ -191,7 +191,7 @@ class GatewayAuthTest extends EswTestKit(AAS) {
     val gatewayWiring = new GatewayWiring(Some(SocketUtils.getFreePort), local = true, commandRolesPath) {
       override val resolver: Resolver = mockResolver
     }
-    Await.result(gatewayWiring.httpService.registeredLazyBinding, defaultTimeout)
+    Await.result(gatewayWiring.httpService.startAndRegisterServer(), defaultTimeout)
     gatewayWiring
   }
 

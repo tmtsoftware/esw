@@ -32,7 +32,7 @@ object GatewayMain extends EswCommandApp[ServerCommand] {
     import gatewayWiring.wiring.cswWiring.actorRuntime
     if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
 
-    httpService.registeredLazyBinding
+    httpService.startAndRegisterServer()
   }
 
 }

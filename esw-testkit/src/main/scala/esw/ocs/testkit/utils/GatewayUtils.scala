@@ -56,9 +56,9 @@ trait GatewayUtils extends LocationUtils with GatewayCodecs {
       else GatewayWiring.make(Some(gatewayPort), local = true, path, actorSystem, directives)
 
     gatewayWiring = Some(wiring)
-    wiring.httpService.registeredLazyBinding.futureValue
+    wiring.httpService.startAndRegisterServer().futureValue
     wiring
   }
 
-  def shutdownGateway(): Unit = gatewayWiring.foreach(_.httpService.shutdown(UnknownReason).futureValue)
+  def shutdownGateway(): Unit = gatewayWiring.foreach(_.wiring.cswWiring.actorRuntime.shutdown(UnknownReason).futureValue)
 }

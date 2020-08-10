@@ -23,7 +23,7 @@ class GatewayServiceTest extends EswTestKit {
       import wiring.wiring.cswWiring.actorRuntime
 
       val httpService             = wiring.httpService
-      val (_, registrationResult) = Await.result(httpService.registeredLazyBinding, 5.seconds)
+      val (_, registrationResult) = Await.result(httpService.startAndRegisterServer(), 5.seconds)
 
       Await.result(locationService.find(settings.httpConnection), 5.seconds).get.connection shouldBe settings.httpConnection
 

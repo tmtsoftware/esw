@@ -31,7 +31,7 @@ class HTTPServiceCorsTest extends EswTestKit {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    httpService.registeredLazyBinding
+    httpService.startAndRegisterServer()
   }
 
   "Gateway HTTP Service" must {

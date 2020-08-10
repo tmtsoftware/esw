@@ -33,7 +33,7 @@ class HttpServiceTest extends EswTestKit {
 
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false
 
-      val (_, registrationResult) = httpService.registeredLazyBinding.futureValue
+      val (_, registrationResult) = httpService.startAndRegisterServer().futureValue
 
       locationService.find(settings.httpConnection).futureValue.get.connection shouldBe settings.httpConnection
       val location = registrationResult.location
@@ -54,7 +54,7 @@ class HttpServiceTest extends EswTestKit {
       val address         = s"[/${hostname}:${_servicePort}]"
       val expectedMessage = s"Bind failed because of java.net.BindException: $address Address already in use"
 
-      val bindException = intercept[Exception] { httpService.registeredLazyBinding.futureValue }
+      val bindException = intercept[Exception] { httpService.startAndRegisterServer().futureValue }
 
       bindException.getCause.getMessage shouldBe expectedMessage
       locationService.find(settings.httpConnection).futureValue shouldBe None
@@ -75,7 +75,7 @@ class HttpServiceTest extends EswTestKit {
 
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false
 
-      val otherLocationIsRegistered = intercept[Exception](httpService.registeredLazyBinding.futureValue)
+      val otherLocationIsRegistered = intercept[Exception](httpService.startAndRegisterServer().futureValue)
 
       otherLocationIsRegistered.getCause shouldBe a[OtherLocationIsRegistered]
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false

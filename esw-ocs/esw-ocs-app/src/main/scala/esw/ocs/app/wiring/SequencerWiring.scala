@@ -118,13 +118,14 @@ private[ocs] class SequencerWiring(
     new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
   )
 
-  private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
-  private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
+  private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
+  private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime)
+  private lazy val httpServerBinding = httpService.startAndRegisterServer()
 
   private val shutdownHttpService: () => Future[Done] = () =>
     async {
       logger.debug("Shutting down Sequencer http service")
-      val (serverBinding, registrationResult) = await(httpService.registeredLazyBinding)
+      val (serverBinding, registrationResult) = await(httpServerBinding)
       val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
       val eventualDone                        = registrationResult.unregister()
       await(eventualTerminated.flatMap(_ => eventualDone))
@@ -141,7 +142,7 @@ private[ocs] class SequencerWiring(
         logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
         new Engine(script).start(sequenceOperatorFactory())
 
-        Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
+        Await.result(httpServerBinding, Timeouts.DefaultTimeout)
 
         val registration = AkkaRegistrationFactory.make(AkkaConnection(componentId), sequencerRef.toURI)
         val loc = Await.result(

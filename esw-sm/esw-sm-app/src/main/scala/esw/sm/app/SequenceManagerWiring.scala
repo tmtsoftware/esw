@@ -97,13 +97,13 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean) {
   import SequenceManagerHttpCodec._
   lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
 
-  private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)
-  private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
+  private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)
+  private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime)
+  private lazy val httpServerBinding = httpService.startAndRegisterServer()
 
   def start(): Either[RegistrationError, AkkaLocation] = {
     logger.info(s"Starting Sequence Manager with prefix: $prefix")
-    //start http server and register it with location service
-    Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
+    Await.result(httpServerBinding, Timeouts.DefaultTimeout)
 
     val registration = AkkaRegistrationFactory.make(connection, refURI)
     val loc          = Await.result(locationServiceUtil.register(registration), Timeouts.DefaultTimeout)
@@ -115,7 +115,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean) {
   private def shutdownHttpService: Future[Done] =
     async {
       logger.debug("Shutting down Sequence Manager http service")
-      val (serverBinding, registrationResult) = await(httpService.registeredLazyBinding)
+      val (serverBinding, registrationResult) = await(httpServerBinding)
       val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
       val eventualDone                        = registrationResult.unregister()
       await(eventualTerminated.flatMap(_ => eventualDone))
