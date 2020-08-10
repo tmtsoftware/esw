@@ -9,7 +9,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.agent.api.codecs.AgentHttpCodecs
 import esw.agent.api.protocol.AgentPostRequest
 import esw.agent.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.api.{SpawnResponse, Spawned}
+import esw.agent.api.{AgentNotFoundException, SpawnResponse, Spawned}
 import esw.agent.http.api.AgentService
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
@@ -28,7 +28,7 @@ class AgentPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Agen
   private def post(entity: AgentPostRequest): HttpRequest = Post("/post-endpoint", entity)
 
   "SpawnSequenceManager" must {
-    "be able to start a sequence manager" in {
+    "be able to start a sequence manager | ESW-361" in {
       val agentPrefix = Prefix(ESW, "Agent_1")
       val obsConfPath = Path.of("/obsConf")
 
@@ -41,10 +41,24 @@ class AgentPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Agen
         responseAs[SpawnResponse] should ===(Spawned)
       }
     }
+
+    "be able to send failure response when agent is not found | ESW-361" in {
+      val agentPrefix = Prefix(ESW, "Agent_1")
+      val obsConfPath = Path.of("/obsConf")
+
+      val spawnSMRequest = SpawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, None)
+
+      when(agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, None))
+        .thenReturn(Future.failed(AgentNotFoundException("Exception")))
+
+      post(spawnSMRequest) ~> route ~> check {
+        responseAs[AgentNotFoundException] should ===(AgentNotFoundException("Exception"))
+      }
+    }
   }
 
   "SpawnSequenceComponent" must {
-    "be able to start a sequence component" in {
+    "be able to start a sequence component | ESW-361" in {
       val agentPrefix   = Prefix(ESW, "Agent_1")
       val seqCompPrefix = Prefix(TCS, "TCS_1")
 
@@ -55,6 +69,20 @@ class AgentPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Agen
 
       post(spawnSeqCompRequest) ~> route ~> check {
         responseAs[SpawnResponse] should ===(Spawned)
+      }
+    }
+
+    "be able to send failure response when agent is not found | ESW-361" in {
+      val agentPrefix   = Prefix(ESW, "Agent_1")
+      val seqCompPrefix = Prefix(TCS, "TCS_1")
+
+      val spawnSeqCompRequest = SpawnSequenceComponent(agentPrefix, seqCompPrefix, None)
+
+      when(agentService.spawnSequenceComponent(agentPrefix, seqCompPrefix, None))
+        .thenReturn(Future.failed(AgentNotFoundException("Exception")))
+
+      post(spawnSeqCompRequest) ~> route ~> check {
+        responseAs[AgentNotFoundException] should ===(AgentNotFoundException("Exception"))
       }
     }
   }

@@ -50,7 +50,7 @@ object AgentClient {
     import actorSystem.executionContext
     locationService
       .find(AkkaConnection(ComponentId(agentPrefix, Machine)))
-      .map(_.getOrElse(throw new RuntimeException(s"could not resolve agent with prefix: $agentPrefix")))
+      .map(_.getOrElse(throw AgentNotFoundException(s"could not resolve agent with prefix: $agentPrefix")))
       .map(new AgentClient(_))
   }
 }
