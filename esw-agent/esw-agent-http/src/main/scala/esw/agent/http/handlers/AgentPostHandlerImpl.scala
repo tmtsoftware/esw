@@ -12,8 +12,8 @@ class AgentPostHandlerImpl(agentService: AgentService) extends HttpPostHandler[A
 
   override def handle(request: AgentPostRequest): Route =
     request match {
-      case SpawnSequenceComponent(agentPrefix, prefix, version) =>
-        complete(agentService.spawnSequenceComponent(agentPrefix, prefix, version))
+      case SpawnSequenceComponent(agentPrefix, componentName, version) =>
+        complete(agentService.spawnSequenceComponent(agentPrefix, componentName, version))
 
       case SpawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version) =>
         complete(agentService.spawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version))

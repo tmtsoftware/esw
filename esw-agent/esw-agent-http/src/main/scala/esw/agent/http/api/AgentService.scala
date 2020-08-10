@@ -16,8 +16,8 @@ trait AgentService {
       isConfigLocal: Boolean,
       version: Option[String] = None
   ): Future[SpawnResponse]
-
-  def spawnSequenceComponent(agentPrefix: Prefix, prefix: Prefix, version: Option[String] = None): Future[SpawnResponse]
+  
+  def spawnSequenceComponent(agentPrefix: Prefix, componentName: String, version: Option[String] = None): Future[SpawnResponse]
 
   def stopComponent(agentPrefix: Prefix, componentId: ComponentId): Future[KillResponse]
 }

@@ -8,8 +8,8 @@ import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
-import csw.prefix.models.Prefix
-import esw.agent.api.{AgentNotFoundException, SpawnResponse}
+import csw.prefix.models.{Prefix, Subsystem}
+import esw.agent.api.{AgentNotFoundException, Killed, SpawnResponse}
 import esw.agent.client.AgentClient
 import esw.testcommons.BaseTestSuite
 
@@ -33,12 +33,15 @@ class AgentServiceImplTest extends BaseTestSuite {
 
   "AgentService" must {
     "be able to send spawn sequence component message to given agent" in {
-      val seqCompPrefix = mock[Prefix]
+      val subsystem     = mock[Subsystem]
+      val spawnRes      = mock[SpawnResponse]
+      val componentName = "TCS_1"
+      val seqCompPrefix = Prefix(subsystem, componentName)
 
-      val spawnRes = mock[SpawnResponse]
       when(agentClientMock.spawnSequenceComponent(seqCompPrefix)).thenReturn(Future.successful(spawnRes))
+      when(agentPrefix.subsystem).thenReturn(subsystem)
 
-      agentService.spawnSequenceComponent(agentPrefix, seqCompPrefix)
+      agentService.spawnSequenceComponent(agentPrefix, componentName).futureValue
 
       verify(agentClientMock).spawnSequenceComponent(seqCompPrefix, None)
     }
@@ -49,9 +52,18 @@ class AgentServiceImplTest extends BaseTestSuite {
       val spawnRes = mock[SpawnResponse]
       when(agentClientMock.spawnSequenceManager(obsConfPath, isConfigLocal = true, None)).thenReturn(Future.successful(spawnRes))
 
-      agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, None)
+      agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, None).futureValue
 
       verify(agentClientMock).spawnSequenceManager(obsConfPath, isConfigLocal = true, None)
+    }
+
+    "be able to stop component for the given componentId | ESW-361" in {
+      val componentId = mock[ComponentId]
+      when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
+
+      agentService.stopComponent(agentPrefix, componentId).futureValue
+
+      verify(agentClientMock).killComponent(componentId)
     }
 
     "be able to create agent client for given agentPrefix | ESW-361" in {
@@ -82,5 +94,6 @@ class AgentServiceImplTest extends BaseTestSuite {
 
       verify(locationService).find(akkaConnection)
     }
+
   }
 }
