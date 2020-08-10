@@ -8,7 +8,7 @@ import akka.Done
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, TcpLocation, TcpRegistration}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata, TcpLocation, TcpRegistration}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
@@ -38,7 +38,7 @@ class AgentSetup extends BaseTestSuite {
   val prefix: Prefix                                    = Prefix("csw.component")
   val componentId: ComponentId                          = ComponentId(prefix, Service)
   val redisConn: TcpConnection                          = TcpConnection(componentId)
-  val redisLocation: TcpLocation                        = TcpLocation(redisConn, new URI("some"))
+  val redisLocation: TcpLocation                        = TcpLocation(redisConn, new URI("some"), Metadata.empty)
   val redisLocationF: Future[Some[TcpLocation]]         = Future.successful(Some(redisLocation))
   val redisRegistration: TcpRegistration                = TcpRegistration(redisConn, 100)
   val spawnRedis: ActorRef[SpawnResponse] => SpawnRedis = SpawnRedis(_, prefix, 100, List.empty)
@@ -46,14 +46,14 @@ class AgentSetup extends BaseTestSuite {
   val seqCompPrefix: Prefix                                                = Prefix("csw.component")
   val seqCompComponentId: ComponentId                                      = ComponentId(seqCompPrefix, SequenceComponent)
   val seqCompConn: AkkaConnection                                          = AkkaConnection(seqCompComponentId)
-  val seqCompLocation: AkkaLocation                                        = AkkaLocation(seqCompConn, new URI("some"))
+  val seqCompLocation: AkkaLocation                                        = AkkaLocation(seqCompConn, new URI("some"), Metadata.empty)
   val seqCompLocationF: Future[Some[AkkaLocation]]                         = Future.successful(Some(seqCompLocation))
   val spawnSequenceComp: ActorRef[SpawnResponse] => SpawnSequenceComponent = SpawnSequenceComponent(_, seqCompPrefix, None)
 
   val seqManagerPrefix: Prefix                        = Prefix("esw.sequence_manager")
   val seqManagerComponentId: ComponentId              = ComponentId(seqManagerPrefix, Service)
   val seqManagerConn: AkkaConnection                  = AkkaConnection(seqManagerComponentId)
-  val seqManagerLocation: AkkaLocation                = AkkaLocation(seqManagerConn, new URI("some"))
+  val seqManagerLocation: AkkaLocation                = AkkaLocation(seqManagerConn, new URI("some"), Metadata.empty)
   val seqManagerLocationF: Future[Some[AkkaLocation]] = Future.successful(Some(seqManagerLocation))
   val spawnSequenceManager: ActorRef[SpawnResponse] => SpawnSequenceManager =
     SpawnSequenceManager(_, Paths.get("obsmode.conf"), isConfigLocal = true, None)

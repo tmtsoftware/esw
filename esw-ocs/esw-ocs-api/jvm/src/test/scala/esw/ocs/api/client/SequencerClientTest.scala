@@ -5,7 +5,7 @@ import java.net.URI
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
@@ -299,7 +299,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
     "call postClient with GetSequenceComponent request | ESW-222, ESW-255" in {
       val sequenceComponentLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), new URI("mock-uri"))
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), new URI("mock-uri"), Metadata.empty)
 
       when(
         postClient

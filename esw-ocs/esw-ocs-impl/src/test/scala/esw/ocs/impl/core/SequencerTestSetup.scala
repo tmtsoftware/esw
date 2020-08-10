@@ -9,7 +9,7 @@ import csw.location.api.extensions.ActorExtension._
 import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
@@ -45,7 +45,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   private val logger          = mock[Logger]
   private val sequenceComponent: AkkaLocation = AkkaLocation(
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-    TestProbe[SequenceComponentMsg]().ref.toURI
+    TestProbe[SequenceComponentMsg]().ref.toURI,
+    Metadata.empty
   )
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
   when(locationService.unregister(AkkaConnection(componentId))).thenReturn(Future.successful(Done))

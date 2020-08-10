@@ -5,7 +5,7 @@ import java.time.Instant
 
 import csw.contract.data.command.CommandData
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.params.commands._
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.StepList
@@ -32,7 +32,7 @@ trait SequencerData extends CommandData {
   val diagnosticHookFailed: DiagnosticHookFailed.type = DiagnosticHookFailed
   val operationsHookFailed: OperationsHookFailed.type = OperationsHookFailed
   val akkaConnection: AkkaConnection                  = AkkaConnection(ComponentId(prefix, ComponentType.Assembly))
-  val akkaLocation: AkkaLocation                      = AkkaLocation(akkaConnection, new URI("path"))
+  val akkaLocation: AkkaLocation                      = AkkaLocation(akkaConnection, new URI("path"), Metadata(Map("key1" -> "value1")))
 
   val loadSequence: LoadSequence                      = LoadSequence(sequence)
   val startSequence: StartSequence.type               = StartSequence

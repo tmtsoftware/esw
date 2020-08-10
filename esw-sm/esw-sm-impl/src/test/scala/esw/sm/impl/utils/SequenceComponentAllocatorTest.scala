@@ -4,7 +4,7 @@ import java.net.URI
 
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
@@ -56,5 +56,6 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
     }
   }
 
-  private def akkaLocation(componentId: ComponentId): AkkaLocation = AkkaLocation(AkkaConnection(componentId), URI.create(""))
+  private def akkaLocation(componentId: ComponentId): AkkaLocation =
+    AkkaLocation(AkkaConnection(componentId), URI.create(""), Metadata.empty)
 }

@@ -5,7 +5,7 @@ import com.typesafe.config.ConfigFactory
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -41,7 +41,8 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
   private val sequence            = Sequence(command1, command2)
   private val sequenceComponentRef = AkkaLocation(
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-    TestProbe[SequenceComponentMsg]().ref.toURI
+    TestProbe[SequenceComponentMsg]().ref.toURI,
+    Metadata.empty
   )
 
   override def beforeAll(): Unit = {

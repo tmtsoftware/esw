@@ -9,7 +9,7 @@ import akka.serialization.SerializationExtension
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
@@ -153,7 +153,8 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
   }
 
   "should use ocs serializer for Sequence Component Response (de)serialization" in {
-    val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Sequencer)), URI.create("uri"))
+    val akkaLocation =
+      AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Sequencer)), URI.create("uri"), Metadata.empty)
     val testData = Table(
       "Sequence Component Response models",
       SequenceComponentResponse.Ok,

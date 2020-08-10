@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
@@ -61,8 +61,9 @@ class SequenceManagerImplTest extends BaseTestSuite {
     Behaviors.same
   }
 
-  private val smRef           = system.systemActorOf(mockedBehavior, "sm")
-  private val location        = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI)
+  private val smRef = system.systemActorOf(mockedBehavior, "sm")
+  private val location =
+    AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI, Metadata.empty)
   private val sequenceManager = new SequenceManagerImpl(location)
 
   private def randomString5 = Random.nextString(5)

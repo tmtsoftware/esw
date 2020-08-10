@@ -6,7 +6,7 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
+import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
@@ -101,7 +101,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-169, ESW-168, ESW-170, ESW-179, ESW-178" in {
       // this simulates that ClearSkies observation is running
-      val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, clearSkies.name), Sequencer)), new URI("uri"))
+      val akkaLocation =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, clearSkies.name), Sequencer)), new URI("uri"), Metadata.empty)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
       val probe = TestProbe[ConfigureResponse]()
 
@@ -114,7 +115,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164, ESW-178" in {
-      val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, randomObsMode.name), Sequencer)), new URI("uri"))
+      val akkaLocation =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, randomObsMode.name), Sequencer)), new URI("uri"), Metadata.empty)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
       val probe = TestProbe[ConfigureResponse]()
 
@@ -149,7 +151,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "return AlreadyRunning if sequencer for given obs mode is already running | ESW-176" in {
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
-      val httpLocation   = HttpLocation(httpConnection, new URI("uri"))
+      val httpLocation   = HttpLocation(httpConnection, new URI("uri"), Metadata.empty)
 
       when(locationServiceUtil.find(httpConnection))
         .thenReturn(futureRight(httpLocation))
@@ -593,5 +595,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  private def akkaLocation(componentId: ComponentId) = AkkaLocation(AkkaConnection(componentId), URI.create("uri"))
+  private def akkaLocation(componentId: ComponentId) =
+    AkkaLocation(AkkaConnection(componentId), URI.create("uri"), Metadata.empty)
 }

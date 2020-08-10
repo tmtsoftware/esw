@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{CSW, ESW, IRIS, TCS}
 import esw.agent.api.ComponentStatus.{Initializing, Running}
@@ -95,7 +95,7 @@ class AgentUtilTest extends BaseTestSuite {
       val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
       val agentPrefix                                  = Prefix(ESW, "primary")
       val connection                                   = AkkaConnection(ComponentId(agentPrefix, Machine))
-      val location                                     = AkkaLocation(connection, new URI("mock"))
+      val location                                     = AkkaLocation(connection, new URI("mock"), Metadata.empty)
 
       when(locationServiceUtil.find(connection)).thenReturn(futureRight(location))
 
@@ -145,8 +145,8 @@ class AgentUtilTest extends BaseTestSuite {
     val eswSeqComp1Prefix  = Prefix(ESW, "ESW_1")
     val eswSeqComp2Prefix  = Prefix(ESW, "ESW_2")
     val irisSeqComp1Prefix = Prefix(IRIS, "IRIS_1")
-    val eswPrimaryMachine  = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Machine)), uri)
-    val irisPrimaryMachine = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "primary"), Machine)), uri)
+    val eswPrimaryMachine  = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Machine)), uri, Metadata.empty)
+    val irisPrimaryMachine = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "primary"), Machine)), uri, Metadata.empty)
 
     "start required number sequence components on available machines for given subsystems | ESW-347" in {
       val locationServiceUtil                          = mock[LocationServiceUtil]
@@ -319,11 +319,11 @@ class AgentUtilTest extends BaseTestSuite {
 
     val eswPrimarySeqCompId: ComponentId = ComponentId(Prefix(ESW, "primary"), SequenceComponent)
     val eswPrimarySeqCompLocation: AkkaLocation =
-      AkkaLocation(AkkaConnection(eswPrimarySeqCompId), new URI("some-uri"))
+      AkkaLocation(AkkaConnection(eswPrimarySeqCompId), new URI("some-uri"), Metadata.empty)
 
     val eswSecondarySeqCompId: ComponentId = ComponentId(Prefix(ESW, "secondary"), SequenceComponent)
     val eswSecondarySeqCompLocation: AkkaLocation =
-      AkkaLocation(AkkaConnection(eswSecondarySeqCompId), new URI("some-uri"))
+      AkkaLocation(AkkaConnection(eswSecondarySeqCompId), new URI("some-uri"), Metadata.empty)
 
     def mockSpawnComponent(response: SpawnResponse): Unit =
       when(agentClient.spawnSequenceComponent(any[Prefix], any[Option[String]]))
@@ -333,5 +333,6 @@ class AgentUtilTest extends BaseTestSuite {
       verify(agentClient).spawnSequenceComponent(any[Prefix], any[Option[String]])
   }
 
-  private def akkaLocation(componentId: ComponentId) = AkkaLocation(AkkaConnection(componentId), URI.create("uri"))
+  private def akkaLocation(componentId: ComponentId) =
+    AkkaLocation(AkkaConnection(componentId), URI.create("uri"), Metadata.empty)
 }

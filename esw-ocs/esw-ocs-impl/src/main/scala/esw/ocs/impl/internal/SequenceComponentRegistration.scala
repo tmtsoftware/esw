@@ -2,7 +2,6 @@ package esw.ocs.impl.internal
 
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.AkkaRegistrationFactory
-import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
@@ -54,7 +53,7 @@ class SequenceComponentRegistration(
     sequenceComponentFactory(sequenceComponentPrefix).map { actorRef =>
       AkkaRegistrationFactory.make(
         AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)),
-        actorRef.toURI
+        actorRef
       )
     }
   }

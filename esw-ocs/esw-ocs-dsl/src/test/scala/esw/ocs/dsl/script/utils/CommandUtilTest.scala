@@ -7,7 +7,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.utils.location.EswLocationError.LocationNotFound
@@ -25,7 +25,7 @@ class CommandUtilTest extends BaseTestSuite {
   private val componentType       = ComponentType.Assembly
   private val connection          = AkkaConnection(ComponentId(prefix, componentType))
   private val testRef             = TestProbe[ComponentMessage]().ref
-  private val location            = AkkaLocation(connection, testRef.toURI)
+  private val location            = AkkaLocation(connection, testRef.toURI, Metadata.empty)
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()

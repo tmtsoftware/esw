@@ -7,7 +7,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
@@ -23,7 +23,7 @@ class SequenceComponentImplTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SequenceComponentImplTest")
 
   private val location =
-    AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"))
+    AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"), Metadata.empty)
   private val loadScriptResponse    = SequencerLocation(location)
   private val restartResponse       = LocationServiceError("error")
   private val getStatusResponse     = GetStatusResponse(Some(location))
@@ -41,7 +41,8 @@ class SequenceComponentImplTest extends BaseTestSuite {
   private val sequenceComponent = system.systemActorOf(mockedBehavior, "sequence_component")
   private val sequenceComponentLocation = AkkaLocation(
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-    sequenceComponent.toURI
+    sequenceComponent.toURI,
+    Metadata.empty
   )
 
   private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponentLocation)
