@@ -3,9 +3,10 @@ package esw.agent.http.impl
 import java.nio.file.Path
 
 import akka.actor.typed.ActorSystem
+import csw.location.api.models.ComponentId
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
-import esw.agent.api.SpawnResponse
+import esw.agent.api.{KillResponse, SpawnResponse}
 import esw.agent.client.AgentClient
 import esw.agent.http.api.AgentService
 
@@ -27,4 +28,7 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
 
   override def spawnSequenceComponent(agentPrefix: Prefix, prefix: Prefix, version: Option[String]): Future[SpawnResponse] =
     agentClient(agentPrefix).flatMap(_.spawnSequenceComponent(prefix, version))
+
+  override def stopComponent(agentPrefix: Prefix, componentId: ComponentId): Future[KillResponse] =
+    agentClient(agentPrefix).flatMap(_.killComponent(componentId))
 }

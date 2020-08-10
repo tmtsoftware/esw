@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import esw.agent.api.codecs.AgentHttpCodecs._
 import esw.agent.api.protocol.AgentPostRequest
-import esw.agent.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, StopComponent}
 import esw.agent.http.api.AgentService
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
@@ -17,5 +17,7 @@ class AgentPostHandlerImpl(agentService: AgentService) extends HttpPostHandler[A
 
       case SpawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version) =>
         complete(agentService.spawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version))
+
+      case StopComponent(agentPrefix, componentId) => complete(agentService.stopComponent(agentPrefix, componentId))
     }
 }
