@@ -11,7 +11,7 @@ import akka.util.Timeout
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Location}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Location, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
@@ -55,7 +55,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
 
       when(sequencerServerFactory.make(subsystem, obsMode, seqCompLocation)).thenReturn(sequencerServer)
-      when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"))))
+      when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
 
       //LoadScript
       sequenceComponentRef ! LoadScript(subsystem, obsMode, loadScriptResponseProbe.ref)
@@ -102,7 +102,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
 
       when(sequencerServerFactory.make(subsystem, obsMode, seqCompLocation)).thenReturn(sequencerServer)
-      when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"))))
+      when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
 
       //LoadScript
       sequenceComponentRef ! LoadScript(subsystem, obsMode, loadScriptResponseProbe.ref)
@@ -171,8 +171,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
       when(sequencerServerFactory.make(subsystem, obsMode, seqCompLocation)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(
-        Right(AkkaLocation(akkaConnection, URI.create("first_load_uri"))),
-        Right(AkkaLocation(akkaConnection, URI.create("after_restart_uri")))
+        Right(AkkaLocation(akkaConnection, URI.create("first_load_uri"), Metadata.empty)),
+        Right(AkkaLocation(akkaConnection, URI.create("after_restart_uri"), Metadata.empty))
       )
 
       //Assert if script loaded and returns AkkaLocation of sequencer
@@ -235,7 +235,11 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
     })(timeout, actorSystem.scheduler).futureValue
 
     val seqCompLocation =
-      AkkaLocation(AkkaConnection(ComponentId(Prefix(ocsSequenceComponentName), SequenceComponent)), sequenceComponentRef.toURI)
+      AkkaLocation(
+        AkkaConnection(ComponentId(Prefix(ocsSequenceComponentName), SequenceComponent)),
+        sequenceComponentRef.toURI,
+        Metadata.empty
+      )
 
     (sequenceComponentRef, seqCompLocation)
   }

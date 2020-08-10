@@ -4,7 +4,7 @@ import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
+import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
 import csw.location.api.scaladsl.LocationService
 import esw.http.core.wiring.ActorRuntime
 import org.mockito.MockitoSugar
@@ -29,8 +29,8 @@ class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers w
   private val httpConnection        = HttpConnection(httpComponentId)
   private val commandServiceFactory = mock[ICommandServiceFactory]
 
-  private val akkaLocation = AkkaLocation(akkaConnection, new URI("actor-path"))
-  private val httpLocation = HttpLocation(httpConnection, new URI("actor-path"))
+  private val akkaLocation = AkkaLocation(akkaConnection, new URI("actor-path"), Metadata.empty)
+  private val httpLocation = HttpLocation(httpConnection, new URI("actor-path"), Metadata.empty)
 
   when(locationService.resolve(akkaConnection, 5.seconds)).thenReturn(Future.successful(Some(akkaLocation)))
 

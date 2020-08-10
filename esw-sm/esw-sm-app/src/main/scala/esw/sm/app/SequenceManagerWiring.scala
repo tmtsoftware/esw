@@ -14,7 +14,6 @@ import csw.config.api.scaladsl.ConfigClientService
 import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.AkkaRegistrationFactory
-import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
@@ -85,11 +84,14 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean) {
     Timeouts.DefaultTimeout
   )
 
-  private lazy val config     = actorSystem.settings.config
-  private lazy val connection = AkkaConnection(ComponentId(prefix, ComponentType.Service))
-  private lazy val refURI     = sequenceManagerRef.toURI
+  private lazy val config       = actorSystem.settings.config
+  private lazy val connection   = AkkaConnection(ComponentId(prefix, ComponentType.Service))
+  private lazy val registration = AkkaRegistrationFactory.make(connection, sequenceManagerRef)
+
   private lazy val sequenceManager: SequenceManagerApi =
-    SequenceManagerApiFactory.makeAkkaClient(AkkaLocation(connection, refURI))
+    SequenceManagerApiFactory.makeAkkaClient(
+      AkkaLocation(registration.connection, registration.actorRefURI, registration.metadata)
+    )
 
   private[sm] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, locationService)
   private lazy val postHandler            = new SequenceManagerPostHandler(sequenceManager, securityDirectives)
@@ -105,8 +107,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean) {
     logger.info(s"Starting Sequence Manager with prefix: $prefix")
     Await.result(httpServerBinding, Timeouts.DefaultTimeout)
 
-    val registration = AkkaRegistrationFactory.make(connection, refURI)
-    val loc          = Await.result(locationServiceUtil.register(registration), Timeouts.DefaultTimeout)
+    val loc = Await.result(locationServiceUtil.register(registration), Timeouts.DefaultTimeout)
 
     logger.info(s"Successfully started Sequence Manager with prefix: $prefix")
     loc

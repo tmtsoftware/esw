@@ -5,7 +5,7 @@ import java.net.URI
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
@@ -411,6 +411,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
     }
   }
 
-  private def akkaLocation(componentId: ComponentId): AkkaLocation = AkkaLocation(AkkaConnection(componentId), URI.create(""))
-  private def sequenceComponentLocation(prefixStr: String)         = akkaLocation(ComponentId(Prefix(prefixStr), SequenceComponent))
+  private def akkaLocation(componentId: ComponentId): AkkaLocation =
+    AkkaLocation(AkkaConnection(componentId), URI.create(""), Metadata.empty)
+  private def sequenceComponentLocation(prefixStr: String) = akkaLocation(ComponentId(Prefix(prefixStr), SequenceComponent))
 }

@@ -6,7 +6,7 @@ import java.nio.file.Path
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.api.{AgentNotFoundException, SpawnResponse}
@@ -58,7 +58,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       val locationService = mock[LocationService]
 
       val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
-      val location       = AkkaLocation(akkaConnection, URI.create("some"))
+      val location       = AkkaLocation(akkaConnection, URI.create("some"), Metadata.empty)
       when(locationService.find(akkaConnection)).thenReturn(Future.successful(Some(location)))
 
       val agentService = new AgentServiceImpl(locationService)

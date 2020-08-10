@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
+import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
@@ -366,7 +366,7 @@ class SequencerUtilTest extends BaseTestSuite {
     val irisPrimarySeqCompLoc: AkkaLocation  = akkaLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
 
     val masterSeqConnection: HttpConnection = HttpConnection(eswDarkNightSequencer)
-    val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))
+    val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""), Metadata.empty)
 
     val sequencerUtil: SequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil) {
       override private[sm] def makeSequencerClient(sequencerLocation: Location) =
@@ -377,6 +377,7 @@ class SequencerUtilTest extends BaseTestSuite {
         }
     }
 
-    private def akkaLocation(componentId: ComponentId): AkkaLocation = AkkaLocation(AkkaConnection(componentId), URI.create(""))
+    private def akkaLocation(componentId: ComponentId): AkkaLocation =
+      AkkaLocation(AkkaConnection(componentId), URI.create(""), Metadata.empty)
   }
 }

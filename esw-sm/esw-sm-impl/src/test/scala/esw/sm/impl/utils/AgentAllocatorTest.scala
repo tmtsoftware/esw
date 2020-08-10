@@ -4,7 +4,7 @@ import java.net.URI
 
 import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.sm.api.models.ProvisionConfig
@@ -13,9 +13,9 @@ import esw.testcommons.BaseTestSuite
 
 class AgentAllocatorTest extends BaseTestSuite {
   private val uri           = new URI("test-uri")
-  private val eswPrimaryM   = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Machine)), uri)
-  private val eswSecondaryM = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "secondary"), Machine)), uri)
-  private val irisPrimaryM  = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "primary"), Machine)), uri)
+  private val eswPrimaryM   = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Machine)), uri, Metadata.empty)
+  private val eswSecondaryM = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "secondary"), Machine)), uri, Metadata.empty)
+  private val irisPrimaryM  = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "primary"), Machine)), uri, Metadata.empty)
 
   val allocator = new AgentAllocator()
 

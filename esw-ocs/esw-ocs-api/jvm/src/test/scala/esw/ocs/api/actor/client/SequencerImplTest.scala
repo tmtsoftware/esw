@@ -9,7 +9,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
@@ -61,7 +61,8 @@ class SequencerImplTest extends BaseTestSuite {
   private val getSequenceComponentResponse =
     AkkaLocation(
       AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-      new URI("some-uri")
+      new URI("some-uri"),
+      Metadata.empty
     )
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =

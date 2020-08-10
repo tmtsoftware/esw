@@ -5,7 +5,7 @@ import java.net.URI
 import csw.contract.data.command.CommandData
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
@@ -22,7 +22,7 @@ trait SequenceManagerData extends CommandData {
   val componentId: ComponentId                         = ComponentId(sequencerPrefix, Sequencer)
   val agentComponentId: ComponentId                    = ComponentId(agentPrefix, Machine)
   val seqCompComponentId: ComponentId                  = ComponentId(seqCompPrefix, SequenceComponent)
-  val akkaLocation: AkkaLocation                       = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
+  val akkaLocation: AkkaLocation                       = AkkaLocation(AkkaConnection(componentId), new URI("uri"), Metadata(Map("key1" -> "value1")))
   val sequenceComponentStatus: SequenceComponentStatus = SequenceComponentStatus(seqCompComponentId, Some(akkaLocation))
   val agentSeqCompsStatus: AgentSeqCompsStatus         = AgentSeqCompsStatus(agentComponentId, List(sequenceComponentStatus))
   val agentProvisionConfig: AgentProvisionConfig       = AgentProvisionConfig(agentPrefix, 3)

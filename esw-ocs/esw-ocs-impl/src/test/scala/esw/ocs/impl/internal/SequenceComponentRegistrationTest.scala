@@ -10,7 +10,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType, Metadata}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.EswLocationError
@@ -45,7 +45,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
     val name               = Some("primary")
     val prefix             = Prefix("TCS.primary")
     val akkaConnection     = AkkaConnection(ComponentId(prefix, SequenceComponent))
-    val akkaLocation       = AkkaLocation(akkaConnection, uri)
+    val akkaLocation       = AkkaLocation(akkaConnection, uri, Metadata.empty)
 
     "return successful RegistrationResult | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
@@ -87,7 +87,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
     val registrationResult = mock[RegistrationResult]
     val prefix             = Prefix("TCS.TCS_23")
     val akkaConnection     = AkkaConnection(ComponentId(prefix, SequenceComponent))
-    val akkaLocation       = AkkaLocation(akkaConnection, uri)
+    val akkaLocation       = AkkaLocation(akkaConnection, uri, Metadata.empty)
     val locationService    = mock[LocationService]
 
     "return successful RegistrationResult | ESW-144" in {

@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
@@ -51,7 +51,8 @@ class SequenceComponentBehavior(
       obsMode: ObsMode,
       replyTo: ActorRef[ScriptResponseOrUnhandled]
   ): Behavior[SequenceComponentMsg] = {
-    val sequenceComponentLocation = AkkaLocation(akkaConnection, ctx.self.toURI)
+    // TODO: Resolve the location instead of manual creation for accurate metadata
+    val sequenceComponentLocation = AkkaLocation(akkaConnection, ctx.self.toURI, Metadata.empty)
     val sequencerServer           = sequencerServerFactory.make(subsystem, obsMode, sequenceComponentLocation)
     val registrationResult        = sequencerServer.start().fold(identity, SequencerLocation)
     replyTo ! registrationResult
