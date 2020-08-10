@@ -20,31 +20,33 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.jdk.DurationConverters.ScalaDurationOps
 
-/***********************************************
-1. Start csw-services
-2. Start gateway with metrics
-3. Start hcd
-4. http POST http://localhost:7654/post-endpoint _type=ListEntries
-5. http://localhost:8090/metrics
-
-// =========== Event Service (HTTP)==========
-1. Get
-2. Publish
-
-// =========== Command Service (HTTP)==========
-1. Validate
-2. Submit (immediate)
-3. Query
-
-// =========== Event Service (WS)==========
-1. Subscribe
-2. Pattern Subscribe
-
-// =========== Command Service (WS)==========
-1. Submit (long) then Query Final
-2. Oneway then Subscribe current state
-
-***********************************************************/
+/**
+ * *********************************************
+ * 1. Start csw-services
+ * 2. Start gateway with metrics
+ * 3. Start hcd
+ * 4. http POST http://localhost:7654/post-endpoint _type=ListEntries
+ * 5. http://localhost:8090/metrics
+ *
+ * // =========== Event Service (HTTP)==========
+ * 1. Get
+ * 2. Publish
+ *
+ * // =========== Command Service (HTTP)==========
+ * 1. Validate
+ * 2. Submit (immediate)
+ * 3. Query
+ *
+ * // =========== Event Service (WS)==========
+ * 1. Subscribe
+ * 2. Pattern Subscribe
+ *
+ * // =========== Command Service (WS)==========
+ * 1. Submit (long) then Query Final
+ * 2. Oneway then Subscribe current state
+ *
+ * *********************************************************
+ */
 object Main extends App {
 
   private val wiring = new FrameworkWiring()
