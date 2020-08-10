@@ -203,7 +203,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
-  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326, ESW-171, ESW-167, ESW-351" in {
+  "start and shutdown sequencer for given subsystem and observation mode | ESW-176, ESW-326, ESW-171, ESW-167, ESW-351" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"), Prefix(ESW, "secondary"), Prefix(AOESW, "primary"))
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
@@ -429,7 +429,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     locationService.list(SequenceComponent).futureValue should ===(List.empty)
   }
 
-  "provision should start sequence components as given in provision config | ESW-347" in {
+  "provision should shutdown all running seq comps and start new as given in provision config | ESW-347, ESW-358" in {
     // start required agents to provision and verify they are running
     val channel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
     BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(Some(ocsAppVersion)))
@@ -438,20 +438,24 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val eswAgentLocation  = resolveAkkaLocation(eswAgentPrefix, Machine)
     val irisAgentLocation = resolveAkkaLocation(irisAgentPrefix, Machine)
 
-    locationService.list(SequenceComponent).futureValue.size shouldBe 0
+    val eswRunningSeqComp = Prefix(ESW, "ESW_10")
+    TestSetup.startSequenceComponents(eswRunningSeqComp)
 
     val provisionConfig = ProvisionConfig(eswAgentPrefix -> 1, irisAgentPrefix -> 1)
     val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix)
     sequenceManager.provision(provisionConfig).futureValue should ===(ProvisionResponse.Success)
 
+    val eswNewSeqCompPrefix = Prefix(ESW, "ESW_1")
+    val irisNewSeqComp      = Prefix(IRIS, "IRIS_1")
     //verify seq comps are started as per the config
     val sequenceCompLocations = locationService.list(SequenceComponent).futureValue
-    sequenceCompLocations.size shouldBe 2
-    sequenceCompLocations.count(_.prefix.subsystem == ESW) shouldBe 1
-    sequenceCompLocations.count(_.prefix.subsystem == IRIS) shouldBe 1
+    sequenceCompLocations should not contain eswRunningSeqComp // ESW-358 verify the old seqComps are removed
 
-    agentHasComponent(eswAgentLocation, Prefix(ESW, "ESW_1"))
-    agentHasComponent(irisAgentLocation, Prefix(IRIS, "IRIS_1"))
+    sequenceCompLocations.size shouldBe 2
+    sequenceCompLocations should contain allElementsOf List(eswNewSeqCompPrefix, irisNewSeqComp)
+
+    agentHasComponent(eswAgentLocation, eswNewSeqCompPrefix)
+    agentHasComponent(irisAgentLocation, irisNewSeqComp)
 
     //clean up the provisioned sequence components
     sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)

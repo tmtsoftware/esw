@@ -121,5 +121,5 @@ final case class Unhandled(state: String, messageType: String, msg: String)
 
 object Unhandled {
   def apply(state: String, messageType: String): Unhandled =
-    new Unhandled(state, messageType, s"Sequence Manager can not accept '$messageType' message in '${state}'")
+    new Unhandled(state, messageType, s"Sequence Manager can not accept '$messageType' message in '$state'")
 }

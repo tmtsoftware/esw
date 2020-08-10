@@ -492,7 +492,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "provision" must {
     "transition from Idle -> Processing -> Idle and return provision success | ESW-347" in {
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
-      when(agentUtil.provision(provisionConfig)).thenReturn(future(1.second, ProvisionResponse.Success))
+      when(sequenceComponentUtil.shutdownAllSequenceComponents())
+        .thenReturn(future(500.millis, ShutdownSequenceComponentResponse.Success))
+      when(agentUtil.provision(provisionConfig)).thenReturn(future(500.millis, ProvisionResponse.Success))
       val provisionResponseProbe = TestProbe[ProvisionResponse]()
 
       assertState(Idle)
@@ -501,18 +503,37 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       assertState(Idle)
 
       verify(agentUtil).provision(provisionConfig)
+      verify(sequenceComponentUtil).shutdownAllSequenceComponents()
       provisionResponseProbe.expectMessage(ProvisionResponse.Success)
     }
 
-    "return ProvisionResponse given by agentUtil.provision | ESW-347" in {
+    "shutdown all running sequence components and return ProvisionResponse given by agentUtil.provision | ESW-347, ESW-358" in {
       val provisionConfig   = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
       val provisionResponse = ProvisionResponse.CouldNotFindMachines(Set(Prefix(ESW, "primary")))
+      when(sequenceComponentUtil.shutdownAllSequenceComponents())
+        .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
       when(agentUtil.provision(provisionConfig)).thenReturn(Future.successful(provisionResponse))
 
       val provisionResponseProbe = TestProbe[ProvisionResponse]()
       smRef ! Provision(provisionConfig, provisionResponseProbe.ref)
       assertState(Idle)
       provisionResponseProbe.expectMessage(provisionResponse)
+
+      verify(agentUtil).provision(provisionConfig)
+      verify(sequenceComponentUtil).shutdownAllSequenceComponents()
+    }
+
+    "return error caused while shutting down all sequence components | ESW-358" in {
+      val provisionConfig  = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
+      val shutdownResponse = LocationServiceError("error")
+      when(sequenceComponentUtil.shutdownAllSequenceComponents()).thenReturn(Future.successful(shutdownResponse))
+
+      val provisionResponseProbe = TestProbe[ProvisionResponse]()
+      smRef ! Provision(provisionConfig, provisionResponseProbe.ref)
+      assertState(Idle)
+      provisionResponseProbe.expectMessage(shutdownResponse)
+
+      verify(sequenceComponentUtil).shutdownAllSequenceComponents()
     }
   }
 
@@ -532,7 +553,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       // Assert that following msgs are getting unhandled response back in processing state
       assertUnhandled(
-        Processing,
+        state = Processing,
         ShutdownAllSequencers,
         Configure(clearSkies, _),
         ShutdownSequencer(ESW, darkNight, _),

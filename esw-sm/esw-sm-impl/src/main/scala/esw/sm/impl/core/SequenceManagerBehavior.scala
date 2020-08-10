@@ -136,7 +136,12 @@ class SequenceManagerBehavior(
   }
 
   private def provision(config: ProvisionConfig, self: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
-    agentUtil.provision(config).map(self ! ProcessingComplete(_))
+    // shutdown all running seq comps and then provision the new once
+    sequenceComponentUtil.shutdownAllSequenceComponents().map {
+      case ShutdownSequenceComponentResponse.Success          => agentUtil.provision(config).map(self ! ProcessingComplete(_))
+      case failure: ShutdownSequenceComponentResponse.Failure => self ! ProcessingComplete(failure)
+    }
+
     processing(self, replyTo)
   }
 
