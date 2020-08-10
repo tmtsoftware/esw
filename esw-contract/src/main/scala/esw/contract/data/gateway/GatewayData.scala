@@ -2,7 +2,6 @@ package esw.contract.data.gateway
 
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.contract.data.command.CommandData
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.models.{Level, LogMetadata}
 import csw.params.events.{EventKey, EventName, ObserveEvent, SystemEvent}
@@ -10,17 +9,9 @@ import csw.prefix.models.Subsystem
 import esw.contract.data.sequencer.SequencerData
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
-import esw.gateway.api.protocol.{
-  EmptyEventKeys,
-  EventServerUnavailable,
-  InvalidComponent,
-  InvalidMaxFrequency,
-  PostRequest,
-  SetAlarmSeverityFailure,
-  WebsocketRequest
-}
+import esw.gateway.api.protocol._
 
-trait GatewayData extends CommandData with SequencerData {
+trait GatewayData extends SequencerData {
   val componentId: ComponentId = ComponentId(prefix, ComponentType.HCD)
 
   val eventName: EventName       = EventName("offline")
@@ -28,7 +19,7 @@ trait GatewayData extends CommandData with SequencerData {
   val systemEvent: SystemEvent   = SystemEvent(prefix, eventName)
   val eventKey: EventKey         = EventKey(prefix, eventName)
 
-  val logMetadata = LogMetadata(Level.INFO, Level.DEBUG, Level.INFO, Level.ERROR)
+  val logMetadata: LogMetadata = LogMetadata(Level.INFO, Level.DEBUG, Level.INFO, Level.ERROR)
 
   val postComponentCommand: PostRequest.ComponentCommand = PostRequest.ComponentCommand(componentId, observeValidate)
   val postSequencerCommand: PostRequest.SequencerCommand = PostRequest.SequencerCommand(componentId, prepend)
