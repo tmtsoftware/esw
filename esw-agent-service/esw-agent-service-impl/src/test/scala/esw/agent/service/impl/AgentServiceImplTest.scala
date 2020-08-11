@@ -10,7 +10,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.{AgentNotFoundException, Killed, SpawnResponse}
+import esw.agent.service.api.models.{AgentNotFoundException, Killed, SpawnResponse}
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future

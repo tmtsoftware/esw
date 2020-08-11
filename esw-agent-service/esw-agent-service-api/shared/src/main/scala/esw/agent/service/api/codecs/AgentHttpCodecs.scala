@@ -1,6 +1,6 @@
 package esw.agent.service.api.codecs
 
-import esw.agent.service.api.AgentNotFoundException
+import esw.agent.service.api.models.AgentNotFoundException
 import esw.agent.service.api.protocol.AgentPostRequest
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.{deriveAllCodecs, deriveCodec}

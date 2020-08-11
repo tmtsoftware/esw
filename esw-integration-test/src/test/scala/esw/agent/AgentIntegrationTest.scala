@@ -11,8 +11,8 @@ import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.ComponentStatus.Running
-import esw.agent.service.api.{AgentStatus, Killed, Spawned}
+import esw.agent.service.api.models.ComponentStatus.Running
+import esw.agent.service.api.models.{AgentStatus, Killed, Spawned}
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation

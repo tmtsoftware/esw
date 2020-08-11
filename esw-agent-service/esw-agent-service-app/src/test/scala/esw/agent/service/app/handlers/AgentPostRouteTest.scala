@@ -8,8 +8,9 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Service
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.service.api.{AgentNotFoundException, AgentService, KillResponse, Killed, SpawnResponse, Spawned}
+import esw.agent.service.api.AgentService
 import esw.agent.service.api.codecs.AgentHttpCodecs
+import esw.agent.service.api.models.{AgentNotFoundException, KillResponse, Killed, SpawnResponse, Spawned}
 import esw.agent.service.api.protocol.AgentPostRequest
 import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, StopComponent}
 import esw.testcommons.BaseTestSuite

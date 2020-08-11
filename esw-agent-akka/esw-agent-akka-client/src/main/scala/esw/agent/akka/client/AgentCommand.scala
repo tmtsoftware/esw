@@ -9,8 +9,9 @@ import csw.location.api.models._
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
-import esw.agent.service.api.ComponentStatus.{Initializing, Running}
+import esw.agent.service.api.models.ComponentStatus.{Initializing, Running}
 import esw.agent.service.api._
+import esw.agent.service.api.models.{AgentStatus, ComponentStatus, KillResponse, SpawnResponse}
 
 sealed trait AgentCommand       extends AgentAkkaSerializable
 sealed trait AgentRemoteCommand extends AgentCommand

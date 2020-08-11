@@ -4,17 +4,10 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.models.ComponentId
 import csw.logging.api.scaladsl.Logger
 import esw.agent.akka.app.process.ProcessManager
+import esw.agent.akka.client.AgentCommand._
 import esw.agent.akka.client.{AgentCommand, ComponentState}
-import esw.agent.akka.client.AgentCommand.{
-  GetAgentStatus,
-  GetComponentStatus,
-  KillComponent,
-  ProcessExited,
-  SpawnCommand,
-  UpdateComponentState
-}
-import esw.agent.service.api.ComponentStatus.NotAvailable
-import esw.agent.service.api.{AgentStatus, ComponentStatus, Failed, KillResponse, Spawned}
+import esw.agent.service.api.models.ComponentStatus.NotAvailable
+import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
 import scala.concurrent.Future

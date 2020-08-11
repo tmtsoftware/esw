@@ -3,7 +3,7 @@ package esw.agent.service.api.codecs
 import java.nio.file.{Path, Paths}
 
 import csw.location.api.codec.LocationCodecs
-import esw.agent.service.api.{ComponentStatus, KillResponse, Response, SpawnResponse}
+import esw.agent.service.api.models.{ComponentStatus, KillResponse, Response, SpawnResponse}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 

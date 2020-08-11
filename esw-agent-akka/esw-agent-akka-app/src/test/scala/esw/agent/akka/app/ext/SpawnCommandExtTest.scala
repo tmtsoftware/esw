@@ -8,7 +8,7 @@ import csw.prefix.models.Subsystem.IRIS
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.service.api.SpawnResponse
+import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
 

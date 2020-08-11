@@ -6,8 +6,8 @@ import csw.location.api.models._
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.GetAgentStatus
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
-import esw.agent.service.api.ComponentStatus.Initializing
-import esw.agent.service.api.{AgentStatus, SpawnResponse}
+import esw.agent.service.api.models.ComponentStatus.Initializing
+import esw.agent.service.api.models.{AgentStatus, SpawnResponse}
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 

@@ -2,7 +2,7 @@ package esw.agent.akka.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
-import esw.agent.service.api.{Failed, SpawnResponse, Spawned}
+import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 

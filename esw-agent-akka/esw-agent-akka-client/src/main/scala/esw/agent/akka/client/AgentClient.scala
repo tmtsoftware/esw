@@ -14,7 +14,7 @@ import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.service.api._
+import esw.agent.service.api.models.{AgentNotFoundException, AgentStatus, ComponentStatus, KillResponse, SpawnResponse}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong

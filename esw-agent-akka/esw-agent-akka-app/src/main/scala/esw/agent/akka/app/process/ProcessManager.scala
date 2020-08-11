@@ -9,9 +9,9 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.ext.ProcessExt.ProcessOps
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand
-import esw.agent.akka.client.AgentCommand.{ProcessExited, SpawnCommand}
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
-import esw.agent.service.api.{Failed, KillResponse, Killed}
+import esw.agent.akka.client.AgentCommand.{ProcessExited, SpawnCommand}
+import esw.agent.service.api.models.{Failed, KillResponse, Killed}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
 import scala.concurrent.Future

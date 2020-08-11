@@ -15,8 +15,8 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.akka.client.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
-import esw.agent.service.api.ComponentStatus.{Running, Stopping}
-import esw.agent.service.api.{AgentStatus, Killed, Spawned}
+import esw.agent.service.api.models.ComponentStatus.{Running, Stopping}
+import esw.agent.service.api.models.{AgentStatus, Killed, Spawned}
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture

@@ -7,7 +7,7 @@ import csw.location.api.models.ComponentType.Service
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.service.api._
+import esw.agent.service.api.models._
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 import org.scalatest.prop.TableDrivenPropertyChecks._
 

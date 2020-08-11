@@ -7,7 +7,8 @@ import csw.location.api.models.ComponentId
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.{AgentService, KillResponse, SpawnResponse}
+import esw.agent.service.api.AgentService
+import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 

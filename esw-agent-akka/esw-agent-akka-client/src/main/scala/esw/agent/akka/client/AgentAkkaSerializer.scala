@@ -5,7 +5,8 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter._
 import csw.commons.CborAkkaSerializer
 import esw.agent.akka.client.codecs.AgentActorCodecs
-import esw.agent.service.api.{AgentAkkaSerializable, Response}
+import esw.agent.service.api.AgentAkkaSerializable
+import esw.agent.service.api.models.Response
 
 // $COVERAGE-OFF$
 class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem)

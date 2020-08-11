@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
+import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
 import scala.concurrent.Future
 

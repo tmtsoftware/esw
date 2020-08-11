@@ -16,7 +16,7 @@ import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.service.api.SpawnResponse
+import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 

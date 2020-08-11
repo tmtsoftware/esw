@@ -8,8 +8,8 @@ import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.GetComponentStatus
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
-import esw.agent.service.api.ComponentStatus.{Initializing, NotAvailable, Running}
-import esw.agent.service.api.{ComponentStatus, SpawnResponse, Spawned}
+import esw.agent.service.api.models.ComponentStatus.{Initializing, NotAvailable, Running}
+import esw.agent.service.api.models.{ComponentStatus, SpawnResponse, Spawned}
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 import org.scalatest.prop.TableDrivenPropertyChecks._

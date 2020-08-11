@@ -10,8 +10,8 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{CSW, ESW, IRIS, TCS}
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.ComponentStatus.{Initializing, Running}
-import esw.agent.service.api.{AgentStatus, Failed, SpawnResponse, Spawned}
+import esw.agent.service.api.models.ComponentStatus.{Initializing, Running}
+import esw.agent.service.api.models.{AgentStatus, Failed, SpawnResponse, Spawned}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
