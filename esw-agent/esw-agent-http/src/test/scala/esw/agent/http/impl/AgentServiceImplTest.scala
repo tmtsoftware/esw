@@ -80,7 +80,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       verify(locationService).find(akkaConnection)
     }
 
-    "be throw AgentNotFound exception for given agentPrefix | ESW-361" in {
+    "be able to throw AgentNotFound exception for given agentPrefix | ESW-361" in {
       val locationService = mock[LocationService]
 
       val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
