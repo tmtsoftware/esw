@@ -5,8 +5,8 @@ import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
-import esw.agent.api._
-import esw.agent.client.AgentClient
+import esw.agent.akka.client.AgentClient
+import esw.agent.service.api.{AgentStatus, ComponentStatus, Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, AgentToSeqCompsMap}

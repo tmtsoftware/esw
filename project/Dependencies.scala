@@ -65,18 +65,28 @@ object Dependencies {
     )
   )
 
-  val AgentApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AgentServiceApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Borer.`borer-core`.value,
       Borer.`borer-derivation`.value,
-      Csw.`csw-location-api`.value
+      Csw.`csw-location-api`.value,
+      Libs.`msocket-api`.value
     )
   )
 
-  val AgentHttp: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AgentServiceImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-location-client`,
+      Libs.scalatest.value         % Test,
+      Libs.`mockito-scala`         % Test,
+      Libs.`tmt-test-reporter`     % Test
+    )
+  )
+
+
+  val AgentServiceApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-impl-jvm`,
-      Csw.`csw-location-client`,
       Libs.scalatest.value         % Test,
       Libs.`mockito-scala`         % Test,
       Libs.`tmt-test-reporter`     % Test,
@@ -84,7 +94,7 @@ object Dependencies {
     )
   )
 
-  val AgentApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AgentAkkaApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
       Csw.`csw-location-client`,
@@ -97,7 +107,7 @@ object Dependencies {
     )
   )
 
-  val AgentJVMApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AgentAkkaClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-prefix`.value,
       Akka.`akka-actor-typed`,

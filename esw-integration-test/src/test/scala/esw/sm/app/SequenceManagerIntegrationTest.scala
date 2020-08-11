@@ -13,9 +13,9 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
-import esw.agent.app.AgentSettings
-import esw.agent.app.process.cs.Coursier
-import esw.agent.client.AgentClient
+import esw.agent.akka.app.AgentSettings
+import esw.agent.akka.app.process.cs.Coursier
+import esw.agent.akka.client.AgentClient
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse

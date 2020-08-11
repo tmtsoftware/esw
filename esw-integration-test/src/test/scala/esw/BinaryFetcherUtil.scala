@@ -4,7 +4,7 @@ import java.nio.file.Files
 
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.GenericLoggerFactory
-import esw.agent.app.process.cs.CoursierLaunch
+import esw.agent.akka.app.process.cs.CoursierLaunch
 
 object BinaryFetcherUtil {
   val logger: Logger = GenericLoggerFactory.getLogger

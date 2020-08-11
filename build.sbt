@@ -8,7 +8,8 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-http-core`,
     `esw-gateway`,
     `esw-integration-test`,
-    `esw-agent`,
+    `esw-agent-akka`,
+    `esw-agent-service`,
     `esw-contract`,
     examples,
     `esw-commons`,
@@ -24,7 +25,7 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-ocs-api`.js,
   `esw-gateway-api`.js,
   `esw-ocs-handler`,
-  `esw-agent-api`.js,
+  `esw-agent-service-api`.js,
   `esw-sm-api`.js,
   examples,
   `esw-shell`
@@ -129,36 +130,50 @@ lazy val `esw-ocs-app` = project
     `esw-test-commons` % Test
   )
 
-lazy val `esw-agent` = project
-  .in(file("esw-agent"))
-  .aggregate(
-    `esw-agent-api`.js,
-    `esw-agent-api`.jvm,
-    `esw-agent-app`,
-    `esw-agent-http`
-  )
+lazy val `esw-agent-akka` = project
+  .in(file("esw-agent-akka"))
+  .aggregate(`esw-agent-akka-client`, `esw-agent-akka-app`)
 
-lazy val `esw-agent-api` = crossProject(JSPlatform, JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("esw-agent/esw-agent-api"))
-  .jvmSettings(libraryDependencies ++= Dependencies.AgentJVMApi.value)
-  .settings(libraryDependencies ++= Dependencies.AgentApi.value)
+lazy val `esw-agent-akka-client` = project
+  .in(file("esw-agent-akka/esw-agent-akka-client"))
+  .enablePlugins(MaybeCoverage)
+  .settings(libraryDependencies ++= Dependencies.AgentAkkaClient.value)
+  .dependsOn(`esw-agent-service-api`.jvm)
 
-lazy val `esw-agent-http` = project
-  .in(file("esw-agent/esw-agent-http"))
-  .enablePlugins(EswBuildInfo)
-  .settings(libraryDependencies ++= Dependencies.AgentHttp.value)
-  .dependsOn(`esw-agent-api`.jvm, `esw-http-core`, `esw-test-commons` % Test)
-
-lazy val `esw-agent-app` = project
-  .in(file("esw-agent/esw-agent-app"))
+lazy val `esw-agent-akka-app` = project
+  .in(file("esw-agent-akka/esw-agent-akka-app"))
   .enablePlugins(EswBuildInfo, MaybeCoverage)
-  .settings(libraryDependencies ++= Dependencies.AgentApp.value)
+  .settings(libraryDependencies ++= Dependencies.AgentAkkaApp.value)
   .dependsOn(
-    `esw-agent-api`.jvm,
+    `esw-agent-akka-client`,
     `esw-commons`,
     `esw-test-commons` % Test
   )
+
+lazy val `esw-agent-service` = project
+  .in(file("esw-agent-service"))
+  .aggregate(
+    `esw-agent-service-api`.jvm,
+    `esw-agent-service-impl`,
+    `esw-agent-service-app`
+  )
+
+lazy val `esw-agent-service-api` = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("esw-agent-service/esw-agent-service-api"))
+  .settings(libraryDependencies ++= Dependencies.AgentServiceApi.value)
+
+lazy val `esw-agent-service-impl` = project
+  .in(file("esw-agent-service/esw-agent-service-impl"))
+  .enablePlugins(MaybeCoverage)
+  .settings(libraryDependencies ++= Dependencies.AgentServiceImpl.value)
+  .dependsOn(`esw-agent-service-api`.jvm, `esw-agent-akka-client`, `esw-test-commons` % Test)
+
+lazy val `esw-agent-service-app` = project
+  .in(file("esw-agent-service/esw-agent-service-app"))
+  .enablePlugins(EswBuildInfo, MaybeCoverage)
+  .settings(libraryDependencies ++= Dependencies.AgentServiceApp.value)
+  .dependsOn(`esw-agent-service-impl`, `esw-http-core`, `esw-test-commons` % Test)
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
@@ -176,8 +191,8 @@ lazy val `esw-integration-test` = project
     `esw-ocs-impl`,
     examples,
     `esw-ocs-app`,
-    `esw-agent-app`,
-    `esw-agent-api`.jvm,
+    `esw-agent-akka-app`,
+    `esw-agent-akka-client`,
     `esw-sm-app`,
     `esw-testkit`,
     `esw-test-commons` % Test
@@ -278,7 +293,7 @@ lazy val `esw-sm-impl` = project
   .in(file("esw-sm/esw-sm-impl"))
   .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
-  .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-api`.jvm, `esw-commons`, `esw-test-commons` % Test)
+  .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-akka-client`, `esw-commons`, `esw-test-commons` % Test)
 
 lazy val `esw-sm-handler` = project
   .in(file("esw-sm/esw-sm-handler"))
@@ -318,7 +333,7 @@ lazy val `esw-testkit` = project
   .dependsOn(
     `esw-gateway-server`,
     `esw-ocs-app`,
-    `esw-agent-app`
+    `esw-agent-akka-app`
   )
 
 lazy val `esw-shell` = project

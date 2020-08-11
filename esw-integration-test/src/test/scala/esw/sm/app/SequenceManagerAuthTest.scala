@@ -4,8 +4,8 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{AOESW, ESW, IRIS, TCS}
-import esw.agent.app.AgentSettings
-import esw.agent.app.process.cs.Coursier
+import esw.agent.akka.app.AgentSettings
+import esw.agent.akka.app.process.cs.Coursier
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS

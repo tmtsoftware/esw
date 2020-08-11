@@ -8,11 +8,11 @@ import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Servic
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
-import esw.agent.api.ComponentStatus.Running
-import esw.agent.api.{AgentStatus, Killed, Spawned}
-import esw.agent.app.AgentSettings
-import esw.agent.app.process.cs.Coursier
-import esw.agent.client.AgentClient
+import esw.agent.akka.app.AgentSettings
+import esw.agent.akka.app.process.cs.Coursier
+import esw.agent.akka.client.AgentClient
+import esw.agent.service.api.ComponentStatus.Running
+import esw.agent.service.api.{AgentStatus, Killed, Spawned}
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
