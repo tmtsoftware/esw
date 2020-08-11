@@ -22,6 +22,7 @@ import scala.concurrent.{Await, Future}
 private[esw] class SequenceComponentWiring(
     subsystem: Subsystem,
     name: Option[String],
+    agentPrefix: Option[String],
     sequencerServerFactory: SequencerServerFactory
 ) {
   private val registrationRetryCount = 10
@@ -66,10 +67,11 @@ private[ocs] object SequenceComponentWiring {
   def make(
       subsystem: Subsystem,
       name: Option[String],
+      agentPrefix: Option[String],
       sequencerServerFactory: SequencerServerFactory,
       _actorSystem: ActorSystem[SpawnProtocol.Command]
   ): SequenceComponentWiring =
-    new SequenceComponentWiring(subsystem, name, sequencerServerFactory) {
+    new SequenceComponentWiring(subsystem, name, agentPrefix, sequencerServerFactory) {
       override private[wiring] lazy val actorSystem = _actorSystem
     }
 }

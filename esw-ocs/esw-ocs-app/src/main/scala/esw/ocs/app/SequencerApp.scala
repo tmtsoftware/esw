@@ -45,7 +45,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
       if (enableLogging) startLogging(sequenceCompLocation.prefix.toString())
       command match {
         case _: SequenceComponent => // sequence component is already started
-        case Sequencer(seqCompSubsystem, _, seqSubsystem, mode, _) =>
+        case Sequencer(seqCompSubsystem, _, _, seqSubsystem, mode, _) =>
           reportSequencer(loadAndStartSequencer(seqSubsystem.getOrElse(seqCompSubsystem), mode, sequenceCompLocation, wiring))
       }
     }
@@ -59,10 +59,10 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
 
   def sequenceComponentWiring(command: SequencerAppCommand): SequenceComponentWiring = {
     val sequencerServer: SequencerServerFactory = command match {
-      case Sequencer(_, _, _, _, true) => new SimulationSequencerWiring(_, _, _).sequencerServer
-      case _                           => new SequencerWiring(_, _, _).sequencerServer
+      case Sequencer(_, _, _, _, _, true) => new SimulationSequencerWiring(_, _, _).sequencerServer
+      case _                              => new SequencerWiring(_, _, _).sequencerServer
     }
-    new SequenceComponentWiring(command.seqCompSubsystem, command.name, sequencerServer)
+    new SequenceComponentWiring(command.seqCompSubsystem, command.name, command.agentPrefix, sequencerServer)
   }
 
   private def loadAndStartSequencer(

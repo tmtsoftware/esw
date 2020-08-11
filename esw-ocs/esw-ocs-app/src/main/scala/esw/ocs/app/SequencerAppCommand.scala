@@ -11,6 +11,7 @@ import scala.util.Try
 sealed trait SequencerAppCommand {
   def seqCompSubsystem: Subsystem
   def name: Option[String]
+  def agentPrefix: Option[String]
 }
 
 object SequencerAppCommand {
@@ -31,19 +32,25 @@ object SequencerAppCommand {
       @HelpMessage("subsystem of the sequence component, ex: tcs")
       @Short("s")
       seqCompSubsystem: Subsystem,
-      @HelpMessage("optional name for sequence component, ex: primary, backup etc")
+      @HelpMessage("optional argument: name for sequence component, ex: primary, backup etc")
       @Short("n")
-      name: Option[String]
+      name: Option[String],
+      @HelpMessage("optional argument: agentPrefix on which sequence component will be spawned, ex: ESW.agent1, IRIS.agent2 etc")
+      @Short("a")
+      agentPrefix: Option[String]
   ) extends SequencerAppCommand
 
   final case class Sequencer(
       @HelpMessage("subsystem of the sequence component, ex: tcs")
       @Short("s")
       seqCompSubsystem: Subsystem,
-      @HelpMessage("optional name for sequence component, ex: primary, backup etc")
+      @HelpMessage("optional argument: name for sequence component, ex: primary, backup etc")
       @Short("n")
       name: Option[String],
-      @HelpMessage("optional subsystem of sequencer script, ex: tcs, iris etc. Default value: subsystem provided")
+      @HelpMessage("optional argument: agentPrefix on which sequence component will be spawned, ex: ESW.agent1, IRIS.agent2 etc")
+      @Short("a")
+      agentPrefix: Option[String],
+      @HelpMessage("optional argument: subsystem of sequencer script, ex: tcs, iris etc. Default value: subsystem provided")
       @Short("i")
       seqSubsystem: Option[Subsystem],
       @HelpMessage("observing mode, ex: darknight")

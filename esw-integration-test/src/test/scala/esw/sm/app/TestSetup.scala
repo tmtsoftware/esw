@@ -28,7 +28,7 @@ object TestSetup extends EswTestKit {
   // Setup Sequence components for subsystems
   def startSequenceComponents(prefixes: Prefix*): Unit =
     prefixes.foreach { prefix =>
-      seqCompWirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName)))
+      seqCompWirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName), None))
     }
 
   val obsModeConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
