@@ -23,11 +23,13 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val obsModeConfPath = Paths.get(obsModeConf)
   private val port            = 8080
   private val redisArgs       = List("-conf", "redis.conf")
+  private val agentPrefixStr  = "ESW.dummy-agent"
 
-  private val spawnSeqComp               = SpawnSequenceComponent(replyTo, prefix, None)
-  private val spawnSeqCompWithVersion    = SpawnSequenceComponent(replyTo, prefix, Some(version))
-  private val spawnSeqCompCmd            = s"cs launch --channel $channel ocs-app -- seqcomp -s $subsystem -n $compName"
-  private val spawnSeqCompWithVersionCmd = s"cs launch --channel $channel ocs-app:$version -- seqcomp -s $subsystem -n $compName"
+  private val spawnSeqComp            = SpawnSequenceComponent(replyTo, agentPrefixStr, prefix, None)
+  private val spawnSeqCompWithVersion = SpawnSequenceComponent(replyTo, agentPrefixStr, prefix, Some(version))
+  private val spawnSeqCompCmd         = s"cs launch --channel $channel ocs-app -- seqcomp -s $subsystem -n $compName -a $agentPrefixStr"
+  private val spawnSeqCompWithVersionCmd =
+    s"cs launch --channel $channel ocs-app:$version -- seqcomp -s $subsystem -n $compName -a $agentPrefixStr"
 
   private val spawnSeqMgr               = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None)
   private val spawnSeqMgrWithVersion    = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))

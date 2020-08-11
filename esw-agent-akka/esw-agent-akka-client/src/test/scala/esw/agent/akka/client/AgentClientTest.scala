@@ -126,12 +126,12 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
   private def stubAgent: Behaviors.Receive[AgentCommand] =
     Behaviors.receiveMessagePartial[AgentCommand] { msg =>
       msg match {
-        case SpawnSequenceManager(replyTo, _, _, _) => replyTo ! Spawned
-        case SpawnSequenceComponent(replyTo, _, _)  => replyTo ! Spawned
-        case SpawnRedis(replyTo, _, _, _)           => replyTo ! Spawned
-        case KillComponent(replyTo, _)              => replyTo ! Killed
-        case GetComponentStatus(replyTo, _)         => replyTo ! Running
-        case GetAgentStatus(replyTo)                => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
+        case SpawnSequenceManager(replyTo, _, _, _)   => replyTo ! Spawned
+        case SpawnSequenceComponent(replyTo, _, _, _) => replyTo ! Spawned
+        case SpawnRedis(replyTo, _, _, _)             => replyTo ! Spawned
+        case KillComponent(replyTo, _)                => replyTo ! Killed
+        case GetComponentStatus(replyTo, _)           => replyTo ! Running
+        case GetAgentStatus(replyTo)                  => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
       }
       Behaviors.same
     }

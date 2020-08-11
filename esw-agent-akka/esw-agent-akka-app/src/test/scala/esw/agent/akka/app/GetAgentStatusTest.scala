@@ -24,16 +24,17 @@ class GetAgentStatusTest extends AgentSetup {
       val prefix2      = Prefix("csw.component2")
       val componentId2 = ComponentId(prefix2, SequenceComponent)
 
-      val agentActorRef = spawnAgentActor()
-      val spawner       = TestProbe[SpawnResponse]()
-      val probe         = TestProbe[AgentStatus]()
+      val agentPrefixStr = "ESW.dummy-agent"
+      val agentActorRef  = spawnAgentActor()
+      val spawner        = TestProbe[SpawnResponse]()
+      val probe          = TestProbe[AgentStatus]()
 
       when(locationService.resolve(any[TypedConnection[AkkaLocation]], any[FiniteDuration]))
         .thenReturn(delayedFuture(None, 2.seconds))
 
       //spawn two processes
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, prefix1, None)
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, prefix2, None)
+      agentActorRef ! SpawnSequenceComponent(spawner.ref, agentPrefixStr, prefix1, None)
+      agentActorRef ! SpawnSequenceComponent(spawner.ref, agentPrefixStr, prefix2, None)
 
       //get agent status
       agentActorRef ! GetAgentStatus(probe.ref)
