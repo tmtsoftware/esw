@@ -2,6 +2,7 @@ package esw.agent.service.app
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.server.Route
+import csw.aas.http.SecurityDirectives
 import csw.location.client.ActorSystemFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
@@ -22,8 +23,11 @@ class AgentHttpWiring(port: Option[Int]) extends AgentHttpCodecs {
   import cswWiring.actorRuntime._
   import cswWiring.locationService
 
+  private val securityDirective = SecurityDirectives(actorSystem.settings.config, locationService)
+
   private lazy val agentService = new AgentServiceImpl(locationService)
-  private lazy val route: Route = new PostRouteFactory("post-endpoint", new AgentPostHandlerImpl(agentService)).make()
+  private lazy val route: Route =
+    new PostRouteFactory("post-endpoint", new AgentPostHandlerImpl(agentService, securityDirective)).make()
 
   lazy val httpService = new HttpService(logger, locationService, route, settings, cswWiring.actorRuntime)
 }
