@@ -11,16 +11,18 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
-import esw.agent.akka.client.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.service.api.models.{AgentNotFoundException, AgentStatus, ComponentStatus, KillResponse, SpawnResponse}
+import esw.agent.akka.client.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
+import esw.agent.service.api.models._
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationLong
+import scala.jdk.DurationConverters.JavaDurationOps
 
 class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]) {
-  implicit private val timeout: Timeout        = Timeout(15.seconds)
+  private implicit val timeout: Timeout = Timeout(
+    actorSystem.settings.config.getDuration("esw.agent.akka.client.askTimeout").toScala
+  )
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefixStr                   = akkaLocation.prefix.toString()
 
