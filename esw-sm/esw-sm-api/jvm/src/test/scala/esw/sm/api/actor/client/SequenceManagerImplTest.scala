@@ -66,7 +66,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
     AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI, Metadata.empty)
   private val sequenceManager = new SequenceManagerImpl(location)
 
-  private def randomString5 = Random.nextString(5)
+  private def randomString5 = Random.alphanumeric.take(5).mkString
   private def randomSubsystem = {
     val allSubsystems = Subsystem.values
     allSubsystems(Random.nextInt(allSubsystems.size))

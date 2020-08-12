@@ -1,6 +1,5 @@
 package esw.sm.handler
 
-import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.core.token.AccessToken
@@ -21,22 +20,25 @@ import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class SequenceManagerPostHandlerTest
     extends BaseTestSuite
     with ScalatestRouteTest
     with SequenceManagerHttpCodec
     with ClientHttpCodecs {
-  private val sequenceManagerApi: SequenceManagerApi = mock[SequenceManagerApi]
-  private val securityDirectives: SecurityDirectives = mock[SecurityDirectives]
-  private val postHandler                            = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
-  lazy val route: Route                              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
+  private val sequenceManagerApi = mock[SequenceManagerApi]
+  private val securityDirectives = mock[SecurityDirectives]
+  private val postHandler        = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
+  private val route              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
 
-  private val obsMode         = ObsMode("IRIS_darknight")
-  private val componentId     = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
-  private val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1)
-  private val eswUserPolicy   = EswUserRolePolicy()
-  private val dummyDirective  = BasicDirectives.extract[AccessToken](_ => AccessToken())
+  private val string10    = Random.alphanumeric.take(10).mkString
+  private val obsMode     = ObsMode(string10)
+  private val componentId = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
+
+  private val eswUserPolicy        = EswUserRolePolicy()
+  private val accessToken          = mock[AccessToken]
+  private val accessTokenDirective = BasicDirectives.extract(_ => accessToken)
 
   override def clientContentType: ContentType = ContentType.Json
 
@@ -51,7 +53,7 @@ class SequenceManagerPostHandlerTest
 
   "SequenceManagerPostHandler" must {
     "return configure success for configure request | ESW-171" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.configure(obsMode)).thenReturn(Future.successful(ConfigureResponse.Success(componentId)))
 
       Post("/post-endpoint", Configure(obsMode).narrow) ~> route ~> check {
@@ -62,7 +64,8 @@ class SequenceManagerPostHandlerTest
     }
 
     "return provision success for provision request | ESW-347" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.provision(provisionConfig)).thenReturn(Future.successful(ProvisionResponse.Success))
 
       Post("/post-endpoint", Provision(provisionConfig).narrow) ~> route ~> check {
@@ -83,7 +86,7 @@ class SequenceManagerPostHandlerTest
     }
 
     "return start sequencer success for startSequencer request | ESW-171" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.startSequencer(ESW, obsMode))
         .thenReturn(Future.successful(StartSequencerResponse.Started(componentId)))
 
@@ -95,7 +98,7 @@ class SequenceManagerPostHandlerTest
     }
 
     "return shutdown sequencer success for shutdownSequencer request | ESW-171" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.shutdownSequencer(ESW, obsMode)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
       Post("/post-endpoint", ShutdownSequencer(ESW, obsMode).narrow) ~> route ~> check {
@@ -106,7 +109,7 @@ class SequenceManagerPostHandlerTest
     }
 
     "return success for shutdownSubsystemSequencers request | ESW-171" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.shutdownSubsystemSequencers(ESW)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
       Post("/post-endpoint", ShutdownSubsystemSequencers(ESW).narrow) ~> route ~> check {
@@ -117,7 +120,7 @@ class SequenceManagerPostHandlerTest
     }
 
     "return success for shutdownObsModeSequencers request | ESW-171" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.shutdownObsModeSequencers(obsMode))
         .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
@@ -129,7 +132,7 @@ class SequenceManagerPostHandlerTest
     }
 
     "return shutdown all sequencer success for shutdownAllSequencer request | ESW-171" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.shutdownAllSequencers()).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
       Post("/post-endpoint", ShutdownAllSequencers.narrow) ~> route ~> check {
@@ -140,7 +143,7 @@ class SequenceManagerPostHandlerTest
     }
 
     "return restart sequencer success for restartSequencer request | ESW-171" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.restartSequencer(ESW, obsMode))
         .thenReturn(Future.successful(RestartSequencerResponse.Success(componentId)))
 
@@ -153,7 +156,7 @@ class SequenceManagerPostHandlerTest
 
     "return shutdown sequence component success for shutdownSequenceComponent request | ESW-338" in {
       val prefix = Prefix(ESW, obsMode.name)
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.shutdownSequenceComponent(prefix))
         .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
@@ -165,7 +168,7 @@ class SequenceManagerPostHandlerTest
     }
 
     "return shutdown sequence component success for shutdownAllSequenceComponent request | ESW-346" in {
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.shutdownAllSequenceComponents())
         .thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
@@ -181,7 +184,7 @@ class SequenceManagerPostHandlerTest
       val agent       = Prefix(ESW, "primary")
       val seqComp     = ComponentId(Prefix(ESW, seqCompName), ComponentType.SequenceComponent)
 
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(dummyDirective)
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
       when(sequenceManagerApi.spawnSequenceComponent(agent, seqCompName))
         .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
 

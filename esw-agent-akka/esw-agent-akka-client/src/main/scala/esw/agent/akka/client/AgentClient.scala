@@ -20,9 +20,8 @@ import scala.concurrent.Future
 import scala.jdk.DurationConverters.JavaDurationOps
 
 class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]) {
-  private implicit val timeout: Timeout = Timeout(
-    actorSystem.settings.config.getDuration("agent.akka.client.askTimeout").toScala
-  )
+  private implicit val timeout: Timeout = actorSystem.settings.config.getDuration("agent.akka.client.askTimeout").toScala
+
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefixStr                   = akkaLocation.prefix.toString()
 
