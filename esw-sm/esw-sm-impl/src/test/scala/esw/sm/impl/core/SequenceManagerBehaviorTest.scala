@@ -491,7 +491,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "provision" must {
+  "Provision" must {
     "transition from Idle -> Processing -> Idle and return provision success | ESW-347" in {
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
       when(sequenceComponentUtil.shutdownAllSequenceComponents())

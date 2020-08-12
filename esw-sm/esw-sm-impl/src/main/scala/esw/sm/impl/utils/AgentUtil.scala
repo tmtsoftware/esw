@@ -59,8 +59,7 @@ class AgentUtil(
   private def provisionOn(machines: List[AkkaLocation], provisionConfig: ProvisionConfig) =
     Future
       .successful(agentAllocator.allocate(provisionConfig, machines))
-      .flatMapRight(spawnComponentsByMapping)
-      .mapToAdt(identity, identity)
+      .flatMapToAdt(x => spawnComponentsByMapping(x), identity)
 
   private def spawnComponentsByMapping(mappings: List[(AkkaLocation, Prefix)]): Future[ProvisionResponse] =
     Future

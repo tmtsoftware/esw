@@ -141,12 +141,11 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   "provision" must {
-    val uri                = new URI("some-uri")
     val eswSeqComp1Prefix  = Prefix(ESW, "ESW_1")
     val eswSeqComp2Prefix  = Prefix(ESW, "ESW_2")
     val irisSeqComp1Prefix = Prefix(IRIS, "IRIS_1")
-    val eswPrimaryMachine  = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Machine)), uri, Metadata.empty)
-    val irisPrimaryMachine = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "primary"), Machine)), uri, Metadata.empty)
+    val eswPrimaryMachine  = akkaLocation(ComponentId(Prefix(ESW, "primary"), Machine))
+    val irisPrimaryMachine = akkaLocation(ComponentId(Prefix(IRIS, "primary"), Machine))
 
     "start required number sequence components on available machines for given subsystems | ESW-347" in {
       val locationServiceUtil                          = mock[LocationServiceUtil]
@@ -218,7 +217,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
     }
 
-    "return NoMachineFoundForSubsystems if any subsystem does not have machine available | ESW-347" in {
+    "return CouldNotFindMachines error if any subsystem does not have machine available | ESW-347" in {
       val setup = new TestSetup()
       import setup._
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1, Prefix(IRIS, "primary") -> 1)

@@ -30,12 +30,11 @@ case class ProvisionConfig(config: List[AgentProvisionConfig]) {
     groupPrefixBySubsystem.flatMap(assign(_, 1)).toList
   }
 
-  private def groupPrefixBySubsystem = config.groupBy(_.agentPrefix.subsystem).view.mapValues(_.toList).values
+  private def groupPrefixBySubsystem = config.groupBy(_.agentPrefix.subsystem).values
 
-  private def generateSeqCompPrefix(agentPrefix: AgentPrefix, count: Int, from: Int) =
-    List.fill(count)(agentPrefix).zipWithIndex.map {
-      case (_, i) => (agentPrefix, Prefix(agentPrefix.subsystem, s"${agentPrefix.subsystem}_${from + i}"))
-    }
+  private def generateSeqCompPrefix(agentPrefix: AgentPrefix, count: Int, from: Int) = {
+    (0 until count).map(i => (agentPrefix, Prefix(agentPrefix.subsystem, s"${agentPrefix.subsystem}_${from + i}"))).toList
+  }
 }
 
 object ProvisionConfig {

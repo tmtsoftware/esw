@@ -27,7 +27,7 @@ class AgentAllocatorTest extends BaseTestSuite {
 
       val mapping = allocator.allocate(config, machines).rightValue
 
-      mapping should contain allElementsOf List(
+      mapping should contain theSameElementsAs List(
         //-------- on ESW primary machine ----------
         eswPrimaryM -> Prefix(ESW, "ESW_1"),
         eswPrimaryM -> Prefix(ESW, "ESW_2"),
