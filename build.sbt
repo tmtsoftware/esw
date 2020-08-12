@@ -172,7 +172,7 @@ lazy val `esw-agent-service-impl` = project
 
 lazy val `esw-agent-service-app` = project
   .in(file("esw-agent-service/esw-agent-service-app"))
-  .enablePlugins(EswBuildInfo, MaybeCoverage)
+  .enablePlugins(EswBuildInfo) //todo : Add coverage plugin
   .settings(libraryDependencies ++= Dependencies.AgentServiceApp.value)
   .dependsOn(`esw-agent-service-impl`, `esw-http-core`, `esw-test-commons` % Test)
 
