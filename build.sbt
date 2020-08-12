@@ -161,6 +161,7 @@ lazy val `esw-agent-service` = project
 lazy val `esw-agent-service-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("esw-agent-service/esw-agent-service-api"))
+  .jvmConfigure(_.enablePlugins(MaybeCoverage).dependsOn(`esw-test-commons` % Test))
   .settings(libraryDependencies ++= Dependencies.AgentServiceApi.value)
 
 lazy val `esw-agent-service-impl` = project
