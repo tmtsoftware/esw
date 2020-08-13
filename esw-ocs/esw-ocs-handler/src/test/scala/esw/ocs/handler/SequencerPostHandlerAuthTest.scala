@@ -21,7 +21,6 @@ import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.captor.{ArgCaptor, Captor}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import org.scalatest.prop.TableFor3
 import org.scalatest.prop.Tables.Table
 
 import scala.concurrent.Future
@@ -54,34 +53,36 @@ class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest
     val hint      = randomString(5)
 
     val responseF = Future.failed(new RuntimeException("test")) // common response for all
-    val table: TableFor3[String, SequencerPostRequest, SequencerApi => Unit] = Table(
-      ("test name", "message", "mocks"),
-      ("load sequence", LoadSequence(sequence), { x => mockCall(x.loadSequence(sequence), responseF) }),
-      ("start sequence", StartSequence, { x => mockCall(x.startSequence(), responseF) }),
-      ("submit action", Submit(sequence), { x => mockCall(x.submit(sequence), responseF) }),
-      ("add action", Add(commands), { x => mockCall(x.add(commands), responseF) }),
-      ("prepend action", Prepend(commands), { x => mockCall(x.prepend(commands), responseF) }),
-      ("Replace action", Replace(id, commands), { x => mockCall(x.replace(id, commands), responseF) }),
-      ("insert after action", InsertAfter(id, commands), { x => mockCall(x.insertAfter(id, commands), responseF) }),
-      ("add breakpoint action", AddBreakpoint(id), { x => mockCall(x.addBreakpoint(id), responseF) }),
-      ("remove breakpoint action", RemoveBreakpoint(id), { x => mockCall(x.removeBreakpoint(id), responseF) }),
-      ("reset action", Reset, { x => mockCall(x.reset(), responseF) }),
-      ("pause action", Pause, { x => mockCall(x.pause, responseF) }),
-      ("resume action", Resume, { x => mockCall(x.resume, responseF) }),
-      ("goOnline action", GoOnline, { x => mockCall(x.goOnline(), responseF) }),
-      ("goOffline action", GoOffline, { x => mockCall(x.goOffline(), responseF) }),
-      ("abortSequence action", AbortSequence, { x => mockCall(x.abortSequence(), responseF) }),
-      ("stop action", Stop, { x => mockCall(x.stop(), responseF) }),
-      ("diagnostic mode", DiagnosticMode(startTime, hint), { x => mockCall(x.diagnosticMode(startTime, hint), responseF) }),
-      ("operations mode", OperationsMode, { x => mockCall(x.operationsMode(), responseF) })
+    val table = Table[SequencerPostRequest, SequencerApi => Unit](
+      ("msg", "api"),
+      (LoadSequence(sequence), _.loadSequence(sequence)),
+      (StartSequence, _.startSequence()),
+      (Submit(sequence), _.submit(sequence)),
+      (Add(commands), _.add(commands)),
+      (Prepend(commands), _.prepend(commands)),
+      (Replace(id, commands), _.replace(id, commands)),
+      (InsertAfter(id, commands), _.insertAfter(id, commands)),
+      (AddBreakpoint(id), _.addBreakpoint(id)),
+      (RemoveBreakpoint(id), _.removeBreakpoint(id)),
+      (Reset, _.reset()),
+      (Pause, _.pause),
+      (Resume, _.resume),
+      (GoOnline, _.goOnline()),
+      (GoOffline, _.goOffline()),
+      (AbortSequence, _.abortSequence()),
+      (Stop, _.stop()),
+      (DiagnosticMode(startTime, hint), _.diagnosticMode(startTime, hint)),
+      (OperationsMode, _.operationsMode())
     )
 
     forAll(table) {
-      case (name, msg, mocks) =>
+      case (msg, api) =>
+        val name = msg.getClass.getSimpleName
         s"check for $subsystem subsystem user role policy on $name" in {
+
           val captor = ArgCaptor[CustomPolicy]
           when(securityDirectives.sPost(captor)).thenReturn(accessTokenDirective)
-          mocks(sequencer)
+          mockApi(api(sequencer), responseF)
 
           Post("/post-endpoint", msg.narrow) ~> route ~> check {
             checkSubsystemUserRole(captor)
@@ -90,8 +91,8 @@ class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest
     }
   }
 
-  def mockCall[T](call: => T, returnValue: T): Unit = when(call).thenReturn(returnValue)
+  def mockApi[T](call: => T, returnValue: T): Unit = when(call).thenReturn(returnValue)
 
   def checkSubsystemUserRole(captor: Captor[CustomPolicy]): Unit =
-    captor.value.predicate(AccessToken(realm_access = Access(Set(s"${subsystem}-user")))) shouldBe true
+    captor.value.predicate(AccessToken(realm_access = Access(Set(s"$subsystem-user")))) shouldBe true
 }
