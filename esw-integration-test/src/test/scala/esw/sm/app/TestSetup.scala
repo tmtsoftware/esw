@@ -37,21 +37,24 @@ object TestSetup extends EswTestKit {
       prefix: Prefix,
       tokenFactory: () => Option[String],
       obsModeConfigPath: Path = obsModeConfigPath,
-      isConfigLocal: Boolean = true
+      isConfigLocal: Boolean = true,
+      agentPrefix: Option[String] = None
   ): SequenceManagerApi =
-    startSequenceManager(prefix, obsModeConfigPath, isConfigLocal, authDisabled = false, tokenFactory)
+    startSequenceManager(prefix, obsModeConfigPath, isConfigLocal, agentPrefix, authDisabled = false, tokenFactory)
 
   def startSequenceManager(
       prefix: Prefix,
       obsModeConfigPath: Path = obsModeConfigPath,
-      isConfigLocal: Boolean = true
+      isConfigLocal: Boolean = true,
+      agentPrefix: Option[String] = None
   ): SequenceManagerApi =
-    startSequenceManager(prefix, obsModeConfigPath, isConfigLocal, authDisabled = true, () => None)
+    startSequenceManager(prefix, obsModeConfigPath, isConfigLocal, agentPrefix, authDisabled = true, () => None)
 
   private def startSequenceManager(
       prefix: Prefix,
       obsModeConfig: Path,
       isConfigLocal: Boolean,
+      agentPrefix: Option[String],
       authDisabled: Boolean,
       tokenFactory: () => Option[String]
   ): SequenceManagerApi = {
@@ -70,7 +73,7 @@ object TestSetup extends EswTestKit {
       else config
 
     val securityDirectives = SecurityDirectives(authConfig, locationService)
-    val wiring             = SequenceManagerWiring(obsModeConfig, isConfigLocal, _system, securityDirectives)
+    val wiring             = SequenceManagerWiring(obsModeConfig, isConfigLocal, agentPrefix, _system, securityDirectives)
     wiring.start()
     seqManagerWirings += wiring
     val smLocation = resolveHTTPLocation(prefix, Service)

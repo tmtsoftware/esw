@@ -9,7 +9,7 @@ import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.models
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
@@ -50,19 +50,26 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
-  "start sequence manager and register akka + http locations| ESW-171, ESW-172" in {
+  "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-366" in {
+    val agentPrefix = "ESW.agent1"
+
     // resolving sequence manager fails for Akka and Http
     intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
     intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
 
-    TestSetup.startSequenceManager(sequenceManagerPrefix)
+    TestSetup.startSequenceManager(sequenceManagerPrefix, agentPrefix = Some(agentPrefix))
 
     // verify sequence manager is started and AkkaLocation & HttpLocation are registered with location service
-    resolveAkkaLocation(sequenceManagerPrefix, Service).prefix shouldBe sequenceManagerPrefix
+    val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
+    smAkkaLocation.prefix shouldBe sequenceManagerPrefix
+
+    // ESW-366 verify agent prefix metadata is present in Sequence manager location
+    smAkkaLocation.metadata shouldBe Metadata(Map("agent-prefix" -> agentPrefix))
+
     resolveHTTPLocation(sequenceManagerPrefix, Service).prefix shouldBe sequenceManagerPrefix
   }
 
-  "configure SH, send sequence to master sequencer and cleanup for provided observation mode | ESW-162, ESW-164, ESW-166, ESW-171, ESW-178, ESW-351" in {
+  "configure SH, send sequence to master sequencer and cleanup for provided observation mode | ESW-162, ESW-164, ESW-166, ESW-171, ESW-178, ESW-351, ESW-366" in {
     val eswSeqCompPrefix   = Prefix(ESW, "primary")
     val irisSeqCompPrefix  = Prefix(IRIS, "primary")
     val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
@@ -71,6 +78,10 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // ESW-171: Starts SM and returns SM Http client.
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
+
+    val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
+    // ESW-366 verify metadata is empty in Sequence manager location as agentPrefix is not provided
+    smAkkaLocation.metadata shouldBe Metadata.empty
 
     val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL.name)
     val irisCalPrefix      = Prefix(IRIS, IRIS_CAL.name)
@@ -199,11 +210,12 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
   }
 
-  "throw exception if obs mode config file is missing | ESW-162, ESW-160, ESW-171" in {
+  "throw exception if obs mode config file is missing | ESW-162, ESW-160, ESW-171, ESW-366" in {
 
+    // ESW-366 verify that agentPrefix argument is parsed successfully
     val exception = intercept[RuntimeException](
       SequenceManagerApp.main(
-        Array("start", "-o", "sm-config.conf", "--local")
+        Array("start", "-o", "sm-config.conf", "--local", "-a", "ESW.agent1")
       )
     )
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"

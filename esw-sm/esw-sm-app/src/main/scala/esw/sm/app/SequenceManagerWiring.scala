@@ -15,7 +15,7 @@ import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -42,7 +42,7 @@ import msocket.impl.post.PostRouteFactory
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
-class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean) {
+class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPrefix: Option[String]) {
   private[sm] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(actorSystem)
@@ -84,9 +84,10 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean) {
     Timeouts.DefaultTimeout
   )
 
-  private lazy val config       = actorSystem.settings.config
-  private lazy val connection   = AkkaConnection(ComponentId(prefix, ComponentType.Service))
-  private lazy val registration = AkkaRegistrationFactory.make(connection, sequenceManagerRef)
+  private lazy val config           = actorSystem.settings.config
+  private lazy val connection       = AkkaConnection(ComponentId(prefix, ComponentType.Service))
+  private lazy val locationMetadata = agentPrefix.map(prefix => Metadata(Map("agent-prefix" -> prefix))).getOrElse(Metadata.empty)
+  private lazy val registration     = AkkaRegistrationFactory.make(connection, sequenceManagerRef, locationMetadata)
 
   private lazy val sequenceManager: SequenceManagerApi =
     SequenceManagerApiFactory.makeAkkaClient(
@@ -130,10 +131,11 @@ private[sm] object SequenceManagerWiring {
   def apply(
       obsModeConfig: Path,
       isLocal: Boolean,
+      agentPrefix: Option[String],
       _actorSystem: ActorSystem[SpawnProtocol.Command],
       _securityDirectives: SecurityDirectives
   ): SequenceManagerWiring =
-    new SequenceManagerWiring(obsModeConfig, isLocal) {
+    new SequenceManagerWiring(obsModeConfig, isLocal, agentPrefix) {
       override private[sm] lazy val actorSystem        = _actorSystem
       override private[sm] lazy val securityDirectives = _securityDirectives
     }
