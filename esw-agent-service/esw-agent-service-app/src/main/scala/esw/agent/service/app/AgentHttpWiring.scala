@@ -14,8 +14,8 @@ import msocket.impl.post.PostRouteFactory
 
 class AgentHttpWiring(port: Option[Int]) extends AgentHttpCodecs {
 
-  private val prefix                                               = Prefix(ESW, "agent_service")
-  private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
+  lazy val prefix: Prefix                                  = Prefix(ESW, "agent_service")
+  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
 
   private lazy val wiring = new ServerWiring(port, Some(prefix), actorSystem = actorSystem)
 

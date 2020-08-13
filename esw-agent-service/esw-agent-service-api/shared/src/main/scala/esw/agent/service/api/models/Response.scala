@@ -3,6 +3,7 @@ package esw.agent.service.api.models
 import csw.location.api.models.ComponentId
 import esw.agent.service.api.AgentAkkaSerializable
 
+//  todo : rename the Response
 sealed trait Response extends AgentAkkaSerializable
 
 sealed trait SpawnResponse extends Response

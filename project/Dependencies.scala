@@ -74,15 +74,18 @@ object Dependencies {
     )
   )
 
+  val AgentServiceApiJvm: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(Libs.`msocket-impl-jvm`)
+  )
+
   val AgentServiceImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-location-client`,
-      Libs.scalatest.value         % Test,
-      Libs.`mockito-scala`         % Test,
-      Libs.`tmt-test-reporter`     % Test
+      Libs.scalatest.value     % Test,
+      Libs.`mockito-scala`     % Test,
+      Libs.`tmt-test-reporter` % Test
     )
   )
-
 
   val AgentServiceApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(

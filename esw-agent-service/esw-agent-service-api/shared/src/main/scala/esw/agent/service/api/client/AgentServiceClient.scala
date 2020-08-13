@@ -4,11 +4,11 @@ import java.nio.file.Path
 
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
+import esw.agent.service.api.AgentService
 import esw.agent.service.api.codecs.AgentHttpCodecs
+import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentPostRequest
 import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, StopComponent}
-import esw.agent.service.api.AgentService
-import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import msocket.api.Transport
 
 import scala.concurrent.Future

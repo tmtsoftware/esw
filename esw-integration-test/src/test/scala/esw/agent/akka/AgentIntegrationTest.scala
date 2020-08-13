@@ -1,4 +1,4 @@
-package esw.agent
+package esw.agent.akka
 
 import java.nio.file.Paths
 
