@@ -7,7 +7,7 @@ import csw.location.api.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.models.StepList
+import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol._
@@ -24,7 +24,10 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     ModelType[GoOfflineResponse](ok, unhandled, goOfflineHookFailed),
     ModelType[DiagnosticModeResponse](ok, diagnosticHookFailed),
     ModelType[OperationsModeResponse](ok, operationsHookFailed),
-    ModelType(akkaLocation)
+    ModelType(akkaLocation),
+    ModelType[StepList](stepList),
+    ModelType[Step](step),
+    ModelType[StepStatus](pendingStepStatus, inFlightStepStatus, successStepStatus, failureStepStatus)
   )
 
   private val httpRequests = new RequestSet[SequencerPostRequest] {

@@ -8,7 +8,8 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.params.commands._
 import csw.time.core.models.UTCTime
-import esw.ocs.api.models.StepList
+import esw.ocs.api.models.StepStatus.Finished
+import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
@@ -27,6 +28,7 @@ trait SequencerData extends CommandData {
   val cannotOperateOnAnInFlightOrFinishedStep: CannotOperateOnAnInFlightOrFinishedStep.type =
     CannotOperateOnAnInFlightOrFinishedStep
   val stepList: StepList                              = StepList(sequence)
+  val step: Step                                      = Step(setupSequenceCommand)
   val goOnlineHookFailed: GoOnlineHookFailed.type     = GoOnlineHookFailed
   val goOfflineHookFailed: GoOfflineHookFailed.type   = GoOfflineHookFailed
   val diagnosticHookFailed: DiagnosticHookFailed.type = DiagnosticHookFailed
@@ -55,6 +57,10 @@ trait SequencerData extends CommandData {
   val diagnosticMode: DiagnosticMode                  = DiagnosticMode(UTCTime(Instant.ofEpochMilli(1000L)), "hint")
   val operationsMode: OperationsMode.type             = OperationsMode
   val getSequenceComponent: GetSequenceComponent.type = GetSequenceComponent
+  val sequencerQueryFinal: QueryFinal                 = QueryFinal(id, timeout)
+  val pendingStepStatus: StepStatus                   = StepStatus.Pending
+  val inFlightStepStatus: StepStatus                  = StepStatus.InFlight
+  val successStepStatus: StepStatus                   = StepStatus.Finished.Success
+  val failureStepStatus: StepStatus                   = StepStatus.Finished.Failure("message")
 
-  val sequencerQueryFinal: QueryFinal = QueryFinal(id, timeout)
 }
