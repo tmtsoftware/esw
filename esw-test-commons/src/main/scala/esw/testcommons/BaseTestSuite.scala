@@ -1,6 +1,7 @@
 package esw.testcommons
 
 import akka.actor.typed.ActorSystem
+import csw.prefix.models.Subsystem
 import org.mockito.MockitoSugar
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest._
@@ -10,7 +11,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.duration.{Duration, DurationDouble, FiniteDuration}
 import scala.concurrent.{Future, Promise}
-import scala.util.Try
+import scala.util.{Random, Try}
 
 trait BaseTestSuite
     extends AnyWordSpecLike
@@ -47,4 +48,8 @@ trait BaseTestSuite
 
   def futureRight[T](value: T): Future[Right[Nothing, T]] = Future.successful(Right(value))
   def futureLeft[T](value: T): Future[Left[T, Nothing]]   = Future.successful(Left(value))
+
+  def randomFrom[T](values: List[T]): T = values(Random.nextInt(values.size))
+  def randomSubsystem: Subsystem        = randomFrom(Subsystem.values.toList)
+  def randomString(size: Int): String   = Random.alphanumeric.take(size).mkString
 }

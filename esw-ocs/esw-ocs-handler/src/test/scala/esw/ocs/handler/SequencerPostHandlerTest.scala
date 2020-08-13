@@ -10,12 +10,13 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
+import esw.ocs.TestHelper.Narrower
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
-import esw.ocs.api.SequencerApi
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
@@ -25,18 +26,15 @@ import scala.concurrent.Future
 class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
 
   private val sequencer: SequencerApi                = mock[SequencerApi]
-  private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
+  private val securityDirectives: SecurityDirectives = mock[SecurityDirectives]
   private val postHandler                            = new SequencerPostHandler(sequencer, securityDirectives)
   lazy val route: Route                              = new PostRouteFactory[SequencerPostRequest]("post-endpoint", postHandler).make()
 
   override def clientContentType: ContentType = ContentType.Json
 
-  override def afterEach(): Unit = {
+  override def beforeEach(): Unit = {
+    super.beforeEach()
     reset(sequencer)
-  }
-
-  implicit class Narrower(x: SequencerPostRequest) {
-    def narrow: SequencerPostRequest = x
   }
 
   "SequencerPostHandler" must {
@@ -105,7 +103,7 @@ class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest wit
     }
 
     "return Unhandled for Reset request | ESW-222" in {
-      val unhandled = Unhandled("Finished", "reset")
+      val unhandled = Unhandled("Finished", randomString(20))
       when(sequencer.reset()).thenReturn(Future.successful(unhandled))
 
       Post("/post-endpoint", Reset.narrow) ~> route ~> check {

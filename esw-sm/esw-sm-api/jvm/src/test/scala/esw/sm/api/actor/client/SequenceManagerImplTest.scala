@@ -6,15 +6,13 @@ import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
-
-import scala.util.Random
 
 class SequenceManagerImplTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
@@ -66,11 +64,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
     AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI, Metadata.empty)
   private val sequenceManager = new SequenceManagerImpl(location)
 
-  private def randomString5 = Random.alphanumeric.take(5).mkString
-  private def randomSubsystem = {
-    val allSubsystems = Subsystem.values
-    allSubsystems(Random.nextInt(allSubsystems.size))
-  }
+  private def randomString5 = randomString(5)
 
   "SequenceManagerImpl" must {
     "configure" in {

@@ -286,6 +286,7 @@ object Dependencies {
     Seq(
       Akka.`akka-actor-testkit-typed`,
       Akka.`akka-remote`,
+      Csw.`csw-prefix`.value,
       Libs.scalatest.value,
       Libs.`mockito-scala`,
       Libs.`tmt-test-reporter`

@@ -20,7 +20,6 @@ import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class SequenceManagerPostHandlerTest
     extends BaseTestSuite
@@ -32,7 +31,7 @@ class SequenceManagerPostHandlerTest
   private val postHandler        = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
   private val route              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
 
-  private val string10    = Random.alphanumeric.take(10).mkString
+  private val string10    = randomString(10)
   private val obsMode     = ObsMode(string10)
   private val componentId = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
 
