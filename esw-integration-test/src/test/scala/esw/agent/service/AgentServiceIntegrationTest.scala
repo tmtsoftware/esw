@@ -1,14 +1,17 @@
 package esw.agent.service
 
-import csw.location.api.models.ComponentType.SequenceComponent
+import java.nio.file.Paths
+
+import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
+import esw.agent.service.api.AgentService
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.{Killed, Spawned}
-import esw.agent.service.app.AgentHttpWiring
+import esw.agent.service.app.AgentServiceWiring
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 import esw.{BinaryFetcherUtil, GitUtil}
@@ -17,39 +20,63 @@ import scala.concurrent.duration.DurationInt
 
 class AgentServiceIntegrationTest extends EswTestKit(AAS) {
 
-  private val ocsAppVersion         = GitUtil.latestCommitSHA("esw")
-  private val testCsChannel: String = BinaryFetcherUtil.eswChannel(ocsAppVersion)
-
   implicit val patience: PatienceConfig = PatienceConfig(1.minute)
+
+  private var agentService: AgentService             = _
+  private var agentServiceWiring: AgentServiceWiring = _
+
+  //start agent
+  private lazy val eswVersion      = Some(GitUtil.latestCommitSHA("esw"))
+  private lazy val channel: String = "file://" + getClass.getResource("/apps.json").getPath
+  private lazy val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    //start agent service
+    agentServiceWiring = new AgentServiceWiring(Some(4449))
+    agentServiceWiring.start().futureValue
+    val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
+    agentService = AgentServiceClientFactory(httpLocation, () => tokenWithEswUserRole())
+  }
+
+  override def afterAll(): Unit = {
+    agentServiceWiring.stop().futureValue
+    super.afterAll()
+  }
 
   "AgentService" must {
     "start and shutdown sequence component on the given agent | ESW-361" in {
+      BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
 
-      //start agent service
-      BinaryFetcherUtil.fetchBinaryFor(testCsChannel, Coursier.ocsApp(Some(ocsAppVersion)), Some(ocsAppVersion))
-      val agentServiceWiring = new AgentHttpWiring(Some(4449))
-      agentServiceWiring.httpService.startAndRegisterServer()
+      val seqCompName   = "ESW_1"
+      val seqCompPrefix = Prefix(eswAgentPrefix.subsystem, seqCompName)
 
-      //start agent
-      val eswAgentPrefix = spawnAgent(AgentSettings(1.minute, testCsChannel), ESW)
-      val seqCompName    = "ESW_1"
-      val httpLocation   = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
-      val seqCompPrefix  = Prefix(eswAgentPrefix.subsystem, seqCompName)
-
-      val agentService = AgentServiceClientFactory(httpLocation, () => tokenWithEswUserRole())
       // spawn seq comp
-      agentService.spawnSequenceComponent(eswAgentPrefix, seqCompName).futureValue shouldBe Spawned
+      agentService.spawnSequenceComponent(eswAgentPrefix, seqCompName, eswVersion).futureValue shouldBe Spawned
 
       //verify component is started
       resolveSequenceComponent(seqCompPrefix)
 
       // stop spawned component
-      agentService.stopComponent(eswAgentPrefix, ComponentId(seqCompPrefix, SequenceComponent)).futureValue shouldBe Killed
+      agentService.killComponent(eswAgentPrefix, ComponentId(seqCompPrefix, SequenceComponent)).futureValue shouldBe Killed
+    }
 
-      val system = agentServiceWiring.actorSystem
-      system.terminate()
-      system.whenTerminated.futureValue
+    "start and shutdown sequence manager on the given agent | ESW-361" in {
+      BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
+
+      val smPrefix = Prefix(ESW, "sequence_manager")
+
+      // spawn sequence manager
+      val obsModeConfigPath = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
+      agentService
+        .spawnSequenceManager(eswAgentPrefix, obsModeConfigPath, isConfigLocal = true, eswVersion)
+        .futureValue shouldBe Spawned
+
+      //verify sequence manager is started
+      resolveAkkaLocation(smPrefix, Service)
+
+      // stop sequence manager
+      agentService.killComponent(eswAgentPrefix, ComponentId(smPrefix, Service)).futureValue shouldBe Killed
     }
   }
-
 }

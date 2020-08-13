@@ -9,7 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.codecs.AgentHttpCodecs
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentPostRequest
-import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, StopComponent}
+import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, KillComponent}
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
@@ -63,7 +63,7 @@ class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentHttpCod
     "return KillResponse for killComponent request" in {
       val seqCompPrefix = Prefix(ESW, "TCS_1")
       val componentId   = ComponentId(seqCompPrefix, SequenceComponent)
-      val killComponent = StopComponent(agentPrefix, componentId)
+      val killComponent = KillComponent(agentPrefix, componentId)
       val killResponse  = mock[KillResponse]
 
       when(
@@ -73,7 +73,7 @@ class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentHttpCod
         )
       ).thenReturn(Future.successful(killResponse))
 
-      agentServiceClient.stopComponent(agentPrefix, componentId).futureValue shouldBe killResponse
+      agentServiceClient.killComponent(agentPrefix, componentId).futureValue shouldBe killResponse
     }
   }
 

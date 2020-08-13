@@ -61,7 +61,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       val componentId = mock[ComponentId]
       when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
 
-      agentService.stopComponent(agentPrefix, componentId).futureValue
+      agentService.killComponent(agentPrefix, componentId).futureValue
 
       verify(agentClientMock).killComponent(componentId)
     }

@@ -15,7 +15,7 @@ import esw.agent.service.api.AgentService
 import esw.agent.service.api.codecs.AgentHttpCodecs
 import esw.agent.service.api.models._
 import esw.agent.service.api.protocol.AgentPostRequest
-import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, StopComponent}
+import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, KillComponent}
 import esw.agent.service.app.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
@@ -30,7 +30,8 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
   private val agentService: AgentService = mock[AgentService]
   private val securityDirective          = mock[SecurityDirectives]
 
-  private val route = new PostRouteFactory("post-endpoint", new AgentPostHandlerImpl(agentService, securityDirective)).make()
+  private val route =
+    new PostRouteFactory("post-endpoint", new AgentServicePostHandlerImpl(agentService, securityDirective)).make()
 
   private def post(entity: AgentPostRequest): HttpRequest = Post("/post-endpoint", entity)
 
@@ -107,10 +108,10 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
     "be able to stop component of the given componentId | ESW-361" in {
 
       val componentId          = ComponentId(Prefix(ESW, "sequence_manager"), Service)
-      val stopComponentRequest = StopComponent(agentPrefix, componentId)
+      val stopComponentRequest = KillComponent(agentPrefix, componentId)
 
       when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
-      when(agentService.stopComponent(agentPrefix, componentId)).thenReturn(Future.successful(Killed))
+      when(agentService.killComponent(agentPrefix, componentId)).thenReturn(Future.successful(Killed))
 
       post(stopComponentRequest) ~> route ~> check {
         verify(securityDirective).sPost(EswUserRolePolicy())

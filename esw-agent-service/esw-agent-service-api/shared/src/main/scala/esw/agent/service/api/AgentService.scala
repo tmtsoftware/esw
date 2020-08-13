@@ -19,5 +19,5 @@ trait AgentService {
 
   def spawnSequenceComponent(agentPrefix: Prefix, componentName: String, version: Option[String] = None): Future[SpawnResponse]
 
-  def stopComponent(agentPrefix: Prefix, componentId: ComponentId): Future[KillResponse]
+  def killComponent(agentPrefix: Prefix, componentId: ComponentId): Future[KillResponse]
 }

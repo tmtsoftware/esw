@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.adapter._
 import csw.commons.CborAkkaSerializer
 import esw.agent.akka.client.codecs.AgentActorCodecs
 import esw.agent.service.api.AgentAkkaSerializable
-import esw.agent.service.api.models.Response
+import esw.agent.service.api.models.AgentResponse
 
 // $COVERAGE-OFF$
 class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem)
@@ -17,6 +17,6 @@ class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem)
   override implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
 
   register[AgentRemoteCommand]
-  register[Response]
+  register[AgentResponse]
 }
 // $COVERAGE-ON$

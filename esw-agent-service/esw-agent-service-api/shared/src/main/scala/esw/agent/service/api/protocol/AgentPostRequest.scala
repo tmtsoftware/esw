@@ -14,5 +14,5 @@ object AgentPostRequest {
 
   case class SpawnSequenceComponent(agentPrefix: Prefix, componentName: String, version: Option[String]) extends AgentPostRequest
 
-  case class StopComponent(agentPrefix: Prefix, componentId: ComponentId) extends AgentPostRequest
+  case class KillComponent(agentPrefix: Prefix, componentId: ComponentId) extends AgentPostRequest
 }
