@@ -5,7 +5,7 @@ import sbt._
 object Libs {
   private val MSocketVersion = "ee8bbee"
 
-  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.3"
+  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
   val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.14.8" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
