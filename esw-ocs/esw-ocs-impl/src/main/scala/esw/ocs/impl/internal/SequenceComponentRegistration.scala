@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.EswLocationError.{OtherLocationIsRegistered, RegistrationError}
@@ -18,6 +18,7 @@ import scala.util.Random
 class SequenceComponentRegistration(
     subsystem: Subsystem,
     name: Option[String],
+    agentPrefix: Option[String],
     _locationService: LocationService,
     sequenceComponentFactory: Prefix => Future[ActorRef[SequenceComponentMsg]]
 )(implicit
@@ -51,9 +52,14 @@ class SequenceComponentRegistration(
       case (s, None)    => Prefix(s, s"${s}_${Random.between(1, 100)}")
     }
     sequenceComponentFactory(sequenceComponentPrefix).map { actorRef =>
+      val metadata = agentPrefix
+        .map(prefix => Metadata(Map("agent-prefix" -> prefix)))
+        .getOrElse(Metadata.empty)
+
       AkkaRegistrationFactory.make(
         AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)),
-        actorRef
+        actorRef,
+        metadata
       )
     }
   }

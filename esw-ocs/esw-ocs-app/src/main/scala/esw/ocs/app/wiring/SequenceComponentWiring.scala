@@ -57,7 +57,7 @@ private[esw] class SequenceComponentWiring(
   }
 
   private lazy val sequenceComponentRegistration =
-    new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
+    new SequenceComponentRegistration(subsystem, name, agentPrefix, locationService, sequenceComponentFactory)
 
   def start(): Either[RegistrationError, AkkaLocation] =
     Await.result(sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount), Timeouts.DefaultTimeout)
