@@ -24,7 +24,7 @@ class AgentServiceImplTest extends BaseTestSuite {
   private val version                             = Some(randomString(10))
 
   private val agentService = new AgentServiceImpl(locationService) {
-    override private[impl] def agentClient(agentPrefix: Prefix): Future[Either[Failed, AgentClient]] =
+    override private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
       Future.successful(Right(agentClientMock))
   }
 
