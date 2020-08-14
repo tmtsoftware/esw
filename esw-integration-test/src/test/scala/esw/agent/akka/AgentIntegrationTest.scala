@@ -47,7 +47,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   //ESW-325: spawns sequence component via agent using coursier with provided sha
-  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, eswVersion)
+  private def spawnSequenceComponent(componentName: String) = agentClient.spawnSequenceComponent(componentName, eswVersion)
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
@@ -57,7 +57,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
 
     "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325" in {
       val darknight = ObsMode("darknight")
-      spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
+      spawnSequenceComponent(irisPrefix.componentName).futureValue should ===(Spawned)
       // Verify registration in location service
       val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
       seqCompLoc.connection shouldBe irisSeqCompConnection
@@ -95,7 +95,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
     }
 
     "return status of components available on agent for a GetAgentStatus message | ESW-286" in {
-      spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
+      spawnSequenceComponent(irisPrefix.componentName).futureValue should ===(Spawned)
       agentClient.getComponentStatus(irisCompId).futureValue should ===(Running)
 
       agentClient.spawnRedis(redisPrefix, 6381, List.empty).futureValue should ===(Spawned)

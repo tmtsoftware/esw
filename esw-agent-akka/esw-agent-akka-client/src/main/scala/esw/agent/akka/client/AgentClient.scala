@@ -23,10 +23,10 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
   private implicit val timeout: Timeout = actorSystem.settings.config.getDuration("agent.akka.client.askTimeout").toScala
 
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
-  private val agentPrefixStr                   = akkaLocation.prefix.toString()
+  private val agentPrefix                      = akkaLocation.prefix
 
-  def spawnSequenceComponent(prefix: Prefix, version: Option[String] = None): Future[SpawnResponse] =
-    agentRef ? (SpawnSequenceComponent(_, agentPrefixStr, prefix, version))
+  def spawnSequenceComponent(componentName: String, version: Option[String] = None): Future[SpawnResponse] =
+    agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version))
 
   def spawnSequenceManager(
       obsModeConfigPath: Path,

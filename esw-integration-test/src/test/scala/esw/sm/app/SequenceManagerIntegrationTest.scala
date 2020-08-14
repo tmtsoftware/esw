@@ -9,13 +9,17 @@ import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.models
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentClient
+import esw.agent.service.api.AgentService
+import esw.agent.service.api.client.AgentServiceClientFactory
+import esw.agent.service.api.models.Spawned
+import esw.agent.service.app.AgentServiceWiring
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
@@ -42,9 +46,17 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   private val ocsAppVersion                = GitUtil.latestCommitSHA("esw")
   private val testCsChannel: String        = BinaryFetcherUtil.eswChannel(ocsAppVersion)
 
+  private var agentService: AgentService             = _
+  private var agentServiceWiring: AgentServiceWiring = _
+  private val ocsVersionOpt                          = Some(ocsAppVersion)
+
   override def beforeAll(): Unit = {
     super.beforeAll()
-    BinaryFetcherUtil.fetchBinaryFor(testCsChannel, Coursier.ocsApp(Some(ocsAppVersion)))
+    BinaryFetcherUtil.fetchBinaryFor(testCsChannel, Coursier.ocsApp(ocsVersionOpt))
+    agentServiceWiring = new AgentServiceWiring(Some(4449))
+    agentServiceWiring.start().futureValue
+    val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
+    agentService = AgentServiceClientFactory(httpLocation, () => tokenWithEswUserRole())
   }
 
   override protected def beforeEach(): Unit = {
@@ -55,6 +67,11 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   override protected def afterEach(): Unit = {
     TestSetup.cleanup()
     super.afterEach()
+  }
+
+  override def afterAll(): Unit = {
+    agentServiceWiring.stop().futureValue
+    super.afterAll()
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
@@ -406,9 +423,8 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   }
 
   "spawn sequence component on given machine with given name and shutdown for given prefix | ESW-337, ESW-338, ESW-351, ESW-332" in {
-    val seqCompName         = "seq_comp"
-    val seqCompPrefix       = Prefix(ESW, seqCompName)
-    val expectedComponentId = ComponentId(seqCompPrefix, SequenceComponent)
+    val seqCompName   = "seq_comp"
+    val seqCompPrefix = Prefix(ESW, seqCompName)
 
     //spawn ESW agent
     val agentPrefix = spawnAgent(AgentSettings(1.minute, testCsChannel))
@@ -421,10 +437,8 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
 
     val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
-    val response = Await.result(sequenceManagerClient.spawnSequenceComponent(agentPrefix, seqCompName), 1.minute)
-    response should ===(
-      SpawnSequenceComponentResponse.Success(expectedComponentId)
-    )
+    val response = Await.result(agentService.spawnSequenceComponent(agentPrefix, seqCompName, ocsVersionOpt), 1.minute)
+    response should ===(Spawned)
 
     //ESW-337 verify that sequence component is now spawned
     resolveSequenceComponentLocation(seqCompPrefix)
@@ -497,8 +511,8 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
 
     val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
-    sequenceManager.spawnSequenceComponent(eswAgentPrefix, "primary").futureValue
-    sequenceManager.spawnSequenceComponent(irisAgentPrefix, "primary").futureValue
+    agentService.spawnSequenceComponent(eswAgentPrefix, "primary", ocsVersionOpt).futureValue
+    agentService.spawnSequenceComponent(irisAgentPrefix, "primary", ocsVersionOpt).futureValue
 
     sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT).futureValue
 

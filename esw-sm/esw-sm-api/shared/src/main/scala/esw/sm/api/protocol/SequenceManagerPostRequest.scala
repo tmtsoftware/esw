@@ -20,8 +20,6 @@ object SequenceManagerPostRequest {
   case class ShutdownObsModeSequencers(obsMode: ObsMode)               extends SequenceManagerPostRequest
   case object ShutdownAllSequencers                                    extends SequenceManagerPostRequest
 
-  case class SpawnSequenceComponent(machine: Prefix, name: String) extends SequenceManagerPostRequest
-
   case class ShutdownSequenceComponent(prefix: Prefix) extends SequenceManagerPostRequest
   case object ShutdownAllSequenceComponents            extends SequenceManagerPostRequest
 

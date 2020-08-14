@@ -65,7 +65,7 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_1"), Machine)), agentRef.toURI, Metadata.empty)
       val agentClient = new AgentClient(agentLocation)
       val prefix      = Prefix("esw.test2")
-      agentClient.spawnSequenceComponent(prefix).futureValue should ===(Spawned)
+      agentClient.spawnSequenceComponent(prefix.componentName).futureValue should ===(Spawned)
     }
   }
 

@@ -38,13 +38,14 @@ object AgentCommand {
     object SpawnSelfRegistered {
       case class SpawnSequenceComponent(
           replyTo: ActorRef[SpawnResponse],
-          agentPrefixStr: String,
-          prefix: Prefix,
+          agentPrefix: Prefix,
+          componentName: String,
           version: Option[String]
       ) extends SpawnSelfRegistered {
+        override val prefix: Prefix             = Prefix(agentPrefix.subsystem, componentName)
         override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
         override val commandArgs: List[String] =
-          List("seqcomp", "-s", prefix.subsystem.name, "-n", prefix.componentName, "-a", agentPrefixStr)
+          List("seqcomp", "-s", prefix.subsystem.name, "-n", componentName, "-a", agentPrefix.toString())
       }
 
       case class SpawnSequenceManager(

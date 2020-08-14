@@ -38,7 +38,7 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
       version: Option[String]
   ): Future[SpawnResponse] =
     agentClient(agentPrefix)
-      .flatMapRight(_.spawnSequenceComponent(Prefix(agentPrefix.subsystem, componentName), version))
+      .flatMapRight(_.spawnSequenceComponent(componentName, version))
       .mapToAdt(identity, identity)
 
   override def killComponent(agentPrefix: Prefix, componentId: ComponentId): Future[KillResponse] =

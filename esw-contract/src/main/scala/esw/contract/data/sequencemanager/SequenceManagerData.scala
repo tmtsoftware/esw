@@ -37,7 +37,6 @@ trait SequenceManagerData extends CommandData {
   val shutdownSubsystemSequencers: ShutdownSubsystemSequencers          = ShutdownSubsystemSequencers(ESW)
   val shutdownObsModeSequencers: ShutdownObsModeSequencers              = ShutdownObsModeSequencers(obsMode)
   val shutdownAllSequencers: ShutdownAllSequencers.type                 = ShutdownAllSequencers
-  val spawnSequenceComponent: SpawnSequenceComponent                    = SpawnSequenceComponent(agentPrefix, "seq_comp")
   val shutdownSequenceComponent: ShutdownSequenceComponent              = ShutdownSequenceComponent(seqCompPrefix)
   val shutdownAllSequenceComponents: ShutdownAllSequenceComponents.type = ShutdownAllSequenceComponents
   val getAgentStatus: SequenceManagerPostRequest.GetAgentStatus.type    = GetAgentStatus

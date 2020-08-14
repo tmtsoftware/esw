@@ -18,23 +18,25 @@ class GetAgentStatusTest extends AgentSetup {
   "GetAgentStatus" must {
 
     "reply with a collection of status of all components available on the agent | ESW-286" in {
-      val prefix1      = Prefix("csw.component1")
-      val componentId1 = ComponentId(prefix1, SequenceComponent)
+      val agentPrefix       = Prefix(randomSubsystem, randomString(10))
+      val seqComponentName1 = randomString(10)
+      val prefix1           = Prefix(agentPrefix.subsystem, seqComponentName1)
+      val componentId1      = ComponentId(prefix1, SequenceComponent)
 
-      val prefix2      = Prefix("csw.component2")
-      val componentId2 = ComponentId(prefix2, SequenceComponent)
+      val seqComponentName2 = randomString(10)
+      val prefix2           = Prefix(agentPrefix.subsystem, seqComponentName2)
+      val componentId2      = ComponentId(prefix2, SequenceComponent)
 
-      val agentPrefixStr = "ESW.dummy-agent"
-      val agentActorRef  = spawnAgentActor()
-      val spawner        = TestProbe[SpawnResponse]()
-      val probe          = TestProbe[AgentStatus]()
+      val agentActorRef = spawnAgentActor()
+      val spawner       = TestProbe[SpawnResponse]()
+      val probe         = TestProbe[AgentStatus]()
 
       when(locationService.resolve(any[TypedConnection[AkkaLocation]], any[FiniteDuration]))
         .thenReturn(delayedFuture(None, 2.seconds))
 
       //spawn two processes
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, agentPrefixStr, prefix1, None)
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, agentPrefixStr, prefix2, None)
+      agentActorRef ! SpawnSequenceComponent(spawner.ref, agentPrefix, seqComponentName1, None)
+      agentActorRef ! SpawnSequenceComponent(spawner.ref, agentPrefix, seqComponentName2, None)
 
       //get agent status
       agentActorRef ! GetAgentStatus(probe.ref)

@@ -18,8 +18,7 @@ import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComp
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ProvisionResponse.CouldNotFindMachines
-import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
-import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse, SpawnSequenceComponentResponse}
+import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse}
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.any
 
@@ -33,58 +32,6 @@ class AgentUtilTest extends BaseTestSuite {
   override def afterAll(): Unit = {
     actorSystem.terminate()
     actorSystem.whenTerminated.futureValue
-  }
-
-  "spawnSequenceComponentFor" must {
-    "return Success after spawning sequence component for given name and machine prefix | ESW-337" in {
-      val setup = new TestSetup()
-      import setup._
-
-      val seqCompName       = "seq_comp"
-      val seqCompPrefix     = Prefix(IRIS, seqCompName)
-      val seqCompConnection = AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent))
-      val machinePrefix     = Prefix(IRIS, "primary")
-
-      when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(Spawned))
-
-      agentUtil.spawnSequenceComponent(machinePrefix, seqCompName).futureValue shouldBe SpawnSequenceComponentResponse.Success(
-        seqCompConnection.componentId
-      )
-
-      verify(agentClient).spawnSequenceComponent(seqCompPrefix, None)
-    }
-
-    "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-164" in {
-      val setup = new TestSetup()
-      import setup._
-
-      val componentName = "testComp"
-      val seqCompPrefix = Prefix(TCS, componentName)
-      val agentPrefix   = Prefix(TCS, "primary")
-      val spawnFailed   = Failed("failed")
-
-      when(agentClient.spawnSequenceComponent(seqCompPrefix, None)).thenReturn(Future.successful(spawnFailed))
-
-      agentUtil.spawnSequenceComponent(agentPrefix, componentName).futureValue should ===(
-        SpawnSequenceComponentFailed(
-          s"Failed to spawn Sequence component: $seqCompPrefix on Machine: $agentPrefix, reason: ${spawnFailed.msg}"
-        )
-      )
-    }
-
-    "return LocationServiceError if getAgent fails | ESW-164, ESW-337" in {
-      val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
-      val agentAllocator: AgentAllocator               = mock[AgentAllocator]
-      val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
-
-      val errorMsg = "Error in agent"
-      val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator) {
-        override private[sm] def getAgent(prefix: Prefix): Future[Either[LocationServiceError, AgentClient]] =
-          futureLeft(LocationServiceError(errorMsg))
-      }
-
-      agentUtil.spawnSequenceComponent(Prefix(ESW, "invalid"), "invalid").futureValue should ===(LocationServiceError(errorMsg))
-    }
   }
 
   "getAgent" must {
@@ -141,9 +88,13 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   "provision" must {
-    val eswSeqComp1Prefix  = Prefix(ESW, "ESW_1")
-    val eswSeqComp2Prefix  = Prefix(ESW, "ESW_2")
-    val irisSeqComp1Prefix = Prefix(IRIS, "IRIS_1")
+    val eswSeqComp1Name    = randomString(10)
+    val eswSeqComp2Name    = randomString(10)
+    val irisSeqComp1Name   = randomString(10)
+    val eswSeqComp1Prefix  = Prefix(ESW, eswSeqComp1Name)
+    val eswSeqComp2Prefix  = Prefix(ESW, eswSeqComp2Name)
+    val irisSeqComp1Prefix = Prefix(IRIS, irisSeqComp1Name)
+
     val eswPrimaryMachine  = akkaLocation(ComponentId(Prefix(ESW, "primary"), Machine))
     val irisPrimaryMachine = akkaLocation(ComponentId(Prefix(IRIS, "primary"), Machine))
 
@@ -165,15 +116,15 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(eswClient.spawnSequenceComponent(eswSeqComp1Prefix, None)).thenReturn(Future.successful(Spawned))
-      when(irisClient.spawnSequenceComponent(irisSeqComp1Prefix, None)).thenReturn(Future.successful(Spawned))
+      when(eswClient.spawnSequenceComponent(eswSeqComp1Name, None)).thenReturn(Future.successful(Spawned))
+      when(irisClient.spawnSequenceComponent(irisSeqComp1Name, None)).thenReturn(Future.successful(Spawned))
 
       agentUtil.provision(provisionConfig).futureValue should ===(ProvisionResponse.Success)
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
-      verify(eswClient).spawnSequenceComponent(eswSeqComp1Prefix, None)
-      verify(irisClient).spawnSequenceComponent(irisSeqComp1Prefix, None)
+      verify(eswClient).spawnSequenceComponent(eswSeqComp1Name, None)
+      verify(irisClient).spawnSequenceComponent(irisSeqComp1Name, None)
     }
 
     "return SpawningSequenceComponentsFailed if agent fails to spawn sequence component | ESW-347" in {
@@ -187,21 +138,21 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(agentClient.spawnSequenceComponent(eswSeqComp1Prefix, None)).thenReturn(Future.successful(Spawned))
-      when(agentClient.spawnSequenceComponent(eswSeqComp2Prefix, None)).thenReturn(Future.successful(Failed(errorMsg)))
+      when(agentClient.spawnSequenceComponent(eswSeqComp1Name, None)).thenReturn(Future.successful(Spawned))
+      when(agentClient.spawnSequenceComponent(eswSeqComp2Name, None)).thenReturn(Future.successful(Failed(errorMsg)))
 
       val response = agentUtil.provision(provisionConfig).futureValue
       response shouldBe a[ProvisionResponse.SpawningSequenceComponentsFailed]
       val failureMgs = response.asInstanceOf[ProvisionResponse.SpawningSequenceComponentsFailed].failureResponses.head
       // assert that failure msg has necessary info
       failureMgs.contains(eswPrimaryMachine.prefix.toString()) shouldBe true
-      failureMgs.contains(eswSeqComp2Prefix.toString()) shouldBe true
+      failureMgs.contains(eswSeqComp2Name) shouldBe true
       failureMgs.contains(errorMsg) shouldBe true
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
-      verify(agentClient).spawnSequenceComponent(eswSeqComp1Prefix, None)
-      verify(agentClient).spawnSequenceComponent(eswSeqComp2Prefix, None)
+      verify(agentClient).spawnSequenceComponent(eswSeqComp1Name, None)
+      verify(agentClient).spawnSequenceComponent(eswSeqComp2Name, None)
     }
 
     "return LocationServiceError if location service gives error | ESW-347" in {
@@ -325,11 +276,11 @@ class AgentUtilTest extends BaseTestSuite {
       AkkaLocation(AkkaConnection(eswSecondarySeqCompId), new URI("some-uri"), Metadata.empty)
 
     def mockSpawnComponent(response: SpawnResponse): Unit =
-      when(agentClient.spawnSequenceComponent(any[Prefix], any[Option[String]]))
+      when(agentClient.spawnSequenceComponent(any[String], any[Option[String]]))
         .thenReturn(Future.successful(response))
 
     def verifySpawnSequenceComponentCalled(): Unit =
-      verify(agentClient).spawnSequenceComponent(any[Prefix], any[Option[String]])
+      verify(agentClient).spawnSequenceComponent(any[String], any[Option[String]])
   }
 
   private def akkaLocation(componentId: ComponentId) =

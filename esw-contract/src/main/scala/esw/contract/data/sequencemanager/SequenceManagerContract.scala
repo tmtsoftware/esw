@@ -32,7 +32,6 @@ object SequenceManagerContract extends SequenceManagerHttpCodec with SequenceMan
     requestType(shutdownSubsystemSequencers)
     requestType(shutdownObsModeSequencers)
     requestType(shutdownAllSequencers)
-    requestType(spawnSequenceComponent)
     requestType(shutdownSequenceComponent)
     requestType(shutdownAllSequenceComponents)
     requestType(getAgentStatus)

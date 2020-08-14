@@ -44,14 +44,15 @@ class AgentSetup extends BaseTestSuite {
   val redisRegistration: TcpRegistration                = TcpRegistration(redisConn, 100)
   val spawnRedis: ActorRef[SpawnResponse] => SpawnRedis = SpawnRedis(_, prefix, 100, List.empty)
 
-  val seqCompPrefix: Prefix                        = Prefix("csw.component")
+  val agentPrefix                                  = Prefix(randomSubsystem, randomString(10))
+  val seqCompName: String                          = randomString(10)
+  val seqCompPrefix: Prefix                        = Prefix(agentPrefix.subsystem, seqCompName)
   val seqCompComponentId: ComponentId              = ComponentId(seqCompPrefix, SequenceComponent)
   val seqCompConn: AkkaConnection                  = AkkaConnection(seqCompComponentId)
   val seqCompLocation: AkkaLocation                = AkkaLocation(seqCompConn, new URI("some"), Metadata.empty)
   val seqCompLocationF: Future[Some[AkkaLocation]] = Future.successful(Some(seqCompLocation))
-  private val agentPrefixStr                       = "ESW.dummy_agent"
   val spawnSequenceComp: ActorRef[SpawnResponse] => SpawnSequenceComponent =
-    SpawnSequenceComponent(_, agentPrefixStr, seqCompPrefix, None)
+    SpawnSequenceComponent(_, agentPrefix, seqCompName, None)
 
   val seqManagerPrefix: Prefix                        = Prefix("esw.sequence_manager")
   val seqManagerComponentId: ComponentId              = ComponentId(seqManagerPrefix, Service)

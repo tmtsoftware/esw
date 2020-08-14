@@ -14,7 +14,7 @@ import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ProvisionResponse.SpawningSequenceComponentsFailed
 import esw.sm.api.protocol.SpawnSequenceComponentResponse.{SpawnSequenceComponentFailed, Success}
-import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse, SpawnSequenceComponentResponse}
+import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse}
 
 import scala.concurrent.Future
 
@@ -38,9 +38,6 @@ class AgentUtil(
         .map(seqCompStatus => AgentSeqCompsStatus(agentToSeqComp.agentId, seqCompStatus))
     }
   }
-
-  def spawnSequenceComponent(machine: Prefix, seqCompName: String): Future[SpawnSequenceComponentResponse] =
-    getAgent(machine).flatMapE(spawnSeqComp(machine, _, Prefix(machine.subsystem, seqCompName))).mapToAdt(identity, identity)
 
   def provision(provisionConfig: ProvisionConfig): Future[ProvisionResponse] =
     locationServiceUtil
@@ -72,7 +69,7 @@ class AgentUtil(
 
   private def spawnSeqComp(machine: Prefix, agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
-      .spawnSequenceComponent(seqCompPrefix)
+      .spawnSequenceComponent(seqCompPrefix.componentName)
       .map {
         case Spawned => Right(Success(ComponentId(seqCompPrefix, SequenceComponent)))
         case Failed(msg) =>

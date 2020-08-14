@@ -1,9 +1,9 @@
 package esw.sm.api.client
 
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
+import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, TCS}
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.models.ProvisionConfig
@@ -155,19 +155,5 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.shutdownAllSequenceComponents().futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
 
-    "return spawn sequence component success response for spawnSequenceComponent request | ESW-337" in {
-      val seqCompName          = "seq_comp"
-      val agent: Prefix        = Prefix(TCS, "primary")
-      val seqComp: ComponentId = ComponentId(Prefix(TCS, seqCompName), SequenceComponent)
-
-      when(
-        postClient.requestResponse[SpawnSequenceComponentResponse](argsEq(SpawnSequenceComponent(agent, seqCompName)))(
-          any[Decoder[SpawnSequenceComponentResponse]](),
-          any[Encoder[SpawnSequenceComponentResponse]]()
-        )
-      ).thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
-
-      client.spawnSequenceComponent(agent, seqCompName).futureValue shouldBe SpawnSequenceComponentResponse.Success(seqComp)
-    }
   }
 }

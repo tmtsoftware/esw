@@ -19,10 +19,9 @@ import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
 class GetComponentStatusTest extends AgentSetup {
   "GetComponentStatus" must {
-    val agentPrefixStr                                    = "ESW.dummy-agent"
     val spawnRedis: ActorRef[SpawnResponse] => SpawnRedis = SpawnRedis(_, prefix, 6548, List.empty)
     val spawnSeqComponent: ActorRef[SpawnResponse] => SpawnSequenceComponent =
-      SpawnSequenceComponent(_, agentPrefixStr, seqCompPrefix, None)
+      SpawnSequenceComponent(_, agentPrefix, seqCompName, None)
 
     s"reply 'NotAvailable' when given component is not present on machine | ESW-286" in {
       withAgentSetup("1") { (agentRef, compStatusProbe, _) =>

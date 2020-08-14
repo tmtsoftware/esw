@@ -19,7 +19,6 @@ import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.api.protocol.SpawnSequenceComponentResponse.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config._
@@ -390,55 +389,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "SpawnSequenceComponent" must {
-    "transition sm from Idle -> Processing -> Idle state and return success when spawned | ESW-337, ESW-342" in {
-      val seqCompName = "seq_comp"
-      val machine     = Prefix(ESW, "primary")
-      val componentId = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
-      when(agentUtil.spawnSequenceComponent(machine, seqCompName))
-        .thenReturn(future(1.second, SpawnSequenceComponentResponse.Success(componentId)))
-
-      val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
-
-      // STATE TRANSITION: Idle -> SpawnSequenceComponent -> Processing -> Idle
-      assertState(Idle)
-      smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
-      assertState(Processing)
-      assertState(Idle)
-
-      spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(componentId))
-      verify(agentUtil).spawnSequenceComponent(machine, seqCompName)
-    }
-
-    "return LocationServiceError if location service gives error | ESW-337" in {
-      val seqCompName = "seq_comp"
-      val agent       = Prefix(ESW, "primary")
-      when(agentUtil.spawnSequenceComponent(agent, seqCompName))
-        .thenReturn(Future.successful(LocationServiceError("location service error")))
-
-      val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
-
-      smRef ! SpawnSequenceComponent(agent, seqCompName, spawnSequenceComponentProbe.ref)
-      spawnSequenceComponentProbe.expectMessage(LocationServiceError("location service error"))
-
-      verify(agentUtil).spawnSequenceComponent(agent, seqCompName)
-    }
-
-    "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-337" in {
-      val seqCompName = "seq_comp"
-      val agent       = Prefix(ESW, "primary")
-      when(agentUtil.spawnSequenceComponent(agent, seqCompName))
-        .thenReturn(Future.successful(SpawnSequenceComponentFailed("spawning failed")))
-
-      val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
-
-      smRef ! SpawnSequenceComponent(agent, seqCompName, spawnSequenceComponentProbe.ref)
-      spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentFailed("spawning failed"))
-
-      verify(agentUtil).spawnSequenceComponent(agent, seqCompName)
-    }
-  }
-
   "GetAllAgentStatus" must {
     "return agent status successfully | ESW-349" in {
       val eswMachine1 = ComponentId(Prefix(ESW, "machine1"), Machine)
@@ -563,7 +513,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         ShutdownSubsystemSequencers(ESW, _),
         StartSequencer(ESW, darkNight, _),
         RestartSequencer(ESW, darkNight, _),
-        SpawnSequenceComponent(Prefix(ESW, "machine1"), "primary", _),
         ShutdownSequenceComponent(Prefix(ESW, "primary"), _),
         ShutdownAllSequenceComponents,
         Provision(provisionConfig, _)

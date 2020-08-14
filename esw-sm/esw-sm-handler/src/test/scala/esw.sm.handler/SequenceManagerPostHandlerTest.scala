@@ -178,22 +178,6 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return spawn sequence component success for spawnSequenceComponent request | ESW-337, ESW-332" in {
-      val seqCompName = "seq_comp"
-      val agent       = Prefix(ESW, "primary")
-      val seqComp     = ComponentId(Prefix(ESW, seqCompName), ComponentType.SequenceComponent)
-
-      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
-      when(sequenceManagerApi.spawnSequenceComponent(agent, seqCompName))
-        .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
-
-      Post("/post-endpoint", SpawnSequenceComponent(agent, seqCompName).narrow) ~> route ~> check {
-        verify(securityDirectives).sPost(eswUserPolicy)
-        verify(sequenceManagerApi).spawnSequenceComponent(agent, seqCompName)
-        responseAs[SpawnSequenceComponentResponse] should ===(SpawnSequenceComponentResponse.Success(seqComp))
-      }
-    }
-
     "return agent status for all running agents | ESW-349, ESW-332" in {
       val response = AgentStatusResponse.Success(List.empty[AgentSeqCompsStatus])
       when(sequenceManagerApi.getAgentStatus).thenReturn(Future.successful(response))

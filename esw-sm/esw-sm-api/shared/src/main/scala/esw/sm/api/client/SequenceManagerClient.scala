@@ -42,9 +42,6 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
     postClient.requestResponse[ShutdownSequencersResponse](ShutdownAllSequencers)
 
-  override def spawnSequenceComponent(machine: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
-    postClient.requestResponse[SpawnSequenceComponentResponse](SpawnSequenceComponent(machine, sequenceComponentName))
-
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
     postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownSequenceComponent(prefix))
 

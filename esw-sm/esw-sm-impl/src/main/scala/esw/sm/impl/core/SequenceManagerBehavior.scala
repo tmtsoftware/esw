@@ -54,9 +54,8 @@ class SequenceManagerBehavior(
       case ShutdownAllSequencers(replyTo) =>
         sequencerUtil.shutdownAllSequencers().map(self ! ProcessingComplete(_)); processing(self, replyTo)
 
-      case StartSequencer(subsystem, obsMode, replyTo)    => startSequencer(obsMode, subsystem, self, replyTo)
-      case RestartSequencer(subsystem, obsMode, replyTo)  => restartSequencer(subsystem, obsMode, self, replyTo)
-      case SpawnSequenceComponent(machine, name, replyTo) => spawnSequenceComponent(machine, name, self, replyTo)
+      case StartSequencer(subsystem, obsMode, replyTo)   => startSequencer(obsMode, subsystem, self, replyTo)
+      case RestartSequencer(subsystem, obsMode, replyTo) => restartSequencer(subsystem, obsMode, self, replyTo)
 
       case ShutdownSequenceComponent(prefix, replyTo) =>
         sequenceComponentUtil.shutdownSequenceComponent(prefix).map(self ! ProcessingComplete(_)); processing(self, replyTo)
@@ -122,16 +121,6 @@ class SequenceManagerBehavior(
   ): SMBehavior = {
     val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode)
     restartResponseF.map(self ! ProcessingComplete(_))
-    processing(self, replyTo)
-  }
-
-  private def spawnSequenceComponent(
-      machine: Prefix,
-      name: String,
-      self: SelfRef,
-      replyTo: ActorRef[SpawnSequenceComponentResponse]
-  ): SMBehavior = {
-    agentUtil.spawnSequenceComponent(machine, name).map(self ! ProcessingComplete(_))
     processing(self, replyTo)
   }
 

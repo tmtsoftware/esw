@@ -20,8 +20,6 @@ trait SequenceManagerApi {
   def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse]
   def shutdownAllSequencers(): Future[ShutdownSequencersResponse]
 
-  def spawnSequenceComponent(machine: Prefix, name: String): Future[SpawnSequenceComponentResponse]
-
   def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
   def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse]
 

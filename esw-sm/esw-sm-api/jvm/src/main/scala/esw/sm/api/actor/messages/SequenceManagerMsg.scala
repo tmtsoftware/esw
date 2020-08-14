@@ -36,12 +36,6 @@ object SequenceManagerMsg {
 
   case class Provision(config: ProvisionConfig, replyTo: ActorRef[ProvisionResponse]) extends SequenceManagerIdleMsg
 
-  case class SpawnSequenceComponent(
-      machine: Prefix,
-      sequenceComponentName: String,
-      replyTo: ActorRef[SpawnSequenceComponentResponse]
-  ) extends SequenceManagerIdleMsg
-
   case class ShutdownSequenceComponent(prefix: Prefix, replyTo: ActorRef[ShutdownSequenceComponentResponse])
       extends SequenceManagerIdleMsg
   case class ShutdownAllSequenceComponents(replyTo: ActorRef[ShutdownSequenceComponentResponse]) extends SequenceManagerIdleMsg

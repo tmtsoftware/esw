@@ -4,7 +4,6 @@ import java.nio.file.Paths
 
 import akka.actor.typed.ActorRef
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.IRIS
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
@@ -14,22 +13,22 @@ import org.scalatest.prop.Tables.Table
 
 class SpawnCommandExtTest extends BaseTestSuite {
   private val replyTo         = mock[ActorRef[SpawnResponse]]
-  private val subsystem       = IRIS
   private val compName        = "dummy"
-  private val prefix          = Prefix(subsystem, compName)
   private val channel         = "https://github.com/apps.json"
   private val version         = "1.0.0"
   private val obsModeConf     = "obsMode.conf"
   private val obsModeConfPath = Paths.get(obsModeConf)
   private val port            = 8080
   private val redisArgs       = List("-conf", "redis.conf")
-  private val agentPrefixStr  = "ESW.dummy-agent"
+  private val agentPrefix     = Prefix(randomSubsystem, randomString(10))
+  private val prefix          = Prefix(agentPrefix.subsystem, compName)
 
-  private val spawnSeqComp            = SpawnSequenceComponent(replyTo, agentPrefixStr, prefix, None)
-  private val spawnSeqCompWithVersion = SpawnSequenceComponent(replyTo, agentPrefixStr, prefix, Some(version))
-  private val spawnSeqCompCmd         = s"cs launch --channel $channel ocs-app -- seqcomp -s $subsystem -n $compName -a $agentPrefixStr"
+  private val spawnSeqComp            = SpawnSequenceComponent(replyTo, agentPrefix, compName, None)
+  private val spawnSeqCompWithVersion = SpawnSequenceComponent(replyTo, agentPrefix, compName, Some(version))
+  private val spawnSeqCompCmd =
+    s"cs launch --channel $channel ocs-app -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
   private val spawnSeqCompWithVersionCmd =
-    s"cs launch --channel $channel ocs-app:$version -- seqcomp -s $subsystem -n $compName -a $agentPrefixStr"
+    s"cs launch --channel $channel ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
 
   private val spawnSeqMgr               = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None)
   private val spawnSeqMgrWithVersion    = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))

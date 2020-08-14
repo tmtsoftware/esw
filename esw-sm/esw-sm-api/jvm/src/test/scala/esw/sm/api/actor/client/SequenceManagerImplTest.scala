@@ -123,17 +123,6 @@ class SequenceManagerImplTest extends BaseTestSuite {
       }
     }
 
-    "spawnSequenceComponent | ESW-337" in {
-      val spawnSeqCompResponse = mock[SpawnSequenceComponentResponse]
-      val agent                = Prefix(randomSubsystem, randomString5)
-      val seqCompName          = randomString5
-      withBehavior {
-        case SequenceManagerMsg.SpawnSequenceComponent(`agent`, `seqCompName`, replyTo) => replyTo ! spawnSeqCompResponse
-      } check { sm =>
-        sm.spawnSequenceComponent(agent, seqCompName).futureValue should ===(spawnSeqCompResponse)
-      }
-    }
-
     "getAgentStatus | ESW-349" in {
       val agentStatusResponse = mock[AgentStatusResponse]
       withBehavior {
