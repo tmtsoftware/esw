@@ -69,7 +69,7 @@ if [[ ${OBS_MODE} == "" ]]; then
 fi
 # check if channel is available in env (used in test)
 if [[ ${CS_CHANNEL} == "" ]]; then
-  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
+  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
 fi
 
 # ---------------- Compiling ------------------

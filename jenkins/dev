@@ -27,7 +27,7 @@ pipeline {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true test:test"
                 sh "sbt -DenableCoverage=true esw-ocs-dsl-kt/test" // fixme: test reporter does not work
-                sh "./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json rtm:47b635b289  -- ./target/RTM/testStoryMapping.txt ./tools/RTM/storyRequirementMapping.csv ./target/RTM/testRequirementsMapping.txt"
+                sh "./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:47b635b289  -- ./target/RTM/testStoryMapping.txt ./tools/RTM/storyRequirementMapping.csv ./target/RTM/testRequirementsMapping.txt"
             }
             post {
                 always {

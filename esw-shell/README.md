@@ -34,12 +34,12 @@ from the root directory of the project
 Execute the following command to launch esw-shell.(`<version>` can be also be SHA)
 
 ```
-cs launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json esw-shell:<version>
+cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json esw-shell:<version>
 ```
 
 You can add the TMT apps channel to your Coursier by below command.
 ```
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json
+cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
 ```
 
 After adding TMT apps channel you can simply launch any csw app by executing
