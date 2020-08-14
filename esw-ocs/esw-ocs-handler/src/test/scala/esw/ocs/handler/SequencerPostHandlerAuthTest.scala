@@ -19,6 +19,7 @@ import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.captor.{ArgCaptor, Captor}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
@@ -53,7 +54,7 @@ class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest
     val hint      = randomString(5)
 
     val responseF = Future.failed(new RuntimeException("test")) // common response for all
-    val table = Table[SequencerPostRequest, SequencerApi => Unit](
+    val testCasesForAuthEnabledHandlers = Table[SequencerPostRequest, SequencerApi => Unit](
       ("msg", "api"),
       (LoadSequence(sequence), _.loadSequence(sequence)),
       (StartSequence, _.startSequence()),
@@ -75,7 +76,7 @@ class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest
       (OperationsMode, _.operationsMode())
     )
 
-    forAll(table) {
+    forAll(testCasesForAuthEnabledHandlers) {
       case (msg, api) =>
         val name = msg.getClass.getSimpleName
         s"check for $subsystem subsystem user role policy on $name" in {
@@ -86,6 +87,28 @@ class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest
 
           Post("/post-endpoint", msg.narrow) ~> route ~> check {
             checkSubsystemUserRole(captor)
+          }
+        }
+    }
+
+    val testCasesForAuthDisabledRoutes = Table[SequencerPostRequest, SequencerApi => Unit](
+      ("msg", "api"),
+      (GetSequence, _.getSequence),
+      (GetSequenceComponent, _.getSequenceComponent),
+      (IsAvailable, _.isAvailable),
+      (IsOnline, _.isOnline),
+      (Query(id), _.query(id))
+    )
+
+    forAll(testCasesForAuthDisabledRoutes) {
+      case (msg, api) =>
+        val name = msg.getClass.getSimpleName
+        s"not check for any AAS policy on $name" in {
+          when(securityDirectives.sPost(any[CustomPolicy])).thenReturn(accessTokenDirective)
+          mockApi(api(sequencer), responseF)
+
+          Post("/post-endpoint", msg.narrow) ~> route ~> check {
+            verify(securityDirectives, never).sPost(any[CustomPolicy]) // should not be called
           }
         }
     }
