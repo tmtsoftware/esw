@@ -44,7 +44,8 @@ class HttpServiceTest extends EswTestKit {
       //should not bind to all but specific hostname IP
       SocketUtils.isAddressInUse(hostname, _servicePort) should ===(true)
       SocketUtils.isAddressInUse("localhost", _servicePort) should ===(false)
-      actorRuntime.shutdown(UnknownReason).futureValue
+
+      cleanup(actorRuntime)
     }
 
     "start the http server and register with location service with empty metadata if not provided while registration | ESW-366" in {
@@ -60,6 +61,8 @@ class HttpServiceTest extends EswTestKit {
 
       locationService.find(settings.httpConnection).futureValue.get.connection shouldBe settings.httpConnection
       registrationResult.location.metadata should ===(Metadata.empty)
+
+      cleanup(actorRuntime)
     }
 
     "not register with location service if server binding fails | ESW-86, CSW-96" in {
@@ -75,7 +78,7 @@ class HttpServiceTest extends EswTestKit {
 
       bindException.getCause.getMessage shouldBe expectedMessage
       locationService.find(settings.httpConnection).futureValue shouldBe None
-      actorRuntime.shutdown(UnknownReason).futureValue
+      cleanup(actorRuntime)
     }
 
     "not start server if registration with location service fails | ESW-86" in {
@@ -96,10 +99,15 @@ class HttpServiceTest extends EswTestKit {
 
       otherLocationIsRegistered.getCause shouldBe a[OtherLocationIsRegistered]
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false
-      try actorRuntime.shutdown(UnknownReason).futureValue
+      try cleanup(actorRuntime)
       catch {
         case NonFatal(_) =>
       }
     }
+  }
+
+  private def cleanup(actorRuntime: => ActorRuntime) = {
+    // cleanup which unregisters location
+    actorRuntime.shutdown(UnknownReason).futureValue
   }
 }
