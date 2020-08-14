@@ -8,7 +8,6 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.params.commands._
 import csw.time.core.models.UTCTime
-import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerPostRequest._
