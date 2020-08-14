@@ -2,6 +2,7 @@ package esw.testcommons
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem}
+import scala.language.reflectiveCalls
 
 abstract class AskProxyTestKit[Msg, Impl](implicit actorSystem: ActorSystem[_]) {
   protected def make(actorRef: ActorRef[Msg]): Impl
