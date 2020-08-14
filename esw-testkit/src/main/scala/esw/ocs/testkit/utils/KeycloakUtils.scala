@@ -101,10 +101,13 @@ trait KeycloakUtils extends BaseTestSuite {
     val embeddedKeycloak =
       new EmbeddedKeycloak(keycloakData, KeycloakSettings(port = keycloakPort, printProcessLogs = false))
     val stopHandle = Await.result(embeddedKeycloak.startServer()(actorSystem.executionContext), serverTimeout)
-    Await.result(locationService.register(HttpRegistration(AASConnection.value, keycloakPort, "auth")), defaultTimeout)
+    registerKeycloak()
     keycloakStopHandle = Some(stopHandle)
     stopHandle
   }
+
+  private[esw] def registerKeycloak() =
+    Await.result(locationService.register(HttpRegistration(AASConnection.value, keycloakPort, "auth")), defaultTimeout)
 
   def stopKeycloak(): Unit = {
     keycloakStopHandle.foreach(_.stop())
