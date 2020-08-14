@@ -2,68 +2,89 @@ package esw.ocs.api.actor.client
 
 import java.net.URI
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.ObsMode
-import esw.ocs.api.protocol.ScriptError.LocationServiceError
-import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation}
-import esw.testcommons.BaseTestSuite
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
+import esw.testcommons.{AskProxyTestKit, BaseTestSuite}
 
-import scala.concurrent.ExecutionContext
+import scala.util.Random
 
 class SequenceComponentImplTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SequenceComponentImplTest")
 
-  private val location =
-    AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"), Metadata.empty)
-  private val loadScriptResponse    = SequencerLocation(location)
-  private val restartResponse       = LocationServiceError("error")
-  private val getStatusResponse     = GetStatusResponse(Some(location))
-  implicit val ec: ExecutionContext = system.executionContext
-
-  private val mockedBehavior: Behaviors.Receive[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] {
-    case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse; Behaviors.same
-    case GetStatus(replyTo)        => replyTo ! getStatusResponse; Behaviors.same
-    case UnloadScript(replyTo)     => replyTo ! Ok; Behaviors.same
-    case RestartScript(replyTo)    => replyTo ! restartResponse; Behaviors.same
-    case Stop                      => Behaviors.stopped
-    case Shutdown(replyTo)         => replyTo ! Ok; Behaviors.stopped
+  private val askProxyTestKit = new AskProxyTestKit[SequenceComponentMsg, SequenceComponentImpl] {
+    override def make(actorRef: ActorRef[SequenceComponentMsg]): SequenceComponentImpl = {
+      val location =
+        AkkaLocation(
+          AkkaConnection(ComponentId(Prefix(ESW, "sequence_component"), SequenceComponent)),
+          actorRef.toURI,
+          Metadata.empty
+        )
+      new SequenceComponentImpl(location)
+    }
   }
 
-  private val sequenceComponent = system.systemActorOf(mockedBehavior, "sequence_component")
-  private val sequenceComponentLocation = AkkaLocation(
-    AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-    sequenceComponent.toURI,
-    Metadata.empty
-  )
+  import askProxyTestKit._
 
-  private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponentLocation)
+  private def randomString5 = Random.nextString(5)
+
+  private val obsMode   = ObsMode(randomString5)
+  private val subsystem = randomSubsystem
 
   "LoadScript | ESW-103" in {
-    sequenceComponentClient.loadScript(Subsystem.ESW, ObsMode("darknight")).futureValue should ===(loadScriptResponse)
+    val loadScriptResponse = mock[ScriptResponseOrUnhandled]
+    withBehavior {
+      case LoadScript(`subsystem`, `obsMode`, replyTo) => replyTo ! loadScriptResponse
+    } check { sc =>
+      sc.loadScript(subsystem, obsMode).futureValue should ===(loadScriptResponse)
+    }
   }
 
   "Restart | ESW-141" in {
-    sequenceComponentClient.restartScript().futureValue should ===(restartResponse)
+    val restartResponse = mock[ScriptResponseOrUnhandled]
+    withBehavior {
+      case RestartScript(replyTo) => replyTo ! restartResponse
+    } check { sc =>
+      sc.restartScript().futureValue should ===(restartResponse)
+    }
   }
 
   "GetStatus | ESW-103" in {
-    sequenceComponentClient.status.futureValue should ===(getStatusResponse)
+    val akkaLocation =
+      AkkaLocation(
+        AkkaConnection(ComponentId(Prefix(ESW, "sequence_component"), SequenceComponent)),
+        new URI("uri"),
+        Metadata.empty
+      )
+    val getStatusResponse = GetStatusResponse(Some(akkaLocation))
+    withBehavior {
+      case GetStatus(replyTo) => replyTo ! getStatusResponse
+    } check { sc =>
+      sc.status.futureValue should ===(getStatusResponse)
+    }
   }
 
   "UnloadScript | ESW-103" in {
-    sequenceComponentClient.unloadScript().futureValue should ===(Ok)
+    withBehavior {
+      case UnloadScript(replyTo) => replyTo ! Ok
+    } check { sc =>
+      sc.unloadScript().futureValue should ===(Ok)
+    }
   }
 
   "Shutdown | ESW-329" in {
-    sequenceComponentClient.shutdown().futureValue should ===(Ok)
+    withBehavior {
+      case Shutdown(replyTo) => replyTo ! Ok
+    } check { sc =>
+      sc.shutdown().futureValue should ===(Ok)
+    }
   }
 }

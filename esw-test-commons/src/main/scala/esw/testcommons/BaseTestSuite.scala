@@ -52,4 +52,5 @@ trait BaseTestSuite
   def randomFrom[T](values: List[T]): T = values(Random.nextInt(values.size))
   def randomSubsystem: Subsystem        = randomFrom(Subsystem.values.toList)
   def randomString(size: Int): String   = Random.alphanumeric.take(size).mkString
+  def randomInt(till: Int): Int         = Random.nextInt(till)
 }

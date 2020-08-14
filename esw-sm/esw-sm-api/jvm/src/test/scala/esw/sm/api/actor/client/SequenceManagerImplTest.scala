@@ -1,7 +1,6 @@
 package esw.sm.api.actor.client
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
@@ -10,113 +9,148 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
+import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol._
-import esw.testcommons.BaseTestSuite
+import esw.testcommons.{AskProxyTestKit, BaseTestSuite}
 
 class SequenceManagerImplTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
-  private val configureResponse                                   = mock[ConfigureResponse]
-  private val getRunningObsModesResponse                          = mock[GetRunningObsModesResponse]
-  private val startSequencerResponse                              = mock[StartSequencerResponse]
-  private val shutdownSequencersResponse                          = mock[ShutdownSequencersResponse]
-  private val restartSequencerResponse                            = mock[RestartSequencerResponse]
-  private val spawnSequenceComponentResponse                      = mock[SpawnSequenceComponentResponse]
-  private val shutdownSequenceComponentResponse                   = mock[ShutdownSequenceComponentResponse]
-  private val provisionResponse                                   = mock[ProvisionResponse]
-  private val getAgentStatusResponse                              = mock[AgentStatusResponse]
-  private val smState                                             = mock[SequenceManagerState]
-  private val obsMode                                             = ObsMode(randomString5)
-  private val seqCompPrefix                                       = Prefix(randomSubsystem, randomString5)
-  private val subsystem                                           = randomSubsystem
-  private val agent                                               = Prefix(randomSubsystem, randomString5)
-  private val seqCompName                                         = randomString5
-  private val provisionConfig                                     = ProvisionConfig(seqCompPrefix -> 1)
 
-  private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
-    msg match {
-      case SequenceManagerMsg.Configure(`obsMode`, replyTo)                     => replyTo ! configureResponse
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)                       => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo)                  => replyTo ! smState
-      case SequenceManagerMsg.StartSequencer(`subsystem`, `obsMode`, replyTo)   => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.RestartSequencer(`subsystem`, `obsMode`, replyTo) => replyTo ! restartSequencerResponse
-
-      case SequenceManagerMsg.ShutdownSequencer(`subsystem`, `obsMode`, replyTo) => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownSubsystemSequencers(`subsystem`, replyTo)  => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownObsModeSequencers(`obsMode`, replyTo)      => replyTo ! shutdownSequencersResponse
-      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)                     => replyTo ! shutdownSequencersResponse
-
-      case SequenceManagerMsg.SpawnSequenceComponent(`agent`, `seqCompName`, replyTo) => replyTo ! spawnSequenceComponentResponse
-
-      case SequenceManagerMsg.ShutdownSequenceComponent(`seqCompPrefix`, replyTo) => replyTo ! shutdownSequenceComponentResponse
-      case SequenceManagerMsg.ShutdownAllSequenceComponents(replyTo)              => replyTo ! shutdownSequenceComponentResponse
-
-      case SequenceManagerMsg.Provision(`provisionConfig`, replyTo) => replyTo ! provisionResponse
-      case SequenceManagerMsg.GetAllAgentStatus(replyTo)            => replyTo ! getAgentStatusResponse
-      case SequenceManagerMsg.ProcessingComplete(_)                 =>
-      case msg                                                      => println(s"$msg not handled")
+  private val askProxyTestKit = new AskProxyTestKit[SequenceManagerMsg, SequenceManagerImpl] {
+    override def make(actorRef: ActorRef[SequenceManagerMsg]): SequenceManagerImpl = {
+      val location =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), actorRef.toURI, Metadata.empty)
+      new SequenceManagerImpl(location)
     }
-    Behaviors.same
   }
 
-  private val smRef = system.systemActorOf(mockedBehavior, "sm")
-  private val location =
-    AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI, Metadata.empty)
-  private val sequenceManager = new SequenceManagerImpl(location)
+  import askProxyTestKit._
 
   private def randomString5 = randomString(5)
 
+  private val obsMode   = ObsMode(randomString5)
+  private val subsystem = randomSubsystem
+
   "SequenceManagerImpl" must {
     "configure" in {
-      sequenceManager.configure(obsMode).futureValue shouldBe configureResponse
+      val configureResponse = mock[ConfigureResponse]
+      withBehavior {
+        case SequenceManagerMsg.Configure(`obsMode`, replyTo) => replyTo ! configureResponse
+      } check { sm =>
+        sm.configure(obsMode).futureValue should ===(configureResponse)
+      }
     }
 
     "startSequencer" in {
-      sequenceManager.startSequencer(subsystem, obsMode).futureValue shouldBe startSequencerResponse
+      val startSequencerResponse = mock[StartSequencerResponse]
+      withBehavior {
+        case SequenceManagerMsg.StartSequencer(`subsystem`, `obsMode`, replyTo) => replyTo ! startSequencerResponse
+      } check { sm =>
+        sm.startSequencer(subsystem, obsMode).futureValue should ===(startSequencerResponse)
+      }
     }
 
     "restartSequencer" in {
-      sequenceManager.restartSequencer(subsystem, obsMode).futureValue shouldBe restartSequencerResponse
+      val restartSequencerResponse = mock[RestartSequencerResponse]
+      withBehavior {
+        case SequenceManagerMsg.RestartSequencer(`subsystem`, `obsMode`, replyTo) => replyTo ! restartSequencerResponse
+      } check { sm =>
+        sm.restartSequencer(subsystem, obsMode).futureValue should ===(restartSequencerResponse)
+      }
     }
 
     "shutdownSequencer | ESW-326" in {
-      sequenceManager.shutdownSequencer(subsystem, obsMode).futureValue shouldBe shutdownSequencersResponse
+      val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
+      withBehavior {
+        case SequenceManagerMsg.ShutdownSequencer(`subsystem`, `obsMode`, replyTo) => replyTo ! shutdownSequencersResponse
+      } check { sm =>
+        sm.shutdownSequencer(subsystem, obsMode).futureValue should ===(shutdownSequencersResponse)
+      }
     }
 
     "shutdownSubsystemSequencers | ESW-345" in {
-      sequenceManager.shutdownSubsystemSequencers(subsystem).futureValue shouldBe shutdownSequencersResponse
+      val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
+      withBehavior {
+        case SequenceManagerMsg.ShutdownSubsystemSequencers(`subsystem`, replyTo) => replyTo ! shutdownSequencersResponse
+      } check { sm =>
+        sm.shutdownSubsystemSequencers(subsystem).futureValue should ===(shutdownSequencersResponse)
+      }
     }
 
     "shutdownObsModeSequencers | ESW-166" in {
-      sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe shutdownSequencersResponse
+      val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
+      withBehavior {
+        case SequenceManagerMsg.ShutdownObsModeSequencers(`obsMode`, replyTo) => replyTo ! shutdownSequencersResponse
+      } check { sm =>
+        sm.shutdownObsModeSequencers(obsMode).futureValue should ===(shutdownSequencersResponse)
+      }
     }
 
     "shutdownAllSequencers | ESW-324" in {
-      sequenceManager.shutdownAllSequencers().futureValue shouldBe shutdownSequencersResponse
+      val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
+      withBehavior {
+        case SequenceManagerMsg.ShutdownAllSequencers(replyTo) => replyTo ! shutdownSequencersResponse
+      } check { sm =>
+        sm.shutdownAllSequencers().futureValue should ===(shutdownSequencersResponse)
+      }
     }
 
     "getRunningObsModes" in {
-      sequenceManager.getRunningObsModes.futureValue shouldBe getRunningObsModesResponse
+      val getRunningObsModesResponse = mock[GetRunningObsModesResponse]
+      withBehavior {
+        case SequenceManagerMsg.GetRunningObsModes(replyTo) => replyTo ! getRunningObsModesResponse
+      } check { sm =>
+        sm.getRunningObsModes.futureValue should ===(getRunningObsModesResponse)
+      }
     }
 
     "shutdownSequenceComponent | ESW-338" in {
-      sequenceManager.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe shutdownSequenceComponentResponse
+      val shutdownSequenceComponentResponse = mock[ShutdownSequenceComponentResponse]
+      val seqCompPrefix                     = Prefix(randomSubsystem, randomString5)
+      withBehavior {
+        case SequenceManagerMsg.ShutdownSequenceComponent(`seqCompPrefix`, replyTo) => replyTo ! shutdownSequenceComponentResponse
+      } check { sm =>
+        sm.shutdownSequenceComponent(seqCompPrefix).futureValue should ===(shutdownSequenceComponentResponse)
+      }
     }
 
     "shutdownAllSequenceComponents | ESW-346" in {
-      sequenceManager.shutdownAllSequenceComponents().futureValue shouldBe shutdownSequenceComponentResponse
+      val shutdownSequenceComponentResponse = mock[ShutdownSequenceComponentResponse]
+      withBehavior {
+        case SequenceManagerMsg.ShutdownAllSequenceComponents(replyTo) => replyTo ! shutdownSequenceComponentResponse
+      } check { sm =>
+        sm.shutdownAllSequenceComponents().futureValue should ===(shutdownSequenceComponentResponse)
+      }
     }
 
     "spawnSequenceComponent | ESW-337" in {
-      sequenceManager.spawnSequenceComponent(agent, seqCompName).futureValue shouldBe spawnSequenceComponentResponse
+      val spawnSeqCompResponse = mock[SpawnSequenceComponentResponse]
+      val agent                = Prefix(randomSubsystem, randomString5)
+      val seqCompName          = randomString5
+      withBehavior {
+        case SequenceManagerMsg.SpawnSequenceComponent(`agent`, `seqCompName`, replyTo) => replyTo ! spawnSeqCompResponse
+      } check { sm =>
+        sm.spawnSequenceComponent(agent, seqCompName).futureValue should ===(spawnSeqCompResponse)
+      }
     }
 
     "getAgentStatus | ESW-349" in {
-      sequenceManager.getAgentStatus.futureValue shouldBe getAgentStatusResponse
+      val agentStatusResponse = mock[AgentStatusResponse]
+      withBehavior {
+        case SequenceManagerMsg.GetAllAgentStatus(replyTo) => replyTo ! agentStatusResponse
+      } check { sm =>
+        sm.getAgentStatus.futureValue should ===(agentStatusResponse)
+      }
     }
 
-    "provision | ESW-347" in {
-      sequenceManager.provision(provisionConfig).futureValue shouldBe provisionResponse
+    "provision | ESW-346" in {
+      val provisionResponse = mock[ProvisionResponse]
+      val provisionConfig   = ProvisionConfig((Prefix(randomSubsystem, randomString5), randomInt(5)))
+      withBehavior {
+        case SequenceManagerMsg.Provision(`provisionConfig`, replyTo) => replyTo ! provisionResponse
+      } check { sm =>
+        sm.provision(provisionConfig).futureValue should ===(provisionResponse)
+      }
     }
   }
 }
