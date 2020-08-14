@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives.{complete, get, path}
 import akka.http.scaladsl.server.Route
 import csw.location.api.exceptions.OtherLocationIsRegistered
-import csw.location.api.models.{HttpRegistration, NetworkType}
+import csw.location.api.models.{HttpRegistration, Metadata, NetworkType}
 import csw.network.utils.{Networks, SocketUtils}
 import esw.ocs.testkit.EswTestKit
 
@@ -24,7 +24,30 @@ class HttpServiceTest extends EswTestKit {
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
 
   "HttpService" must {
-    "start the http server and register with location service | ESW-86, CSW-96" in {
+    "start the http server and register with location service with metadata | ESW-86, CSW-96, ESW-366" in {
+      val _servicePort = 4005
+      val wiring       = ServerWiring.make(Some(_servicePort))
+      import wiring._
+      import wiring.cswWiring.actorRuntime
+      val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
+      val metadata    = Metadata(Map("key1" -> "value"))
+
+      SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false
+
+      val (_, registrationResult) = httpService.startAndRegisterServer(metadata).futureValue
+
+      locationService.find(settings.httpConnection).futureValue.get.connection shouldBe settings.httpConnection
+      val location = registrationResult.location
+      location.uri.getHost should ===(hostname)
+      location.connection should ===(settings.httpConnection)
+      location.metadata should ===(metadata)
+      //should not bind to all but specific hostname IP
+      SocketUtils.isAddressInUse(hostname, _servicePort) should ===(true)
+      SocketUtils.isAddressInUse("localhost", _servicePort) should ===(false)
+      actorRuntime.shutdown(UnknownReason).futureValue
+    }
+
+    "start the http server and register with location service with empty metadata if not provided while registration | ESW-366" in {
       val _servicePort = 4005
       val wiring       = ServerWiring.make(Some(_servicePort))
       import wiring._
@@ -36,13 +59,7 @@ class HttpServiceTest extends EswTestKit {
       val (_, registrationResult) = httpService.startAndRegisterServer().futureValue
 
       locationService.find(settings.httpConnection).futureValue.get.connection shouldBe settings.httpConnection
-      val location = registrationResult.location
-      location.uri.getHost shouldBe hostname
-      location.connection shouldBe settings.httpConnection
-      //should not bind to all but specific hostname IP
-      SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe true
-      SocketUtils.isAddressInUse("localhost", _servicePort) shouldBe false
-      actorRuntime.shutdown(UnknownReason).futureValue
+      registrationResult.location.metadata should ===(Metadata.empty)
     }
 
     "not register with location service if server binding fails | ESW-86, CSW-96" in {

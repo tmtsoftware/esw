@@ -102,7 +102,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
 
   private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)
   private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime)
-  private lazy val httpServerBinding = httpService.startAndRegisterServer()
+  private lazy val httpServerBinding = httpService.startAndRegisterServer(locationMetadata)
 
   def start(): Either[RegistrationError, AkkaLocation] = {
     logger.info(s"Starting Sequence Manager with prefix: $prefix")

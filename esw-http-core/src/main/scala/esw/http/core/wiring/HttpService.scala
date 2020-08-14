@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Directives.handleRejections
 import akka.http.scaladsl.server.{RejectionHandler, Route}
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{HttpRegistration, NetworkType}
+import csw.location.api.models.{HttpRegistration, Metadata, NetworkType}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
 import csw.network.utils.Networks
@@ -34,10 +34,10 @@ class HttpService(
 ) {
 
   import actorRuntime._
-  def startAndRegisterServer(): Future[(ServerBinding, RegistrationResult)] =
+  def startAndRegisterServer(metadata: Metadata = Metadata.empty): Future[(ServerBinding, RegistrationResult)] =
     async {
       val binding            = await(startServer())
-      val registrationResult = await(register(binding, settings.httpConnection))
+      val registrationResult = await(register(binding, settings.httpConnection, metadata))
 
       coordinatedShutdown.addTask(
         CoordinatedShutdown.PhaseBeforeServiceUnbind,
@@ -67,12 +67,13 @@ class HttpService(
     Http().newServerAt(_host, _port).bind(applicationRoute)
   }
 
-  private def register(binding: ServerBinding, connection: HttpConnection): Future[RegistrationResult] = {
+  private def register(binding: ServerBinding, connection: HttpConnection, metadata: Metadata): Future[RegistrationResult] = {
     val registration = HttpRegistration(
       connection = connection,
       port = binding.localAddress.getPort,
       path = "",
-      NetworkType.Public
+      NetworkType.Public,
+      metadata
     )
 
     log.info(

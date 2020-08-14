@@ -60,7 +60,8 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-366, ESW-332" in {
-    val agentPrefix = "ESW.agent1"
+    val agentPrefix      = "ESW.agent1"
+    val expectedMetadata = Metadata(Map("agent-prefix" -> agentPrefix))
 
     // resolving sequence manager fails for Akka and Http
     intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
@@ -72,10 +73,14 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
     smAkkaLocation.prefix shouldBe sequenceManagerPrefix
 
-    // ESW-366 verify agent prefix metadata is present in Sequence manager location
-    smAkkaLocation.metadata shouldBe Metadata(Map("agent-prefix" -> agentPrefix))
+    // ESW-366 verify agent prefix metadata is present in Sequence manager akka location
+    smAkkaLocation.metadata should ===(expectedMetadata)
 
-    resolveHTTPLocation(sequenceManagerPrefix, Service).prefix shouldBe sequenceManagerPrefix
+    val smHttpLocation = resolveHTTPLocation(sequenceManagerPrefix, Service)
+    smHttpLocation.prefix shouldBe sequenceManagerPrefix
+
+    // ESW-366 verify agent prefix metadata is present in Sequence manager http location
+    smHttpLocation.metadata should ===(expectedMetadata)
   }
 
   "configure SH, send sequence to master sequencer and cleanup for provided observation mode | ESW-162, ESW-164, ESW-166, ESW-171, ESW-178, ESW-351, ESW-366, ESW-332" in {
