@@ -1,7 +1,7 @@
 package esw.sm.app
 
 import java.io.File
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, Paths}
 
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -31,6 +31,7 @@ import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceE
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
+import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.{BinaryFetcherUtil, GitUtil}
 import msocket.impl.HttpError
 
@@ -76,7 +77,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
-  "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-366, ESW-332" in {
+  "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-173, ESW-366, ESW-332" in {
     val agentPrefix      = "ESW.agent1"
     val expectedMetadata = Metadata(Map("agent-prefix" -> agentPrefix))
 
@@ -84,7 +85,8 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
     intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
 
-    TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole, agentPrefix = Some(agentPrefix))
+    // ESW-173 Start sequence manager using command line arguments without any other ESW dependency
+    SequenceManagerApp.main(Array("start", "-o", obsModeConfigPath.toString, "--local", "-a", agentPrefix))
 
     // verify sequence manager is started and AkkaLocation & HttpLocation are registered with location service
     val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
@@ -339,6 +341,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     // verify that restart sequencer return Error response with connection
     secondRestartResponse should ===(LocationServiceError(s"Could not find location matching connection: $connection"))
   }
+
   "shutdown running sequencers for given subsystem | ESW-345, ESW-351, ESW-332" in {
     val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT.name)
     val wfosCalPrefix       = Prefix(WFOS, WFOS_CAL.name)
@@ -395,6 +398,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     val loadScriptError: LoadScriptError = response.asInstanceOf[LoadScriptError]
     loadScriptError.msg should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
   }
+
   "support all observation modes in configuration file | ESW-160, ESW-332" in {
     val tmpPath = File.createTempFile("temp-config", ".conf").toPath
     File.createTempFile("temp-config", ".conf").deleteOnExit()
