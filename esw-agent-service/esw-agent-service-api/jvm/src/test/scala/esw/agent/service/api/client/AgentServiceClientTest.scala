@@ -4,12 +4,13 @@ import java.nio.file.Path
 
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.codecs.AgentHttpCodecs
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentPostRequest
-import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, KillComponent}
+import esw.agent.service.api.protocol.AgentPostRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
@@ -63,17 +64,19 @@ class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentHttpCod
     "return KillResponse for killComponent request" in {
       val seqCompPrefix = Prefix(ESW, "TCS_1")
       val componentId   = ComponentId(seqCompPrefix, SequenceComponent)
-      val killComponent = KillComponent(agentPrefix, componentId)
-      val killResponse  = mock[KillResponse]
+      val connection    = AkkaConnection(componentId)
+
+      val killComponentRequest = KillComponent(connection)
+      val killResponse         = mock[KillResponse]
 
       when(
-        postClient.requestResponse[KillResponse](argEq(killComponent))(
+        postClient.requestResponse[KillResponse](argEq(killComponentRequest))(
           any[Decoder[KillResponse]](),
           any[Encoder[KillResponse]]()
         )
       ).thenReturn(Future.successful(killResponse))
 
-      agentServiceClient.killComponent(agentPrefix, componentId).futureValue shouldBe killResponse
+      agentServiceClient.killComponent(connection).futureValue shouldBe killResponse
     }
   }
 

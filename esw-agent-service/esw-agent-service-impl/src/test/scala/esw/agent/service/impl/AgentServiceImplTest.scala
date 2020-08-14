@@ -98,43 +98,51 @@ class AgentServiceImplTest extends BaseTestSuite {
     }
 
     "killComponent Api" must {
+      val componentId     = mock[ComponentId]
+      val componentPrefix = mock[Prefix]
+      when(componentId.prefix).thenReturn(componentPrefix)
 
-      val componentId = mock[ComponentId]
+      val componentConnection = AkkaConnection(componentId)
+      val agentPrefixStr      = "IRIS.filterWheel"
+      val agentPrefix         = Prefix(agentPrefixStr)
+      val location            = AkkaLocation(componentConnection, new URI("xyz"), Metadata(Map("agent-prefix" -> agentPrefixStr)))
+
       "be able to kill component for the given componentId | ESW-361" in {
         when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
-        agentService.killComponent(agentPrefix, componentId).futureValue
+        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(location)))
+        when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
+        agentService.killComponent(componentConnection).futureValue
 
+        verify(locationService).find(componentConnection)
         verify(agentClientMock).killComponent(componentId)
       }
 
-      "give Failed when agent is not there| ESW-361" in {
+      "give error message when agent is not there| ESW-361" in {
         val locationService = mock[LocationService]
+        val agentConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
 
-        val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
-        when(locationService.find(akkaConnection)).thenReturn(Future.successful(None))
+        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(location)))
+        when(locationService.find(agentConnection)).thenReturn(Future.successful(None))
+        when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
 
         val agentService = new AgentServiceImpl(locationService)
-
-        agentService.killComponent(agentPrefix, componentId).futureValue should ===(
+        agentService.killComponent(componentConnection).futureValue should ===(
           Failed(s"could not resolve agent with prefix: $agentPrefix")
         )
 
-        verify(locationService).find(akkaConnection)
+        verify(locationService).find(agentConnection)
       }
     }
 
     "agentClient Api" must {
       "be able to create agent client for given agentPrefix | ESW-361" in {
         val locationService = mock[LocationService]
-
-        val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
-        val location       = AkkaLocation(akkaConnection, URI.create("some"), Metadata.empty)
+        val akkaConnection  = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val location        = AkkaLocation(akkaConnection, URI.create("some"), Metadata.empty)
         when(locationService.find(akkaConnection)).thenReturn(Future.successful(Some(location)))
 
         val agentService = new AgentServiceImpl(locationService)
-
         agentService.agentClient(agentPrefix).futureValue
-
         verify(locationService).find(akkaConnection)
       }
 
@@ -147,7 +155,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val agentService = new AgentServiceImpl(locationService)
 
         agentService.agentClient(agentPrefix).futureValue should ===(
-          Left(Failed(s"could not resolve agent with prefix: $agentPrefix"))
+          Left(s"could not resolve agent with prefix: $agentPrefix")
         )
 
         verify(locationService).find(akkaConnection)

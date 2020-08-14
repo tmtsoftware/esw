@@ -2,13 +2,13 @@ package esw.agent.service.api.client
 
 import java.nio.file.Path
 
-import csw.location.api.models.ComponentId
+import csw.location.api.models.Connection
 import csw.prefix.models.Prefix
 import esw.agent.service.api.AgentService
 import esw.agent.service.api.codecs.AgentHttpCodecs
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentPostRequest
-import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, KillComponent}
+import esw.agent.service.api.protocol.AgentPostRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 import msocket.api.Transport
 
 import scala.concurrent.Future
@@ -30,6 +30,6 @@ class AgentServiceClient(postClient: Transport[AgentPostRequest]) extends AgentS
   ): Future[SpawnResponse] =
     postClient.requestResponse[SpawnResponse](SpawnSequenceComponent(agentPrefix, componentName, version))
 
-  override def killComponent(agentPrefix: Prefix, componentId: ComponentId): Future[KillResponse] =
-    postClient.requestResponse[KillResponse](KillComponent(agentPrefix, componentId))
+  override def killComponent(connection: Connection): Future[KillResponse] =
+    postClient.requestResponse[KillResponse](KillComponent(connection))
 }
