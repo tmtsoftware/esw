@@ -3,7 +3,7 @@ package esw.agent.service.impl
 import java.nio.file.Path
 
 import akka.actor.typed.ActorSystem
-import csw.location.api.models.{ComponentId, Connection, Location}
+import csw.location.api.models.{Connection, Location}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
@@ -19,7 +19,7 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
 
   private implicit val ec: ExecutionContext = actorSystem.executionContext
 
-  private val locationServiceUtil           = new LocationServiceUtil(locationService)
+  private val locationServiceUtil = new LocationServiceUtil(locationService)
 
   override def spawnSequenceManager(
       agentPrefix: Prefix,
@@ -40,12 +40,8 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
       .flatMapRight(_.spawnSequenceComponent(componentName, version))
       .mapToAdt(identity, Failed)
 
-  override def killComponent(agentPrefix: Prefix, componentId: ComponentId): Future[KillResponse] =
-    agentClient(agentPrefix).flatMapRight(_.killComponent(componentId)).mapToAdt(identity, Failed)
-
-  def killComponent0(connection: Connection): Future[KillResponse] =
+  override def killComponent(connection: Connection): Future[KillResponse] =
     getAgentClient(connection).flatMapRight(_.killComponent(connection.componentId)).mapToAdt(identity, Failed)
-
 
   private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
     AgentClient.make(agentPrefix, locationService).transform(x => Success(x.toEither.left.map(_.getMessage)))
@@ -62,22 +58,4 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
   private def makePrefix(prefix: String): Either[String, Prefix] =
     Try(Prefix(prefix)).toEither.left.map(_.getMessage)
 
-  //  private[impl] def agentClient0(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
-  //    agentClient(agentPrefix)
-  //      .map(Right(_))
-  //      .recover{
-  //      case NonFatal(e) => Left(e.getMessage)
-  //    }
-
 }
-
-//  private def getAgentClient(connection: Connection): Future[Option[AgentClient]] = {
-//    val compLocF: Future[Option[Location]] = getComponentLocation(connection)
-//    val agentPrefixF: Future[Option[Prefix]] = compLocF.map(_.flatMap(getAgentPrefix))
-//
-//    val agentClientF: Future[Option[AgentClient]] = agentPrefixF.flatMap {
-//      case Some(prefix) => agentClient(prefix).map(Some(_))
-//      case None => Future.successful(None)
-//    }
-//    agentClientF
-//  }
