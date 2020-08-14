@@ -13,7 +13,7 @@ import esw.agent.service.impl.AgentServiceImpl
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.impl.post.PostRouteFactory
 
-class AgentServiceWiring(port: Option[Int]) extends AgentHttpCodecs {
+class AgentServiceWiring(port: Option[Int] = None) extends AgentHttpCodecs {
 
   lazy val prefix: Prefix                                          = Prefix(ESW, "agent_service")
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")

@@ -8,7 +8,8 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentService
-import esw.agent.service.api.models.{KillResponse, SpawnResponse}
+import esw.agent.service.api.models.{AgentNotFoundException, Failed, KillResponse, SpawnResponse}
+import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,7 +17,10 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
 
   private implicit val ec: ExecutionContext = actorSystem.executionContext
 
-  private[impl] def agentClient(agentPrefix: Prefix): Future[AgentClient] = AgentClient.make(agentPrefix, locationService)
+  private[impl] def agentClient(agentPrefix: Prefix): Future[Either[Failed, AgentClient]] =
+    AgentClient.make(agentPrefix, locationService).map(Right(_)).recover {
+      case AgentNotFoundException(msg) => Left(Failed(msg))
+    }
 
   override def spawnSequenceManager(
       agentPrefix: Prefix,
@@ -24,15 +28,20 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
       isConfigLocal: Boolean,
       version: Option[String]
   ): Future[SpawnResponse] =
-    agentClient(agentPrefix).flatMap(_.spawnSequenceManager(obsModeConfigPath, isConfigLocal, version))
+    agentClient(agentPrefix)
+      .flatMapRight(_.spawnSequenceManager(obsModeConfigPath, isConfigLocal, version))
+      .mapToAdt(identity, identity)
 
   override def spawnSequenceComponent(
       agentPrefix: Prefix,
       componentName: String,
       version: Option[String]
   ): Future[SpawnResponse] =
-    agentClient(agentPrefix).flatMap(_.spawnSequenceComponent(Prefix(agentPrefix.subsystem, componentName), version))
+    agentClient(agentPrefix)
+      .flatMapRight(_.spawnSequenceComponent(Prefix(agentPrefix.subsystem, componentName), version))
+      .mapToAdt(identity, identity)
 
   override def killComponent(agentPrefix: Prefix, componentId: ComponentId): Future[KillResponse] =
-    agentClient(agentPrefix).flatMap(_.killComponent(componentId))
+    agentClient(agentPrefix).flatMapRight(_.killComponent(componentId)).mapToAdt(identity, identity)
+
 }

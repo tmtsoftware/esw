@@ -10,7 +10,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.models.{AgentNotFoundException, Killed, SpawnResponse}
+import esw.agent.service.api.models.{Failed, Killed, SpawnResponse}
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
@@ -21,9 +21,11 @@ class AgentServiceImplTest extends BaseTestSuite {
   private val locationService                     = mock[LocationService]
   private val agentClientMock                     = mock[AgentClient]
   private val agentPrefix                         = mock[Prefix]
+  private val version                             = Some(randomString(10))
 
   private val agentService = new AgentServiceImpl(locationService) {
-    override private[impl] def agentClient(agentPrefix: Prefix): Future[AgentClient] = Future.successful(agentClientMock)
+    override private[impl] def agentClient(agentPrefix: Prefix): Future[Either[Failed, AgentClient]] =
+      Future.successful(Right(agentClientMock))
   }
 
   override protected def afterAll(): Unit = {
@@ -32,67 +34,125 @@ class AgentServiceImplTest extends BaseTestSuite {
   }
 
   "AgentService" must {
-    "be able to send spawn sequence component message to given agent" in {
+
+    "spawnSequenceComponent Api" must {
+
       val subsystem     = mock[Subsystem]
       val spawnRes      = mock[SpawnResponse]
-      val componentName = "TCS_1"
-      val seqCompPrefix = Prefix(subsystem, componentName)
+      val componentName = randomString(10)
 
-      when(agentClientMock.spawnSequenceComponent(seqCompPrefix)).thenReturn(Future.successful(spawnRes))
-      when(agentPrefix.subsystem).thenReturn(subsystem)
+      "be able to send spawn sequence component message to given agent" in {
+        val seqCompPrefix = Prefix(subsystem, componentName)
 
-      agentService.spawnSequenceComponent(agentPrefix, componentName).futureValue
+        when(agentClientMock.spawnSequenceComponent(seqCompPrefix, version)).thenReturn(Future.successful(spawnRes))
+        when(agentPrefix.subsystem).thenReturn(subsystem)
 
-      verify(agentClientMock).spawnSequenceComponent(seqCompPrefix, None)
+        agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue
+
+        verify(agentClientMock).spawnSequenceComponent(seqCompPrefix, version)
+      }
+
+      "give Failed when agent is not there | ESW-361" in {
+        val locationService = mock[LocationService]
+
+        val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(None))
+
+        val agentService = new AgentServiceImpl(locationService)
+
+        agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue should ===(
+          Failed(s"could not resolve agent with prefix: $agentPrefix")
+        )
+
+        verify(locationService).find(akkaConnection)
+      }
     }
 
-    "be able to send spawn sequence manager message to given agent | ESW-361" in {
+    "spawnSequenceManager Api" must {
       val obsConfPath = mock[Path]
 
-      val spawnRes = mock[SpawnResponse]
-      when(agentClientMock.spawnSequenceManager(obsConfPath, isConfigLocal = true, None)).thenReturn(Future.successful(spawnRes))
+      "be able to send spawn sequence manager message to given agent | ESW-361" in {
 
-      agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, None).futureValue
+        val spawnRes = mock[SpawnResponse]
+        when(agentClientMock.spawnSequenceManager(obsConfPath, isConfigLocal = true, version))
+          .thenReturn(Future.successful(spawnRes))
 
-      verify(agentClientMock).spawnSequenceManager(obsConfPath, isConfigLocal = true, None)
+        agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, version).futureValue
+
+        verify(agentClientMock).spawnSequenceManager(obsConfPath, isConfigLocal = true, version)
+      }
+
+      "give Failed when agent is not there | ESW-361" in {
+        val locationService = mock[LocationService]
+
+        val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(None))
+
+        val agentService = new AgentServiceImpl(locationService)
+
+        agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, version).futureValue should ===(
+          Failed(s"could not resolve agent with prefix: $agentPrefix")
+        )
+
+        verify(locationService).find(akkaConnection)
+      }
     }
 
-    "be able to stop component for the given componentId | ESW-361" in {
+    "killComponent Api" must {
+
       val componentId = mock[ComponentId]
-      when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
+      "be able to kill component for the given componentId | ESW-361" in {
+        when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
+        agentService.killComponent(agentPrefix, componentId).futureValue
 
-      agentService.killComponent(agentPrefix, componentId).futureValue
+        verify(agentClientMock).killComponent(componentId)
+      }
 
-      verify(agentClientMock).killComponent(componentId)
+      "give Failed when agent is not there| ESW-361" in {
+        val locationService = mock[LocationService]
+
+        val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(None))
+
+        val agentService = new AgentServiceImpl(locationService)
+
+        agentService.killComponent(agentPrefix, componentId).futureValue should ===(
+          Failed(s"could not resolve agent with prefix: $agentPrefix")
+        )
+
+        verify(locationService).find(akkaConnection)
+      }
     }
 
-    "be able to create agent client for given agentPrefix | ESW-361" in {
-      val locationService = mock[LocationService]
+    "agentClient Api" must {
+      "be able to create agent client for given agentPrefix | ESW-361" in {
+        val locationService = mock[LocationService]
 
-      val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
-      val location       = AkkaLocation(akkaConnection, URI.create("some"), Metadata.empty)
-      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Some(location)))
+        val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val location       = AkkaLocation(akkaConnection, URI.create("some"), Metadata.empty)
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Some(location)))
 
-      val agentService = new AgentServiceImpl(locationService)
+        val agentService = new AgentServiceImpl(locationService)
 
-      agentService.agentClient(agentPrefix).futureValue
+        agentService.agentClient(agentPrefix).futureValue
 
-      verify(locationService).find(akkaConnection)
-    }
+        verify(locationService).find(akkaConnection)
+      }
 
-    "be able to throw AgentNotFound exception for given agentPrefix | ESW-361" in {
-      val locationService = mock[LocationService]
+      "be able to throw AgentNotFound exception for given agentPrefix | ESW-361" in {
+        val locationService = mock[LocationService]
 
-      val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
-      when(locationService.find(akkaConnection)).thenReturn(Future.successful(None))
+        val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(None))
 
-      val agentService = new AgentServiceImpl(locationService)
+        val agentService = new AgentServiceImpl(locationService)
 
-      agentService.agentClient(agentPrefix).failed.futureValue should ===(
-        AgentNotFoundException(s"could not resolve agent with prefix: $agentPrefix")
-      )
+        agentService.agentClient(agentPrefix).futureValue should ===(
+          Left(Failed(s"could not resolve agent with prefix: $agentPrefix"))
+        )
 
-      verify(locationService).find(akkaConnection)
+        verify(locationService).find(akkaConnection)
+      }
     }
 
   }
