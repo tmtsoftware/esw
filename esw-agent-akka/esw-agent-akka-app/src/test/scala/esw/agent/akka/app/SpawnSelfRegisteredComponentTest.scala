@@ -121,7 +121,21 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       probe.expectMessage(Spawned)
 
       val expectedCommand =
-        List(Coursier.cs, "launch", "--channel", Cs.channel, "sequence-manager", "--", "start", "-o", "obsMode.conf", "-l")
+        List(
+          Coursier.cs,
+          "launch",
+          "--channel",
+          Cs.channel,
+          "sequence-manager",
+          "--",
+          "start",
+          "-o",
+          "obsMode.conf",
+          "-l",
+          "-a",
+          agentPrefix.toString()
+        )
+
       verify(processExecutor).runCommand(expectedCommand, seqManagerPrefix)
     }
   }

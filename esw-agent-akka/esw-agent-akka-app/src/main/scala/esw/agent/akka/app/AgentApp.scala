@@ -20,15 +20,15 @@ object AgentApp extends CommandApp[AgentCliCommand] {
 
   override def run(command: AgentCliCommand, remainingArgs: RemainingArgs): Unit =
     command match {
-      case StartCommand(prefix) => start(Prefix(prefix), AgentSettings.from(ConfigFactory.load()))
+      case StartCommand(prefix) => start(AgentSettings(Prefix(prefix), ConfigFactory.load()))
     }
 
-  private[esw] def start(prefix: Prefix, agentSettings: AgentSettings): Unit = {
-    val wiring = new AgentWiring(prefix, agentSettings)
-    start(prefix, wiring)
+  private[esw] def start(agentSettings: AgentSettings): Unit = {
+    val wiring = new AgentWiring(agentSettings)
+    start(wiring)
   }
 
-  private[esw] def start(prefix: Prefix, wiring: AgentWiring): Unit = {
+  private[esw] def start(wiring: AgentWiring): Unit = {
     import wiring._
     try {
       actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)

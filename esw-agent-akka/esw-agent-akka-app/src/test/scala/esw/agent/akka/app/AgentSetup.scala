@@ -34,7 +34,6 @@ class AgentSetup extends BaseTestSuite {
   val process: Process                 = mock[Process]
   val processHandle: ProcessHandle     = mock[ProcessHandle]
   implicit val logger: Logger          = mock[Logger]
-  val agentSettings: AgentSettings     = AgentSettings(15.seconds, Cs.channel)
 
   val prefix: Prefix                                    = Prefix("csw.component")
   val componentId: ComponentId                          = ComponentId(prefix, Service)
@@ -44,7 +43,8 @@ class AgentSetup extends BaseTestSuite {
   val redisRegistration: TcpRegistration                = TcpRegistration(redisConn, 100)
   val spawnRedis: ActorRef[SpawnResponse] => SpawnRedis = SpawnRedis(_, prefix, 100, List.empty)
 
-  val agentPrefix                                  = Prefix(randomSubsystem, randomString(10))
+  val agentPrefix: Prefix                          = Prefix(randomSubsystem, randomString(10))
+  val agentSettings: AgentSettings                 = AgentSettings(agentPrefix, 15.seconds, Cs.channel)
   val seqCompName: String                          = randomString(10)
   val seqCompPrefix: Prefix                        = Prefix(agentPrefix.subsystem, seqCompName)
   val seqCompComponentId: ComponentId              = ComponentId(seqCompPrefix, SequenceComponent)

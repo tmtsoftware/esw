@@ -431,7 +431,8 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     val seqCompPrefix = Prefix(ESW, seqCompName)
 
     //spawn ESW agent
-    val agentPrefix = spawnAgent(AgentSettings(1.minute, testCsChannel))
+    val agentPrefix = getRandomAgentPrefix(ESW)
+    spawnAgent(AgentSettings(agentPrefix, 1.minute, testCsChannel))
 
     //verify that agent is available
     resolveAkkaLocation(agentPrefix, Machine)
@@ -480,9 +481,12 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   }
 
   "provision should shutdown all running seq comps and start new as given in provision config | ESW-347, ESW-358, ESW-332" in {
+    val eswAgentPrefix  = getRandomAgentPrefix(ESW)
+    val irisAgentPrefix = getRandomAgentPrefix(IRIS)
     // start required agents to provision and verify they are running
-    val eswAgentPrefix    = spawnAgent(AgentSettings(1.minute, testCsChannel), ESW)
-    val irisAgentPrefix   = spawnAgent(AgentSettings(1.minute, testCsChannel), IRIS)
+    spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, testCsChannel))
+    spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, testCsChannel))
+
     val eswAgentLocation  = resolveAkkaLocation(eswAgentPrefix, Machine)
     val irisAgentLocation = resolveAkkaLocation(irisAgentPrefix, Machine)
 
@@ -509,9 +513,12 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   }
 
   "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349, ESW-332" in {
+
+    val eswAgentPrefix  = getRandomAgentPrefix(ESW)
+    val irisAgentPrefix = getRandomAgentPrefix(IRIS)
     // start required agents
-    val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, testCsChannel), ESW)
-    val irisAgentPrefix = spawnAgent(AgentSettings(1.minute, testCsChannel), IRIS)
+    spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, testCsChannel))
+    spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, testCsChannel))
 
     val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 

@@ -3,9 +3,9 @@ package esw.agent.akka
 import java.nio.file.Paths
 
 import csw.location.api.codec.LocationServiceCodecs
-import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.akka.app.AgentSettings
@@ -30,7 +30,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
   private val redisPrefix              = Prefix(s"esw.event_server")
   private val redisCompId              = ComponentId(redisPrefix, Service)
   private val appVersion               = GitUtil.latestCommitSHA("esw")
-  private var agentPrefix: Prefix      = _
+  private val agentPrefix: Prefix      = Prefix(ESW, "machine_A1")
   private var agentClient: AgentClient = _
 
   private val eswVersion: Some[String] = Some(appVersion)
@@ -38,7 +38,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
   override def beforeAll(): Unit = {
     super.beforeAll()
     val channel: String = "file://" + getClass.getResource("/apps.json").getPath
-    agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
+    spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
     BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
     BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
     agentClient = AgentClient.make(agentPrefix, locationService).futureValue
@@ -55,12 +55,16 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       agentLocation should not be empty
     }
 
-    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325" in {
+    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325, ESW-366" in {
       val darknight = ObsMode("darknight")
       spawnSequenceComponent(irisPrefix.componentName).futureValue should ===(Spawned)
       // Verify registration in location service
       val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
       seqCompLoc.connection shouldBe irisSeqCompConnection
+
+      // ESW-366 verify agent prefix metadata is present in Sequence component akka location
+      val expectedMetadata = Metadata().withAgent(agentPrefix.toString())
+      seqCompLoc.metadata shouldBe expectedMetadata
 
       // start sequencer i.e. load IRIS darknight script
       val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
@@ -74,14 +78,18 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
 
-    "return Spawned on SpawnSequenceManager | ESW-180" in {
+    "return Spawned on SpawnSequenceManager | ESW-180, ESW-366" in {
       val obsModeConfigPath = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
       // spawn sequence manager
       agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, eswVersion).futureValue should ===(Spawned)
 
       // Verify registration in location service
-      val seqManagerConnection = AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))
-      locationService.resolve(seqManagerConnection, 5.seconds).futureValue.value
+      val seqManagerConnection   = AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))
+      val location: AkkaLocation = locationService.resolve(seqManagerConnection, 5.seconds).futureValue.value
+
+      // ESW-366 verify agent prefix metadata is present in Sequence component akka location
+      val expectedMetadata = Metadata().withAgent(agentPrefix.toString())
+      location.metadata shouldBe expectedMetadata
 
       agentClient.killComponent(ComponentId(Prefix(ESW, "sequence_manager"), Service)).futureValue
     }
