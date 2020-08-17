@@ -30,7 +30,7 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
   private val securityDirective          = mock[SecurityDirectives]
 
   private val route =
-    new PostRouteFactory("post-endpoint", new AgentServicePostHandlerImpl(agentService, securityDirective)).make()
+    new PostRouteFactory("post-endpoint", new AgentServicePostHandler(agentService, securityDirective)).make()
 
   private def post(entity: AgentPostRequest): HttpRequest = Post("/post-endpoint", entity)
 

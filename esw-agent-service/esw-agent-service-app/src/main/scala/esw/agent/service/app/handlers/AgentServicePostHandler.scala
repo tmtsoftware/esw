@@ -10,7 +10,7 @@ import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, 
 import esw.agent.service.app.auth.EswUserRolePolicy
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
-class AgentServicePostHandlerImpl(agentService: AgentService, securityDirective: SecurityDirectives)
+class AgentServicePostHandler(agentService: AgentService, securityDirective: SecurityDirectives)
     extends HttpPostHandler[AgentPostRequest]
     with ServerHttpCodecs {
 

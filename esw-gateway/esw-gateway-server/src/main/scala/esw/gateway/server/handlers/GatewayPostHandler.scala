@@ -19,7 +19,7 @@ import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
 import scala.concurrent.Future
 
-class GatewayPostHandlerImpl(
+class GatewayPostHandler(
     alarmApi: AlarmApi,
     resolver: Resolver,
     eventApi: EventApi,

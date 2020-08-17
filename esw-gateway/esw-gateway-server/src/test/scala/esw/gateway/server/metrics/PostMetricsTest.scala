@@ -16,7 +16,7 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
 import esw.gateway.server.CswWiringMocks
-import esw.gateway.server.handlers.GatewayPostHandlerImpl
+import esw.gateway.server.handlers.GatewayPostHandler
 import esw.ocs.api.protocol.SequencerPostRequest.Pause
 import esw.testcommons.BaseTestSuite
 import io.prometheus.client.CollectorRegistry
@@ -37,7 +37,7 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
   private val commandRoles       = Future.successful(CommandRoles.empty)
 
   private val postHandlerImpl =
-    new GatewayPostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)
+    new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)
   private val postRoute = new PostRouteFactory[PostRequest]("post-endpoint", postHandlerImpl).make(true)
   private val prefix    = Prefix("esw.test")
 

@@ -15,7 +15,7 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
-import esw.gateway.server.handlers.{GatewayPostHandlerImpl, GatewayWebsocketHandlerImpl}
+import esw.gateway.server.handlers.{GatewayPostHandler, GatewayWebsocketHandler}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.api.ContentType
@@ -47,10 +47,10 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   private[esw] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, cswWiring.locationService)
 
   lazy val postHandler: HttpPostHandler[PostRequest] =
-    new GatewayPostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
+    new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
 
   def websocketHandlerFactory(contentType: ContentType): WebsocketHandler[WebsocketRequest] =
-    new GatewayWebsocketHandlerImpl(resolver, eventApi, contentType)
+    new GatewayWebsocketHandler(resolver, eventApi, contentType)
 
   lazy val routes: Route = RouteFactory.combine(metricsEnabled)(
     new PostRouteFactory[PostRequest]("post-endpoint", postHandler),

@@ -26,7 +26,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol._
-import esw.gateway.server.handlers.GatewayPostHandlerImpl
+import esw.gateway.server.handlers.GatewayPostHandler
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
@@ -47,7 +47,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   private val commandRoles       = Future.successful(CommandRoles.empty)
 
   private val postHandlerImpl =
-    new GatewayPostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)
+    new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)
   private val route       = new PostRouteFactory("post-endpoint", postHandlerImpl).make()
   private val source      = Prefix("esw.test")
   private val destination = Prefix("tcs.test")

@@ -21,7 +21,7 @@ import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCom
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.CswWiringMocks
-import esw.gateway.server.handlers.GatewayWebsocketHandlerImpl
+import esw.gateway.server.handlers.GatewayWebsocketHandler
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
@@ -46,7 +46,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 
   private val eventApi         = new EventImpl(eventService, eventSubscriberUtil)
-  private val websocketHandler = new GatewayWebsocketHandlerImpl(resolver, eventApi, _)
+  private val websocketHandler = new GatewayWebsocketHandler(resolver, eventApi, _)
   private val wsRoute          = new WebsocketRouteFactory("websocket-endpoint", websocketHandler).make(metricsEnabled = true)
 
   private val runId       = Id("123")
