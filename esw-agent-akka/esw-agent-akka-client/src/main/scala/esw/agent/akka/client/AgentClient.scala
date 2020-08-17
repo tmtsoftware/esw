@@ -8,7 +8,7 @@ import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
@@ -38,11 +38,9 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
   def spawnRedis(prefix: Prefix, port: Int, redisArguments: List[String]): Future[SpawnResponse] =
     agentRef ? (SpawnRedis(_, prefix, port, redisArguments))
 
-  def killComponent(componentId: ComponentId): Future[KillResponse] =
-    agentRef ? (KillComponent(_, componentId))
+  def killComponent(location: Location): Future[KillResponse] = agentRef ? (KillComponent(_, location))
 
-  def getComponentStatus(componentId: ComponentId): Future[ComponentStatus] =
-    agentRef ? (GetComponentStatus(_, componentId))
+  def getComponentStatus(componentId: ComponentId): Future[ComponentStatus] = agentRef ? (GetComponentStatus(_, componentId))
 
   def getAgentStatus: Future[AgentStatus] = agentRef ? GetAgentStatus
 }

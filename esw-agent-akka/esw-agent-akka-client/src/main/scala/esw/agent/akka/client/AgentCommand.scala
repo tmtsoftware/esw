@@ -78,7 +78,7 @@ object AgentCommand {
     }
   }
 
-  case class KillComponent(replyTo: ActorRef[KillResponse], componentId: ComponentId)                      extends AgentRemoteCommand
+  case class KillComponent(replyTo: ActorRef[KillResponse], location: Location)                            extends AgentRemoteCommand
   case class GetComponentStatus(replyTo: ActorRef[ComponentStatus], componentId: ComponentId)              extends AgentRemoteCommand
   case class GetAgentStatus(replyTo: ActorRef[AgentStatus])                                                extends AgentRemoteCommand
   private[agent] case class ProcessExited(componentId: ComponentId)                                        extends AgentCommand

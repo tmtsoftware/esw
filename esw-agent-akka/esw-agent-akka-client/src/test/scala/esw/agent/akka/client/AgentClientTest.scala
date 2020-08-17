@@ -7,7 +7,7 @@ import akka.actor.typed.ActorRef
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.{AkkaLocation, ComponentId, Location, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
@@ -89,10 +89,11 @@ class AgentClientTest extends ActorTestSuit {
   "killComponent" should {
     "send KillComponent message to agent and return a future with agent response" in {
       val componentId = ComponentId(Prefix("esw.test3"), SequenceComponent)
+      val location    = mock[Location]
       withBehavior {
-        case KillComponent(replyTo, _) => replyTo ! Killed
+        case KillComponent(replyTo, `location`) => replyTo ! Killed
       } check { ac =>
-        ac.killComponent(componentId).futureValue should ===(Killed)
+        ac.killComponent(location).futureValue should ===(Killed)
       }
     }
   }

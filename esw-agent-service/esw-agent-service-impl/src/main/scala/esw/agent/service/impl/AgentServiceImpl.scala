@@ -41,19 +41,20 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
       .mapToAdt(identity, Failed)
 
   override def killComponent(connection: Connection): Future[KillResponse] =
-    getAgentClient(connection).flatMapRight(_.killComponent(connection.componentId)).mapToAdt(identity, Failed)
+    getComponentLocation(connection)
+      .flatMapE { location =>
+        Future.successful(getAgentPrefix(location)).flatMapE(agentClient).flatMapRight(_.killComponent(location))
+      }
+      .mapToAdt(identity, Failed)
 
   private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
-    AgentClient.make(agentPrefix, locationService).transform(x => Success(x.toEither.left.map(_.getMessage)))
+    AgentClient.make(agentPrefix, locationService).transform(client => Success(client.toEither.left.map(_.getMessage)))
 
   private def getComponentLocation(connection: Connection): Future[Either[String, Location]] =
     locationServiceUtil.find(connection.of[Location]).mapLeft(_.msg)
 
   private def getAgentPrefix(location: Location): Either[String, Prefix] =
-    location.metadata.metadata.get("agent-prefix").toRight(s"$location does not contain agent prefix").flatMap(makePrefix)
-
-  private def getAgentClient(connection: Connection): Future[Either[String, AgentClient]] =
-    getComponentLocation(connection).mapRightE(getAgentPrefix).flatMapE(agentClient)
+    location.metadata.getAgentPrefix.toRight(s"$location metadata does not contain agent prefix").flatMap(makePrefix)
 
   private def makePrefix(prefix: String): Either[String, Prefix] =
     Try(Prefix(prefix)).toEither.left.map(_.getMessage)

@@ -16,6 +16,7 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.jdk.OptionConverters.RichOptional
 import scala.util.Try
 import scala.util.chaining.scalaUtilChainingOps
 import scala.util.control.NonFatal
@@ -26,7 +27,6 @@ class ProcessManager(
     agentSettings: AgentSettings
 )(implicit system: ActorSystem[_], log: Logger) {
   import agentSettings._
-  import log._
   import system.executionContext
 
   def spawn(command: SpawnCommand, agentActor: ActorRef[AgentCommand]): Future[Either[String, Process]] =
@@ -35,17 +35,33 @@ class ProcessManager(
       .flatMapE(process => waitForComponentRegistration(command).flatMapE(_ => reconcile(process, command.connection)))
 
   // un-registration is done as a part of process.onComplete callback
-  def kill(process: Process): Future[KillResponse] =
-    process.kill(10.seconds).map(_ => Killed).recover {
-      case NonFatal(e) => Failed(s"Failed to kill component process, reason: $e".tap(warn(_)))
+  def kill(location: Location): Future[KillResponse] =
+    getProcessHandle(location) match {
+      case Left(e) => Future.successful(Failed(e))
+      case Right(process) =>
+        process.kill(10.seconds).map(_ => Killed).recover {
+          case NonFatal(e) => Failed(s"Failed to kill component process, reason: ${e.getMessage}".tap(log.warn(_)))
+        }
     }
+
+  def getProcessHandle(location: Location): Either[String, ProcessHandle] =
+    location.metadata.getPID
+      .toRight(s"$location metadata does not contain Pid")
+      .flatMap(parsePid)
+
+  def parsePid(pid: String): Either[String, ProcessHandle] =
+    Try(processHandle(pid)).toEither.left
+      .map(_.getMessage)
+      .flatMap(_.toRight(s"Pid:$pid process does not exist"))
+
+  def processHandle(pid: String): Option[ProcessHandle] = ProcessHandle.of(pid.toLong).toScala
 
   private def verifyComponentIsNotAlreadyRegistered(connection: Connection): Future[Either[String, Unit]] =
     checkRegistration(connection, 0.seconds) {
       case None => Right(())
       case Some(l) =>
         val name = connection.componentId.fullName
-        Left(s"Component $name is already registered with location service at location $l".tap(warn(_)))
+        Left(s"Component $name is already registered with location service at location $l".tap(log.warn(_)))
     }
 
   private def startComponent(command: SpawnCommand, agentActor: ActorRef[AgentCommand]) =
@@ -58,7 +74,7 @@ class ProcessManager(
   private def reconcile(process: Process, connection: Connection) =
     if (!process.isAlive)
       unregisterComponent(connection).transform(_ =>
-        Try(Left("Process terminated before registration was successful".tap(warn(_))))
+        Try(Left("Process terminated before registration was successful".tap(log.warn(_))))
       )
     else Future.successful(Right(process))
 
@@ -72,7 +88,7 @@ class ProcessManager(
     locationService.register(registration).map(_ => Right(())).recover {
       case NonFatal(e) =>
         val compName = registration.connection.componentId.fullName
-        Left(s"Failed to register component $compName with location service, reason: ${e.getMessage}".tap(error(_)))
+        Left(s"Failed to register component $compName with location service, reason: ${e.getMessage}".tap(log.error(_)))
     }
 
   private def unregisterComponent(connection: Connection): Future[Done] = locationService.unregister(connection)
@@ -82,19 +98,19 @@ class ProcessManager(
   ): Future[Either[String, Unit]] =
     locationService.resolve(connection.of[Location], timeout).map(check).recover {
       case NonFatal(e) =>
-        Left(s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(error(_)))
+        Left(s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
     }
 
   private def waitForRegistration(connection: Connection, timeout: FiniteDuration): Future[Either[String, Unit]] =
     checkRegistration(connection, timeout) {
       case Some(_) => Right(())
-      case None    => Left(s"Component ${connection.componentId.fullName} is not registered with location service".tap(warn(_)))
+      case None    => Left(s"Component ${connection.componentId.fullName} is not registered with location service".tap(log.warn(_)))
     }
 
   private def onProcessExit(process: Process, connection: Connection, agentActor: ActorRef[AgentCommand]): Unit =
-    process.onComplete { _ =>
+    process.toHandle.onComplete { _ =>
       val compId = connection.componentId
-      warn(s"Process exited with exit value: ${process.exitValue()}, unregistering component ${compId.fullName}")
+      log.warn(s"Process exited with exit value: ${process.exitValue()}, unregistering component ${compId.fullName}")
       agentActor ! ProcessExited(compId)
       unregisterComponent(connection)
     }

@@ -11,9 +11,10 @@ import scala.util.Try
 
 object ProcessExt {
 
-  implicit class ProcessOps(private val process: Process) extends AnyVal {
+  implicit class ProcessOps(private val parent: ProcessHandle) extends AnyVal {
 
-    def onComplete[T](f: Try[Process] => T)(implicit executor: ExecutionContext): Unit = process.onExit().asScala.onComplete(f)
+    def onComplete[T](f: Try[ProcessHandle] => T)(implicit executor: ExecutionContext): Unit =
+      parent.onExit().asScala.onComplete(f)
 
     def kill(terminationTimeout: FiniteDuration)(implicit system: ActorSystem[_]): Future[ProcessHandle] = {
       import system.executionContext
@@ -24,12 +25,12 @@ object ProcessExt {
       def kill(p: ProcessHandle) =
         destroy(p).timeout(terminationTimeout).recoverWith(_ => destroyForcibly(p))
 
-      val parent   = process.toHandle
-      val children = process.descendants().toScala[List]
-
-      Future
-        .traverse(children)(kill)
-        .transformWith(_ => kill(parent))
+      // descendants can throw exception
+      Future(parent.descendants().toScala[List]).flatMap { children =>
+        Future
+          .traverse(children)(kill)
+          .transformWith(_ => kill(parent))
+      }
     }
   }
 

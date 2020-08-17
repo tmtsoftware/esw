@@ -5,14 +5,14 @@ import java.nio.file.Paths
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models._
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.ComponentStatus.Running
-import esw.agent.service.api.models.{AgentStatus, Killed, Spawned}
+import esw.agent.service.api.models.{AgentStatus, KillResponse, Killed, Spawned}
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
@@ -73,7 +73,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       // verify sequencer location from load script and looked up from location service is the same
       loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
 
-      agentClient.killComponent(ComponentId(irisPrefix, SequenceComponent)).futureValue should ===(Killed)
+      agentClient.killComponent(seqCompLoc).futureValue should ===(Killed)
       // Verify not registered in location service
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
@@ -91,15 +91,14 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       val expectedMetadata = Metadata().withAgent(agentPrefix.toString())
       location.metadata shouldBe expectedMetadata
 
-      agentClient.killComponent(ComponentId(Prefix(ESW, "sequence_manager"), Service)).futureValue
+      agentClient.killComponent(location).futureValue
     }
 
     "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237, ESW-325" in {
       agentClient.spawnRedis(redisPrefix, 6380, List.empty).futureValue should ===(Spawned)
       // Verify registration in location service
-      locationService.resolve(TcpConnection(ComponentId(redisPrefix, Service)), 5.seconds).futureValue should not be empty
-
-      agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
+      val redisLocation = locationService.resolve(TcpConnection(ComponentId(redisPrefix, Service)), 5.seconds).futureValue.value
+      agentClient.killComponent(redisLocation).futureValue
     }
 
     "return status of components available on agent for a GetAgentStatus message | ESW-286" in {
@@ -113,9 +112,14 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       agentStatus should ===(AgentStatus(Map(irisCompId -> Running, redisCompId -> Running)))
 
       // cleanup
-      agentClient.killComponent(irisCompId).futureValue
-      agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
+      killComponent(irisSeqCompConnection)
+      killComponent(TcpConnection(redisCompId))
     }
+  }
+
+  private def killComponent(connection: Connection): KillResponse = {
+    val location = locationService.find(connection.of[Location]).futureValue.value
+    agentClient.killComponent(location).futureValue
   }
 
   override def afterAll(): Unit = {

@@ -26,14 +26,13 @@ class ProcessExtTest extends BaseTestSuite {
 
   "onComplete" must {
     "execute callback when process exits | ESW-325" in {
-      val process       = mock[Process]
-      var exitCode: Int = -1
+      val process = mock[ProcessHandle]
+      var isAlive = true
 
-      when(process.onExit()).thenReturn(CompletableFuture.completedFuture(process))
-      when(process.exitValue()).thenReturn(0)
+      when(process.onExit()).thenAnswer(CompletableFuture.completedFuture(process))
 
-      process.onComplete(t => exitCode = t.success.value.exitValue())
-      eventually(exitCode should ===(0))
+      process.onComplete(t => isAlive = t.success.value.isAlive)
+      eventually(isAlive should ===(false))
     }
   }
 
@@ -43,13 +42,12 @@ class ProcessExtTest extends BaseTestSuite {
       val mockedProcesses = new MockedProcesses
       import mockedProcesses._
 
-      when(process.toHandle).thenReturn(parent)
-      when(process.descendants()).thenReturn(childrenStream)
+      when(parent.descendants()).thenReturn(childrenStream)
 
       mockOnExitSuccess(parent, child1, child2)
       mockDestroy(parent, child1, child2)
 
-      process.kill(5.seconds).futureValue should ===(parent)
+      parent.kill(5.seconds).futureValue should ===(parent)
       verifyDestroy(List(child1, child2, parent))
       verifyDestroyForcibly(List(child1, child2, parent), never)
     }
@@ -58,14 +56,13 @@ class ProcessExtTest extends BaseTestSuite {
       val mockedProcesses = new MockedProcesses
       import mockedProcesses._
 
-      when(process.toHandle).thenReturn(parent)
-      when(process.descendants()).thenReturn(childrenStream)
+      when(parent.descendants()).thenReturn(childrenStream)
 
       mockOnExit((parent, delayedFuture(parent, 500.millis).asJava.toCompletableFuture))
       mockOnExitSuccess(child1, child2)
       mockDestroy(parent, child1, child2)
 
-      process.kill(100.milli).futureValue should ===(parent)
+      parent.kill(100.milli).futureValue should ===(parent)
       verifyDestroy(List(child1, child2, parent))
 
       // graceful termination succeeds for child1 and child2
@@ -98,7 +95,6 @@ class ProcessExtTest extends BaseTestSuite {
   }
 
   class MockedProcesses {
-    val process: Process                             = mock[Process]
     val parent: ProcessHandle                        = mock[ProcessHandle]
     val child1: ProcessHandle                        = mock[ProcessHandle]
     val child2: ProcessHandle                        = mock[ProcessHandle]

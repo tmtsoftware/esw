@@ -10,7 +10,6 @@ import esw.agent.service.api.models.ComponentStatus.NotAvailable
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
-import scala.concurrent.Future
 import scala.util.chaining.scalaUtilChainingOps
 
 class AgentActor(processManager: ProcessManager)(implicit log: Logger) {
@@ -19,8 +18,6 @@ class AgentActor(processManager: ProcessManager)(implicit log: Logger) {
   private[agent] def behavior(state: AgentState): Behaviors.Receive[AgentCommand] =
     Behaviors.receive[AgentCommand] { (ctx, command) =>
       import ctx.executionContext
-
-      def swap[M](x: Option[Future[M]]): Future[Option[M]] = Future.sequence(x.toList).map(_.headOption)
 
       command match {
         //already spawning or registered
@@ -41,11 +38,8 @@ class AgentActor(processManager: ProcessManager)(implicit log: Logger) {
 
           behavior(state.add(cmd.componentId, ComponentState(None)))
 
-        case KillComponent(replyTo, componentId) =>
-          lazy val failed = Failed(s"Component ${componentId.fullName} is not running on this agent".tap(warn(_)))
-          swap(state.components.get(componentId).flatMap(_.process.map(processManager.kill)))
-            .map(_.fold[KillResponse](failed)(identity))
-            .map(replyTo ! _)
+        case KillComponent(replyTo, location) =>
+          processManager.kill(location).map(replyTo ! _)
           Behaviors.same
 
         case UpdateComponentState(componentId, componentState) => behavior(state.add(componentId, componentState))
