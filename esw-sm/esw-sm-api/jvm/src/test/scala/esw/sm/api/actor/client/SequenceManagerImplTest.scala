@@ -11,9 +11,9 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol._
-import esw.testcommons.{AskProxyTestKit, BaseTestSuite}
+import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
-class SequenceManagerImplTest extends BaseTestSuite {
+class SequenceManagerImplTest extends ActorTestSuit {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
 
   private val askProxyTestKit = new AskProxyTestKit[SequenceManagerMsg, SequenceManagerImpl] {

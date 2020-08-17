@@ -13,11 +13,11 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
-import esw.testcommons.{AskProxyTestKit, BaseTestSuite}
+import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.util.Random
 
-class SequenceComponentImplTest extends BaseTestSuite {
+class SequenceComponentImplTest extends ActorTestSuit {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SequenceComponentImplTest")
 
   private val askProxyTestKit = new AskProxyTestKit[SequenceComponentMsg, SequenceComponentImpl] {
