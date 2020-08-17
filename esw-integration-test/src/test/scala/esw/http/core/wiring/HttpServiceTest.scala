@@ -30,7 +30,7 @@ class HttpServiceTest extends EswTestKit {
       import wiring._
       import wiring.cswWiring.actorRuntime
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
-      val metadata    = Metadata(Map("key1" -> "value"))
+      val metadata    = Metadata().add("key1", "value")
 
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false
 

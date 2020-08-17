@@ -22,7 +22,7 @@ trait SequenceManagerData extends CommandData {
   val componentId: ComponentId                         = ComponentId(sequencerPrefix, Sequencer)
   val agentComponentId: ComponentId                    = ComponentId(agentPrefix, Machine)
   val seqCompComponentId: ComponentId                  = ComponentId(seqCompPrefix, SequenceComponent)
-  val akkaLocation: AkkaLocation                       = AkkaLocation(AkkaConnection(componentId), new URI("uri"), Metadata(Map("key1" -> "value1")))
+  val akkaLocation: AkkaLocation                       = AkkaLocation(AkkaConnection(componentId), new URI("uri"), Metadata().add("key1", "value"))
   val sequenceComponentStatus: SequenceComponentStatus = SequenceComponentStatus(seqCompComponentId, Some(akkaLocation))
   val agentSeqCompsStatus: AgentSeqCompsStatus         = AgentSeqCompsStatus(agentComponentId, List(sequenceComponentStatus))
   val agentProvisionConfig: AgentProvisionConfig       = AgentProvisionConfig(agentPrefix, 3)

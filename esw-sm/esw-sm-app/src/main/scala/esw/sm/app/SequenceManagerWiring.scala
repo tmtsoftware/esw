@@ -86,7 +86,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
 
   private lazy val config           = actorSystem.settings.config
   private lazy val connection       = AkkaConnection(ComponentId(prefix, ComponentType.Service))
-  private lazy val locationMetadata = agentPrefix.map(prefix => Metadata(Map("agent-prefix" -> prefix))).getOrElse(Metadata.empty)
+  private lazy val locationMetadata = agentPrefix.map(prefix => Metadata().withAgent(prefix)).getOrElse(Metadata.empty)
   private lazy val registration     = AkkaRegistrationFactory.make(connection, sequenceManagerRef, locationMetadata)
 
   private lazy val sequenceManager: SequenceManagerApi =

@@ -33,7 +33,7 @@ trait SequencerData extends CommandData {
   val diagnosticHookFailed: DiagnosticHookFailed.type = DiagnosticHookFailed
   val operationsHookFailed: OperationsHookFailed.type = OperationsHookFailed
   val akkaConnection: AkkaConnection                  = AkkaConnection(ComponentId(prefix, ComponentType.Assembly))
-  val akkaLocation: AkkaLocation                      = AkkaLocation(akkaConnection, new URI("path"), Metadata(Map("key1" -> "value1")))
+  val akkaLocation: AkkaLocation                      = AkkaLocation(akkaConnection, new URI("path"), Metadata().add("key1", "value"))
 
   val loadSequence: LoadSequence                      = LoadSequence(sequence)
   val startSequence: StartSequence.type               = StartSequence

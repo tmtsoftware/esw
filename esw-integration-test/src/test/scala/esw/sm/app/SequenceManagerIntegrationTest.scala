@@ -79,7 +79,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
 
   "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-173, ESW-366, ESW-332" in {
     val agentPrefix      = "ESW.agent1"
-    val expectedMetadata = Metadata(Map("agent-prefix" -> agentPrefix))
+    val expectedMetadata = Metadata().withAgent(agentPrefix)
 
     // resolving sequence manager fails for Akka and Http
     intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
