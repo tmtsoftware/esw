@@ -73,7 +73,7 @@ class AgentSetup extends BaseTestSuite {
     val processManager: ProcessManager = new ProcessManager(locationService, processExecutor, agentSettings) {
       override def processHandle(pid: String): Option[ProcessHandle] = Some(mockedProcessHandle)
     }
-    system.systemActorOf(new AgentActor(processManager).behavior(AgentState.empty), name)
+    system.systemActorOf(new AgentActor(processManager).behavior, name)
   }
 
   def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {

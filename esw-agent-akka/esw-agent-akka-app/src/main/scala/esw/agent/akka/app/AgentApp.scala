@@ -48,7 +48,6 @@ object AgentApp extends CommandApp[AgentCliCommand] {
       case NonFatal(ex) =>
         ex.printStackTrace()
         log.error("agent-app crashed", Map("machine-name" -> prefix), ex)
-        //shutdown is required so that actor system shuts down gracefully and jvm process can exit
         Await.result(actorRuntime.shutdown(UnknownReason), timeout.duration)
         exit(1)
     }

@@ -1,16 +1,15 @@
 package esw.agent.akka.app.process
 
 import akka.Done
-import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.actor.typed.ActorSystem
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.ext.ProcessExt.ProcessOps
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
-import esw.agent.akka.client.AgentCommand
+import esw.agent.akka.client.AgentCommand.SpawnCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
-import esw.agent.akka.client.AgentCommand.{ProcessExited, SpawnCommand}
 import esw.agent.service.api.models.{Failed, KillResponse, Killed}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
@@ -29,9 +28,9 @@ class ProcessManager(
   import agentSettings._
   import system.executionContext
 
-  def spawn(command: SpawnCommand, agentActor: ActorRef[AgentCommand]): Future[Either[String, Process]] =
+  def spawn(command: SpawnCommand): Future[Either[String, Process]] =
     verifyComponentIsNotAlreadyRegistered(command.connection)
-      .flatMapE(_ => startComponent(command, agentActor))
+      .flatMapE(_ => startComponent(command))
       .flatMapE(process => waitForComponentRegistration(command).flatMapE(_ => reconcile(process, command.connection)))
 
   // un-registration is done as a part of process.onComplete callback
@@ -64,11 +63,11 @@ class ProcessManager(
         Left(s"Component $name is already registered with location service at location $l".tap(log.warn(_)))
     }
 
-  private def startComponent(command: SpawnCommand, agentActor: ActorRef[AgentCommand]) =
+  private def startComponent(command: SpawnCommand) =
     Future.successful(
       processExecutor
         .runCommand(command.executableCommandStr(coursierChannel, agentSettings.prefix), command.prefix)
-        .map(_.tap(onProcessExit(_, command.connection, agentActor)))
+        .map(_.tap(onProcessExit(_, command.connection)))
     )
 
   private def reconcile(process: Process, connection: Connection) =
@@ -107,11 +106,10 @@ class ProcessManager(
       case None    => Left(s"Component ${connection.componentId.fullName} is not registered with location service".tap(log.warn(_)))
     }
 
-  private def onProcessExit(process: Process, connection: Connection, agentActor: ActorRef[AgentCommand]): Unit =
+  private def onProcessExit(process: Process, connection: Connection): Unit =
     process.toHandle.onComplete { _ =>
       val compId = connection.componentId
       log.warn(s"Process exited with exit value: ${process.exitValue()}, unregistering component ${compId.fullName}")
-      agentActor ! ProcessExited(compId)
       unregisterComponent(connection)
     }
 }

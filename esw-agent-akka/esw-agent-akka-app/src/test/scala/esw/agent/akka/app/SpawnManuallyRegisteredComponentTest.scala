@@ -56,24 +56,6 @@ class SpawnManuallyRegisteredComponentTest extends AgentSetup {
       verify(locationService, never).register(redisRegistration)
     }
 
-    "reply 'Failed' and not spawn new process when it is already spawned on the agent | ESW-237" in {
-      val agentActorRef = spawnAgentActor(name = "test-actor4")
-      val probe1        = TestProbe[SpawnResponse]()
-      val probe2        = TestProbe[SpawnResponse]()
-
-      mockLocationService()
-      mockSuccessfulProcess()
-
-      agentActorRef ! spawnRedis(probe1.ref)
-      agentActorRef ! spawnRedis(probe2.ref)
-
-      probe1.expectMessage(Spawned)
-      probe2.expectMessage(Failed(s"Component ${redisConn.componentId.fullName} is already running on this agent"))
-
-      //ensure redis is registered once
-      verify(locationService).register(redisRegistration)
-    }
-
     "reply 'Failed' when process fails to spawn | ESW-237" in {
       val agentActorRef = spawnAgentActor(name = "test-actor5")
       val probe         = TestProbe[SpawnResponse]()

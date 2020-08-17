@@ -69,22 +69,6 @@ class SpawnSelfRegisteredComponentTest extends AgentSetup {
       )
     }
 
-    "reply 'Failed' and not spawn new process when it is already spawned on the agent | ESW-237" in {
-      val agentActorRef = spawnAgentActor(name = "test-actor4")
-      val probe1        = TestProbe[SpawnResponse]()
-      val probe2        = TestProbe[SpawnResponse]()
-
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
-
-      mockSuccessfulProcess()
-
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, agentPrefix, seqCompName, None)
-      agentActorRef ! SpawnSequenceComponent(probe2.ref, agentPrefix, seqCompName, None)
-
-      probe1.expectMessage(Spawned)
-      probe2.expectMessage(Failed(s"Component ${seqCompComponentId.fullName} is already running on this agent"))
-    }
-
     "reply 'Failed' when process fails to spawn | ESW-237" in {
       val agentActorRef = spawnAgentActor(name = "test-actor5")
       val probe         = TestProbe[SpawnResponse]()

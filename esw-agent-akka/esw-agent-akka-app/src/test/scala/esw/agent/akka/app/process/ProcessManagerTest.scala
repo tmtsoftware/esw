@@ -2,6 +2,7 @@ package esw.agent.akka.app.process
 
 import java.net.URI
 
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
@@ -10,8 +11,12 @@ import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.AgentSettings
-import esw.agent.service.api.models.Failed
+import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.service.api.models.{Failed, SpawnResponse}
 import esw.testcommons.BaseTestSuite
+
+import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
 
 class ProcessManagerTest extends BaseTestSuite {
 
@@ -31,6 +36,22 @@ class ProcessManagerTest extends BaseTestSuite {
   override protected def afterAll(): Unit = {
     actorSystem.terminate()
     actorSystem.whenTerminated.futureValue
+  }
+
+  "spawn" must {
+    "return failed response when component is already registered | ESW-237, ESW-367" in {
+      val probe                  = TestProbe[SpawnResponse]()
+      val spawnSequenceComponent = SpawnSequenceComponent(probe.ref, Prefix("ESW.primary"), "darknight", None)
+      val connection             = spawnSequenceComponent.connection
+      val location               = AkkaLocation(connection, uri, Metadata.empty)
+
+      when(locationService.resolve(connection, 0.seconds)).thenReturn(Future.successful(Some(location)))
+      val manager = new ProcessManager(locationService, processExecutor, agentSetting)
+      manager.spawn(spawnSequenceComponent).futureValue should ===(
+        Left(s"Component ${connection.componentId.fullName} is already registered with location service at location $location")
+      )
+      verify(locationService).resolve(connection, 0.seconds)
+    }
   }
 
   "kill" must {

@@ -11,9 +11,9 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
+import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.akka.client.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
 import esw.agent.service.api.models._
 
 import scala.concurrent.Future
@@ -39,10 +39,6 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
     agentRef ? (SpawnRedis(_, prefix, port, redisArguments))
 
   def killComponent(location: Location): Future[KillResponse] = agentRef ? (KillComponent(_, location))
-
-  def getComponentStatus(componentId: ComponentId): Future[ComponentStatus] = agentRef ? (GetComponentStatus(_, componentId))
-
-  def getAgentStatus: Future[AgentStatus] = agentRef ? GetAgentStatus
 }
 
 object AgentClient {
