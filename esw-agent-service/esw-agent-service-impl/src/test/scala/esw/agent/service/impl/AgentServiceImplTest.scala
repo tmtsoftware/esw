@@ -8,7 +8,7 @@ import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Failed, Killed, SpawnResponse}
 import esw.testcommons.BaseTestSuite
@@ -37,17 +37,12 @@ class AgentServiceImplTest extends BaseTestSuite {
 
     "spawnSequenceComponent Api" must {
 
-      val subsystem     = mock[Subsystem]
       val spawnRes      = mock[SpawnResponse]
       val componentName = randomString(10)
 
       "be able to send spawn sequence component message to given agent" in {
-
         when(agentClientMock.spawnSequenceComponent(componentName, version)).thenReturn(Future.successful(spawnRes))
-        when(agentPrefix.subsystem).thenReturn(subsystem)
-
         agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue
-
         verify(agentClientMock).spawnSequenceComponent(componentName, version)
       }
 
@@ -105,12 +100,11 @@ class AgentServiceImplTest extends BaseTestSuite {
       val componentConnection = AkkaConnection(componentId)
       val agentPrefixStr      = "IRIS.filterWheel"
       val agentPrefix         = Prefix(agentPrefixStr)
-      val location            = AkkaLocation(componentConnection, new URI("xyz"), Metadata(Map("agent-prefix" -> agentPrefixStr)))
+      val componentLocation   = AkkaLocation(componentConnection, new URI("xyz"), Metadata(Map("agent-prefix" -> agentPrefixStr)))
 
-      "be able to kill component for the given componentId | ESW-361" in {
+      "be able to kill component for the given componentId | ESW-361, ESW-367" in {
         when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
-        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(location)))
-        when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
+        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(componentLocation)))
         agentService.killComponent(componentConnection).futureValue
 
         verify(locationService).find(componentConnection)
@@ -121,9 +115,8 @@ class AgentServiceImplTest extends BaseTestSuite {
         val locationService = mock[LocationService]
         val agentConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
 
-        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(location)))
+        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(componentLocation)))
         when(locationService.find(agentConnection)).thenReturn(Future.successful(None))
-        when(agentClientMock.killComponent(componentId)).thenReturn(Future.successful(Killed))
 
         val agentService = new AgentServiceImpl(locationService)
         agentService.killComponent(componentConnection).futureValue should ===(
@@ -132,6 +125,25 @@ class AgentServiceImplTest extends BaseTestSuite {
 
         verify(locationService).find(agentConnection)
       }
+
+      "be able to return an error if component location does not contain agent prefix | ESW-361, ESW-367" in {
+        val compLocWithoutAgentPrefix = AkkaLocation(componentConnection, new URI("xyz"), Metadata.empty)
+        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(compLocWithoutAgentPrefix)))
+
+        agentService.killComponent(componentConnection).futureValue should ===(
+          Failed(s"$compLocWithoutAgentPrefix does not contain agent prefix")
+        )
+      }
+
+      "be able to return an error if component location does not contains wrong agent prefix | ESW-361, ESW-367" in {
+        val compLocWithWrongAgentPrefix =
+          AkkaLocation(componentConnection, new URI("xyz"), Metadata(Map("agent-prefix" -> "XYZ-filterWheel")))
+        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(compLocWithWrongAgentPrefix)))
+        agentService.killComponent(componentConnection).futureValue should ===(
+          Failed(s"requirement failed: prefix must have a '.' separator")
+        )
+      }
+
     }
 
     "agentClient Api" must {
