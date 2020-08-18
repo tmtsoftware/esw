@@ -9,11 +9,12 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
-import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models._
+import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 
 import scala.concurrent.Future
 import scala.jdk.DurationConverters.JavaDurationOps
@@ -38,11 +39,12 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
 }
 
 object AgentClient {
-  def make(agentPrefix: Prefix, locationService: LocationService)(implicit actorSystem: ActorSystem[_]): Future[AgentClient] = {
+  def make(agentPrefix: Prefix, locationService: LocationServiceUtil)(implicit
+      actorSystem: ActorSystem[_]
+  ): Future[Either[EswLocationError.FindLocationError, AgentClient]] = {
     import actorSystem.executionContext
     locationService
       .find(AkkaConnection(ComponentId(agentPrefix, Machine)))
-      .map(_.getOrElse(throw AgentNotFoundException(s"could not resolve agent with prefix: $agentPrefix")))
-      .map(new AgentClient(_))
+      .mapRight(new AgentClient(_))
   }
 }

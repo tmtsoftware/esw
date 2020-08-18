@@ -12,6 +12,7 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Killed, Spawned}
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
@@ -28,6 +29,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
   private val appVersion               = GitUtil.latestCommitSHA("esw")
   private val agentPrefix: Prefix      = Prefix(ESW, "machine_A1")
   private var agentClient: AgentClient = _
+  private val locationServiceUtil      = new LocationServiceUtil(locationService)
 
   private val eswVersion: Some[String] = Some(appVersion)
 
@@ -37,7 +39,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
     spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
     BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
     BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
-    agentClient = AgentClient.make(agentPrefix, locationService).futureValue
+    agentClient = AgentClient.make(agentPrefix, locationServiceUtil).rightValue
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
