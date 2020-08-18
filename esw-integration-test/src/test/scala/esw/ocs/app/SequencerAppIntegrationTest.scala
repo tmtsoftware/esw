@@ -7,7 +7,7 @@ import akka.util.Timeout
 import csw.command.client.SequencerCommandServiceImpl
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Subsystem.{CSW, ESW}
@@ -27,14 +27,14 @@ class SequencerAppIntegrationTest extends EswTestKit {
   override def afterEach(): Unit = locationService.unregisterAll()
 
   "SequenceComponent command" must {
-    "start sequence component with provided subsystem and prefix and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214" in {
+    "start sequence component with provided subsystem and prefix and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214, ESW-366" in {
       val name: String            = "primary"
-      val agentPrefix             = "ESW.agent1"
+      val agentPrefix             = Prefix(ESW, "agent1")
       val expectedSequencerPrefix = Prefix(ESW, "darknight")
       val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
 
       // start Sequence Component
-      SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "-a", agentPrefix))
+      SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "-a", agentPrefix.toString()))
 
       // verify Sequence component is started and registered with location service
       val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
@@ -42,8 +42,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
       sequenceCompLocation.connection shouldEqual AkkaConnection(
         ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)
       )
-      sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
-      sequenceCompLocation.metadata shouldEqual Metadata().withAgent(agentPrefix)
+      sequenceCompLocation.prefix should ===(Prefix("ESW.primary"))
+      sequenceCompLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+      sequenceCompLocation.metadata.value.contains("PID") shouldEqual true
 
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
@@ -73,7 +74,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       probe2.expectMessage(Ok)
     }
 
-    "start sequence component and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144, ESW-279" in {
+    "start sequence component and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144, ESW-279, ESW-366" in {
       val subsystem = "ESW"
       SequencerApp.main(Array("seqcomp", "-s", subsystem))
 
@@ -81,7 +82,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       //assert that componentName and prefix contain subsystem provided
       sequenceComponentLocation.prefix.toString.contains("ESW.ESW_") shouldEqual true
-      sequenceComponentLocation.metadata shouldEqual Metadata.empty
+      sequenceComponentLocation.metadata.value.contains("PID") shouldEqual true
     }
 
     "start sequence component concurrently and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144, ESW-279" in {

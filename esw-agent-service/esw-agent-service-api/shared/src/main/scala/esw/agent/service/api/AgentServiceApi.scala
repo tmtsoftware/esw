@@ -8,7 +8,7 @@ import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
 import scala.concurrent.Future
 
-trait AgentService {
+trait AgentServiceApi {
 
   def spawnSequenceManager(
       agentPrefix: Prefix,

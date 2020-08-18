@@ -7,7 +7,7 @@ import csw.location.api.models.{Connection, Location}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.AgentService
+import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.models.{Failed, KillResponse, SpawnResponse}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
@@ -15,7 +15,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 
-class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AgentService {
+class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AgentServiceApi {
 
   private implicit val ec: ExecutionContext = actorSystem.executionContext
 
@@ -54,9 +54,6 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
     locationServiceUtil.find(connection.of[Location]).mapLeft(_.msg)
 
   private def getAgentPrefix(location: Location): Either[String, Prefix] =
-    location.metadata.getAgentPrefix.toRight(s"$location metadata does not contain agent prefix").flatMap(makePrefix)
-
-  private def makePrefix(prefix: String): Either[String, Prefix] =
-    Try(Prefix(prefix)).toEither.left.map(_.getMessage)
+    location.metadata.getAgentPrefix.toRight(s"$location metadata does not contain agent prefix")
 
 }
