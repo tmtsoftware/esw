@@ -204,10 +204,11 @@ class SequencerImplTest extends ActorTestSuit {
   }
 
   "submitAndWait | ESW-222" in {
+    val id                 = Id(randomString5)
     val queryFinalResponse = mock[SubmitResponse]
     withBehavior {
-      case SubmitSequenceInternal(`sequence`, replyTo) => replyTo ! SubmitResult(Started(Id(randomString5)))
-      case QueryFinal(_, replyTo)                      => replyTo ! queryFinalResponse
+      case SubmitSequenceInternal(`sequence`, replyTo) => replyTo ! SubmitResult(Started(id))
+      case QueryFinal(`id`, replyTo)                   => replyTo ! queryFinalResponse
     } check { s =>
       s.submitAndWait(sequence).futureValue should ===(queryFinalResponse)
     }
@@ -216,7 +217,7 @@ class SequencerImplTest extends ActorTestSuit {
   "queryFinal | ESW-222" in {
     val queryFinalResponse = Completed(Id())
     withBehavior {
-      case QueryFinal(_, replyTo) => replyTo ! queryFinalResponse
+      case QueryFinal(`sequenceId`, replyTo) => replyTo ! queryFinalResponse
     } check { s =>
       s.queryFinal(sequenceId).futureValue should ===(queryFinalResponse)
     }
