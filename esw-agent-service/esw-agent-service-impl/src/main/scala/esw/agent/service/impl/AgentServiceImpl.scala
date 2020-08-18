@@ -7,7 +7,7 @@ import csw.location.api.models.{Connection, Location}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.AgentService
+import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.models.{Failed, KillResponse, SpawnResponse}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
@@ -15,7 +15,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
 
-class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AgentService {
+class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AgentServiceApi {
 
   private implicit val ec: ExecutionContext = actorSystem.executionContext
 
