@@ -6,7 +6,6 @@ import java.nio.file.{Files, Path}
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
-import csw.location.api.models
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
@@ -15,7 +14,6 @@ import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
-import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentService
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.Spawned
@@ -487,9 +485,6 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, testCsChannel))
     spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, testCsChannel))
 
-    val eswAgentLocation  = resolveAkkaLocation(eswAgentPrefix, Machine)
-    val irisAgentLocation = resolveAkkaLocation(irisAgentPrefix, Machine)
-
     val eswRunningSeqComp = Prefix(ESW, "ESW_10")
     TestSetup.startSequenceComponents(eswRunningSeqComp)
 
@@ -504,9 +499,6 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     sequenceCompLocations.map(_.prefix) should not contain eswRunningSeqComp // ESW-358 verify the old seqComps are removed
     sequenceCompLocations.size shouldBe 2
     sequenceCompLocations.map(_.prefix) should contain allElementsOf List(eswNewSeqCompPrefix, irisNewSeqComp)
-
-    agentHasComponent(eswAgentLocation, eswNewSeqCompPrefix)
-    agentHasComponent(irisAgentLocation, irisNewSeqComp)
 
     //clean up the provisioned sequence components
     sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
@@ -579,10 +571,4 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     if (isSeqCompAvailable) getStatusResponse.response shouldBe None // assert sequence component is available
     else getStatusResponse.response.isDefined shouldBe true          // assert sequence components is busy
   }
-
-  private def agentHasComponent(agentLoc: AkkaLocation, seqCompPrefix: Prefix): Unit = {
-    new AgentClient(agentLoc).getAgentStatus.futureValue.statuses.keys should contain
-    models.ComponentId(seqCompPrefix, SequenceComponent)
-  }
-
 }

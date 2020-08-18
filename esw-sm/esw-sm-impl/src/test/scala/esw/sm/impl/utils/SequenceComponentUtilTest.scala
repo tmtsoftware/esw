@@ -366,49 +366,23 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
   "getSequenceComponentStatus" must {
     "return mapping of Sequence component to sequencer script running  | ESW-349" in {
-      val eswSeqComp = mock[SequenceComponentImpl]
+      val eswSeqCompApi = mock[SequenceComponentApi]
 
       val seqCompUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
-        override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentImpl =
-          seqCompLocation.prefix.subsystem match {
-            case ESW => eswSeqComp
-            case _   => mock[SequenceComponentImpl]
-          }
+        override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentApi = eswSeqCompApi
       }
 
-      val eswSeqCompId = ComponentId(Prefix(ESW, "primary"), SequenceComponent)
-      val tcsSeqCompId = ComponentId(Prefix(TCS, "primary"), SequenceComponent)
-
-      when(locationServiceUtil.find(AkkaConnection(eswSeqCompId)))
-        .thenReturn(Future.successful(Right(akkaLocation(eswSeqCompId))))
-      when(locationServiceUtil.find(AkkaConnection(tcsSeqCompId)))
-        .thenReturn(Future.successful(Left(RegistrationListingFailed("error"))))
-
+      val eswSeqCompId      = ComponentId(Prefix(ESW, "primary"), SequenceComponent)
+      val eswSeqCompLoc     = akkaLocation(eswSeqCompId)
       val sequencerLocation = Some(akkaLocation(ComponentId(Prefix(ESW, "darknight"), Sequencer)))
+      val eswSeqCompStatus  = SequenceComponentStatus(eswSeqCompId, sequencerLocation)
 
-      when(eswSeqComp.status)
-        .thenReturn(Future.successful(GetStatusResponse(sequencerLocation)))
+      when(eswSeqCompApi.status).thenReturn(Future.successful(GetStatusResponse(sequencerLocation)))
 
-      val expectedResponse =
-        List(SequenceComponentStatus(eswSeqCompId, sequencerLocation))
-
-      seqCompUtil.getSequenceComponentStatus(List(eswSeqCompId, tcsSeqCompId)).futureValue should ===(expectedResponse)
-
-      verify(locationServiceUtil).find(AkkaConnection(eswSeqCompId))
-      verify(locationServiceUtil).find(AkkaConnection(tcsSeqCompId))
-      verify(eswSeqComp).status
+      seqCompUtil.getSequenceComponentStatus(eswSeqCompLoc).futureValue should ===(eswSeqCompStatus)
+      verify(eswSeqCompApi).status
     }
 
-    "return mapping for empty list of sequence components | ESW-349" in {
-      val seqCompUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
-        override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentImpl =
-          mock[SequenceComponentImpl]
-      }
-
-      val expectedResponse = List.empty[SequenceComponentStatus]
-
-      seqCompUtil.getSequenceComponentStatus(List.empty[ComponentId]).futureValue should ===(expectedResponse)
-    }
   }
 
   private def akkaLocation(componentId: ComponentId): AkkaLocation =
