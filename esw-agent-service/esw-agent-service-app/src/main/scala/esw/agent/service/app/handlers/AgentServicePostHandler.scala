@@ -3,14 +3,14 @@ package esw.agent.service.app.handlers
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
-import esw.agent.service.api.AgentService
+import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentHttpCodecs._
 import esw.agent.service.api.protocol.AgentPostRequest
 import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, KillComponent}
 import esw.agent.service.app.auth.EswUserRolePolicy
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
-class AgentServicePostHandler(agentService: AgentService, securityDirective: SecurityDirectives)
+class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: SecurityDirectives)
     extends HttpPostHandler[AgentPostRequest]
     with ServerHttpCodecs {
 

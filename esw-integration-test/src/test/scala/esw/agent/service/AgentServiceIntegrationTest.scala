@@ -8,7 +8,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
-import esw.agent.service.api.AgentService
+import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.{Killed, Spawned}
 import esw.agent.service.app.AgentServiceWiring
@@ -22,7 +22,7 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
 
   implicit val patience: PatienceConfig = PatienceConfig(1.minute)
 
-  private var agentService: AgentService             = _
+  private var agentService: AgentServiceApi          = _
   private var agentServiceWiring: AgentServiceWiring = _
 
   //start agent

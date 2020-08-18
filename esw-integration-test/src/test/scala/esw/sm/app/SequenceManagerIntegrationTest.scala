@@ -16,7 +16,7 @@ import csw.testkit.ConfigTestKit
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.AgentService
+import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.Spawned
 import esw.agent.service.app.AgentServiceWiring
@@ -47,7 +47,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   private val ocsAppVersion                = GitUtil.latestCommitSHA("esw")
   private val testCsChannel: String        = BinaryFetcherUtil.eswChannel(ocsAppVersion)
 
-  private var agentService: AgentService             = _
+  private var agentService: AgentServiceApi          = _
   private var agentServiceWiring: AgentServiceWiring = _
   private val ocsVersionOpt                          = Some(ocsAppVersion)
 

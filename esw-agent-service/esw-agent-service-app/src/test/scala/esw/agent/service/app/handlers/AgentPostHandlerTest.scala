@@ -10,7 +10,7 @@ import csw.aas.http.SecurityDirectives
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Service
 import csw.prefix.models.Prefix
-import esw.agent.service.api.AgentService
+import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentHttpCodecs
 import esw.agent.service.api.models._
 import esw.agent.service.api.protocol.AgentPostRequest
@@ -26,8 +26,8 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
 
   def clientContentType: ContentType = ContentType.Json
 
-  private val agentService: AgentService = mock[AgentService]
-  private val securityDirective          = mock[SecurityDirectives]
+  private val agentService: AgentServiceApi = mock[AgentServiceApi]
+  private val securityDirective             = mock[SecurityDirectives]
 
   private val route =
     new PostRouteFactory("post-endpoint", new AgentServicePostHandler(agentService, securityDirective)).make()
