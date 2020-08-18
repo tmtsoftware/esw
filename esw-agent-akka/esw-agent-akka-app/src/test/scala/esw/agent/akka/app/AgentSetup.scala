@@ -4,18 +4,16 @@ import java.net.URI
 import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 
-import akka.Done
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
-import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
+import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
@@ -38,14 +36,6 @@ class AgentSetup extends BaseTestSuite {
   val agentSettings: AgentSettings       = AgentSettings(agentPrefix, 15.seconds, Cs.channel)
 
   val metadata: Metadata = Metadata().withAgent(agentPrefix.toString).withPID("12345")
-
-  val prefix: Prefix                                    = Prefix("csw.component")
-  val componentId: ComponentId                          = ComponentId(prefix, Service)
-  val redisConn: TcpConnection                          = TcpConnection(componentId)
-  val redisLocation: TcpLocation                        = TcpLocation(redisConn, new URI("some"), metadata)
-  val redisLocationF: Future[Some[TcpLocation]]         = Future.successful(Some(redisLocation))
-  val redisRegistration: TcpRegistration                = TcpRegistration(redisConn, 100)
-  val spawnRedis: ActorRef[SpawnResponse] => SpawnRedis = SpawnRedis(_, prefix, 100, List.empty)
 
   val seqCompName: String                          = randomString(10)
   val seqCompPrefix: Prefix                        = Prefix(agentPrefix.subsystem, seqCompName)
@@ -105,11 +95,5 @@ class AgentSetup extends BaseTestSuite {
     when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration]))
       .thenReturn(Future.successful(None), seqManagerLocationF)
 
-    // Redis
-    when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
-    when(locationService.register(redisRegistration)).thenReturn(
-      delayedFuture(RegistrationResult.from(redisLocation, locationService.unregister), registrationDuration)
-    )
-    when(locationService.unregister(redisConn)).thenReturn(Future.successful(Done))
   }
 }

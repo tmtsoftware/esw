@@ -11,7 +11,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.AgentSettings
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import esw.agent.service.api.models.{Failed, SpawnResponse}
 import esw.testcommons.BaseTestSuite
 

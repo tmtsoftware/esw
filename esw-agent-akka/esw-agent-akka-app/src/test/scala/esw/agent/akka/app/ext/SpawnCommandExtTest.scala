@@ -5,8 +5,7 @@ import java.nio.file.Paths
 import akka.actor.typed.ActorRef
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
@@ -18,8 +17,6 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val version         = "1.0.0"
   private val obsModeConf     = "obsMode.conf"
   private val obsModeConfPath = Paths.get(obsModeConf)
-  private val port            = 8080
-  private val redisArgs       = List("-conf", "redis.conf")
   private val agentPrefix     = Prefix(randomSubsystem, randomString(10))
   private val prefix          = Prefix(agentPrefix.subsystem, compName)
 
@@ -36,20 +33,13 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val spawnSeqMgrWithVersionCmd =
     s"cs launch --channel $channel sequence-manager:$version -- start -o $obsModeConf -l -a $agentPrefix"
 
-  private val spawnRedis                    = SpawnRedis(replyTo, prefix, port, List.empty)
-  private val spawnRedisWithExtraArgs       = SpawnRedis(replyTo, prefix, port, redisArgs)
-  private val spawnRedisCmd                 = s"redis-server --port $port"
-  private val spawnRedisCmdWithExtraArgsCmd = s"redis-server ${redisArgs.mkString(" ")} --port $port "
-
   "SpawnCommand.executableCommandStr" must {
     Table(
       ("TestName", "SpawnCommand", "ExpectedCommandStr"),
       ("SpawnSequenceComponent", spawnSeqComp, spawnSeqCompCmd),
       ("SpawnSequenceComponent(version)", spawnSeqCompWithVersion, spawnSeqCompWithVersionCmd),
       ("SpawnSequenceManager", spawnSeqMgr, spawnSeqMgrCmd),
-      ("SpawnSequenceManager(version)", spawnSeqMgrWithVersion, spawnSeqMgrWithVersionCmd),
-      ("SpawnRedis", spawnRedis, spawnRedisCmd),
-      ("SpawnRedis(args)", spawnRedisWithExtraArgs, spawnRedisCmdWithExtraArgsCmd)
+      ("SpawnSequenceManager(version)", spawnSeqMgrWithVersion, spawnSeqMgrWithVersionCmd)
     ).foreach {
       case (name, spawnCommand, expectedCommandStr) =>
         name in { spawnCommand.executableCommandStr(channel, agentPrefix) should ===(expectedCommandStr.split(" ").toList) }

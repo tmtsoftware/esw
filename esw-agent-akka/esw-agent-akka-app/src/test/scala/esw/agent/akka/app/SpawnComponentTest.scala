@@ -5,7 +5,7 @@ import java.nio.file.Path
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
@@ -13,8 +13,9 @@ import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
-class SpawnSelfRegisteredComponentTest extends AgentSetup {
-  "SpawnSelfRegistered" must {
+class SpawnComponentTest extends AgentSetup {
+
+  "Spawn" must {
     "reply 'Spawned' and spawn sequence component process | ESW-237" in {
       val agentActorRef = spawnAgentActor(name = "test-actor1")
       val probe         = TestProbe[SpawnResponse]()

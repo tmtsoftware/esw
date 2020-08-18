@@ -9,7 +9,6 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.ext.ProcessExt.ProcessOps
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.service.api.models.{Failed, KillResponse, Killed}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 
@@ -31,7 +30,11 @@ class ProcessManager(
   def spawn(command: SpawnCommand): Future[Either[String, Process]] =
     verifyComponentIsNotAlreadyRegistered(command.connection)
       .flatMapE(_ => startComponent(command))
-      .flatMapE(process => waitForComponentRegistration(command).flatMapE(_ => reconcile(process, command.connection)))
+      .flatMapE(process =>
+        waitForRegistration(command.connection, durationToWaitForComponentRegistration).flatMapE(_ =>
+          reconcile(process, command.connection)
+        )
+      )
 
   // un-registration is done as a part of process.onComplete callback
   def kill(location: Location): Future[KillResponse] =
@@ -76,19 +79,6 @@ class ProcessManager(
         Try(Left("Process terminated before registration was successful".tap(log.warn(_))))
       )
     else Future.successful(Right(process))
-
-  private def waitForComponentRegistration(command: SpawnCommand): Future[Either[String, Unit]] =
-    command match {
-      case _: SpawnSelfRegistered       => waitForRegistration(command.connection, durationToWaitForComponentRegistration)
-      case cmd: SpawnManuallyRegistered => registerComponent(cmd.registration)
-    }
-
-  private def registerComponent(registration: Registration): Future[Either[String, Unit]] =
-    locationService.register(registration).map(_ => Right(())).recover {
-      case NonFatal(e) =>
-        val compName = registration.connection.componentId.fullName
-        Left(s"Failed to register component $compName with location service, reason: ${e.getMessage}".tap(log.error(_)))
-    }
 
   private def unregisterComponent(connection: Connection): Future[Done] = locationService.unregister(connection)
 
