@@ -5,17 +5,16 @@ import java.nio.file.Path
 
 import akka.actor.typed.ActorRef
 import csw.location.api.extensions.ActorExtension.RichActor
-import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.akka.client.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
-import esw.agent.service.api.models.ComponentStatus.{Running, Stopping}
-import esw.agent.service.api.models.{AgentStatus, Killed, Spawned}
+import esw.agent.service.api.models.{Killed, Spawned}
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.concurrent.Future
@@ -33,6 +32,7 @@ class AgentClientTest extends ActorTestSuit {
       new AgentClient(location)
     }
   }
+
   import askProxyTestKit._
 
   "make" should {
@@ -88,33 +88,13 @@ class AgentClientTest extends ActorTestSuit {
 
   "killComponent" should {
     "send KillComponent message to agent and return a future with agent response" in {
-      val componentId = ComponentId(Prefix("esw.test3"), SequenceComponent)
-      withBehavior {
-        case KillComponent(replyTo, _) => replyTo ! Killed
-      } check { ac =>
-        ac.killComponent(componentId).futureValue should ===(Killed)
-      }
-    }
-  }
+      val location =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix("IRIS.filter"), SequenceComponent)), new URI("uri"), Metadata.empty)
 
-  "getComponentStatus" should {
-    "send GetComponentStatus message to agent and return a future with agent response" in {
-      val componentId = ComponentId(Prefix("esw.test3"), SequenceComponent)
       withBehavior {
-        case GetComponentStatus(replyTo, _) => replyTo ! Running
+        case KillComponent(replyTo, `location`) => replyTo ! Killed
       } check { ac =>
-        ac.getComponentStatus(componentId).futureValue should ===(Running)
-      }
-    }
-  }
-
-  "getAgentStatus" should {
-    "send GetAgentStatus message to agent and return a future with agent response" in {
-      val componentId = ComponentId(Prefix("esw.comp"), Service)
-      withBehavior {
-        case GetAgentStatus(replyTo) => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
-      } check { ac =>
-        ac.getAgentStatus.futureValue should ===(AgentStatus(Map(componentId -> Stopping)))
+        ac.killComponent(location).futureValue should ===(Killed)
       }
     }
   }

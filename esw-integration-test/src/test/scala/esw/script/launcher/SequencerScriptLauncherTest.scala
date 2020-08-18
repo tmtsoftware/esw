@@ -57,7 +57,7 @@ class SequencerScriptLauncherTest extends EswTestKit {
   }
 
   override def afterAll(): Unit = {
-    process.kill(10.seconds)
+    process.toHandle.kill(10.seconds)
     removeJar()
     super.afterAll()
   }

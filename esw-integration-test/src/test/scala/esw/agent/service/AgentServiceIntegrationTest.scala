@@ -47,7 +47,7 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
   }
 
   "AgentService" must {
-    "start and shutdown sequence component on the given agent | ESW-361" in {
+    "start and kill sequence component on the given agent | ESW-361" in {
       BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
 
       val seqCompName   = "ESW_1"
@@ -63,7 +63,7 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
       agentService.killComponent(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent))).futureValue shouldBe Killed
     }
 
-    "start and shutdown sequence manager on the given agent | ESW-361" in {
+    "start and kill sequence manager on the given agent | ESW-361" in {
       BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
 
       val smPrefix = Prefix(ESW, "sequence_manager")

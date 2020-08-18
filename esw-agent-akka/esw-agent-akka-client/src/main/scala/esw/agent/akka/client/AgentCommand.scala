@@ -10,8 +10,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.service.api._
-import esw.agent.service.api.models.ComponentStatus.{Initializing, Running}
-import esw.agent.service.api.models.{AgentStatus, ComponentStatus, KillResponse, SpawnResponse}
+import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
 sealed trait AgentCommand       extends AgentAkkaSerializable
 sealed trait AgentRemoteCommand extends AgentCommand
@@ -78,13 +77,5 @@ object AgentCommand {
     }
   }
 
-  case class KillComponent(replyTo: ActorRef[KillResponse], componentId: ComponentId)                      extends AgentRemoteCommand
-  case class GetComponentStatus(replyTo: ActorRef[ComponentStatus], componentId: ComponentId)              extends AgentRemoteCommand
-  case class GetAgentStatus(replyTo: ActorRef[AgentStatus])                                                extends AgentRemoteCommand
-  private[agent] case class ProcessExited(componentId: ComponentId)                                        extends AgentCommand
-  private[agent] case class UpdateComponentState(componentId: ComponentId, componentState: ComponentState) extends AgentCommand
-}
-
-case class ComponentState(process: Option[Process]) {
-  def status: ComponentStatus = process.fold[ComponentStatus](Initializing)(_ => Running)
+  case class KillComponent(replyTo: ActorRef[KillResponse], location: Location) extends AgentRemoteCommand
 }
