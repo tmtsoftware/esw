@@ -35,7 +35,7 @@ class AgentSetup extends BaseTestSuite {
   val agentPrefix: Prefix                = Prefix(randomSubsystem, randomString(10))
   val agentSettings: AgentSettings       = AgentSettings(agentPrefix, 15.seconds, Cs.channel)
 
-  val metadata: Metadata = Metadata().withAgent(agentPrefix.toString).withPID("12345")
+  val metadata: Metadata = Metadata().withAgentPrefix(agentPrefix).withPid(12345)
 
   val seqCompName: String                          = randomString(10)
   val seqCompPrefix: Prefix                        = Prefix(agentPrefix.subsystem, seqCompName)
@@ -61,7 +61,7 @@ class AgentSetup extends BaseTestSuite {
 
   def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String = "test-actor"): ActorRef[AgentCommand] = {
     val processManager: ProcessManager = new ProcessManager(locationService, processExecutor, agentSettings) {
-      override def processHandle(pid: String): Option[ProcessHandle] = Some(mockedProcessHandle)
+      override def processHandle(pid: Long): Option[ProcessHandle] = Some(mockedProcessHandle)
     }
     system.systemActorOf(new AgentActor(processManager).behavior, name)
   }

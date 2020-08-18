@@ -62,30 +62,30 @@ class ProcessManagerTest extends BaseTestSuite {
     }
 
     "return failed response when pid does not exist on agent machine | ESW-276, ESW-367" in {
-      val pid      = "12345"
-      val location = AkkaLocation(connection, uri, Metadata().withPID(pid))
+      val pid      = 12345
+      val location = AkkaLocation(connection, uri, Metadata().withPid(pid))
       val manager = new ProcessManager(locationService, processExecutor, agentSetting) {
-        override def processHandle(pid: String): Option[ProcessHandle] = None
+        override def processHandle(pid: Long): Option[ProcessHandle] = None
       }
       manager.kill(location).futureValue should ===(Failed(s"Pid:$pid process does not exist"))
     }
 
     "return failed response when creating processHandle from pid throws an exception | ESW-367" in {
-      val pid      = "12345"
-      val location = AkkaLocation(connection, uri, Metadata().withPID(pid))
+      val pid      = 12345
+      val location = AkkaLocation(connection, uri, Metadata().withPid(pid))
       val manager = new ProcessManager(locationService, processExecutor, agentSetting) {
-        override def processHandle(pid: String): Option[ProcessHandle] = throw new SecurityException("Permission denied")
+        override def processHandle(pid: Long): Option[ProcessHandle] = throw new SecurityException("Permission denied")
       }
       manager.kill(location).futureValue should ===(Failed("Permission denied"))
     }
 
     "return failed response when process.kill throws an exception | ESW-367" in {
-      val pid      = "12345"
+      val pid      = 12345
       val process  = mock[ProcessHandle]
-      val location = AkkaLocation(connection, uri, Metadata().withPID(pid))
+      val location = AkkaLocation(connection, uri, Metadata().withPid(pid))
 
       val manager = new ProcessManager(locationService, processExecutor, agentSetting) {
-        override def processHandle(pid: String): Option[ProcessHandle] = Some(process)
+        override def processHandle(pid: Long): Option[ProcessHandle] = Some(process)
       }
 
       when(process.descendants()).thenThrow(new SecurityException("Permission denied"))

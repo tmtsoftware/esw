@@ -289,6 +289,6 @@ class AgentUtilTest extends BaseTestSuite {
     AkkaLocation(
       AkkaConnection(componentId),
       URI.create("uri"),
-      agentPrefix.fold(Metadata.empty)(p => Metadata().withAgent(p.toString))
+      agentPrefix.fold(Metadata.empty)(p => Metadata().withAgentPrefix(p))
     )
 }

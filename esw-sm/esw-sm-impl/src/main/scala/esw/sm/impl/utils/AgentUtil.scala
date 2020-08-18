@@ -48,8 +48,8 @@ class AgentUtil(
     locationServiceUtil.listAkkaLocationsBy(Machine).mapRight(_.map(_.connection.componentId))
 
   private def makeAgentIdFrom(seqCompLocation: Location) = {
-    val unknownAgent = s"${seqCompLocation.connection.componentId.prefix.subsystem}.Unknown"
-    val agentPrefix  = Prefix(seqCompLocation.metadata.getAgentPrefix.getOrElse(unknownAgent))
+    val unknownAgent = Prefix(s"${seqCompLocation.connection.componentId.prefix.subsystem}.Unknown")
+    val agentPrefix  = seqCompLocation.metadata.getAgentPrefix.getOrElse(unknownAgent)
     ComponentId(agentPrefix, Machine)
   }
 

@@ -100,7 +100,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       val componentConnection = AkkaConnection(componentId)
       val agentPrefixStr      = "IRIS.filterWheel"
       val agentPrefix         = Prefix(agentPrefixStr)
-      val componentLocation   = AkkaLocation(componentConnection, new URI("xyz"), Metadata().withAgent(agentPrefixStr))
+      val componentLocation   = AkkaLocation(componentConnection, new URI("xyz"), Metadata().withAgentPrefix(agentPrefix))
 
       "be able to kill component for the given componentId | ESW-361, ESW-367" in {
         when(agentClientMock.killComponent(componentLocation)).thenReturn(Future.successful(Killed))
@@ -134,16 +134,6 @@ class AgentServiceImplTest extends BaseTestSuite {
           Failed(s"$compLocWithoutAgentPrefix metadata does not contain agent prefix")
         )
       }
-
-      "be able to return an error if component location does not contains wrong agent prefix | ESW-361, ESW-367" in {
-        val compLocWithWrongAgentPrefix =
-          AkkaLocation(componentConnection, new URI("xyz"), Metadata().withAgent("invalid"))
-        when(locationService.find(componentConnection)).thenReturn(Future.successful(Some(compLocWithWrongAgentPrefix)))
-        agentService.killComponent(componentConnection).futureValue should ===(
-          Failed(s"requirement failed: prefix must have a '.' separator")
-        )
-      }
-
     }
 
     "agentClient Api" must {
