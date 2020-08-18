@@ -14,7 +14,6 @@ class KillComponentTest extends AgentSetup {
 
   Table(
     ("Name", "SpawnCommand", "Location"),
-    ("Redis", spawnRedis, redisLocation),
     ("SequenceComponent", spawnSequenceComp, seqCompLocation),
     ("SequenceManager", spawnSequenceManager, seqManagerLocation)
   ).foreach {

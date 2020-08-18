@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import akka.actor.typed.ActorRef
 import csw.prefix.models.Prefix
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 

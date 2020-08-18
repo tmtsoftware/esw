@@ -12,8 +12,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{Killed, Spawned}
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
@@ -76,19 +75,6 @@ class AgentClientTest extends ActorTestSuit {
         case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None) => replyTo ! Spawned
       } check { ac =>
         ac.spawnSequenceComponent(componentName).futureValue should ===(Spawned)
-      }
-    }
-  }
-
-  "spawnRedis" should {
-    "send SpawnRedis message to agent and return a future with agent response" in {
-      val randomPort = randomInt(10000)
-      val prefix     = Prefix(s"esw.$randomString5")
-      val args       = List("--port", randomPort.toString)
-      withBehavior {
-        case SpawnRedis(replyTo, `prefix`, `randomPort`, `args`) => replyTo ! Spawned
-      } check { ac =>
-        ac.spawnRedis(prefix, randomPort, args).futureValue should ===(Spawned)
       }
     }
   }
