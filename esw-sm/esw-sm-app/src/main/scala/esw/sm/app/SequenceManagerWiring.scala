@@ -84,10 +84,15 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
     Timeouts.DefaultTimeout
   )
 
-  private lazy val config           = actorSystem.settings.config
-  private lazy val connection       = AkkaConnection(ComponentId(prefix, ComponentType.Service))
-  private lazy val locationMetadata = agentPrefix.map(prefix => Metadata().withAgent(prefix)).getOrElse(Metadata.empty)
-  private lazy val registration     = AkkaRegistrationFactory.make(connection, sequenceManagerRef, locationMetadata)
+  private lazy val config     = actorSystem.settings.config
+  private lazy val connection = AkkaConnection(ComponentId(prefix, ComponentType.Service))
+  private lazy val locationMetadata =
+    agentPrefix
+      .map(prefix => Metadata().withAgentPrefix(Prefix(prefix)))
+      .getOrElse(Metadata.empty)
+      .withPid(ProcessHandle.current().pid())
+
+  private lazy val registration = AkkaRegistrationFactory.make(connection, sequenceManagerRef, locationMetadata)
 
   private lazy val sequenceManager: SequenceManagerApi =
     SequenceManagerApiFactory.makeAkkaClient(

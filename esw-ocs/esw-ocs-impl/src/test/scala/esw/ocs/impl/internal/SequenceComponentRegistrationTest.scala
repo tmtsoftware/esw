@@ -32,7 +32,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   private val agentPrefix        = "ESW.agent1"
-  private val metadata: Metadata = Metadata().withAgent(agentPrefix)
+  private def metadata: Metadata = Metadata().withAgentPrefix(Prefix(agentPrefix)).withPid(ProcessHandle.current().pid())
 
   private val registrationResult: RegistrationResult = mock[RegistrationResult]
   private val locationService: LocationService       = mock[LocationService]
@@ -50,7 +50,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
     val akkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
     val akkaLocation   = AkkaLocation(akkaConnection, uri, metadata)
 
-    "return successful RegistrationResult | ESW-144" in {
+    "return successful RegistrationResult | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       implicit val ec: ExecutionContext                       = system.executionContext
       val coordinatedShutdown                                 = CoordinatedShutdown(system)
@@ -69,13 +69,14 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       verify(registrationResult).unregister()
     }
 
-    "map location service registration failure to RegistrationError | ESW-144" in {
+    "map location service registration failure to RegistrationError | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       val coordinatedShutdown                                 = CoordinatedShutdown(system)
       val errorMsg                                            = "error message"
       val locationService                                     = mock[LocationService]
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, name, Some(agentPrefix))
+
       val akkaRegistration = AkkaRegistrationFactory.make(akkaConnection, sequenceComponentProbe.ref, metadata)
 
       when(locationService.register(akkaRegistration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
@@ -95,7 +96,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
     val akkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
     val akkaLocation   = AkkaLocation(akkaConnection, uri, metadata)
 
-    "return successful RegistrationResult | ESW-144" in {
+    "return successful RegistrationResult | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       implicit val ec: ExecutionContext                       = system.executionContext
       val coordinatedShutdown                                 = CoordinatedShutdown(system)
@@ -116,7 +117,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       verify(registrationResult).unregister()
     }
 
-    "retry if OtherLocationIsRegistered | ESW-144" in {
+    "retry if OtherLocationIsRegistered | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       val coordinatedShutdown                                 = CoordinatedShutdown(system)
 
@@ -144,7 +145,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       verify(registrationResult).unregister()
     }
 
-    "not retry if RegistrationFailed | ESW-144" in {
+    "not retry if RegistrationFailed | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       implicit val ec: ExecutionContext                       = system.executionContext
 
@@ -164,7 +165,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       system.whenTerminated.futureValue
     }
 
-    "map location service registration failure to RegistrationError if could not register after retry attempts | ESW-144" in {
+    "map location service registration failure to RegistrationError if could not register after retry attempts | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, None, Some(agentPrefix))
@@ -198,13 +199,18 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
     val akkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
     val akkaLocation   = AkkaLocation(akkaConnection, uri, Metadata.empty)
 
-    "return successful RegistrationResult | ESW-144" in {
+    "return successful RegistrationResult | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       implicit val ec: ExecutionContext                       = system.executionContext
       val coordinatedShutdown                                 = CoordinatedShutdown(system)
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, name, None)
-      val akkaRegistration = AkkaRegistrationFactory.make(akkaConnection, sequenceComponentProbe.ref, Metadata.empty)
+
+      val akkaRegistration = AkkaRegistrationFactory.make(
+        akkaConnection,
+        sequenceComponentProbe.ref,
+        Metadata().withPid(ProcessHandle.current().pid())
+      )
 
       when(locationService.register(akkaRegistration)).thenReturn(Future(registrationResult))
       when(registrationResult.location).thenReturn(akkaLocation)
@@ -216,7 +222,6 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       verify(registrationResult, times(2)).location
       verify(registrationResult).unregister()
     }
-
   }
 
   private def createSequenceComponentRegistration(
