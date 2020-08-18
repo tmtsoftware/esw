@@ -30,10 +30,11 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val spawnSeqCompWithVersionCmd =
     s"cs launch --channel $channel ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
 
-  private val spawnSeqMgr               = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None)
-  private val spawnSeqMgrWithVersion    = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))
-  private val spawnSeqMgrCmd            = s"cs launch --channel $channel sequence-manager -- start -o $obsModeConf -l"
-  private val spawnSeqMgrWithVersionCmd = s"cs launch --channel $channel sequence-manager:$version -- start -o $obsModeConf -l"
+  private val spawnSeqMgr            = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None)
+  private val spawnSeqMgrWithVersion = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))
+  private val spawnSeqMgrCmd         = s"cs launch --channel $channel sequence-manager -- start -o $obsModeConf -l -a $agentPrefix"
+  private val spawnSeqMgrWithVersionCmd =
+    s"cs launch --channel $channel sequence-manager:$version -- start -o $obsModeConf -l -a $agentPrefix"
 
   private val spawnRedis                    = SpawnRedis(replyTo, prefix, port, List.empty)
   private val spawnRedisWithExtraArgs       = SpawnRedis(replyTo, prefix, port, redisArgs)
@@ -51,7 +52,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
       ("SpawnRedis(args)", spawnRedisWithExtraArgs, spawnRedisCmdWithExtraArgsCmd)
     ).foreach {
       case (name, spawnCommand, expectedCommandStr) =>
-        name in { spawnCommand.executableCommandStr(channel) should ===(expectedCommandStr.split(" ").toList) }
+        name in { spawnCommand.executableCommandStr(channel, agentPrefix) should ===(expectedCommandStr.split(" ").toList) }
     }
   }
 }

@@ -53,7 +53,7 @@ class SequenceComponentRegistration(
     }
     sequenceComponentFactory(sequenceComponentPrefix).map { actorRef =>
       val metadata = agentPrefix
-        .map(prefix => Metadata(Map("agent-prefix" -> prefix)))
+        .map(prefix => Metadata().withAgent(prefix))
         .getOrElse(Metadata.empty)
 
       AkkaRegistrationFactory.make(

@@ -20,7 +20,10 @@ import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
 
 // $COVERAGE-OFF$
-class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
+class AgentWiring(agentSettings: AgentSettings) {
+
+  val prefix: Prefix = agentSettings.prefix
+
   implicit lazy val timeout: Timeout = Timeout(10.seconds)
   implicit lazy val log: Logger      = new LoggerFactory(prefix).getLogger
 

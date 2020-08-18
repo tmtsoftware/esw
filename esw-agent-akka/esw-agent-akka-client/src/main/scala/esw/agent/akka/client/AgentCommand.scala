@@ -9,8 +9,8 @@ import csw.location.api.models._
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
-import esw.agent.service.api.models.ComponentStatus.{Initializing, Running}
 import esw.agent.service.api._
+import esw.agent.service.api.models.ComponentStatus.{Initializing, Running}
 import esw.agent.service.api.models.{AgentStatus, ComponentStatus, KillResponse, SpawnResponse}
 
 sealed trait AgentCommand       extends AgentAkkaSerializable
@@ -20,7 +20,7 @@ object AgentCommand {
 
   sealed trait SpawnCommand extends AgentRemoteCommand {
     def replyTo: ActorRef[SpawnResponse]
-    def commandArgs: List[String]
+    def commandArgs(extraArgs: List[String] = List.empty): List[String]
     def prefix: Prefix
     def connection: Connection
 
@@ -44,8 +44,8 @@ object AgentCommand {
       ) extends SpawnSelfRegistered {
         override val prefix: Prefix             = Prefix(agentPrefix.subsystem, componentName)
         override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
-        override val commandArgs: List[String] =
-          List("seqcomp", "-s", prefix.subsystem.name, "-n", componentName, "-a", agentPrefix.toString())
+        override def commandArgs(extraArgs: List[String]): List[String] =
+          List("seqcomp", "-s", prefix.subsystem.name, "-n", componentName) ++ extraArgs
       }
 
       case class SpawnSequenceManager(
@@ -57,7 +57,10 @@ object AgentCommand {
         override val prefix: Prefix             = Prefix(ESW, "sequence_manager")
         override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, Service))
         private val command                     = List("start", "-o", obsModeConfigPath.toString)
-        override val commandArgs: List[String]  = if (isConfigLocal) command :+ "-l" else command
+        override def commandArgs(extraArgs: List[String]): List[String] = {
+          val args = if (isConfigLocal) command :+ "-l" else command
+          args ++ extraArgs
+        }
       }
     }
 
@@ -68,9 +71,9 @@ object AgentCommand {
     object SpawnManuallyRegistered {
       case class SpawnRedis(replyTo: ActorRef[SpawnResponse], prefix: Prefix, port: Int, redisArguments: List[String])
           extends SpawnManuallyRegistered {
-        override val connection: TcpConnection  = TcpConnection(ComponentId(prefix, ComponentType.Service))
-        override val registration: Registration = TcpRegistration(connection, port)
-        override val commandArgs: List[String]  = redisArguments ++ List("--port", s"$port")
+        override val connection: TcpConnection                          = TcpConnection(ComponentId(prefix, ComponentType.Service))
+        override val registration: Registration                         = TcpRegistration(connection, port)
+        override def commandArgs(extraArgs: List[String]): List[String] = redisArguments ++ List("--port", s"$port") ++ extraArgs
       }
     }
   }

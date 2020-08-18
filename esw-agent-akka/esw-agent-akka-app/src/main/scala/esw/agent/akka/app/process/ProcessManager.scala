@@ -51,7 +51,7 @@ class ProcessManager(
   private def startComponent(command: SpawnCommand, agentActor: ActorRef[AgentCommand]) =
     Future.successful(
       processExecutor
-        .runCommand(command.executableCommandStr(coursierChannel), command.prefix)
+        .runCommand(command.executableCommandStr(coursierChannel, agentSettings.prefix), command.prefix)
         .map(_.tap(onProcessExit(_, command.connection, agentActor)))
     )
 

@@ -13,17 +13,17 @@ trait AgentUtils {
   implicit def actorSystem: ActorSystem[SpawnProtocol.Command]
 
   private var agentWiring: Option[AgentWiring] = None
-  lazy val agentSettings: AgentSettings        = AgentSettings.from(ConfigFactory.load())
+  lazy val agentSettings: AgentSettings        = AgentSettings(getRandomAgentPrefix(ESW), ConfigFactory.load())
 
-  def spawnAgent(agentSettings: AgentSettings, subsystem: Subsystem = ESW): Prefix = {
-    val agentPrefix = Prefix(subsystem, s"machine_${Random.nextInt().abs}")
-    val system      = actorSystem
-    val wiring = new AgentWiring(agentPrefix, agentSettings) {
+  def getRandomAgentPrefix(subsystem: Subsystem): Prefix = Prefix(subsystem, s"machine_${Random.nextInt().abs}")
+
+  def spawnAgent(agentSettings: AgentSettings): Unit = {
+    val system = actorSystem
+    val wiring = new AgentWiring(agentSettings) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
     }
     agentWiring = Some(wiring)
-    AgentApp.start(agentPrefix, wiring)
-    agentPrefix
+    AgentApp.start(wiring)
   }
 
   def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))

@@ -29,11 +29,12 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
   //start agent
   private lazy val eswVersion      = Some(GitUtil.latestCommitSHA("esw"))
   private lazy val channel: String = "file://" + getClass.getResource("/apps.json").getPath
-  private lazy val eswAgentPrefix  = spawnAgent(AgentSettings(1.minute, channel), ESW)
+  private lazy val eswAgentPrefix  = Prefix(ESW, "machine_A1")
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     //start agent service
+    spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel))
     agentServiceWiring = new AgentServiceWiring(Some(4449))
     agentServiceWiring.start().futureValue
     val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)

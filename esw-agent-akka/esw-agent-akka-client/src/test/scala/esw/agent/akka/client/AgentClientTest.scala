@@ -3,8 +3,7 @@ package esw.agent.akka.client
 import java.net.URI
 import java.nio.file.Path
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.actor.typed.ActorRef
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
@@ -17,17 +16,24 @@ import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{Spaw
 import esw.agent.akka.client.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
 import esw.agent.service.api.models.ComponentStatus.{Running, Stopping}
 import esw.agent.service.api.models.{AgentStatus, Killed, Spawned}
-import org.mockito.MockitoSugar
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.concurrent.Future
 
-class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterAll with MockitoSugar {
+class AgentClientTest extends ActorTestSuit {
 
-  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
+  private val askProxyTestKit: AskProxyTestKit[AgentCommand, AgentClient] = new AskProxyTestKit[AgentCommand, AgentClient] {
+    override def make(actorRef: ActorRef[AgentCommand]): AgentClient = {
+      val location =
+        AkkaLocation(
+          AkkaConnection(ComponentId(Prefix(ESW, "agent"), Machine)),
+          actorRef.toURI,
+          Metadata.empty
+        )
+      new AgentClient(location)
+    }
+  }
+  import askProxyTestKit._
 
   "make" should {
     "resolve the given prefix and return a new instance of AgentClient  | ESW-237" in {
@@ -60,79 +66,66 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
 
   "spawnSequenceComponent" should {
     "send SpawnSequenceComponent message to agent and return a future with agent response" in {
-      val agentRef = system.systemActorOf(stubAgent, "test-agent1")
-      val agentLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_1"), Machine)), agentRef.toURI, Metadata.empty)
-      val agentClient = new AgentClient(agentLocation)
-      val prefix      = Prefix("esw.test2")
-      agentClient.spawnSequenceComponent(prefix.componentName).futureValue should ===(Spawned)
+      val prefix = Prefix("esw.test2")
+      withBehavior {
+        case SpawnSequenceComponent(replyTo, _, _, _) => replyTo ! Spawned
+      } check { ac =>
+        ac.spawnSequenceComponent(prefix.componentName).futureValue should ===(Spawned)
+      }
     }
   }
 
   "spawnRedis" should {
     "send SpawnRedis message to agent and return a future with agent response" in {
-      val agentRef = system.systemActorOf(stubAgent, "test-agent2")
-      val agentLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_2"), Machine)), agentRef.toURI, Metadata.empty)
-      val agentClient = new AgentClient(agentLocation)
-      val prefix      = Prefix("esw.test3")
-      agentClient.spawnRedis(prefix, 6379, List("--port", "6379")).futureValue should ===(Spawned)
+      val prefix = Prefix("esw.test3")
+      withBehavior {
+        case SpawnRedis(replyTo, _, _, _) => replyTo ! Spawned
+      } check { ac =>
+        ac.spawnRedis(prefix, 6379, List("--port", "6379")).futureValue should ===(Spawned)
+      }
     }
   }
 
   "killComponent" should {
     "send KillComponent message to agent and return a future with agent response" in {
-      val agentRef = system.systemActorOf(stubAgent, "test-agent3")
-      val agentLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_3"), Machine)), agentRef.toURI, Metadata.empty)
-      val agentClient = new AgentClient(agentLocation)
       val componentId = ComponentId(Prefix("esw.test3"), SequenceComponent)
-      agentClient.killComponent(componentId).futureValue should ===(Killed)
+      withBehavior {
+        case KillComponent(replyTo, _) => replyTo ! Killed
+      } check { ac =>
+        ac.killComponent(componentId).futureValue should ===(Killed)
+      }
     }
   }
 
   "getComponentStatus" should {
     "send GetComponentStatus message to agent and return a future with agent response" in {
-      val agentRef = system.systemActorOf(stubAgent, "test-agent4")
-      val agentLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_4"), Machine)), agentRef.toURI, Metadata.empty)
-      val agentClient = new AgentClient(agentLocation)
       val componentId = ComponentId(Prefix("esw.test3"), SequenceComponent)
-      agentClient.getComponentStatus(componentId).futureValue should ===(Running)
+      withBehavior {
+        case GetComponentStatus(replyTo, _) => replyTo ! Running
+      } check { ac =>
+        ac.getComponentStatus(componentId).futureValue should ===(Running)
+      }
     }
   }
 
   "getAgentStatus" should {
     "send GetAgentStatus message to agent and return a future with agent response" in {
-      val agentRef = system.systemActorOf(stubAgent, "test-agent5")
-      val agentLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_5"), Machine)), agentRef.toURI, Metadata.empty)
-      val agentClient = new AgentClient(agentLocation)
       val componentId = ComponentId(Prefix("esw.comp"), Service)
-      agentClient.getAgentStatus.futureValue should ===(AgentStatus(Map(componentId -> Stopping)))
+      withBehavior {
+        case GetAgentStatus(replyTo) => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
+      } check { ac =>
+        ac.getAgentStatus.futureValue should ===(AgentStatus(Map(componentId -> Stopping)))
+      }
     }
   }
 
   "spawnSequenceManager" should {
     "send spawnSequenceManager message to agent and return a future with agent response | ESW-180" in {
-      val agentRef = system.systemActorOf(stubAgent, "test-agent6")
-      val agentLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_6"), Machine)), agentRef.toURI, Metadata.empty)
-      val agentClient = new AgentClient(agentLocation)
-      agentClient.spawnSequenceManager(Path.of("obsMode.conf"), isConfigLocal = false).futureValue should ===(Spawned)
+      withBehavior {
+        case SpawnSequenceManager(replyTo, _, _, _) => replyTo ! Spawned
+      } check { ac =>
+        ac.spawnSequenceManager(Path.of("obsMode.conf"), isConfigLocal = false).futureValue should ===(Spawned)
+      }
     }
   }
-
-  private def stubAgent: Behaviors.Receive[AgentCommand] =
-    Behaviors.receiveMessagePartial[AgentCommand] { msg =>
-      msg match {
-        case SpawnSequenceManager(replyTo, _, _, _)   => replyTo ! Spawned
-        case SpawnSequenceComponent(replyTo, _, _, _) => replyTo ! Spawned
-        case SpawnRedis(replyTo, _, _, _)             => replyTo ! Spawned
-        case KillComponent(replyTo, _)                => replyTo ! Killed
-        case GetComponentStatus(replyTo, _)           => replyTo ! Running
-        case GetAgentStatus(replyTo)                  => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
-      }
-      Behaviors.same
-    }
 }

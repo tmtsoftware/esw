@@ -1,6 +1,8 @@
 package esw.agent.akka.app
 
 import com.typesafe.config.ConfigFactory
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationLong
@@ -8,7 +10,7 @@ import scala.concurrent.duration.DurationLong
 class AgentSettingsTest extends BaseTestSuite {
 
   "from" must {
-    "create new AgentSettings from config object | ESW-237" in {
+    "create new AgentSettings from config object | ESW-237, ESW-366" in {
       val config =
         ConfigFactory.parseString(s"""
           |agent {
@@ -16,8 +18,10 @@ class AgentSettingsTest extends BaseTestSuite {
           |  coursier.channel = "${Cs.channel}"
           |}
           |""".stripMargin)
-      val agentSettings = AgentSettings.from(config)
-      agentSettings should ===(new AgentSettings(15.seconds, Cs.channel))
+
+      val prefix        = Prefix(ESW, "machine_A1")
+      val agentSettings = AgentSettings(prefix, config)
+      agentSettings should ===(AgentSettings(prefix, 15.seconds, Cs.channel))
     }
   }
 }
