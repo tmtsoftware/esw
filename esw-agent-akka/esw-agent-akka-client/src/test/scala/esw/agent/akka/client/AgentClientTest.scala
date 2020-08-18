@@ -19,14 +19,16 @@ import esw.agent.service.api.models.{AgentStatus, Killed, Spawned}
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class AgentClientTest extends ActorTestSuit {
 
+  private val agentPrefix = Prefix(ESW, "agent")
   private val askProxyTestKit: AskProxyTestKit[AgentCommand, AgentClient] = new AskProxyTestKit[AgentCommand, AgentClient] {
     override def make(actorRef: ActorRef[AgentCommand]): AgentClient = {
       val location =
         AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(ESW, "agent"), Machine)),
+          AkkaConnection(ComponentId(agentPrefix, Machine)),
           actorRef.toURI,
           Metadata.empty
         )
@@ -34,6 +36,8 @@ class AgentClientTest extends ActorTestSuit {
     }
   }
   import askProxyTestKit._
+
+  private def randomString5 = Random.nextString(5)
 
   "make" should {
     "resolve the given prefix and return a new instance of AgentClient  | ESW-237" in {
@@ -66,31 +70,35 @@ class AgentClientTest extends ActorTestSuit {
 
   "spawnSequenceComponent" should {
     "send SpawnSequenceComponent message to agent and return a future with agent response" in {
-      val prefix = Prefix("esw.test2")
+      val prefix        = Prefix(s"esw.$randomString5")
+      val componentName = prefix.componentName
       withBehavior {
-        case SpawnSequenceComponent(replyTo, _, _, _) => replyTo ! Spawned
+        case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None) => replyTo ! Spawned
       } check { ac =>
-        ac.spawnSequenceComponent(prefix.componentName).futureValue should ===(Spawned)
+        ac.spawnSequenceComponent(componentName).futureValue should ===(Spawned)
       }
     }
   }
 
   "spawnRedis" should {
     "send SpawnRedis message to agent and return a future with agent response" in {
-      val prefix = Prefix("esw.test3")
+      val randomPort = randomInt(10000)
+      val prefix     = Prefix(s"esw.$randomString5")
+      val args       = List("--port", randomPort.toString)
       withBehavior {
-        case SpawnRedis(replyTo, _, _, _) => replyTo ! Spawned
+        case SpawnRedis(replyTo, `prefix`, `randomPort`, `args`) => replyTo ! Spawned
       } check { ac =>
-        ac.spawnRedis(prefix, 6379, List("--port", "6379")).futureValue should ===(Spawned)
+        ac.spawnRedis(prefix, randomPort, args).futureValue should ===(Spawned)
       }
     }
   }
 
   "killComponent" should {
     "send KillComponent message to agent and return a future with agent response" in {
-      val componentId = ComponentId(Prefix("esw.test3"), SequenceComponent)
+      val prefix      = Prefix(s"esw.$randomString5")
+      val componentId = ComponentId(prefix, SequenceComponent)
       withBehavior {
-        case KillComponent(replyTo, _) => replyTo ! Killed
+        case KillComponent(replyTo, `componentId`) => replyTo ! Killed
       } check { ac =>
         ac.killComponent(componentId).futureValue should ===(Killed)
       }
@@ -99,9 +107,10 @@ class AgentClientTest extends ActorTestSuit {
 
   "getComponentStatus" should {
     "send GetComponentStatus message to agent and return a future with agent response" in {
-      val componentId = ComponentId(Prefix("esw.test3"), SequenceComponent)
+      val prefix      = Prefix(s"esw.$randomString5")
+      val componentId = ComponentId(prefix, SequenceComponent)
       withBehavior {
-        case GetComponentStatus(replyTo, _) => replyTo ! Running
+        case GetComponentStatus(replyTo, `componentId`) => replyTo ! Running
       } check { ac =>
         ac.getComponentStatus(componentId).futureValue should ===(Running)
       }
@@ -110,9 +119,10 @@ class AgentClientTest extends ActorTestSuit {
 
   "getAgentStatus" should {
     "send GetAgentStatus message to agent and return a future with agent response" in {
-      val componentId = ComponentId(Prefix("esw.comp"), Service)
+      val prefix      = Prefix(s"esw.$randomString5")
+      val componentId = ComponentId(prefix, Service)
       withBehavior {
-        case GetAgentStatus(replyTo) => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
+        case GetAgentStatus(replyTo) => replyTo ! AgentStatus(Map(ComponentId(prefix, Service) -> Stopping))
       } check { ac =>
         ac.getAgentStatus.futureValue should ===(AgentStatus(Map(componentId -> Stopping)))
       }
@@ -121,10 +131,11 @@ class AgentClientTest extends ActorTestSuit {
 
   "spawnSequenceManager" should {
     "send spawnSequenceManager message to agent and return a future with agent response | ESW-180" in {
+      val configPath = Path.of("obsMode.conf")
       withBehavior {
-        case SpawnSequenceManager(replyTo, _, _, _) => replyTo ! Spawned
+        case SpawnSequenceManager(replyTo, `configPath`, true, None) => replyTo ! Spawned
       } check { ac =>
-        ac.spawnSequenceManager(Path.of("obsMode.conf"), isConfigLocal = false).futureValue should ===(Spawned)
+        ac.spawnSequenceManager(configPath, isConfigLocal = true).futureValue should ===(Spawned)
       }
     }
   }
