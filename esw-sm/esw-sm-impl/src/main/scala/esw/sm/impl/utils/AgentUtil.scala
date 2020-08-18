@@ -8,6 +8,7 @@ import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.extensions.MapExt.MapOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.sm.api.models.AgentStatusResponses.AgentSeqCompsStatus
 import esw.sm.api.models.ProvisionConfig
@@ -28,21 +29,12 @@ class AgentUtil(
   def getAllAgentStatus: Future[AgentStatusResponse] =
     locationServiceUtil
       .listAkkaLocationsBy(SequenceComponent)
-      .flatMapE(locs => addMissingAgents(locs.groupBy(makeAgentIdFrom)))
+      .flatMapE(seqComps => addAgentsWithoutSeqComp(seqComps.groupBy(makeAgentIdFrom)))
       .flatMapRight(getAgentToSeqCompsStatus)
       .mapToAdt(agentStatusList => AgentStatusResponse.Success(agentStatusList), e => LocationServiceError(e.msg))
 
-  private def addMissingAgents(map: Map[ComponentId, List[AkkaLocation]]) =
-    getAllAgentIds.mapRight(addKeysIfNotExist(map, _, List.empty))
-
-  def addKeyIfNotExist[K, V](map: Map[K, V], key: K, defaultValue: V): Map[K, V] =
-    map.updatedWith(key) {
-      case s: Some[_] => s
-      case None       => Some(defaultValue)
-    }
-
-  def addKeysIfNotExist[K, V](map: Map[K, V], keys: List[K], defaultValue: V): Map[K, V] =
-    keys.flatMap(addKeyIfNotExist(map, _, defaultValue)).toMap
+  private def addAgentsWithoutSeqComp(map: Map[ComponentId, List[AkkaLocation]]) =
+    getAllAgentIds.mapRight(map.addKeysIfNotExist(_, List.empty))
 
   private def getAllAgentIds: Future[Either[EswLocationError, List[ComponentId]]] =
     locationServiceUtil.listAkkaLocationsBy(Machine).mapRight(_.map(_.connection.componentId))
