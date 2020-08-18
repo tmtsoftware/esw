@@ -63,7 +63,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       seqCompLoc.connection shouldBe irisSeqCompConnection
 
       // ESW-366 verify agent prefix metadata is present in Sequence component akka location
-      val expectedMetadata = Metadata().withAgent(agentPrefix.toString())
+      val expectedMetadata = Metadata().withAgentPrefix(agentPrefix)
       seqCompLoc.metadata shouldBe expectedMetadata
 
       // start sequencer i.e. load IRIS darknight script
@@ -88,7 +88,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       val location: AkkaLocation = locationService.resolve(seqManagerConnection, 5.seconds).futureValue.value
 
       // ESW-366 verify agent prefix metadata is present in Sequence component akka location
-      val expectedMetadata = Metadata().withAgent(agentPrefix.toString())
+      val expectedMetadata = Metadata().withAgentPrefix(agentPrefix)
       location.metadata shouldBe expectedMetadata
 
       agentClient.killComponent(ComponentId(Prefix(ESW, "sequence_manager"), Service)).futureValue

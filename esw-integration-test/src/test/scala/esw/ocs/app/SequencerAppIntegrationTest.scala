@@ -43,7 +43,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
         ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)
       )
       sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
-      sequenceCompLocation.metadata shouldEqual Metadata().withAgent(agentPrefix)
+      sequenceCompLocation.metadata shouldEqual Metadata().withAgentPrefix(Prefix(agentPrefix))
 
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]

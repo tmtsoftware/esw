@@ -25,6 +25,8 @@ trait KeycloakUtils extends BaseTestSuite {
   lazy val gatewayUser3Password                                = "gateway-user3"
   lazy val gatewayRoleApsEng                                   = "gateway-user4"
   lazy val gatewayUser4Password                                = "gateway-user4"
+  lazy val locationAdminUser                                   = "location-admin1"
+  lazy val locationAdminPassword                               = "location-admin1"
   lazy val smRoleEswUserEng                                    = "sm-user1"
   lazy val smUser1Password                                     = "sm-user1"
   lazy val serverTimeout: FiniteDuration                       = 3.minutes
@@ -40,6 +42,7 @@ trait KeycloakUtils extends BaseTestSuite {
   lazy val apsEngRole   = "APS-eng"
   lazy val tcsUserRole  = "TCS-user"
   lazy val eswUserRole  = "ESW-user"
+  lazy val locAdminRole = "location-admin"
 
   private lazy val frontEndClientId = "tmt-frontend-app"
 
@@ -76,13 +79,21 @@ trait KeycloakUtils extends BaseTestSuite {
     realmRoles = Set(apsEngRole)
   )
 
+  private lazy val userWithLocAdminRole = ApplicationUser(
+    locationAdminUser,
+    locationAdminPassword,
+    realmRoles = Set(locAdminRole)
+  )
+
   private lazy val users = Set(
     userWithIrisEngAndIrisUserRole,
     userWithTcsUserRole,
     userWithIrisUserRole,
     userWithApsEngRole,
-    userWithEswUserRole
+    userWithEswUserRole,
+    userWithLocAdminRole
   )
+
   private lazy val defaultGatewayData: KeycloakData = KeycloakData(
     AdminUser("admin", "admin"),
     realms = Set(
@@ -90,7 +101,7 @@ trait KeycloakUtils extends BaseTestSuite {
         "TMT",
         clients = Set(`tmt-frontend-app`),
         users = users,
-        realmRoles = Set(irisUserRole, irisEngRole, tcsUserRole, apsEngRole, eswUserRole)
+        realmRoles = Set(irisUserRole, irisEngRole, tcsUserRole, apsEngRole, eswUserRole, locAdminRole)
       )
     )
   )

@@ -32,7 +32,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   private val agentPrefix        = "ESW.agent1"
-  private val metadata: Metadata = Metadata().withAgent(agentPrefix)
+  private val metadata: Metadata = Metadata().withAgentPrefix(Prefix(agentPrefix))
 
   private val registrationResult: RegistrationResult = mock[RegistrationResult]
   private val locationService: LocationService       = mock[LocationService]
