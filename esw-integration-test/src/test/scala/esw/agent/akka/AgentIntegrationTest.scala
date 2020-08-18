@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.akka.app.AgentSettings
@@ -62,9 +62,9 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
       seqCompLoc.connection shouldBe irisSeqCompConnection
 
-      // ESW-366 verify agent prefix metadata is present in Sequence component akka location
-      val expectedMetadata = Metadata().withAgentPrefix(agentPrefix)
-      seqCompLoc.metadata shouldBe expectedMetadata
+      // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
+      seqCompLoc.metadata.getAgentPrefix.get should ===(agentPrefix)
+      seqCompLoc.metadata.value.contains("PID") shouldBe true
 
       // start sequencer i.e. load IRIS darknight script
       val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
@@ -87,9 +87,9 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       val seqManagerConnection   = AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))
       val location: AkkaLocation = locationService.resolve(seqManagerConnection, 5.seconds).futureValue.value
 
-      // ESW-366 verify agent prefix metadata is present in Sequence component akka location
-      val expectedMetadata = Metadata().withAgentPrefix(agentPrefix)
-      location.metadata shouldBe expectedMetadata
+      // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
+      location.metadata.getAgentPrefix.get should ===(agentPrefix)
+//      location.metadata.value.contains("PID") shouldBe true
 
       agentClient.killComponent(ComponentId(Prefix(ESW, "sequence_manager"), Service)).futureValue
     }

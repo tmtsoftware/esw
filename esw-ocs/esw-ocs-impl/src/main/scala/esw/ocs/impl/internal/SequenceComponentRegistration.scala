@@ -55,6 +55,7 @@ class SequenceComponentRegistration(
       val metadata = agentPrefix
         .map(prefix => Metadata().withAgentPrefix(Prefix(prefix)))
         .getOrElse(Metadata.empty)
+        .withPid(ProcessHandle.current().pid())
 
       AkkaRegistrationFactory.make(
         AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)),

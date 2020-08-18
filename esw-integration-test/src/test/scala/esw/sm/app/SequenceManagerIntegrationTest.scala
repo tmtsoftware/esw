@@ -78,28 +78,29 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-173, ESW-366, ESW-332" in {
-    val agentPrefix      = "ESW.agent1"
-    val expectedMetadata = Metadata().withAgentPrefix(Prefix(agentPrefix))
+    val agentPrefix      = Prefix(ESW, "agent1")
+    val expectedMetadata = Metadata().withAgentPrefix(agentPrefix).withPid(ProcessHandle.current().pid())
 
     // resolving sequence manager fails for Akka and Http
     intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
     intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
 
     // ESW-173 Start sequence manager using command line arguments without any other ESW dependency
-    SequenceManagerApp.main(Array("start", "-o", obsModeConfigPath.toString, "--local", "-a", agentPrefix))
+    SequenceManagerApp.main(Array("start", "-o", obsModeConfigPath.toString, "--local", "-a", agentPrefix.toString()))
 
     // verify sequence manager is started and AkkaLocation & HttpLocation are registered with location service
     val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
     smAkkaLocation.prefix shouldBe sequenceManagerPrefix
 
-    // ESW-366 verify agent prefix metadata is present in Sequence manager akka location
+    // ESW-366 verify agent prefix and pid metadata is present in Sequence manager akka location
     smAkkaLocation.metadata should ===(expectedMetadata)
 
     val smHttpLocation = resolveHTTPLocation(sequenceManagerPrefix, Service)
     smHttpLocation.prefix shouldBe sequenceManagerPrefix
 
-    // ESW-366 verify agent prefix metadata is present in Sequence manager http location
+    // ESW-366 verify agent prefix and pid metadata is present in Sequence manager http location
     smHttpLocation.metadata should ===(expectedMetadata)
+
   }
 
   "configure SH, send sequence to master sequencer and cleanup for provided observation mode | ESW-162, ESW-164, ESW-166, ESW-171, ESW-178, ESW-351, ESW-366, ESW-332" in {
@@ -112,9 +113,9 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     // ESW-171, ESW-332: Starts SM and returns SM Http client which had ESW-user role.
     val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
+    // ESW-366 verify SM Location metadata contains pid
     val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
-    // ESW-366 verify metadata is empty in Sequence manager location as agentPrefix is not provided
-    smAkkaLocation.metadata shouldBe Metadata.empty
+    smAkkaLocation.metadata shouldBe Metadata().withPid(ProcessHandle.current().pid())
 
     val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL.name)
     val irisCalPrefix      = Prefix(IRIS, IRIS_CAL.name)
