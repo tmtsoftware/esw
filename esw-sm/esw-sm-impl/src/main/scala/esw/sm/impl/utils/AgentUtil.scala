@@ -7,12 +7,12 @@ import csw.location.api.models.Connection.AkkaConnection
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.extensions.MapExt.MapOps
-import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
+import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ProvisionResponse.SpawningSequenceComponentsFailed
-import esw.sm.api.protocol.SpawnSequenceComponentResponse.{SpawnSequenceComponentFailed, Success}
 import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse}
 import esw.sm.impl.utils.Types._
 
@@ -76,25 +76,16 @@ class AgentUtil(
   private def spawnCompsByMapping(mapping: List[(AgentLocation, SeqCompPrefix)]): Future[ProvisionResponse] =
     Future
       .traverse(mapping) {
-        case (agentLocation, seqCompPrefix) =>
-          spawnSeqComp(agentLocation.prefix, makeAgentClient(agentLocation), seqCompPrefix).map(
-            _.fold(e => Some(e.msg), _ => None)
-          )
+        case (agentLocation, seqCompPrefix) => spawnSeqComp(agentLocation.prefix, makeAgentClient(agentLocation), seqCompPrefix)
       }
-      .map(_.flatten)
-      .map(errs => if (errs.isEmpty) ProvisionResponse.Success else SpawningSequenceComponentsFailed(errs))
+      .map(_.sequence.map(_ => ProvisionResponse.Success).left.map(SpawningSequenceComponentsFailed).merge)
 
   private def spawnSeqComp(agentPrefix: AgentPrefix, agentClient: AgentClient, seqCompPrefix: SeqCompPrefix) =
     agentClient
       .spawnSequenceComponent(seqCompPrefix.componentName)
       .map {
-        case Spawned => Right(Success(ComponentId(seqCompPrefix, SequenceComponent)))
-        case Failed(msg) =>
-          Left(
-            SpawnSequenceComponentFailed(
-              s"Failed to spawn Sequence component: $seqCompPrefix on Machine: $agentPrefix, reason: $msg"
-            )
-          )
+        case Spawned     => Right(())
+        case Failed(msg) => Left(s"Failed to spawn Sequence component: $seqCompPrefix on Machine: $agentPrefix, reason: $msg")
       }
 
   private[utils] def getAndMakeAgentClient(agentPrefix: AgentPrefix): Future[Either[LocationServiceError, AgentClient]] =

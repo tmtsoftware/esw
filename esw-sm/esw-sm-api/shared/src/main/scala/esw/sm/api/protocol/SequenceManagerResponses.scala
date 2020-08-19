@@ -1,10 +1,9 @@
 package esw.sm.api.protocol
 
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.ComponentId
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models.AgentStatus
 import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
 
 private[protocol] sealed trait SmFailure extends Throwable
@@ -61,15 +60,6 @@ object RestartSequencerResponse {
   }
 }
 
-sealed trait SpawnSequenceComponentResponse extends SmResponse
-
-object SpawnSequenceComponentResponse {
-  case class Success(componentId: ComponentId) extends SpawnSequenceComponentResponse
-
-  sealed trait Failure                                 extends SmFailure with SpawnSequenceComponentResponse
-  case class SpawnSequenceComponentFailed(msg: String) extends Failure
-}
-
 sealed trait ShutdownSequenceComponentResponse extends SmResponse
 object ShutdownSequenceComponentResponse {
   case object Success extends ShutdownSequenceComponentResponse
@@ -87,7 +77,6 @@ object CommonFailure {
       with RestartSequencerResponse.Failure
       with ShutdownSequencersResponse.Failure
       with ShutdownSequenceComponentResponse.Failure
-      with SpawnSequenceComponentResponse.Failure
       with ProvisionResponse.Failure
       with AgentStatusResponse.Failure
 }
@@ -117,7 +106,6 @@ final case class Unhandled(state: String, messageType: String, msg: String)
     with RestartSequencerResponse.Failure
     with ShutdownSequencersResponse.Failure
     with ShutdownSequenceComponentResponse.Failure
-    with SpawnSequenceComponentResponse.Failure
     with ProvisionResponse.Failure
     with AgentStatusResponse.Failure
 
