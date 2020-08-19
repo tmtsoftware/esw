@@ -5,21 +5,12 @@ import csw.alarm.models.AlarmSeverity
 import csw.contract.ResourceFetcher
 import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
-import csw.logging.models.LogMetadata
+import csw.logging.models.{Level, LogMetadata}
 import csw.params.commands.CommandResponse.{SubmitResponse, ValidateResponse}
 import csw.params.events.Event
 import csw.prefix.models.Subsystem
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest.{
-  ComponentCommand,
-  GetEvent,
-  GetLogMetadata,
-  Log,
-  PublishEvent,
-  SequencerCommand,
-  SetAlarmSeverity,
-  SetLogLevel
-}
+import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, GetLogMetadata, Log, PublishEvent, SequencerCommand, SetAlarmSeverity, SetLogLevel}
 import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import esw.ocs.api.protocol.OkOrUnhandledResponse
@@ -41,7 +32,8 @@ object GatewayContract extends GatewayCodecs with GatewayData {
       eventServerUnavailable,
       invalidMaxFrequency,
       setAlarmSeverityFailure
-    )
+    ),
+    ModelType(Level)
   )
 
   private val httpRequests = new RequestSet[PostRequest] {
