@@ -10,6 +10,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.codecs.AgentHttpCodecs
 import esw.agent.service.app.handlers.AgentServicePostHandler
 import esw.agent.service.impl.AgentServiceImpl
+import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.impl.post.PostRouteFactory
 
@@ -26,7 +27,8 @@ class AgentServiceWiring(port: Option[Int] = None) extends AgentHttpCodecs {
 
   private val securityDirective = SecurityDirectives(actorSystem.settings.config, locationService)
 
-  private lazy val agentService = new AgentServiceImpl(locationService)
+  private val locationServiceUtil = new LocationServiceUtil(locationService)
+  private lazy val agentService   = new AgentServiceImpl(locationServiceUtil)
   private lazy val route: Route =
     new PostRouteFactory("post-endpoint", new AgentServicePostHandler(agentService, securityDirective)).make()
 
