@@ -13,7 +13,6 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success, Try}
 
 class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AgentServiceApi {
 
@@ -48,12 +47,11 @@ class AgentServiceImpl(locationService: LocationService)(implicit actorSystem: A
       .mapToAdt(identity, Failed)
 
   private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
-    AgentClient.make(agentPrefix, locationService).transform(client => Success(client.toEither.left.map(_.getMessage)))
+    AgentClient.make(agentPrefix, locationServiceUtil).mapLeft(e => e.msg)
 
   private def getComponentLocation(connection: Connection): Future[Either[String, Location]] =
     locationServiceUtil.find(connection.of[Location]).mapLeft(_.msg)
 
   private def getAgentPrefix(location: Location): Either[String, Prefix] =
     location.metadata.getAgentPrefix.toRight(s"$location metadata does not contain agent prefix")
-
 }

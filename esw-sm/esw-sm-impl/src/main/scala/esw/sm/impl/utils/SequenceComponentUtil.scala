@@ -75,17 +75,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = sequenceComponentApi(loc).restartScript()
 
-  def getSequenceComponentStatus(seqCompIds: List[ComponentId]): Future[List[SequenceComponentStatus]] =
-    Future
-      .traverse(seqCompIds) { seqComp =>
-        locationServiceUtil.find(AkkaConnection(seqComp)).flatMap {
-          //ignore sequence components for which can't be resolved in location service
-          case Left(_) => Future.successful(List.empty)
-          case Right(seqCompLocation) =>
-            sequenceComponentApi(seqCompLocation).status.map(s => List(SequenceComponentStatus(seqComp, s.response)))
-        }
-      }
-      .map(_.flatten)
+  def getSequenceComponentStatus(seqCompLocation: AkkaLocation): Future[SequenceComponentStatus] =
+    sequenceComponentApi(seqCompLocation).status.map(s =>
+      SequenceComponentStatus(seqCompLocation.connection.componentId, s.response)
+    )
 
   private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil

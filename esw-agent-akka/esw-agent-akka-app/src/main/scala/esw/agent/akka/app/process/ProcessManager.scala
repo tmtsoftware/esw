@@ -47,16 +47,16 @@ class ProcessManager(
     }
 
   def getProcessHandle(location: Location): Either[String, ProcessHandle] =
-    location.metadata.getPID
+    location.metadata.getPid
       .toRight(s"$location metadata does not contain Pid")
       .flatMap(parsePid)
 
-  def parsePid(pid: String): Either[String, ProcessHandle] =
+  def parsePid(pid: Long): Either[String, ProcessHandle] =
     Try(processHandle(pid)).toEither.left
       .map(_.getMessage)
       .flatMap(_.toRight(s"Pid:$pid process does not exist"))
 
-  def processHandle(pid: String): Option[ProcessHandle] = ProcessHandle.of(pid.toLong).toScala
+  def processHandle(pid: Long): Option[ProcessHandle] = ProcessHandle.of(pid).toScala
 
   private def verifyComponentIsNotAlreadyRegistered(connection: Connection): Future[Either[String, Unit]] =
     checkRegistration(connection, 0.seconds) {

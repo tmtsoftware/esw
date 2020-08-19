@@ -3,13 +3,14 @@ package esw.sm.impl.utils
 import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.utils.location.LocationServiceUtil
-import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, AgentToSeqCompsMap}
+import esw.commons.extensions.MapExt.MapOps
+import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
+import esw.sm.api.models.AgentStatusResponses.AgentSeqCompsStatus
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ProvisionResponse.SpawningSequenceComponentsFailed
@@ -27,31 +28,36 @@ class AgentUtil(
 
   def getAllAgentStatus: Future[AgentStatusResponse] =
     locationServiceUtil
-      .listAkkaLocationsBy(Machine)
-      .flatMapRight(getSequenceComponentsRunningOn(_).flatMap(getAllSeqCompsStatus))
+      .listAkkaLocationsBy(SequenceComponent)
+      .flatMapE(seqComps => addAgentsWithoutSeqComp(seqComps.groupBy(makeAgentIdFrom)))
+      .flatMapRight(getAgentToSeqCompsStatus)
       .mapToAdt(agentStatusList => AgentStatusResponse.Success(agentStatusList), e => LocationServiceError(e.msg))
 
-  private def getAllSeqCompsStatus(agentToSeqCompsList: List[AgentToSeqCompsMap]): Future[List[AgentSeqCompsStatus]] = {
-    Future.traverse(agentToSeqCompsList) { agentToSeqComp =>
-      sequenceComponentUtil
-        .getSequenceComponentStatus(agentToSeqComp.seqComps)
-        .map(seqCompStatus => AgentSeqCompsStatus(agentToSeqComp.agentId, seqCompStatus))
-    }
+  private def addAgentsWithoutSeqComp(map: Map[ComponentId, List[AkkaLocation]]) =
+    getAllAgentIds.mapRight(map.addKeysIfNotExist(_, List.empty))
+
+  private def getAllAgentIds: Future[Either[EswLocationError, List[ComponentId]]] =
+    locationServiceUtil.listAkkaLocationsBy(Machine).mapRight(_.map(_.connection.componentId))
+
+  private def makeAgentIdFrom(seqCompLocation: Location) = {
+    val unknownAgent = Prefix(s"${seqCompLocation.connection.componentId.prefix.subsystem}.Unknown")
+    val agentPrefix  = seqCompLocation.metadata.getAgentPrefix.getOrElse(unknownAgent)
+    ComponentId(agentPrefix, Machine)
   }
+
+  private def getAgentToSeqCompsStatus(agentToSeqComp: Map[ComponentId, List[AkkaLocation]]): Future[List[AgentSeqCompsStatus]] =
+    Future.traverse(agentToSeqComp.toList) {
+      case (agentId, seqCompLocations) =>
+        Future
+          .traverse(seqCompLocations)(sequenceComponentUtil.getSequenceComponentStatus)
+          .map(AgentSeqCompsStatus(agentId, _))
+    }
 
   def provision(provisionConfig: ProvisionConfig): Future[ProvisionResponse] =
     locationServiceUtil
       .listAkkaLocationsBy(Machine)
       .mapLeft(e => LocationServiceError(e.msg))
       .flatMapToAdt(provisionOn(_, provisionConfig), identity)
-
-  private def getSequenceComponentsRunningOn(agents: List[AkkaLocation]): Future[List[AgentToSeqCompsMap]] =
-    Future
-      .traverse(agents) { agent =>
-        makeAgentClient(agent).getAgentStatus
-          .map(filterRunningSeqComps)
-          .map(seqComps => AgentToSeqCompsMap(agent.connection.componentId, seqComps))
-      }
 
   private def provisionOn(machines: List[AkkaLocation], provisionConfig: ProvisionConfig) =
     Future
@@ -86,9 +92,4 @@ class AgentUtil(
 
   private[utils] def makeAgentClient(loc: AkkaLocation): AgentClient = new AgentClient(loc)
 
-  private def filterRunningSeqComps(agentStatus: AgentStatus) =
-    agentStatus.statuses.filter { case (compId, status) => isRunningSeqComp(compId, status) }.keys.toList
-
-  private def isRunningSeqComp(compId: ComponentId, status: ComponentStatus) =
-    compId.componentType == SequenceComponent && status == ComponentStatus.Running
 }
