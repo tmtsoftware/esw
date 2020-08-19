@@ -4,8 +4,8 @@ import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
@@ -19,10 +19,10 @@ import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComp
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
+import esw.sm.impl.utils.Types._
 
 import scala.async.Async._
 import scala.concurrent.Future
-import Types._
 
 class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentAllocator: SequenceComponentAllocator)(
     implicit actorSystem: ActorSystem[_]
