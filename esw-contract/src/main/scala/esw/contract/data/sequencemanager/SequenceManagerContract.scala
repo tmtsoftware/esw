@@ -11,9 +11,32 @@ import esw.sm.api.protocol._
 object SequenceManagerContract extends SequenceManagerHttpCodec with SequenceManagerData {
 
   private val models: ModelSet = ModelSet.models(
+    ModelType[ConfigureResponse](
+      configureSuccess,
+      configurationMissing,
+      conflictingResourcesWithRunningObsMode,
+      failedToStartSequencers,
+      locationServiceError,
+      sequenceComponentNotAvailable,
+      unhandled
+    ),
+    ModelType[ProvisionResponse](provisionSuccess, couldNotFindMachines, spawningSequenceComponentsFailed, unhandled),
+    ModelType[GetRunningObsModesResponse](getRunningObsModesSuccess, getRunningObsModesFailed),
+    ModelType[StartSequencerResponse](
+      alreadyRunning,
+      started,
+      loadScriptError,
+      sequenceComponentNotAvailable,
+      locationServiceError,
+      unhandled
+    ),
+    ModelType[RestartSequencerResponse](restartSequencerSuccess, loadScriptError, locationServiceError, unhandled),
+    ModelType[ShutdownSequencersResponse](shutdownSequencerSuccess, locationServiceError, unhandled),
+    ModelType[ShutdownSequenceComponentResponse](shutdownSequenceComponentSuccess, locationServiceError, unhandled),
+    ModelType[AgentStatusResponse](agentStatusSuccess, locationServiceError, unhandled),
     ModelType(sequencerPrefix),
     ModelType(obsMode),
-    ModelType(componentId),
+    ModelType(sequencerComponentId),
     ModelType(Subsystem),
     ModelType(sequenceComponentStatus),
     ModelType(agentSeqCompsStatus),
