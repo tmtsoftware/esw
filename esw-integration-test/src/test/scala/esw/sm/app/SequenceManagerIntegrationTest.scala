@@ -505,7 +505,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
   }
 
-  "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349, ESW-332" in {
+  "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349, ESW-332, ESW-367" in {
 
     val eswAgentPrefix  = getRandomAgentPrefix(ESW)
     val irisAgentPrefix = getRandomAgentPrefix(IRIS)
@@ -537,10 +537,9 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
       )
     )
 
-    val actualResponse = sequenceManager.getAgentStatus.futureValue
-    val actualStatus   = actualResponse.asInstanceOf[AgentStatusResponse.Success].agentStatus
-    actualStatus.size should ===(expectedStatus.size)
-    actualStatus.diff(expectedStatus) should ===(List.empty[AgentStatus])
+    val actualResponse = sequenceManager.getAgentStatus.futureValue.asInstanceOf[AgentStatusResponse.Success]
+    actualResponse.agentStatus should ===(expectedStatus)
+    actualResponse.seqCompsWithoutAgent should ===(List.empty)
 
     sequenceManager.shutdownAllSequenceComponents().futureValue
   }

@@ -184,7 +184,7 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   "getAllAgentStatus" must {
-    "return agent status successfully | ESW-349" in {
+    "return agent status successfully | ESW-349, ESW-367" in {
       val setup = new TestSetup()
       import setup._
 

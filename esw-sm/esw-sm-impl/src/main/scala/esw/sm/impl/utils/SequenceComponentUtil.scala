@@ -22,6 +22,7 @@ import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponent
 
 import scala.async.Async._
 import scala.concurrent.Future
+import Types._
 
 class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentAllocator: SequenceComponentAllocator)(
     implicit actorSystem: ActorSystem[_]
@@ -52,7 +53,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
   def loadScript(
       subsystem: Subsystem,
       obsMode: ObsMode,
-      seqCompLocation: AkkaLocation
+      seqCompLocation: SeqCompLocation
   ): Future[Either[StartSequencerResponse.Failure, Started]] =
     sequenceComponentApi(seqCompLocation)
       .loadScript(subsystem, obsMode)
@@ -63,9 +64,9 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
         case error: Unhandled                        => Future.successful(Left(LoadScriptError(error.msg)))
       }
 
-  def unloadScript(seqCompLocation: AkkaLocation): Future[Ok.type] = sequenceComponentApi(seqCompLocation).unloadScript()
+  def unloadScript(seqCompLocation: SeqCompLocation): Future[Ok.type] = sequenceComponentApi(seqCompLocation).unloadScript()
 
-  def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
+  def shutdownSequenceComponent(prefix: SeqCompPrefix): Future[ShutdownSequenceComponentResponse] =
     shutdown(prefix).mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
   def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
@@ -75,12 +76,14 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = sequenceComponentApi(loc).restartScript()
 
-  def getSequenceComponentStatus(seqCompLocation: AkkaLocation): Future[SequenceComponentStatus] =
+  def getSequenceComponentStatus(seqCompLocation: SeqCompLocation): Future[SequenceComponentStatus] =
     sequenceComponentApi(seqCompLocation).status.map(s =>
       SequenceComponentStatus(seqCompLocation.connection.componentId, s.response)
     )
 
-  private def shutdown(prefix: Prefix): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
+  private def shutdown(
+      prefix: SeqCompPrefix
+  ): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
       .flatMapRight(shutdown)
@@ -90,19 +93,19 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .listAkkaLocationsBy(SequenceComponent)
       .flatMapRight(Future.traverse(_)(shutdown))
 
-  private def shutdown(seqCompLocation: AkkaLocation) = sequenceComponentApi(seqCompLocation).shutdown()
+  private def shutdown(seqCompLocation: SeqCompLocation) = sequenceComponentApi(seqCompLocation).shutdown()
 
-  private def filterIdleSequenceComponents(seqCompLocations: List[AkkaLocation]) =
+  private def filterIdleSequenceComponents(seqCompLocations: List[SeqCompLocation]) =
     Future
       .traverse(seqCompLocations)(idleSequenceComponent)
       .map(_.collect { case Some(location) => location })
 
-  private[sm] def idleSequenceComponent(seqCompLocation: AkkaLocation): Future[Option[AkkaLocation]] =
+  private[sm] def idleSequenceComponent(seqCompLocation: SeqCompLocation): Future[Option[AkkaLocation]] =
     async {
       val isIdle = await(sequenceComponentApi(seqCompLocation).status).response.isEmpty
       if (isIdle) Some(seqCompLocation) else None
     }
 
-  private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentApi =
+  private[sm] def sequenceComponentApi(seqCompLocation: SeqCompLocation): SequenceComponentApi =
     new SequenceComponentImpl(seqCompLocation)
 }

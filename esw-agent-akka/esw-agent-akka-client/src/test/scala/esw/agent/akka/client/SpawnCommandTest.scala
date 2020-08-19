@@ -8,7 +8,7 @@ import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, 
 import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 
-class AgentCommandTest extends BaseTestSuite {
+class SpawnCommandTest extends BaseTestSuite {
 
   "SpawnSequenceComponent's commandArg method" must {
     "append given extra argument | ESW-366" in {

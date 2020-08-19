@@ -92,7 +92,7 @@ class AgentClientTest extends ActorTestSuit {
   }
 
   "killComponent" should {
-    "send KillComponent message to agent and return a future with agent response" in {
+    "send KillComponent message to agent and return a future with agent response | ESW-367" in {
       val location =
         AkkaLocation(AkkaConnection(ComponentId(Prefix("IRIS.filter"), SequenceComponent)), new URI("uri"), Metadata.empty)
 

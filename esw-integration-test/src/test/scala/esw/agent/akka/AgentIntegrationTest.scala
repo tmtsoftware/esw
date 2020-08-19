@@ -53,7 +53,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       agentLocation should not be empty
     }
 
-    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325, ESW-366" in {
+    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325, ESW-366, ESW-367" in {
       val darknight = ObsMode("darknight")
       spawnSequenceComponent(irisPrefix.componentName).futureValue should ===(Spawned)
       // Verify registration in location service
@@ -76,7 +76,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
 
-    "return Spawned on SpawnSequenceManager | ESW-180, ESW-366" in {
+    "return Spawned on SpawnSequenceManager | ESW-180, ESW-366, ESW-367" in {
       val obsModeConfigPath = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
       // spawn sequence manager
       agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, eswVersion).futureValue should ===(Spawned)
