@@ -10,7 +10,16 @@ import csw.params.commands.CommandResponse.{SubmitResponse, ValidateResponse}
 import csw.params.events.Event
 import csw.prefix.models.Subsystem
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, GetLogMetadata, Log, PublishEvent, SequencerCommand, SetAlarmSeverity, SetLogLevel}
+import esw.gateway.api.protocol.PostRequest.{
+  ComponentCommand,
+  GetEvent,
+  GetLogMetadata,
+  Log,
+  PublishEvent,
+  SequencerCommand,
+  SetAlarmSeverity,
+  SetLogLevel
+}
 import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import esw.ocs.api.protocol.OkOrUnhandledResponse
