@@ -9,7 +9,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
 import esw.sm.api.models.{AgentProvisionConfig, ProvisionConfig}
 import esw.sm.api.protocol.SequenceManagerPostRequest
 import esw.sm.api.protocol.SequenceManagerPostRequest._
@@ -24,7 +24,7 @@ trait SequenceManagerData extends CommandData {
   val seqCompComponentId: ComponentId                  = ComponentId(seqCompPrefix, SequenceComponent)
   val akkaLocation: AkkaLocation                       = AkkaLocation(AkkaConnection(componentId), new URI("uri"), Metadata().add("key1", "value"))
   val sequenceComponentStatus: SequenceComponentStatus = SequenceComponentStatus(seqCompComponentId, Some(akkaLocation))
-  val agentSeqCompsStatus: AgentSeqCompsStatus         = AgentSeqCompsStatus(agentComponentId, List(sequenceComponentStatus))
+  val agentSeqCompsStatus: AgentStatus                 = AgentStatus(agentComponentId, List(sequenceComponentStatus))
   val agentProvisionConfig: AgentProvisionConfig       = AgentProvisionConfig(agentPrefix, 3)
   val provisionConfig: ProvisionConfig                 = ProvisionConfig(List(agentProvisionConfig))
 

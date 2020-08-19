@@ -14,7 +14,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
-import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
@@ -409,10 +409,11 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedResponse = AgentStatusResponse.Success(
         List(
-          AgentSeqCompsStatus(eswMachine1, eswMachine1SeqComps),
-          AgentSeqCompsStatus(eswMachine2, List.empty),
-          AgentSeqCompsStatus(tcsMachine1, tcsMachine1SeqComps)
-        )
+          AgentStatus(eswMachine1, eswMachine1SeqComps),
+          AgentStatus(eswMachine2, List.empty),
+          AgentStatus(tcsMachine1, tcsMachine1SeqComps)
+        ),
+        List.empty
       )
 
       when(agentUtil.getAllAgentStatus).thenReturn(Future.successful(expectedResponse))

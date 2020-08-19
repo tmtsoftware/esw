@@ -23,7 +23,7 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
-import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
@@ -523,13 +523,13 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
 
     val expectedStatus = List(
-      AgentSeqCompsStatus(
+      AgentStatus(
         ComponentId(irisAgentPrefix, Machine),
         List(
           SequenceComponentStatus(ComponentId(Prefix(IRIS, "primary"), SequenceComponent), Some(sequencerLocation))
         )
       ),
-      AgentSeqCompsStatus(
+      AgentStatus(
         ComponentId(eswAgentPrefix, Machine),
         List(
           SequenceComponentStatus(ComponentId(Prefix(ESW, "primary"), SequenceComponent), None)
@@ -538,9 +538,9 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     )
 
     val actualResponse = sequenceManager.getAgentStatus.futureValue
-    val actualStatus   = actualResponse.asInstanceOf[AgentStatusResponse.Success].response
+    val actualStatus   = actualResponse.asInstanceOf[AgentStatusResponse.Success].agentStatus
     actualStatus.size should ===(expectedStatus.size)
-    actualStatus.diff(expectedStatus) should ===(List.empty[AgentSeqCompsStatus])
+    actualStatus.diff(expectedStatus) should ===(List.empty[AgentStatus])
 
     sequenceManager.shutdownAllSequenceComponents().futureValue
   }

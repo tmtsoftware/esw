@@ -13,7 +13,7 @@ import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.sm.api.models.AgentStatusResponses.{AgentSeqCompsStatus, SequenceComponentStatus}
+import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.AgentStatusResponse.Success
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -205,11 +205,9 @@ class AgentUtilTest extends BaseTestSuite {
       val eswSeqCompLoc2    = akkaLocation(eswSeqComp2, Some(eswMachinePrefix))
       val eswSeqComp2Status = SequenceComponentStatus(eswSeqComp2, None)
 
-      // Unknown Machine => (agent prefix not present)
+      // Manually started seq comp => (agent prefix not present)
       //            irisSeqComp => None
       val irisPrefix        = Prefix(IRIS, "secondary")
-      val unknownMachine    = ComponentId(Prefix(s"${irisPrefix.subsystem}.Unknown"), Machine)
-      val unknownMachineLoc = akkaLocation(unknownMachine, None)
       val irisSeqComp       = ComponentId(irisPrefix, SequenceComponent)
       val irisSeqCompLoc    = akkaLocation(irisSeqComp, None)
       val irisSeqCompStatus = SequenceComponentStatus(irisSeqComp, None)
@@ -220,7 +218,7 @@ class AgentUtilTest extends BaseTestSuite {
       val tcsMachineLoc    = akkaLocation(tcsMachine, None)
 
       when(locationServiceUtil.listAkkaLocationsBy(Machine))
-        .thenReturn(futureRight(List(eswMachineLoc, unknownMachineLoc, tcsMachineLoc)))
+        .thenReturn(futureRight(List(eswMachineLoc, tcsMachineLoc)))
 
       when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
         .thenReturn(futureRight(List(eswSeqCompLoc1, eswSeqCompLoc2, irisSeqCompLoc)))
@@ -232,13 +230,14 @@ class AgentUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.getSequenceComponentStatus(irisSeqCompLoc))
         .thenReturn(Future.successful(irisSeqCompStatus))
 
-      val expectedStatus = List(
-        AgentSeqCompsStatus(eswMachine, List(eswSeqComp1Status, eswSeqComp2Status)),
-        AgentSeqCompsStatus(unknownMachine, List(irisSeqCompStatus)),
-        AgentSeqCompsStatus(tcsMachine, List.empty)
+      val expectedAgentStatus = List(
+        AgentStatus(eswMachine, List(eswSeqComp1Status, eswSeqComp2Status)),
+        AgentStatus(tcsMachine, List.empty)
       )
 
-      agentUtil.getAllAgentStatus.futureValue.asInstanceOf[Success].response.toSet should ===(expectedStatus.toSet)
+      val status = agentUtil.getAllAgentStatus.futureValue.asInstanceOf[Success]
+      status.agentStatus.toSet should ===(expectedAgentStatus.toSet)
+      status.seqCompsWithoutAgent.toSet should ===(List(irisSeqCompStatus).toSet)
 
       verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
