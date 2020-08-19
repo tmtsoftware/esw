@@ -55,7 +55,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val agentService = new AgentServiceImpl(locationService)
 
         agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue should ===(
-          Failed(s"Could not find location matching connection: ${AkkaConnection(ComponentId(agentPrefix, Machine))}")
+          Failed(s"Could not find location matching connection: $akkaConnection")
         )
 
         verify(locationService).find(akkaConnection)
@@ -85,7 +85,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val agentService = new AgentServiceImpl(locationService)
 
         agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, version).futureValue should ===(
-          Failed(s"Could not find location matching connection: ${AkkaConnection(ComponentId(agentPrefix, Machine))}")
+          Failed(s"Could not find location matching connection: $akkaConnection")
         )
 
         verify(locationService).find(akkaConnection)
@@ -120,7 +120,7 @@ class AgentServiceImplTest extends BaseTestSuite {
 
         val agentService = new AgentServiceImpl(locationService)
         agentService.killComponent(componentConnection).futureValue should ===(
-          Failed(s"Could not find location matching connection: ${AkkaConnection(ComponentId(agentPrefix, Machine))}")
+          Failed(s"Could not find location matching connection: $agentConnection")
         )
 
         verify(locationService).find(agentConnection)
@@ -157,7 +157,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val agentService = new AgentServiceImpl(locationService)
 
         agentService.agentClient(agentPrefix).leftValue should ===(
-          s"Could not find location matching connection: ${AkkaConnection(ComponentId(agentPrefix, Machine))}"
+          s"Could not find location matching connection: $akkaConnection"
         )
 
         verify(locationService).find(akkaConnection)
