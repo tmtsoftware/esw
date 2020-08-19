@@ -1,6 +1,5 @@
 package esw.ocs.app.simulation
 
-import csw.location.api.models.AkkaLocation
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.app.wiring.{SequencerConfig, SequencerWiring}
@@ -9,9 +8,9 @@ import esw.ocs.impl.script.ScriptApi
 class SimulationSequencerWiring(
     override val subsystem: Subsystem,
     override val obsMode: ObsMode,
-    sequenceComponentLocation: AkkaLocation,
+    sequenceComponentPrefix: Prefix,
     simulationScript: SimulationScript = SimulationScript
-) extends SequencerWiring(subsystem, obsMode, sequenceComponentLocation) {
+) extends SequencerWiring(subsystem, obsMode, sequenceComponentPrefix) {
 
   private val heartbeatInterval      = config.getDuration("esw.heartbeat-interval")
   private val enableThreadMonitoring = config.getBoolean("esw.enable-thread-monitoring")

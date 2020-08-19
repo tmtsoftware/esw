@@ -2,10 +2,8 @@ package esw.ocs.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import com.typesafe.config.ConfigFactory
-import csw.location.api.extensions.ActorExtension._
-import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models.Connection.HttpConnection
+import csw.location.api.models.{ComponentId, ComponentType}
 import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -14,7 +12,6 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.FrameworkTestKit
 import esw.ocs.api.actor.client.SequencerApiFactory
-import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.models.ObsMode
 import esw.ocs.app.wiring.SequencerWiring
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -32,18 +29,14 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
   private val frameworkTestKit = FrameworkTestKit()
   import frameworkTestKit._
 
-  private val ocsSubsystem        = ESW
-  private val ocsSequencerObsMode = ObsMode("MoonNight")
-  private val tcsSubsystem        = TCS
-  private val tcsSequencerObsMode = ObsMode("moonnight")
-  private val command1            = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
-  private val command2            = Setup(Prefix("esw.test"), CommandName("command-2"), None)
-  private val sequence            = Sequence(command1, command2)
-  private val sequenceComponentRef = AkkaLocation(
-    AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-    TestProbe[SequenceComponentMsg]().ref.toURI,
-    Metadata.empty
-  )
+  private val ocsSubsystem                    = ESW
+  private val ocsSequencerObsMode             = ObsMode("MoonNight")
+  private val tcsSubsystem                    = TCS
+  private val tcsSequencerObsMode             = ObsMode("moonnight")
+  private val command1                        = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
+  private val command2                        = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+  private val sequence                        = Sequence(command1, command2)
+  private val sequenceComponentPrefix: Prefix = Prefix(ESW, "primary")
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -54,7 +47,7 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
     runOn(seed) {
       enterBarrier("event-server-started")
-      val ocsSequencerWiring = new SequencerWiring(ocsSubsystem, ocsSequencerObsMode, sequenceComponentRef)
+      val ocsSequencerWiring = new SequencerWiring(ocsSubsystem, ocsSequencerObsMode, sequenceComponentPrefix)
       ocsSequencerWiring.sequencerServer.start()
 
       enterBarrier("ocs-started")
@@ -81,7 +74,7 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
       enterBarrier("event-server-started")
       enterBarrier("ocs-started")
 
-      val tcsSequencerWiring = new SequencerWiring(tcsSubsystem, tcsSequencerObsMode, sequenceComponentRef)
+      val tcsSequencerWiring = new SequencerWiring(tcsSubsystem, tcsSequencerObsMode, sequenceComponentPrefix)
       tcsSequencerWiring.sequencerServer.start()
       enterBarrier("tcs-started")
       enterBarrier("assembly-started")

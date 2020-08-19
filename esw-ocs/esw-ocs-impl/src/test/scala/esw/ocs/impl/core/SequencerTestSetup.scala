@@ -6,10 +6,10 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.location.api.extensions.ActorExtension._
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
@@ -17,11 +17,11 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress}
+import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
-import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.script.ScriptApi
 import org.mockito.MockitoSugar
 import org.scalatest.Assertion
@@ -39,12 +39,14 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   implicit private val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
   implicit val ec: ExecutionContext                   = system.executionContext
 
-  private val componentId     = mock[ComponentId]
-  val script: ScriptApi       = mock[ScriptApi]
-  private val locationService = mock[LocationService]
-  private val logger          = mock[Logger]
-  private val sequenceComponent: AkkaLocation = AkkaLocation(
-    AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
+  val script: ScriptApi                             = mock[ScriptApi]
+  private val componentId                           = mock[ComponentId]
+  private val locationService                       = mock[LocationService]
+  private val logger                                = mock[Logger]
+  private val sequenceComponentPrefix: Prefix       = Prefix(ESW, "primary")
+  private val seqCompAkkaConnection: AkkaConnection = AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent))
+  private val sequenceComponentLocation: AkkaLocation = AkkaLocation(
+    seqCompAkkaConnection,
     TestProbe[SequenceComponentMsg]().ref.toURI,
     Metadata.empty
   )
@@ -52,10 +54,13 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   when(locationService.unregister(AkkaConnection(componentId))).thenReturn(Future.successful(Done))
   when(script.executeShutdown()).thenReturn(Future.successful(Done))
 
+  //for getSequenceComponent message
+  when(locationService.find(seqCompAkkaConnection)).thenReturn(Future.successful(Some(sequenceComponentLocation)))
+
   val sequencerName = s"SequencerActor${Random.between(0, Int.MaxValue)}"
   when(componentId.prefix).thenReturn(Prefix(ESW, sequencerName))
   private val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, sequenceComponent, logger, mockShutdownHttpService)
+    new SequencerBehavior(componentId, script, locationService, sequenceComponentPrefix, logger, mockShutdownHttpService)
 
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)
 
@@ -362,8 +367,10 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     probe.expectMessageType[Option[StepList]]
   }
 
-  def assertForGettingSequenceComponent(replyTo: TestProbe[AkkaLocation]): Unit =
-    replyTo.expectMessage(sequenceComponent)
+  def assertForGettingSequenceComponent(replyTo: TestProbe[AkkaLocation]): Unit = {
+    replyTo.expectMessage(sequenceComponentLocation)
+    verify(locationService).find(seqCompAkkaConnection)
+  }
 }
 
 object SequencerTestSetup {

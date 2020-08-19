@@ -8,12 +8,14 @@ import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal, SubmitSequence}
 import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
+import csw.location.api.models.ComponentId
+import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
+import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.commons.Timeouts
 import esw.ocs.api.actor.messages.SequencerMessages._
@@ -33,7 +35,7 @@ class SequencerBehavior(
     componentId: ComponentId,
     script: ScriptApi,
     locationService: LocationService,
-    sequenceComponentLocation: AkkaLocation,
+    sequenceComponentPrefix: Prefix,
     logger: Logger,
     shutdownHttpService: () => Future[Done]
 )(implicit val actorSystem: ActorSystem[_])
@@ -294,8 +296,13 @@ class SequencerBehavior(
       case GetSequencerState(replyTo)               => replyTo ! state; Behaviors.same
       case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
       case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
-      case GetSequenceComponent(replyTo)            => replyTo ! sequenceComponentLocation; Behaviors.same
-      case ReadyToExecuteNext(replyTo)              => stateMachine(state)(data.readyToExecuteNext(replyTo))
+      case GetSequenceComponent(replyTo) => {
+        locationService
+          .find(AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent)))
+          .map(replyTo ! _.get)
+        Behaviors.same
+      }
+      case ReadyToExecuteNext(replyTo) => stateMachine(state)(data.readyToExecuteNext(replyTo))
       case MaybeNext(replyTo) =>
         if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
         else replyTo ! None

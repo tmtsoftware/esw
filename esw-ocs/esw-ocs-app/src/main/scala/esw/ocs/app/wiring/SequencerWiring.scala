@@ -21,7 +21,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
-import csw.prefix.models.Subsystem
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
 import esw.commons.utils.location.LocationServiceUtil
@@ -50,7 +50,7 @@ import scala.util.control.NonFatal
 private[ocs] class SequencerWiring(
     val subsystem: Subsystem,
     val obsMode: ObsMode,
-    sequenceComponentLocation: AkkaLocation
+    sequenceComponentPrefix: Prefix
 ) extends SequencerHttpCodecs {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
@@ -131,7 +131,7 @@ private[ocs] class SequencerWiring(
     }
 
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, logger, shutdownHttpService)(
+    new SequencerBehavior(componentId, script, locationService, sequenceComponentPrefix, logger, shutdownHttpService)(
       actorSystem
     )
 

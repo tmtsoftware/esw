@@ -54,7 +54,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val prefix                  = Prefix(s"$subsystem.${obsMode.name}")
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
 
-      when(sequencerServerFactory.make(subsystem, obsMode, seqCompLocation)).thenReturn(sequencerServer)
+      when(sequencerServerFactory.make(subsystem, obsMode, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
 
       //LoadScript
@@ -67,7 +67,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
       loadScriptLocationResponse.connection shouldEqual akkaConnection
 
-      verify(sequencerServerFactory).make(subsystem, obsMode, seqCompLocation)
+      verify(sequencerServerFactory).make(subsystem, obsMode, sequenceComponentPrefix)
       verify(sequencerServer).start()
 
       //GetStatus
@@ -101,7 +101,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val prefix                  = Prefix(s"$subsystem.${obsMode.name}")
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
 
-      when(sequencerServerFactory.make(subsystem, obsMode, seqCompLocation)).thenReturn(sequencerServer)
+      when(sequencerServerFactory.make(subsystem, obsMode, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
 
       //LoadScript
@@ -118,7 +118,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       response1 should ===(Unhandled(Running, "LoadScript"))
 
       // verify that these calls are made exactly once as second time load script will return SequenceComponentNotIdle error
-      verify(sequencerServerFactory).make(subsystem, obsMode, seqCompLocation)
+      verify(sequencerServerFactory).make(subsystem, obsMode, sequenceComponentPrefix)
       verify(sequencerServer).start()
     }
 
@@ -130,7 +130,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val obsMode                 = ObsMode("initException")
       val loadingScriptFailed     = LoadingScriptFailed("Script initialization failed with : initialisation failed")
 
-      when(sequencerServerFactory.make(subsystem, obsMode, seqCompLocation)).thenReturn(sequencerServer)
+      when(sequencerServerFactory.make(subsystem, obsMode, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(Left(loadingScriptFailed))
 
       //LoadScript
@@ -169,7 +169,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val restartResponseProbe    = TestProbe[ScriptResponseOrUnhandled]()
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
 
-      when(sequencerServerFactory.make(subsystem, obsMode, seqCompLocation)).thenReturn(sequencerServer)
+      when(sequencerServerFactory.make(subsystem, obsMode, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(
         Right(AkkaLocation(akkaConnection, URI.create("first_load_uri"), Metadata.empty)),
         Right(AkkaLocation(akkaConnection, URI.create("after_restart_uri"), Metadata.empty))
