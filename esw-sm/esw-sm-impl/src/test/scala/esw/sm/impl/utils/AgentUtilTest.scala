@@ -47,10 +47,10 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.find(connection)).thenReturn(futureRight(location))
 
       val agentUtil = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator) {
-        override private[utils] def makeAgentClient(loc: AkkaLocation) = agentClient
+        override private[utils] def makeAgentClient(agentLocation: AkkaLocation) = agentClient
       }
 
-      agentUtil.getAgent(agentPrefix).rightValue should ===(agentClient)
+      agentUtil.getAndMakeAgentClient(agentPrefix).rightValue should ===(agentClient)
       verify(locationServiceUtil).find(connection)
     }
 
@@ -65,7 +65,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.find(connection)).thenReturn(futureLeft(locationNotFound))
 
       val agentUtil = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator)
-      agentUtil.getAgent(agentPrefix).leftValue should ===(LocationServiceError(locationNotFound.msg))
+      agentUtil.getAndMakeAgentClient(agentPrefix).leftValue should ===(LocationServiceError(locationNotFound.msg))
 
       verify(locationServiceUtil).find(connection)
     }
@@ -81,7 +81,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.find(connection)).thenReturn(futureLeft(listingFailed))
 
       val agentUtil = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator)
-      agentUtil.getAgent(agentPrefix).leftValue should ===(LocationServiceError(listingFailed.msg))
+      agentUtil.getAndMakeAgentClient(agentPrefix).leftValue should ===(LocationServiceError(listingFailed.msg))
 
       verify(locationServiceUtil).find(connection)
     }
@@ -106,8 +106,8 @@ class AgentUtilTest extends BaseTestSuite {
       val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
 
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator) {
-        override def makeAgentClient(loc: AkkaLocation): AgentClient =
-          if (loc.prefix.subsystem == ESW) eswClient else irisClient
+        override def makeAgentClient(agentLocation: AkkaLocation): AgentClient =
+          if (agentLocation.prefix.subsystem == ESW) eswClient else irisClient
       }
 
       val provisionConfig = ProvisionConfig(eswPrimaryMachine.prefix -> 1, irisPrimaryMachine.prefix -> 1)
@@ -263,9 +263,9 @@ class AgentUtilTest extends BaseTestSuite {
     val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
 
     val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator) {
-      override private[sm] def getAgent(prefix: Prefix) = futureRight(agentClient)
+      override private[sm] def getAndMakeAgentClient(agentPrefix: Prefix) = futureRight(agentClient)
 
-      override private[utils] def makeAgentClient(loc: AkkaLocation) = agentClient
+      override private[utils] def makeAgentClient(agentLocation: AkkaLocation) = agentClient
     }
 
     val eswPrimarySeqCompId: ComponentId = ComponentId(Prefix(ESW, "primary"), SequenceComponent)
