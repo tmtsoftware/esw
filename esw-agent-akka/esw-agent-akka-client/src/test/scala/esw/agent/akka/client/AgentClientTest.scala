@@ -13,7 +13,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{Killed, Spawned}
-import esw.commons.utils.location.EswLocationError.LocationNotFound
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
@@ -49,13 +49,24 @@ class AgentClientTest extends ActorTestSuit {
       AgentClient.make(prefix, locationService).futureValue
     }
 
-    "return a failed future when location service cant resolve agent  | ESW-237" in {
+    "return a error when location service cant resolve agent with LocationNotFound | ESW-237" in {
       val locationService: LocationServiceUtil = mock[LocationServiceUtil]
       val prefix                               = Prefix("esw.test1")
       val akkaConnection                       = AkkaConnection(ComponentId(prefix, Machine))
-      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound("error"))))
-      val exception = intercept[RuntimeException](AgentClient.make(prefix, locationService).futureValue)
-      exception.getCause.getMessage should ===(s"could not resolve agent with prefix: $prefix")
+      val expectedError                        = LocationNotFound("error")
+      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(expectedError)))
+
+      AgentClient.make(prefix, locationService).leftValue should ===(expectedError)
+    }
+
+    "return a error when location service cant resolve agent with RegistrationListingFailedError  | ESW-237" in {
+      val locationService: LocationServiceUtil = mock[LocationServiceUtil]
+      val prefix                               = Prefix("esw.test1")
+      val akkaConnection                       = AkkaConnection(ComponentId(prefix, Machine))
+      val expectedError                        = RegistrationListingFailed("error")
+      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(expectedError)))
+
+      AgentClient.make(prefix, locationService).leftValue should ===(expectedError)
     }
 
     "return a failed future when location service call fails  | ESW-237" in {
