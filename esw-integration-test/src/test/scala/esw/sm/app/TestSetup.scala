@@ -38,7 +38,7 @@ object TestSetup extends EswTestKit {
       tokenFactory: () => Option[String],
       obsModeConfigPath: Path = obsModeConfigPath,
       isConfigLocal: Boolean = true,
-      agentPrefix: Option[String] = None
+      agentPrefix: Option[Prefix] = None
   ): SequenceManagerApi =
     startSequenceManager(prefix, obsModeConfigPath, isConfigLocal, agentPrefix, authDisabled = false, tokenFactory)
 
@@ -46,7 +46,7 @@ object TestSetup extends EswTestKit {
       prefix: Prefix,
       obsModeConfigPath: Path = obsModeConfigPath,
       isConfigLocal: Boolean = true,
-      agentPrefix: Option[String] = None
+      agentPrefix: Option[Prefix] = None
   ): SequenceManagerApi =
     startSequenceManager(prefix, obsModeConfigPath, isConfigLocal, agentPrefix, authDisabled = true, () => None)
 
@@ -54,7 +54,7 @@ object TestSetup extends EswTestKit {
       prefix: Prefix,
       obsModeConfig: Path,
       isConfigLocal: Boolean,
-      agentPrefix: Option[String],
+      agentPrefix: Option[Prefix],
       authDisabled: Boolean,
       tokenFactory: () => Option[String]
   ): SequenceManagerApi = {

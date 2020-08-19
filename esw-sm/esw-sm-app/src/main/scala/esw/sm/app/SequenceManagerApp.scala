@@ -5,9 +5,10 @@ import java.nio.file.Path
 import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
+import csw.prefix.models.Prefix
 import esw.commons.Timeouts
 import esw.http.core.commons.EswCommandApp
-import esw.sm.app.SequenceManagerAppCommand.StartCommand
+import esw.sm.app.SequenceManagerAppCommand._
 
 import scala.concurrent.Await
 import scala.util.control.NonFatal
@@ -33,7 +34,7 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
   def start(
       obsModeConfigPath: Path,
       isConfigLocal: Boolean,
-      agentPrefix: Option[String],
+      agentPrefix: Option[Prefix],
       startLogging: Boolean
   ): SequenceManagerWiring = {
     val sequenceManagerWiring = new SequenceManagerWiring(obsModeConfigPath, isConfigLocal, agentPrefix)

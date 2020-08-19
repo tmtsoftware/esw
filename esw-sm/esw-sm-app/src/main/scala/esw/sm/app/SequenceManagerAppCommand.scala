@@ -2,11 +2,23 @@ package esw.sm.app
 
 import java.nio.file.Path
 
+import caseapp.core.Error
+import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, ExtraName, HelpMessage}
+import csw.prefix.models.Prefix
+
+import scala.util.Try
 
 sealed trait SequenceManagerAppCommand
 
 object SequenceManagerAppCommand {
+
+  implicit val prefixParser: SimpleArgParser[Prefix] =
+    SimpleArgParser.from[Prefix]("prefix") { prefixStr =>
+      Try(Right(Prefix(prefixStr)))
+        .getOrElse(Left(Error.Other(s"Prefix [$prefixStr] is invalid")))
+    }
+
   @CommandName("start")
   final case class StartCommand(
       @ExtraName("o")
@@ -21,6 +33,6 @@ object SequenceManagerAppCommand {
       local: Boolean = false,
       @HelpMessage("optional argument: agentPrefix on which sequence manager will be spawned, ex: ESW.agent1, IRIS.agent2 etc")
       @ExtraName("a")
-      agentPrefix: Option[String]
+      agentPrefix: Option[Prefix]
   ) extends SequenceManagerAppCommand
 }
