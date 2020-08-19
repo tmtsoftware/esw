@@ -31,29 +31,29 @@ trait SequencerUtils extends LocationUtils {
   def spawnSequencerProxy(subsystem: Subsystem, obsMode: ObsMode): SequencerApi =
     new SequencerImpl(spawnSequencerRef(subsystem, obsMode))
 
-  def spawnSequencer(subsystem: Subsystem, obsMode: ObsMode, agentPrefix: Option[String] = None): AkkaLocation =
+  def spawnSequencer(subsystem: Subsystem, obsMode: ObsMode, agentPrefix: Option[Prefix] = None): AkkaLocation =
     loadScript(spawnSequenceComponent(subsystem, None, agentPrefix), subsystem, obsMode)
 
-  def spawnSequencerInSimulation(subsystem: Subsystem, obsMode: ObsMode, agentPrefix: Option[String] = None): AkkaLocation =
+  def spawnSequencerInSimulation(subsystem: Subsystem, obsMode: ObsMode, agentPrefix: Option[Prefix] = None): AkkaLocation =
     loadScript(spawnSequenceComponentInSimulation(subsystem, None, agentPrefix), subsystem, obsMode)
 
   def sequencerClient(subsystem: Subsystem, obsMode: ObsMode): SequencerApi =
     SequencerApiFactory.make(resolveHTTPLocation(Prefix(subsystem, obsMode.name), ComponentType.Sequencer))
 
-  def spawnSequenceComponent(subsystem: Subsystem, name: Option[String], agentPrefix: Option[String] = None): AkkaLocation =
+  def spawnSequenceComponent(subsystem: Subsystem, name: Option[String], agentPrefix: Option[Prefix] = None): AkkaLocation =
     spawnSequenceComponent(subsystem, name, agentPrefix, new SequencerWiring(_, _, _).sequencerServer)
 
   def spawnSequenceComponentInSimulation(
       subsystem: Subsystem,
       name: Option[String],
-      agentPrefix: Option[String] = None
+      agentPrefix: Option[Prefix] = None
   ): AkkaLocation =
     spawnSequenceComponent(subsystem, name, agentPrefix, new SimulationSequencerWiring(_, _, _).sequencerServer)
 
   private def spawnSequenceComponent(
       subsystem: Subsystem,
       name: Option[String],
-      agentPrefix: Option[String],
+      agentPrefix: Option[Prefix],
       sequencerFactory: SequencerServerFactory
   ) = {
     val wiring = SequenceComponentWiring.make(subsystem, name, agentPrefix, sequencerFactory, actorSystem)

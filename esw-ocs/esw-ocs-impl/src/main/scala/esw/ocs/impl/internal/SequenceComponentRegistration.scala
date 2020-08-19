@@ -18,7 +18,7 @@ import scala.util.Random
 class SequenceComponentRegistration(
     subsystem: Subsystem,
     name: Option[String],
-    agentPrefix: Option[String],
+    agentPrefix: Option[Prefix],
     _locationService: LocationService,
     sequenceComponentFactory: Prefix => Future[ActorRef[SequenceComponentMsg]]
 )(implicit
@@ -53,7 +53,7 @@ class SequenceComponentRegistration(
     }
     sequenceComponentFactory(sequenceComponentPrefix).map { actorRef =>
       val metadata = agentPrefix
-        .map(prefix => Metadata().withAgentPrefix(Prefix(prefix)))
+        .map(Metadata().withAgentPrefix(_))
         .getOrElse(Metadata.empty)
         .withPid(ProcessHandle.current().pid())
 

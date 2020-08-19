@@ -50,7 +50,6 @@ class SequenceComponentBehavior(
       obsMode: ObsMode,
       replyTo: ActorRef[ScriptResponseOrUnhandled]
   ): Behavior[SequenceComponentMsg] = {
-    // TODO: Resolve the location instead of manual creation for accurate metadata
     val sequencerServer    = sequencerServerFactory.make(subsystem, obsMode, prefix)
     val registrationResult = sequencerServer.start().fold(identity, SequencerLocation)
     replyTo ! registrationResult

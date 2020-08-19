@@ -14,6 +14,7 @@ import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.EswLocationError
 import esw.ocs.api.actor.messages.SequenceComponentMsg
@@ -31,8 +32,8 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  private val agentPrefix        = "ESW.agent1"
-  private def metadata: Metadata = Metadata().withAgentPrefix(Prefix(agentPrefix)).withPid(ProcessHandle.current().pid())
+  private val agentPrefix        = Prefix(ESW, "agent1")
+  private def metadata: Metadata = Metadata().withAgentPrefix(agentPrefix).withPid(ProcessHandle.current().pid())
 
   private val registrationResult: RegistrationResult = mock[RegistrationResult]
   private val locationService: LocationService       = mock[LocationService]
@@ -227,7 +228,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
   private def createSequenceComponentRegistration(
       locationService: LocationService,
       name: Option[String],
-      agentPrefix: Option[String]
+      agentPrefix: Option[Prefix]
   )(implicit
       actorSystem: ActorSystem[SpawnProtocol.Command]
   ): (SequenceComponentRegistration, TestProbe[SequenceComponentMsg]) = {
