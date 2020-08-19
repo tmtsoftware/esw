@@ -19,7 +19,6 @@ Following JSON payloads can be "post"ed to the above URL:
 * ShutdownSubsystemSequencers
 * ShutdownObsModeSequencers
 * ShutdownAllSequencers
-* SpawnSequenceComponent
 * ShutdownSequenceComponent
 * ShutdownAllSequenceComponents
 
