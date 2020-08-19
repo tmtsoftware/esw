@@ -4,18 +4,16 @@ import java.net.URI
 import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 
-import akka.Done
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
-import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
+import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
@@ -29,27 +27,21 @@ class AgentSetup extends BaseTestSuite {
   implicit val scheduler: Scheduler                       = system.scheduler
   implicit val ec: ExecutionContext                       = system.executionContext
 
-  val locationService: LocationService = mock[LocationService]
-  val processExecutor: ProcessExecutor = mock[ProcessExecutor]
-  val process: Process                 = mock[Process]
-  val processHandle: ProcessHandle     = mock[ProcessHandle]
-  implicit val logger: Logger          = mock[Logger]
+  val locationService: LocationService   = mock[LocationService]
+  val processExecutor: ProcessExecutor   = mock[ProcessExecutor]
+  val process: Process                   = mock[Process]
+  val mockedProcessHandle: ProcessHandle = mock[ProcessHandle]
+  implicit val logger: Logger            = mock[Logger]
+  val agentPrefix: Prefix                = Prefix(randomSubsystem, randomString(10))
+  val agentSettings: AgentSettings       = AgentSettings(agentPrefix, 15.seconds, Cs.channel)
 
-  val prefix: Prefix                                    = Prefix("csw.component")
-  val componentId: ComponentId                          = ComponentId(prefix, Service)
-  val redisConn: TcpConnection                          = TcpConnection(componentId)
-  val redisLocation: TcpLocation                        = TcpLocation(redisConn, new URI("some"), Metadata.empty)
-  val redisLocationF: Future[Some[TcpLocation]]         = Future.successful(Some(redisLocation))
-  val redisRegistration: TcpRegistration                = TcpRegistration(redisConn, 100)
-  val spawnRedis: ActorRef[SpawnResponse] => SpawnRedis = SpawnRedis(_, prefix, 100, List.empty)
+  val metadata: Metadata = Metadata().withAgentPrefix(agentPrefix).withPid(12345)
 
-  val agentPrefix: Prefix                          = Prefix(randomSubsystem, randomString(10))
-  val agentSettings: AgentSettings                 = AgentSettings(agentPrefix, 15.seconds, Cs.channel)
   val seqCompName: String                          = randomString(10)
   val seqCompPrefix: Prefix                        = Prefix(agentPrefix.subsystem, seqCompName)
   val seqCompComponentId: ComponentId              = ComponentId(seqCompPrefix, SequenceComponent)
   val seqCompConn: AkkaConnection                  = AkkaConnection(seqCompComponentId)
-  val seqCompLocation: AkkaLocation                = AkkaLocation(seqCompConn, new URI("some"), Metadata.empty)
+  val seqCompLocation: AkkaLocation                = AkkaLocation(seqCompConn, new URI("some"), metadata)
   val seqCompLocationF: Future[Some[AkkaLocation]] = Future.successful(Some(seqCompLocation))
   val spawnSequenceComp: ActorRef[SpawnResponse] => SpawnSequenceComponent =
     SpawnSequenceComponent(_, agentPrefix, seqCompName, None)
@@ -57,7 +49,7 @@ class AgentSetup extends BaseTestSuite {
   val seqManagerPrefix: Prefix                        = Prefix("esw.sequence_manager")
   val seqManagerComponentId: ComponentId              = ComponentId(seqManagerPrefix, Service)
   val seqManagerConn: AkkaConnection                  = AkkaConnection(seqManagerComponentId)
-  val seqManagerLocation: AkkaLocation                = AkkaLocation(seqManagerConn, new URI("some"), Metadata.empty)
+  val seqManagerLocation: AkkaLocation                = AkkaLocation(seqManagerConn, new URI("some"), metadata)
   val seqManagerLocationF: Future[Some[AkkaLocation]] = Future.successful(Some(seqManagerLocation))
   val spawnSequenceManager: ActorRef[SpawnResponse] => SpawnSequenceManager =
     SpawnSequenceManager(_, Paths.get("obsmode.conf"), isConfigLocal = true, None)
@@ -68,8 +60,10 @@ class AgentSetup extends BaseTestSuite {
   }
 
   def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String = "test-actor"): ActorRef[AgentCommand] = {
-    val processManager: ProcessManager = new ProcessManager(locationService, processExecutor, agentSettings)
-    system.systemActorOf(new AgentActor(processManager).behavior(AgentState.empty), name)
+    val processManager: ProcessManager = new ProcessManager(locationService, processExecutor, agentSettings) {
+      override def processHandle(pid: Long): Option[ProcessHandle] = Some(mockedProcessHandle)
+    }
+    system.systemActorOf(new AgentActor(processManager).behavior, name)
   }
 
   def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
@@ -80,7 +74,7 @@ class AgentSetup extends BaseTestSuite {
 
   def mockSuccessfulProcess(dieAfter: FiniteDuration = 2.seconds, exitCode: Int = 0): Unit = {
     when(process.pid()).thenReturn(Random.nextInt(1000).abs)
-    when(process.toHandle).thenReturn(processHandle)
+    when(process.toHandle).thenReturn(mockedProcessHandle)
     when(process.exitValue()).thenReturn(exitCode)
     when(process.isAlive).thenReturn(true)
     val future = new CompletableFuture[Process]()
@@ -88,8 +82,8 @@ class AgentSetup extends BaseTestSuite {
     when(process.onExit()).thenReturn(future)
 
     val future2 = new CompletableFuture[ProcessHandle]()
-    scheduler.scheduleOnce(dieAfter, () => future2.complete(processHandle))
-    when(processHandle.onExit()).thenReturn(future2)
+    scheduler.scheduleOnce(dieAfter, () => future2.complete(mockedProcessHandle))
+    when(mockedProcessHandle.onExit()).thenReturn(future2)
     when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
   }
 
@@ -101,11 +95,5 @@ class AgentSetup extends BaseTestSuite {
     when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration]))
       .thenReturn(Future.successful(None), seqManagerLocationF)
 
-    // Redis
-    when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
-    when(locationService.register(redisRegistration)).thenReturn(
-      delayedFuture(RegistrationResult.from(redisLocation, locationService.unregister), registrationDuration)
-    )
-    when(locationService.unregister(redisConn)).thenReturn(Future.successful(Done))
   }
 }

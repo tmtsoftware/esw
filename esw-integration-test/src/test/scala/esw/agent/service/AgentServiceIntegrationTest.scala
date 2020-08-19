@@ -3,6 +3,7 @@ package esw.agent.service
 import java.nio.file.Paths
 
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
+import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
@@ -46,7 +47,7 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
   }
 
   "AgentService" must {
-    "start and shutdown sequence component on the given agent | ESW-361" in {
+    "start and kill sequence component on the given agent | ESW-361" in {
       BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
 
       val seqCompName   = "ESW_1"
@@ -59,10 +60,10 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
       resolveSequenceComponent(seqCompPrefix)
 
       // stop spawned component
-      agentService.killComponent(eswAgentPrefix, ComponentId(seqCompPrefix, SequenceComponent)).futureValue shouldBe Killed
+      agentService.killComponent(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent))).futureValue shouldBe Killed
     }
 
-    "start and shutdown sequence manager on the given agent | ESW-361" in {
+    "start and kill sequence manager on the given agent | ESW-361" in {
       BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
 
       val smPrefix = Prefix(ESW, "sequence_manager")
@@ -77,7 +78,8 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
       resolveAkkaLocation(smPrefix, Service)
 
       // stop sequence manager
-      agentService.killComponent(eswAgentPrefix, ComponentId(smPrefix, Service)).futureValue shouldBe Killed
+      val smConnection = AkkaConnection(ComponentId(smPrefix, Service))
+      agentService.killComponent(smConnection).futureValue shouldBe Killed
     }
   }
 }

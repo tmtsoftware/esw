@@ -5,17 +5,16 @@ import java.nio.file.Path
 
 import akka.actor.typed.ActorRef
 import csw.location.api.extensions.ActorExtension.RichActor
-import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
-import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSelfRegistered.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.akka.client.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
-import esw.agent.service.api.models.ComponentStatus.{Running, Stopping}
-import esw.agent.service.api.models.{AgentStatus, Killed, Spawned}
+import esw.agent.akka.client.AgentCommand.KillComponent
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.service.api.models.{Killed, Spawned}
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
+import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.concurrent.Future
@@ -35,33 +34,45 @@ class AgentClientTest extends ActorTestSuit {
       new AgentClient(location)
     }
   }
+
   import askProxyTestKit._
 
   private def randomString5 = Random.nextString(5)
 
   "make" should {
     "resolve the given prefix and return a new instance of AgentClient  | ESW-237" in {
-      val locationService: LocationService = mock[LocationService]
-      val prefix                           = Prefix("esw.test1")
-      val akkaConnection                   = AkkaConnection(ComponentId(prefix, Machine))
-      val agentLocation                    = AkkaLocation(akkaConnection, URI.create("akka://abc"), Metadata.empty)
-      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Some(agentLocation)))
+      val locationService: LocationServiceUtil = mock[LocationServiceUtil]
+      val prefix                               = Prefix("esw.test1")
+      val akkaConnection                       = AkkaConnection(ComponentId(prefix, Machine))
+      val agentLocation                        = AkkaLocation(akkaConnection, URI.create("akka://abc"), Metadata.empty)
+      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Right(agentLocation)))
       AgentClient.make(prefix, locationService).futureValue
     }
 
-    "return a failed future when location service cant resolve agent  | ESW-237" in {
-      val locationService: LocationService = mock[LocationService]
-      val prefix                           = Prefix("esw.test1")
-      val akkaConnection                   = AkkaConnection(ComponentId(prefix, Machine))
-      when(locationService.find(akkaConnection)).thenReturn(Future.successful(None))
-      val exception = intercept[RuntimeException](AgentClient.make(prefix, locationService).futureValue)
-      exception.getCause.getMessage should ===(s"could not resolve agent with prefix: $prefix")
+    "return a error when location service cant resolve agent with LocationNotFound | ESW-237" in {
+      val locationService: LocationServiceUtil = mock[LocationServiceUtil]
+      val prefix                               = Prefix("esw.test1")
+      val akkaConnection                       = AkkaConnection(ComponentId(prefix, Machine))
+      val expectedError                        = LocationNotFound("error")
+      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(expectedError)))
+
+      AgentClient.make(prefix, locationService).leftValue should ===(expectedError)
+    }
+
+    "return a error when location service cant resolve agent with RegistrationListingFailedError  | ESW-237" in {
+      val locationService: LocationServiceUtil = mock[LocationServiceUtil]
+      val prefix                               = Prefix("esw.test1")
+      val akkaConnection                       = AkkaConnection(ComponentId(prefix, Machine))
+      val expectedError                        = RegistrationListingFailed("error")
+      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(expectedError)))
+
+      AgentClient.make(prefix, locationService).leftValue should ===(expectedError)
     }
 
     "return a failed future when location service call fails  | ESW-237" in {
-      val locationService: LocationService = mock[LocationService]
-      val prefix                           = Prefix("esw.test1")
-      val akkaConnection                   = AkkaConnection(ComponentId(prefix, Machine))
+      val locationService: LocationServiceUtil = mock[LocationServiceUtil]
+      val prefix                               = Prefix("esw.test1")
+      val akkaConnection                       = AkkaConnection(ComponentId(prefix, Machine))
       when(locationService.find(akkaConnection)).thenReturn(Future.failed(new RuntimeException("boom")))
       val exception = intercept[RuntimeException](AgentClient.make(prefix, locationService).futureValue)
       exception.getCause.getMessage should ===(s"boom")
@@ -80,51 +91,15 @@ class AgentClientTest extends ActorTestSuit {
     }
   }
 
-  "spawnRedis" should {
-    "send SpawnRedis message to agent and return a future with agent response" in {
-      val randomPort = randomInt(10000)
-      val prefix     = Prefix(s"esw.$randomString5")
-      val args       = List("--port", randomPort.toString)
-      withBehavior {
-        case SpawnRedis(replyTo, `prefix`, `randomPort`, `args`) => replyTo ! Spawned
-      } check { ac =>
-        ac.spawnRedis(prefix, randomPort, args).futureValue should ===(Spawned)
-      }
-    }
-  }
-
   "killComponent" should {
     "send KillComponent message to agent and return a future with agent response" in {
-      val prefix      = Prefix(s"esw.$randomString5")
-      val componentId = ComponentId(prefix, SequenceComponent)
-      withBehavior {
-        case KillComponent(replyTo, `componentId`) => replyTo ! Killed
-      } check { ac =>
-        ac.killComponent(componentId).futureValue should ===(Killed)
-      }
-    }
-  }
+      val location =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix("IRIS.filter"), SequenceComponent)), new URI("uri"), Metadata.empty)
 
-  "getComponentStatus" should {
-    "send GetComponentStatus message to agent and return a future with agent response" in {
-      val prefix      = Prefix(s"esw.$randomString5")
-      val componentId = ComponentId(prefix, SequenceComponent)
       withBehavior {
-        case GetComponentStatus(replyTo, `componentId`) => replyTo ! Running
+        case KillComponent(replyTo, `location`) => replyTo ! Killed
       } check { ac =>
-        ac.getComponentStatus(componentId).futureValue should ===(Running)
-      }
-    }
-  }
-
-  "getAgentStatus" should {
-    "send GetAgentStatus message to agent and return a future with agent response" in {
-      val prefix      = Prefix(s"esw.$randomString5")
-      val componentId = ComponentId(prefix, Service)
-      withBehavior {
-        case GetAgentStatus(replyTo) => replyTo ! AgentStatus(Map(ComponentId(prefix, Service) -> Stopping))
-      } check { ac =>
-        ac.getAgentStatus.futureValue should ===(AgentStatus(Map(componentId -> Stopping)))
+        ac.killComponent(location).futureValue should ===(Killed)
       }
     }
   }

@@ -6,7 +6,7 @@ import csw.aas.http.SecurityDirectives
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentHttpCodecs._
 import esw.agent.service.api.protocol.AgentPostRequest
-import esw.agent.service.api.protocol.AgentPostRequest.{SpawnSequenceComponent, SpawnSequenceManager, KillComponent}
+import esw.agent.service.api.protocol.AgentPostRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.app.auth.EswUserRolePolicy
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
@@ -23,8 +23,8 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
       case SpawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version) =>
         sPost(complete(spawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version)))
 
-      case KillComponent(agentPrefix, componentId) =>
-        sPost(complete(killComponent(agentPrefix, componentId)))
+      case KillComponent(connection) =>
+        sPost(complete(killComponent(connection)))
     }
 
   private def sPost(route: => Route): Route = securityDirective.sPost(EswUserRolePolicy())(_ => route)

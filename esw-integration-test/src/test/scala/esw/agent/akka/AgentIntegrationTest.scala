@@ -4,15 +4,15 @@ import java.nio.file.Paths
 
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
-import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
+import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.models.ComponentStatus.Running
-import esw.agent.service.api.models.{AgentStatus, Killed, Spawned}
+import esw.agent.service.api.models.{Killed, Spawned}
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
@@ -25,13 +25,11 @@ import scala.concurrent.duration.DurationLong
 class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
 
   private val irisPrefix               = Prefix("esw.iris")
-  private val irisCompId               = ComponentId(irisPrefix, SequenceComponent)
   private val irisSeqCompConnection    = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
-  private val redisPrefix              = Prefix(s"esw.event_server")
-  private val redisCompId              = ComponentId(redisPrefix, Service)
   private val appVersion               = GitUtil.latestCommitSHA("esw")
   private val agentPrefix: Prefix      = Prefix(ESW, "machine_A1")
   private var agentClient: AgentClient = _
+  private val locationServiceUtil      = new LocationServiceUtil(locationService)
 
   private val eswVersion: Some[String] = Some(appVersion)
 
@@ -41,7 +39,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
     spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
     BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
     BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
-    agentClient = AgentClient.make(agentPrefix, locationService).futureValue
+    agentClient = AgentClient.make(agentPrefix, locationServiceUtil).rightValue
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
@@ -63,7 +61,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       seqCompLoc.connection shouldBe irisSeqCompConnection
 
       // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
-      seqCompLoc.metadata.getAgentPrefix.get should ===(agentPrefix)
+      seqCompLoc.metadata.getAgentPrefix.value should ===(agentPrefix)
       seqCompLoc.metadata.value.contains("PID") shouldBe true
 
       // start sequencer i.e. load IRIS darknight script
@@ -73,7 +71,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       // verify sequencer location from load script and looked up from location service is the same
       loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
 
-      agentClient.killComponent(ComponentId(irisPrefix, SequenceComponent)).futureValue should ===(Killed)
+      agentClient.killComponent(seqCompLoc).futureValue should ===(Killed)
       // Verify not registered in location service
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
@@ -91,30 +89,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
       location.metadata.getAgentPrefix.get should ===(agentPrefix)
 //      location.metadata.value.contains("PID") shouldBe true
 
-      agentClient.killComponent(ComponentId(Prefix(ESW, "sequence_manager"), Service)).futureValue
-    }
-
-    "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237, ESW-325" in {
-      agentClient.spawnRedis(redisPrefix, 6380, List.empty).futureValue should ===(Spawned)
-      // Verify registration in location service
-      locationService.resolve(TcpConnection(ComponentId(redisPrefix, Service)), 5.seconds).futureValue should not be empty
-
-      agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
-    }
-
-    "return status of components available on agent for a GetAgentStatus message | ESW-286" in {
-      spawnSequenceComponent(irisPrefix.componentName).futureValue should ===(Spawned)
-      agentClient.getComponentStatus(irisCompId).futureValue should ===(Running)
-
-      agentClient.spawnRedis(redisPrefix, 6381, List.empty).futureValue should ===(Spawned)
-      agentClient.getComponentStatus(redisCompId).futureValue should ===(Running)
-
-      val agentStatus = agentClient.getAgentStatus.futureValue
-      agentStatus should ===(AgentStatus(Map(irisCompId -> Running, redisCompId -> Running)))
-
-      // cleanup
-      agentClient.killComponent(irisCompId).futureValue
-      agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
+      agentClient.killComponent(location).futureValue
     }
   }
 

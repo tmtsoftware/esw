@@ -43,6 +43,6 @@ class AgentWiring(agentSettings: AgentSettings) {
     locationService.register(AkkaRegistrationFactory.make(agentConnection, agentRef))
 
   lazy val agentRef: ActorRef[AgentCommand] =
-    Await.result(typedSystem ? (Spawn(agentActor.behavior(AgentState.empty), "agent-actor", Props.empty, _)), timeout.duration)
+    Await.result(typedSystem ? (Spawn(agentActor.behavior, "agent-actor", Props.empty, _)), timeout.duration)
 }
 // $COVERAGE-ON$

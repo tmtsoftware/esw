@@ -2,9 +2,6 @@ package esw.agent.akka.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
-import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.Service
-import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.service.api.models._
@@ -16,36 +13,33 @@ import scala.concurrent.duration.DurationLong
 class KillComponentTest extends AgentSetup {
 
   Table(
-    ("Name", "SpawnCommand", "Connection"),
-    ("Redis", spawnRedis, redisConn),
-    ("SequenceComponent", spawnSequenceComp, seqCompConn),
-    ("SequenceManager", spawnSequenceManager, seqManagerConn)
+    ("Name", "SpawnCommand", "Location"),
+    ("SequenceComponent", spawnSequenceComp, seqCompLocation),
+    ("SequenceManager", spawnSequenceManager, seqManagerLocation)
   ).foreach {
-    case (name, spawnComponent, connection) =>
-      val componentId = connection.componentId
-
+    case (name, spawnComponent, location) =>
       s"KillComponent [$name]" must {
-        s"reply Killed after stopping a registered component gracefully | ESW-276" in {
+        s"reply Killed after stopping a registered component gracefully | ESW-276, ESW-367" in {
           agentWithSpawnedComponent(name + "1") { (agentActorRef, killResponseProbe) =>
-            agentActorRef ! KillComponent(killResponseProbe.ref, componentId)
+            agentActorRef ! KillComponent(killResponseProbe.ref, location)
             killResponseProbe.expectMessage(Killed)
 
             //ensure component was unregistered
-            verify(locationService, timeout(500)).unregister(connection)
+            verify(locationService, timeout(500)).unregister(location.connection)
           }
         }
 
-        s"reply 'Killed' when process is already stopping by another message [Idempotent] | ESW-276" in {
+        s"reply 'Killed' when process is already stopping by another message [Idempotent] | ESW-276, ESW-367" in {
           agentWithSpawnedComponent(name + "2") { (agentActorRef, killResponseProbe) =>
-            agentActorRef ! KillComponent(killResponseProbe.ref, componentId)
-            agentActorRef ! KillComponent(killResponseProbe.ref, componentId)
+            agentActorRef ! KillComponent(killResponseProbe.ref, location)
+            agentActorRef ! KillComponent(killResponseProbe.ref, location)
 
             //ensure it is stopped gracefully
             killResponseProbe.expectMessage(Killed)
             killResponseProbe.expectMessage(Killed)
 
             //ensure component was unregistered
-            verify(locationService, timeout(500)).unregister(connection)
+            verify(locationService, timeout(500)).unregister(location.connection)
           }
         }
 
@@ -63,20 +57,5 @@ class KillComponentTest extends AgentSetup {
           testCode(agentActorRef, killResponseProbe)
         }
       }
-  }
-
-  "KillComponent must reply 'Failed' when given component is not running on agent | ESW-276" in {
-    val agentActorRef = spawnAgentActor(name = "test-actor7")
-    val probe         = TestProbe[KillResponse]()
-
-    //try to stop the component
-    val id = ComponentId(Prefix("ESW.invalid"), Service)
-    agentActorRef ! KillComponent(probe.ref, id)
-
-    //verify that response is Failure
-    probe.expectMessage(Failed(s"Component ${id.fullName} is not running on this agent"))
-
-    //ensure component was NOT unregistered
-    verify(locationService, never).unregister(redisConn)
   }
 }
