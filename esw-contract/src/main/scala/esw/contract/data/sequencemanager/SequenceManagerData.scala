@@ -8,8 +8,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
-import esw.sm.api.models.{AgentProvisionConfig, ProvisionConfig}
+import esw.sm.api.models.{AgentProvisionConfig, AgentStatus, ProvisionConfig, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, FailedToStartSequencers}
 import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, SpawningSequenceComponentsFailed, Success}
@@ -62,9 +61,10 @@ trait SequenceManagerData {
   val restartSequencerSuccess: RestartSequencerResponse.Success                        = RestartSequencerResponse.Success(sequencerComponentId)
   val shutdownSequencerSuccess: ShutdownSequencersResponse.Success.type                = ShutdownSequencersResponse.Success
   val shutdownSequenceComponentSuccess: ShutdownSequenceComponentResponse.Success.type = ShutdownSequenceComponentResponse.Success
-  val agentStatusSuccess: AgentStatusResponse.Success                                  = AgentStatusResponse.Success(List(agentSeqCompsStatus))
-  val loadScriptError: LoadScriptError                                                 = LoadScriptError("error")
-  val locationServiceError: LocationServiceError                                       = LocationServiceError("location service error")
-  val sequenceComponentNotAvailable: SequenceComponentNotAvailable                     = SequenceComponentNotAvailable(List(ESW))
-  val unhandled: Unhandled                                                             = Unhandled("state", "messageType")
+  val agentStatusSuccess: AgentStatusResponse.Success =
+    AgentStatusResponse.Success(List(agentSeqCompsStatus), List(sequenceComponentStatus))
+  val loadScriptError: LoadScriptError                             = LoadScriptError("error")
+  val locationServiceError: LocationServiceError                   = LocationServiceError("location service error")
+  val sequenceComponentNotAvailable: SequenceComponentNotAvailable = SequenceComponentNotAvailable(List(ESW))
+  val unhandled: Unhandled                                         = Unhandled("state", "messageType")
 }
