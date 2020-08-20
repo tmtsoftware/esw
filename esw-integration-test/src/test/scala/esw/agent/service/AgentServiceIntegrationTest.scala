@@ -61,6 +61,9 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
 
       // stop spawned component
       agentService.killComponent(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent))).futureValue shouldBe Killed
+
+      //verify that component is killed
+      intercept[RuntimeException](resolveSequenceComponent(seqCompPrefix))
     }
 
     "start and kill sequence manager on the given agent | ESW-361, ESW-367" in {
@@ -80,6 +83,9 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
       // stop sequence manager
       val smConnection = AkkaConnection(ComponentId(smPrefix, Service))
       agentService.killComponent(smConnection).futureValue shouldBe Killed
+
+      //verify that component is killed
+      intercept[RuntimeException](resolveAkkaLocation(smPrefix, Service))
     }
   }
 }
