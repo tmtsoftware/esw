@@ -538,7 +538,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     )
 
     val actualResponse = sequenceManager.getAgentStatus.futureValue.asInstanceOf[AgentStatusResponse.Success]
-    actualResponse.agentStatus should ===(expectedStatus)
+    actualResponse.agentStatus.toSet should ===(expectedStatus.toSet)
     actualResponse.seqCompsWithoutAgent should ===(List.empty)
 
     sequenceManager.shutdownAllSequenceComponents().futureValue

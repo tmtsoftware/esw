@@ -87,13 +87,13 @@ class AgentSetup extends BaseTestSuite {
     when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
   }
 
-  def mockLocationService(registrationDuration: FiniteDuration = 0.seconds): Unit = {
+  def mockLocationService(): Unit = {
     // Sequence Component
-    when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
+    when(locationService.find(argEq(seqCompConn))).thenReturn(Future.successful(None))
+    when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
 
     // Sequence Manager
-    when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration]))
-      .thenReturn(Future.successful(None), seqManagerLocationF)
-
+    when(locationService.find(argEq(seqManagerConn))).thenReturn(Future.successful(None))
+    when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration])).thenReturn(seqManagerLocationF)
   }
 }

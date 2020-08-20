@@ -20,7 +20,8 @@ class SpawnComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor1")
       val probe         = TestProbe[SpawnResponse]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
+      when(locationService.find(argEq(seqCompConn))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
 
       mockSuccessfulProcess()
 
@@ -50,7 +51,7 @@ class SpawnComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor2")
       val probe         = TestProbe[SpawnResponse]()
       val err           = "Failed to resolve component"
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.failed(new RuntimeException(err)))
+      when(locationService.find(argEq(seqCompConn))).thenReturn(Future.failed(new RuntimeException(err)))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None)
       probe.expectMessage(Failed(s"Failed to verify component registration in location service, reason: $err"))
@@ -59,22 +60,18 @@ class SpawnComponentTest extends AgentSetup {
     "reply 'Failed' and not spawn new process when it is already registered with location service | ESW-237" in {
       val agentActorRef = spawnAgentActor(name = "test-actor3")
       val probe         = TestProbe[SpawnResponse]()
-
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
+      when(locationService.find(argEq(seqCompConn))).thenReturn(seqCompLocationF)
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None)
-      probe.expectMessage(
-        Failed(
-          s"Component ${seqCompComponentId.fullName} is already registered with location service at location $seqCompLocation"
-        )
-      )
+      probe.expectMessage(Failed(s"$seqCompComponentId is already registered with location service at $seqCompLocation"))
     }
 
     "reply 'Failed' when process fails to spawn | ESW-237" in {
       val agentActorRef = spawnAgentActor(name = "test-actor5")
       val probe         = TestProbe[SpawnResponse]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None), seqCompLocationF)
+      when(locationService.find(argEq(seqCompConn))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
       when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Left("failure"))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None)
@@ -85,20 +82,21 @@ class SpawnComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor6")
       val probe         = TestProbe[SpawnResponse]()
 
+      when(locationService.find(argEq(seqCompConn))).thenReturn(Future.successful(None))
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(None))
 
       mockSuccessfulProcess()
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None)
-      probe.expectMessage(Failed(s"Component ${seqCompComponentId.fullName} is not registered with location service"))
+      probe.expectMessage(Failed(s"$seqCompComponentId is not registered with location service"))
     }
 
     "reply 'Spawned' and spawn sequence manager process | ESW-180" in {
       val agentActorRef = spawnAgentActor(name = "test-actor9")
       val probe         = TestProbe[SpawnResponse]()
 
-      when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqManagerLocationF)
+      when(locationService.find(argEq(seqManagerConn))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration])).thenReturn(seqManagerLocationF)
 
       mockSuccessfulProcess()
 

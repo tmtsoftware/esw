@@ -16,7 +16,6 @@ import esw.agent.service.api.models.{Failed, SpawnResponse}
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
 
 class ProcessManagerTest extends BaseTestSuite {
 
@@ -45,12 +44,12 @@ class ProcessManagerTest extends BaseTestSuite {
       val connection             = spawnSequenceComponent.connection
       val location               = AkkaLocation(connection, uri, Metadata.empty)
 
-      when(locationService.resolve(connection, 0.seconds)).thenReturn(Future.successful(Some(location)))
+      when(locationService.find(connection)).thenReturn(Future.successful(Some(location)))
       val manager = new ProcessManager(locationService, processExecutor, agentSetting)
       manager.spawn(spawnSequenceComponent).futureValue should ===(
-        Left(s"Component ${connection.componentId.fullName} is already registered with location service at location $location")
+        Left(s"${connection.componentId} is already registered with location service at $location")
       )
-      verify(locationService).resolve(connection, 0.seconds)
+      verify(locationService).find(connection)
     }
   }
 
