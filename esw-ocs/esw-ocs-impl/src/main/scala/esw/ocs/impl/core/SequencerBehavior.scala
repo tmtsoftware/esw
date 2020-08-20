@@ -296,12 +296,12 @@ class SequencerBehavior(
       case GetSequencerState(replyTo)               => replyTo ! state; Behaviors.same
       case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
       case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
-      case GetSequenceComponent(replyTo) => {
+      case GetSequenceComponent(replyTo) =>
         locationService
           .find(AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent)))
           .map(replyTo ! _.get)
         Behaviors.same
-      }
+
       case ReadyToExecuteNext(replyTo) => stateMachine(state)(data.readyToExecuteNext(replyTo))
       case MaybeNext(replyTo) =>
         if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)

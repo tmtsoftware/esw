@@ -1,11 +1,11 @@
 package esw.sm.impl.utils
 
 import csw.location.api.models.AkkaLocation
-import csw.prefix.models.Prefix
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse.CouldNotFindMachines
 import esw.sm.impl.utils.AgentAllocator.AllocationResponse
+import esw.sm.impl.utils.Types._
 
 class AgentAllocator {
   def allocate(provisionConfig: ProvisionConfig, machines: List[AkkaLocation]): AllocationResponse = {
@@ -17,7 +17,5 @@ class AgentAllocator {
 }
 
 object AgentAllocator {
-  type SequenceComponentPrefix = Prefix
-  type AgentLocation           = AkkaLocation
-  type AllocationResponse      = Either[CouldNotFindMachines, List[(AgentLocation, SequenceComponentPrefix)]]
+  type AllocationResponse = Either[CouldNotFindMachines, List[(AgentLocation, SeqCompPrefix)]]
 }

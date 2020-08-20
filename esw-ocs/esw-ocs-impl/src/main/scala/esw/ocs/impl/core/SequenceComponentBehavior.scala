@@ -28,11 +28,11 @@ class SequenceComponentBehavior(
   implicit val ec: ExecutionContext          = actorSystem.executionContext
 
   def idle: Behavior[SequenceComponentMsg] =
-    receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (ctx, msg) =>
+    receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (_, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
         case LoadScript(subsystem, obsMode, replyTo) =>
-          load(ctx, subsystem, obsMode, replyTo)
+          load(subsystem, obsMode, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(None)
           Behaviors.same
@@ -45,7 +45,6 @@ class SequenceComponentBehavior(
     }
 
   private def load(
-      ctx: ActorContext[SequenceComponentMsg],
       subsystem: Subsystem,
       obsMode: ObsMode,
       replyTo: ActorRef[ScriptResponseOrUnhandled]
@@ -80,7 +79,7 @@ class SequenceComponentBehavior(
           idle
         case RestartScript(replyTo) =>
           unload()
-          load(ctx, subsystem, obsMode, replyTo)
+          load(subsystem, obsMode, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(Some(location))
           Behaviors.same
@@ -97,10 +96,10 @@ class SequenceComponentBehavior(
 
     locationService
       .unregister(akkaConnection)
-      .onComplete(_ => {
+      .onComplete { _ =>
         replyTo ! Ok
         actorSystem.terminate()
-      })
+      }
     Behaviors.stopped
   }
 

@@ -18,6 +18,8 @@ import esw.sm.api.protocol.ConfigureResponse.FailedToStartSequencers
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
+import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
+import esw.sm.impl.utils.Types.SeqCompLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,7 +49,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private[utils] def startSequencersByMapping(
       obsMode: ObsMode,
-      mappings: List[(Subsystem, AkkaLocation)]
+      mappings: List[(Subsystem, SeqCompLocation)]
   ): Future[ConfigureResponse] =
     Future
       .traverse(mappings) {

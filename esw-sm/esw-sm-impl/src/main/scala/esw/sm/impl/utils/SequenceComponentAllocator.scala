@@ -5,15 +5,15 @@ import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
 import esw.sm.impl.config.Sequencers
-import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
+import esw.sm.impl.utils.Types._
 
 class SequenceComponentAllocator() {
 
   // map sequencers to available seq comp for subsystem or ESW (fallback)
   def allocate(
-      sequenceComponents: List[AkkaLocation],
+      sequenceComponents: List[SeqCompLocation],
       sequencers: Sequencers
-  ): Either[SequenceComponentNotAvailable, SequencerToSequenceComponentMap] = {
+  ): Either[SequenceComponentNotAvailable, List[(Subsystem, SeqCompLocation)]] = {
     val subsystems = sequencers.subsystems
     var locations  = sequenceComponents
     val mapping = for {
@@ -28,11 +28,11 @@ class SequenceComponentAllocator() {
     if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(diff))
   }
 
-  private def findSeqComp(subsystem: Subsystem, seqCompLocations: List[AkkaLocation]): Option[AkkaLocation] =
+  private def findSeqComp(subsystem: Subsystem, seqCompLocations: List[SeqCompLocation]): Option[AkkaLocation] =
     seqCompLocations.find(_.prefix.subsystem == subsystem).orElse(seqCompLocations.find(_.prefix.subsystem == ESW))
 
 }
 
 object SequenceComponentAllocator {
-  type SequencerToSequenceComponentMap = List[(Subsystem, AkkaLocation)]
+  type SequencerToSequenceComponentMap = List[(Subsystem, SeqCompLocation)]
 }
