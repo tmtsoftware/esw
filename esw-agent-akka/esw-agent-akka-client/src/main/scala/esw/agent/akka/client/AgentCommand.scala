@@ -11,8 +11,8 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api._
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
-sealed trait AgentCommand       extends AgentAkkaSerializable
-sealed trait AgentRemoteCommand extends AgentCommand
+sealed trait AgentCommand
+sealed trait AgentRemoteCommand extends AgentCommand with AgentAkkaSerializable
 
 object AgentCommand {
 
