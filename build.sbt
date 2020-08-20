@@ -339,7 +339,8 @@ lazy val `esw-testkit` = project
   .dependsOn(
     `esw-gateway-server`,
     `esw-ocs-app`,
-    `esw-agent-akka-app`
+    `esw-agent-akka-app`,
+    `esw-sm-app`
   )
 
 lazy val `esw-shell` = project
