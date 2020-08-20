@@ -15,4 +15,5 @@ object Service {
   case object Gateway                                  extends Service
   case object MachineAgent                             extends Service
   case object AAS                                      extends Service
+  case object SequenceManager                          extends Service
 }
