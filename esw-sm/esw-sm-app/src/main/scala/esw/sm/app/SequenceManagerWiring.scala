@@ -94,7 +94,8 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
 
   private lazy val registration = AkkaRegistrationFactory.make(connection, sequenceManagerRef, locationMetadata)
 
-  private lazy val sequenceManager: SequenceManagerApi =
+  // not marked private, it is overridden in backend-testkit for sequence manager stub wiring
+  lazy val sequenceManager: SequenceManagerApi =
     SequenceManagerApiFactory.makeAkkaClient(
       AkkaLocation(registration.connection, registration.actorRefURI, registration.metadata)
     )
