@@ -243,7 +243,7 @@ class SequencerImplTest extends ActorTestSuit {
     val getSequenceComponentResponse =
       AkkaLocation(
         AkkaConnection(ComponentId(Prefix(randomSubsystem, randomString5), SequenceComponent)),
-        new URI(randomString5),
+        new URI("uri"),
         Metadata.empty
       )
     withBehavior {
