@@ -9,14 +9,22 @@ import akka.util.Timeout
 import com.typesafe.config.Config
 import csw.aas.http.SecurityDirectives
 import csw.alarm.api.javadsl.IAlarmService
+import csw.alarm.api.scaladsl.AlarmService
+import csw.alarm.client.AlarmServiceFactory
 import csw.command.client.messages.sequencer.SequencerMsg
+import csw.event.api.scaladsl.EventService
+import csw.event.client.EventServiceFactory
+import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.event.client.internal.commons.javawrappers.JEventService
+import csw.event.client.models.EventStores.RedisStore
 import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
+import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
+import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
@@ -37,7 +45,7 @@ import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
-import esw.wiring.CswWiring
+import io.lettuce.core.RedisClient
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
@@ -62,8 +70,15 @@ private[ocs] class SequencerWiring(
   lazy val actorRuntime              = new ActorRuntime(actorSystem)
   import actorRuntime.{ec, typedSystem}
 
-  lazy val cswWiring: CswWiring = new CswWiring
-  import cswWiring._
+  lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
+
+  lazy val redisClient: RedisClient                 = RedisClient.create()
+  lazy val eventSubscriberUtil: EventSubscriberUtil = new EventSubscriberUtil()
+  lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))
+  lazy val eventService: EventService               = eventServiceFactory.make(locationService)
+
+  lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
+  lazy val alarmService: AlarmService               = alarmServiceFactory.makeClientApi(locationService)
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
     actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
@@ -165,6 +180,7 @@ private[ocs] class SequencerWiring(
 
     override def shutDown(): Done = {
       Await.result(sequencerRef ? Shutdown, Timeouts.DefaultTimeout)
+      redisClient.shutdown()
       actorSystem.terminate()
       Await.result(actorSystem.whenTerminated, Timeouts.DefaultTimeout)
     }

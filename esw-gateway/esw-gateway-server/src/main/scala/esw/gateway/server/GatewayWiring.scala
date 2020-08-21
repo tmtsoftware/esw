@@ -2,13 +2,26 @@ package esw.gateway.server
 
 import java.nio.file.Path
 
+import akka.Done
+import akka.actor.CoordinatedShutdown
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.http.scaladsl.model.ws.WebSocketRequest
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
+import csw.admin.api.AdminApi
+import csw.admin.impl.AdminImpl
+import csw.alarm.api.scaladsl.AlarmService
+import csw.alarm.client.AlarmServiceFactory
 import csw.command.client.auth.CommandRoles
 import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
+import csw.event.api.scaladsl.EventService
+import csw.event.client.EventServiceFactory
+import csw.event.client.internal.commons.EventSubscriberUtil
+import csw.event.client.models.EventStores.RedisStore
+import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
+import csw.location.client.scaladsl.HttpLocationServiceFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{GatewayRequest, GatewayStreamRequest}
 import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
@@ -16,11 +29,14 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.{GatewayPostHandler, GatewayWebsocketHandler}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{ActorRuntime, HttpService, ServerWiring}
-import esw.wiring.CswWiring
 import msocket.api.StreamRequestHandler
+import io.lettuce.core.RedisClient
+import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.{HttpPostHandler, PostRouteFactory}
-import msocket.impl.ws.WebsocketRouteFactory
+import msocket.impl.ws.{WebsocketHandler, WebsocketRouteFactory}
+
+import scala.concurrent.Future
 
 class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: Path, metricsEnabled: Boolean = false)
     extends GatewayCodecs {
@@ -30,35 +46,55 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   lazy val wiring       = new ServerWiring(_port, actorSystem = actorSystem)
   lazy val actorRuntime = new ActorRuntime(actorSystem)
   import actorRuntime.{ec, typedSystem}
-
-  lazy val cswWiring = new CswWiring
-  import cswWiring._
   import wiring._
 
-  private[esw] val resolver = new Resolver(locationService)(actorSystem)
+  private lazy val redisClient: RedisClient = {
+    val client = RedisClient.create()
+    shutdownRedisOnTermination(client)
+    client
+  }
 
-  lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
-  lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
-  lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
-  lazy val adminApi: AdminApi     = new AdminImpl(locationService)
+  private lazy val locationService: LocationService         = HttpLocationServiceFactory.makeLocalClient
+  private lazy val eventSubscriberUtil: EventSubscriberUtil = new EventSubscriberUtil()
+  private lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))
+  private lazy val eventService: EventService               = eventServiceFactory.make(locationService)
+
+  private lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
+  private lazy val alarmService: AlarmService               = alarmServiceFactory.makeClientApi(locationService)
+
+  private lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
+  private lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
+  private lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
+  private lazy val adminApi: AdminApi     = new AdminImpl(locationService)
 
   private lazy val configClient            = ConfigClientFactory.clientApi(actorSystem, locationService)
   private lazy val configUtils             = new ConfigUtils(configClient)
   private lazy val commandRolesConfig      = configUtils.getConfig(commandRoleConfigPath, local)
   private lazy val commandRoles            = commandRolesConfig.map(CommandRoles.from)
-  private[esw] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, cswWiring.locationService)
+  private[esw] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, locationService)
+
+  private[esw] val resolver = new Resolver(locationService)(actorSystem)
 
   lazy val postHandler: HttpPostHandler[GatewayRequest] =
     new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
 
   lazy val websocketHandlerFactory: StreamRequestHandler[GatewayStreamRequest] = new GatewayWebsocketHandler(resolver, eventApi)
 
+  lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
+
   lazy val routes: Route = RouteFactory.combine(metricsEnabled)(
     new PostRouteFactory[GatewayRequest]("post-endpoint", postHandler),
     new WebsocketRouteFactory[GatewayStreamRequest]("websocket-endpoint", websocketHandlerFactory)
   )
 
-  lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
+  def websocketHandlerFactory(): WebsocketHandler[WebSocketRequest] =
+    new GatewayWebsocketHandler(resolver, eventApi)
+
+  private def shutdownRedisOnTermination(client: RedisClient): Unit =
+    actorRuntime.coordinatedShutdown.addTask(
+      CoordinatedShutdown.PhaseBeforeServiceUnbind,
+      "redis-client-shutdown"
+    )(() => Future { client.shutdown(); Done })
 }
 
 object GatewayWiring {

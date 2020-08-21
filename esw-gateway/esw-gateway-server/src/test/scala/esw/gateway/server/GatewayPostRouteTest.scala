@@ -42,7 +42,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
   override def clientContentType: ContentType = ContentType.Json
   implicit val typedSystem: ActorSystem[_]    = system.toTyped
-  private val cswCtxMocks                     = new CswWiringMocks()
+  private val cswCtxMocks                     = new CswTestMocks()
   import cswCtxMocks._
 
   private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)

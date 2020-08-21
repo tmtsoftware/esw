@@ -1,4 +1,4 @@
-package esw.wiring.utils
+package esw.gateway.server.utils
 
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService

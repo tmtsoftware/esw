@@ -1,6 +1,5 @@
 package esw.gateway.server
 
-import akka.actor.typed.ActorSystem
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import csw.alarm.api.scaladsl.AlarmAdminService
@@ -13,16 +12,15 @@ import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.SequencerApi
-import esw.wiring.CswWiring
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar._
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
-class CswWiringMocks(implicit actorSystem: ActorSystem[_]) {
-  import actorSystem.executionContext
+class CswTestMocks(implicit ec: ExecutionContext) {
 
-  val cswWiring: CswWiring     = mock[CswWiring]
+  //val actorRuntime: ActorRuntime = new ActorRuntime(system)
   val logger: Logger           = mock[Logger]
   val loggerCache: LoggerCache = mock[LoggerCache]
   when(loggerCache.get(any[Prefix])).thenReturn(logger)
@@ -41,9 +39,6 @@ class CswWiringMocks(implicit actorSystem: ActorSystem[_]) {
   val eventPublisher: EventPublisher           = mock[EventPublisher]
   val eventSubscriber: EventSubscriber         = mock[EventSubscriber]
 
-  when(cswWiring.eventSubscriberUtil).thenReturn(eventSubscriberUtil)
-  when(cswWiring.eventService).thenReturn(eventService)
-  when(cswWiring.alarmService).thenReturn(alarmService)
   when(eventService.defaultPublisher).thenReturn(eventPublisher)
   when(eventService.defaultSubscriber).thenReturn(eventSubscriber)
 

@@ -217,6 +217,9 @@ object Dependencies {
 
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Csw.`csw-admin-impl`,
+      Csw.`csw-command-client`,
+      Csw.`csw-config-client`,
       Libs.`msocket-impl-jvm`,
       Libs.`tmt-test-reporter`        % Test,
       Libs.`mockito-scala`            % Test,

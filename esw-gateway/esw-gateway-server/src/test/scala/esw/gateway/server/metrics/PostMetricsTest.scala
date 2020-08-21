@@ -16,7 +16,7 @@ import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayRequest
 import esw.gateway.api.protocol.GatewayRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
-import esw.gateway.server.CswWiringMocks
+import esw.gateway.server.CswTestMocks
 import esw.gateway.server.handlers.GatewayPostHandler
 import esw.ocs.api.protocol.SequencerRequest.Pause
 import esw.testcommons.BaseTestSuite
@@ -31,9 +31,9 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
 
   override def clientContentType: ContentType = ContentType.Json
   implicit val typedSystem: ActorSystem[_]    = system.toTyped
-  private val cswCtxMocks                     = new CswWiringMocks()
-
+  private val cswCtxMocks                     = new CswTestMocks()
   import cswCtxMocks._
+
   private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
   private val commandRoles       = Future.successful(CommandRoles.empty)
 

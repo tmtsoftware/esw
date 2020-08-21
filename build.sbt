@@ -127,7 +127,6 @@ lazy val `esw-ocs-app` = project
     `esw-ocs-handler`,
     `esw-http-core`,
     `esw-ocs-impl`,
-    `esw-wiring`,
     `esw-test-commons` % Test
   )
 
@@ -197,7 +196,6 @@ lazy val `esw-integration-test` = project
   .settings(fork in Test := true)
   .enablePlugins(AutoMultiJvm)
   .dependsOn(
-    `esw-wiring`,
     `esw-gateway-server`,
     `esw-http-core`,
     `esw-ocs-impl`,
@@ -248,7 +246,6 @@ lazy val `esw-gateway-server` = project
   )
   .dependsOn(
     `esw-gateway-impl`,
-    `esw-wiring`,
     `esw-ocs-handler`,
     `esw-ocs-impl`,
     `esw-http-core`,
