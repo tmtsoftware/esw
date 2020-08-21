@@ -28,9 +28,6 @@ object Csw {
   private val Version = "0735cb9877" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
-  val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
-  val `csw-admin-impl`            = Org %% "csw-admin-impl"      % Version
-  val `csw-admin-server`          = Org %% "csw-admin-server"    % Version
   val `csw-alarm-api`             = Org %% "csw-alarm-api"       % Version
   val `csw-alarm-client`          = Org %% "csw-alarm-client"    % Version
   val `csw-command-api`           = dep(Org %%% "csw-command-api" % Version)

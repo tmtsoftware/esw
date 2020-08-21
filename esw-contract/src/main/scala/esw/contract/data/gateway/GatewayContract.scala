@@ -84,7 +84,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     Endpoint(name[GetEvent], arrayName[Event], List(name[EmptyEventKeys], name[EventServerUnavailable])),
     Endpoint(name[SetAlarmSeverity], name[Done], List(name[SetAlarmSeverityFailure])),
     Endpoint(name[Log], name[Done]),
-    Endpoint(name[SetLogLevel], name[Unit]),
+    Endpoint(name[SetLogLevel], name[Done]),
     Endpoint(name[GetLogMetadata], name[LogMetadata])
   )
 

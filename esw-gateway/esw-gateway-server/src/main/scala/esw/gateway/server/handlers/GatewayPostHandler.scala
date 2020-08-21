@@ -3,7 +3,6 @@ package esw.gateway.server.handlers
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
-import csw.admin.api.AdminService
 import csw.command.api.messages.CommandServiceHttpMessage
 import csw.command.client.auth.CommandRoles
 import csw.command.client.handlers.CommandServiceHttpHandlers
@@ -11,7 +10,7 @@ import csw.location.api.models.ComponentId
 import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest._
-import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
+import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerPostRequest
 import esw.ocs.handler.SequencerPostHandler
@@ -24,7 +23,7 @@ class GatewayPostHandler(
     resolver: Resolver,
     eventApi: EventApi,
     loggingApi: LoggingApi,
-    adminApi: AdminService,
+    adminApi: AdminApi,
     securityDirectives: SecurityDirectives,
     commandRoles: Future[CommandRoles]
 ) extends HttpPostHandler[PostRequest]

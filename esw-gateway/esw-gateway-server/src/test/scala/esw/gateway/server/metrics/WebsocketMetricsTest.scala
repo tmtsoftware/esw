@@ -39,10 +39,10 @@ import scala.util.Try
 
 class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
-  private val cswCtxMocks = new CswWiringMocks()
+  implicit val typedSystem: ActorSystem[_] = system.toTyped
+  private val cswCtxMocks                  = new CswWiringMocks()
   import cswCtxMocks._
 
-  implicit val typedSystem: ActorSystem[_]             = system.toTyped
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 
   private val eventApi         = new EventImpl(eventService, eventSubscriberUtil)
