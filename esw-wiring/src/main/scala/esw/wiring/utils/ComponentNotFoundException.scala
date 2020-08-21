@@ -1,4 +1,4 @@
-package esw.http.core.utils
+package esw.wiring.utils
 
 import csw.location.api.models.ComponentId
 

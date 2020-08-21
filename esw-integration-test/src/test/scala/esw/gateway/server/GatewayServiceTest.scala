@@ -20,7 +20,7 @@ class GatewayServiceTest extends EswTestKit {
         override private[esw] lazy val securityDirectives = SecurityDirectives.authDisabled(actorSystem.settings.config)
       }
       import wiring.wiring._
-      import wiring.wiring.cswWiring.actorRuntime
+      import wiring.actorRuntime
 
       val httpService             = wiring.httpService
       val (_, registrationResult) = Await.result(httpService.startAndRegisterServer(), 5.seconds)

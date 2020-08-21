@@ -87,7 +87,7 @@ object TestSetup extends EswTestKit {
   }
 
   def cleanup(): Unit = {
-    seqCompWirings.foreach(_.cswWiring.actorRuntime.shutdown(CoordinatedShutdown.JvmExitReason).futureValue)
+    seqCompWirings.foreach(_.actorRuntime.shutdown(CoordinatedShutdown.JvmExitReason).futureValue)
     seqManagerWirings.foreach(_.shutdown(CoordinatedShutdown.JvmExitReason).futureValue)
     seqCompWirings.clear()
     seqManagerWirings.clear()

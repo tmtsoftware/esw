@@ -29,7 +29,6 @@ object GatewayMain extends EswCommandApp[ServerCommand] {
 
   private[esw] def start(gatewayWiring: GatewayWiring, startLogging: Boolean): Unit = {
     import gatewayWiring._
-    import gatewayWiring.wiring.cswWiring.actorRuntime
     if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
 
     httpService.startAndRegisterServer()

@@ -41,6 +41,7 @@ object Csw {
   val `csw-framework`             = Org %% "csw-framework"       % Version
   val `csw-integration-multi-jvm` = Org %% "integration"         % Version classifier "multi-jvm"
   val `csw-logging-models`        = dep(Org %%% "csw-logging-models" % Version)
+  val `csw-logging-client`        = Org %% "csw-logging-client"  % Version
   val `csw-location-api`          = dep(Org %%% "csw-location-api" % Version)
   val `csw-location-client`       = Org %% "csw-location-client" % Version
   val `csw-location-server`       = Org %% "csw-location-server" % Version

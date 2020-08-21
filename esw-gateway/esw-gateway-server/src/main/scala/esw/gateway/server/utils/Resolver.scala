@@ -2,12 +2,12 @@ package esw.gateway.server.utils
 
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.ComponentId
+import csw.location.api.scaladsl.LocationService
 import esw.gateway.api.protocol.InvalidComponent
-import esw.http.core.utils.{ComponentFactory, ComponentNotFoundException}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
+import esw.wiring.utils.{ComponentFactory, ComponentNotFoundException}
 
 import scala.concurrent.Future
 

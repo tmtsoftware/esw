@@ -89,6 +89,7 @@ object Dependencies {
 
   val AgentServiceApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Csw.`csw-command-client`,
       Libs.`msocket-impl-jvm`,
       Libs.scalatest.value         % Test,
       Libs.`mockito-scala`         % Test,
@@ -125,16 +126,10 @@ object Dependencies {
       Csw.`csw-commons`,
       Csw.`csw-network-utils`,
       Csw.`csw-location-client`,
-      Csw.`csw-aas-http`,
-      Csw.`csw-alarm-client`,
+      Csw.`csw-aas-http`, // todo : can be removed
       Akka.`akka-actor-typed`,
-      Csw.`csw-command-client`,
       AkkaHttp.`akka-http`,
       AkkaHttp.`akka-http-cors`,
-      Csw.`csw-event-client`,
-      Csw.`csw-params`.value,
-      Csw.`csw-config-client`,
-      Csw.`csw-time-scheduler`,
       Libs.`case-app`,
       Libs.`scala-async`,
       Libs.scalatest.value     % Test,
@@ -143,13 +138,30 @@ object Dependencies {
     )
   )
 
+  val EswWiring: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-network-utils`,
+      Csw.`csw-alarm-client`,
+      Csw.`csw-location-client`,
+      Csw.`csw-command-client`,
+      Csw.`csw-event-client`,
+      Csw.`csw-params`.value,
+      Csw.`csw-config-client`,
+      Csw.`csw-time-scheduler`,
+      Libs.scalatest.value     % Test,
+      Libs.`mockito-scala`     % Test,
+      Libs.`tmt-test-reporter` % Test
+    )
+  )
+
   val IntegrationTest = Def.setting(
     Seq(
+      Akka.`akka-multi-node-testkit`  % Test,
+      Csw.`csw-logging-client`        % Test,
       Csw.`csw-logging-models`.value  % Test,
-      Libs.scalatest.value            % Test,
-      Libs.`tmt-test-reporter`        % Test,
       Csw.`csw-integration-multi-jvm` % Test,
-      Akka.`akka-multi-node-testkit`  % Test
+      Libs.scalatest.value            % Test,
+      Libs.`tmt-test-reporter`        % Test
     )
   )
 

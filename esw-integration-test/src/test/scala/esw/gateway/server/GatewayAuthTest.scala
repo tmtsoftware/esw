@@ -53,7 +53,7 @@ class GatewayAuthTest extends EswTestKit(AAS) {
   }
 
   override def afterAll(): Unit = {
-    gatewayServerWiring.wiring.cswWiring.actorRuntime.shutdown(UnknownReason).futureValue
+    gatewayServerWiring.actorRuntime.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
 

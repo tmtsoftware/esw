@@ -25,7 +25,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
+import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerServiceCodecs
@@ -37,6 +37,7 @@ import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
+import esw.wiring.CswWiring
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
@@ -58,11 +59,11 @@ private[ocs] class SequencerWiring(
   import sequencerConfig._
 
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
-  lazy val cswWiring: CswWiring      = new CswWiring(actorSystem)
-  import cswWiring._
-  import cswWiring.actorRuntime._
+  lazy val actorRuntime              = new ActorRuntime(actorSystem)
+  import actorRuntime.{ec, typedSystem}
 
-  implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
+  lazy val cswWiring: CswWiring = new CswWiring
+  import cswWiring._
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
     actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>

@@ -23,9 +23,9 @@ class HTTPServiceCorsTest extends EswTestKit {
   private val hostname                                 = Networks(NetworkType.Public.envKey).hostname
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
 
-  lazy val wiring = ServerWiring.make(Some(gatewayPort))
+  lazy val wiring: ServerWiring = ServerWiring.make(Some(gatewayPort))
   import wiring._
-  lazy val httpService = new HttpService(logger, locationService, route, settings, cswWiring.actorRuntime)
+  lazy val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
   lazy val requestOriginHeader = Origin(HttpOrigin(s"http://${hostname}:6000"))
 

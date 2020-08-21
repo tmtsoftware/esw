@@ -12,10 +12,11 @@ import csw.location.client.ActorSystemFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{GatewayRequest, GatewayStreamRequest}
 import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
-import esw.gateway.impl.{AdminImpl, AlarmImpl, EventImpl, LoggerCache, LoggingImpl}
+import esw.gateway.impl._
 import esw.gateway.server.handlers.{GatewayPostHandler, GatewayWebsocketHandler}
 import esw.gateway.server.utils.Resolver
-import esw.http.core.wiring.{HttpService, ServerWiring}
+import esw.http.core.wiring.{ActorRuntime, HttpService, ServerWiring}
+import esw.wiring.CswWiring
 import msocket.api.StreamRequestHandler
 import msocket.impl.RouteFactory
 import msocket.impl.post.{HttpPostHandler, PostRouteFactory}
@@ -26,10 +27,13 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   private[server] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "gateway-system")
 
-  lazy val wiring = new ServerWiring(_port, actorSystem = actorSystem)
-  import wiring._
+  lazy val wiring       = new ServerWiring(_port, actorSystem = actorSystem)
+  lazy val actorRuntime = new ActorRuntime(actorSystem)
+  import actorRuntime.{ec, typedSystem}
+
+  lazy val cswWiring = new CswWiring
   import cswWiring._
-  import cswWiring.actorRuntime.{ec, typedSystem}
+  import wiring._
 
   private[esw] val resolver = new Resolver(locationService)(actorSystem)
 

@@ -1,4 +1,4 @@
-package esw.http.core.utils
+package esw.wiring.utils
 
 import java.net.URI
 
@@ -6,7 +6,6 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
 import csw.location.api.scaladsl.LocationService
-import esw.http.core.wiring.ActorRuntime
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
@@ -18,9 +17,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
 class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers with BeforeAndAfterAll with Eventually {
-  private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
-  private val actorRuntime                                    = new ActorRuntime(actorSystem)
-  import actorRuntime._
+  private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
 
   private val locationService       = mock[LocationService]
   private val akkaComponentId       = mock[ComponentId]

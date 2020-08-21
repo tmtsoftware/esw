@@ -27,8 +27,9 @@ class HttpServiceTest extends EswTestKit {
     "start the http server and register with location service with metadata | ESW-86, CSW-96, ESW-366" in {
       val _servicePort = 4005
       val wiring       = ServerWiring.make(Some(_servicePort))
+      val actorRuntime = new ActorRuntime(actorSystem)
       import wiring._
-      import wiring.cswWiring.actorRuntime
+
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
       val metadata    = Metadata().add("key1", "value")
 
@@ -51,8 +52,8 @@ class HttpServiceTest extends EswTestKit {
     "start the http server and register with location service with empty metadata if not provided while registration | ESW-366" in {
       val _servicePort = 4005
       val wiring       = ServerWiring.make(Some(_servicePort))
+      val actorRuntime = new ActorRuntime(actorSystem)
       import wiring._
-      import wiring.cswWiring.actorRuntime
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false
@@ -69,7 +70,7 @@ class HttpServiceTest extends EswTestKit {
       val _servicePort = 4452 // Location Service runs on this port
       val wiring       = ServerWiring.make(Some(_servicePort))
       import wiring._
-      import wiring.cswWiring.actorRuntime
+      import wiring.actorRuntime
       val httpService     = new HttpService(logger, locationService, route, settings, actorRuntime)
       val address         = s"[/${hostname}:${_servicePort}]"
       val expectedMessage = s"Bind failed because of java.net.BindException: $address Address already in use"
@@ -86,7 +87,6 @@ class HttpServiceTest extends EswTestKit {
       val _servicePort         = 4007
       val wiring               = ServerWiring.make(Some(_servicePort))
       import wiring._
-      import wiring.cswWiring.actorRuntime
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
       locationService
         .register(HttpRegistration(settings.httpConnection, _existingServicePort, "", NetworkType.Public))

@@ -5,13 +5,15 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.AkkaLocation
+import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
+import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.utils.location.EswLocationError.RegistrationError
-import esw.http.core.wiring.{ActorRuntime, CswWiring}
+import esw.http.core.wiring.ActorRuntime
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.impl.core.SequenceComponentBehavior
 import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory}
@@ -29,10 +31,9 @@ private[esw] class SequenceComponentWiring(
   private[wiring] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequence-component-system")
 
-  lazy val cswWiring = new CswWiring(actorSystem)
-  import cswWiring._
-  import cswWiring.actorRuntime._
-  lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
+  lazy val actorRuntime: ActorRuntime = new ActorRuntime(actorSystem)
+  import actorRuntime._
+  lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
 

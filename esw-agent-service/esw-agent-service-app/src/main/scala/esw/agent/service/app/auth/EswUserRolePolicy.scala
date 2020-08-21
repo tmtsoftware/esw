@@ -1,7 +1,7 @@
 package esw.agent.service.app.auth
 
 import csw.aas.http.AuthorizationPolicy.CustomPolicy
-import csw.command.client.auth.Roles
+import csw.command.client.auth.Roles // todo: remove this dependency (command service)
 import csw.prefix.models.Subsystem.ESW
 
 //todo: reuse the policy defined in sm

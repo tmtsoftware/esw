@@ -28,7 +28,7 @@ class LoggingGatewayTest extends EswTestKit with GatewayCodecs {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val actorRuntime  = spawnGateway().wiring.cswWiring.actorRuntime
+    val actorRuntime  = spawnGateway().actorRuntime
     val loggingSystem = actorRuntime.startLogging("logging-gateway-test", "0.0.1")
     loggingSystem.setAppenders(List(testAppender))
   }

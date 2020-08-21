@@ -1,4 +1,4 @@
-package esw.http.core.wiring
+package esw.wiring
 
 import akka.Done
 import akka.actor.CoordinatedShutdown
@@ -15,7 +15,7 @@ import csw.event.client.models.EventStores.RedisStore
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.http.core.utils.ComponentFactory
+import esw.wiring.utils.ComponentFactory
 import io.lettuce.core.RedisClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,9 +23,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
  * Represents a class that lazily initializes necessary instances to run a component(s)
  */
-class CswWiring(actorSystem: ActorSystem[SpawnProtocol.Command]) {
-  lazy val actorRuntime: ActorRuntime = new ActorRuntime(actorSystem)
-  import actorRuntime._
+class CswWiring(implicit actorSystem: ActorSystem[SpawnProtocol.Command]) {
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
@@ -48,10 +46,12 @@ class CswWiring(actorSystem: ActorSystem[SpawnProtocol.Command]) {
     client
   }
 
+  private lazy val coordinatedShutdown = CoordinatedShutdown(actorSystem)
+
   private def shutdownRedisOnTermination(client: RedisClient): Unit = {
     implicit val ec: ExecutionContext = actorSystem.executionContext
 
-    actorRuntime.coordinatedShutdown.addTask(
+    coordinatedShutdown.addTask(
       CoordinatedShutdown.PhaseBeforeServiceUnbind,
       "redis-client-shutdown"
     )(() => Future { client.shutdown(); Done })

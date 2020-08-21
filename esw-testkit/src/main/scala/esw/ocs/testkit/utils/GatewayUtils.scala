@@ -60,5 +60,5 @@ trait GatewayUtils extends LocationUtils with GatewayCodecs {
     wiring
   }
 
-  def shutdownGateway(): Unit = gatewayWiring.foreach(_.wiring.cswWiring.actorRuntime.shutdown(UnknownReason).futureValue)
+  def shutdownGateway(): Unit = gatewayWiring.foreach(_.actorRuntime.shutdown(UnknownReason).futureValue)
 }

@@ -13,7 +13,7 @@ class ServerWiring(_port: Option[Int], prefix: Option[Prefix] = None, actorSyste
 
   private lazy val loggerFactory = new LoggerFactory(settings.httpConnection.prefix)
   lazy val logger: Logger        = loggerFactory.getLogger
-  lazy val cswWiring             = new CswWiring(actorSystem)
+  lazy val actorRuntime          = new ActorRuntime(actorSystem)
 }
 
 object ServerWiring {
