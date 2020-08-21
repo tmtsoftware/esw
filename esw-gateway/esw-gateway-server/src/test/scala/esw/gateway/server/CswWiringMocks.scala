@@ -1,29 +1,28 @@
 package esw.gateway.server
 
+import akka.actor.typed.ActorSystem
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
-import csw.admin.api.AdminService
 import csw.alarm.api.scaladsl.AlarmAdminService
 import csw.command.api.scaladsl.CommandService
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
-import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
-import esw.gateway.impl.{AlarmImpl, EventImpl, LoggerCache, LoggingImpl}
+import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
+import esw.gateway.impl._
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.CswWiring
 import esw.ocs.api.SequencerApi
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar._
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
-class CswWiringMocks(implicit ec: ExecutionContext) {
+class CswWiringMocks(implicit actorSystem: ActorSystem[_]) {
+  import actorSystem.executionContext
 
-  val cswWiring: CswWiring = mock[CswWiring]
-//  val actorRuntime: ActorRuntime = new ActorRuntime(system)
+  val cswWiring: CswWiring     = mock[CswWiring]
   val logger: Logger           = mock[Logger]
   val loggerCache: LoggerCache = mock[LoggerCache]
   when(loggerCache.get(any[Prefix])).thenReturn(logger)
@@ -32,7 +31,7 @@ class CswWiringMocks(implicit ec: ExecutionContext) {
   val resolver: Resolver             = mock[Resolver]
   val commandService: CommandService = mock[CommandService]
   val sequencer: SequencerApi        = mock[SequencerApi]
-  val adminService: AdminService     = mock[AdminService]
+  val adminApi: AdminApi             = mock[AdminApi]
   //alarm service mocks
   val alarmService: AlarmAdminService = mock[AlarmAdminService]
 

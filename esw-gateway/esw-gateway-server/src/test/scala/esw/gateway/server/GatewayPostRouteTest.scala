@@ -1,11 +1,12 @@
 package esw.gateway.server
 
 import akka.Done
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.SecurityDirectives
-import csw.admin.api.UnresolvedAkkaLocationException
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
@@ -24,6 +25,7 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Subsystem.IRIS
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.exceptions.UnresolvedAkkaLocationException
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol._
 import esw.gateway.server.handlers.GatewayPostHandler
@@ -39,15 +41,15 @@ import scala.concurrent.Future
 class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
   override def clientContentType: ContentType = ContentType.Json
-
-  private val cswCtxMocks = new CswWiringMocks()
+  implicit val typedSystem: ActorSystem[_]    = system.toTyped
+  private val cswCtxMocks                     = new CswWiringMocks()
   import cswCtxMocks._
 
   private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
   private val commandRoles       = Future.successful(CommandRoles.empty)
 
   private val postHandlerImpl =
-    new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)
+    new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
   private val route       = new PostRouteFactory("post-endpoint", postHandlerImpl).make()
   private val source      = Prefix("esw.test")
   private val destination = Prefix("tcs.test")
@@ -311,7 +313,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
       val metadata    = LogMetadata(Level.FATAL, Level.FATAL, Level.FATAL, Level.FATAL)
 
-      when(adminService.getLogMetadata(componentId)).thenReturn(Future.successful(metadata))
+      when(adminApi.getLogMetadata(componentId)).thenReturn(Future.successful(metadata))
 
       post(GetLogMetadata(componentId): PostRequest) ~> route ~> check {
         status shouldEqual StatusCodes.OK
@@ -323,7 +325,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
       val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve ESW.test1 to a valid Akka location")
 
-      when(adminService.getLogMetadata(componentId))
+      when(adminApi.getLogMetadata(componentId))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
 
       post(GetLogMetadata(componentId): PostRequest) ~> route ~> check {
@@ -336,11 +338,11 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     "set log level for given component | ESW-254" in {
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
 
-      when(adminService.setLogLevel(componentId, Level.FATAL)).thenReturn(Future.unit)
+      when(adminApi.setLogLevel(componentId, Level.FATAL)).thenReturn(Future.successful(Done))
 
       post(SetLogLevel(componentId, Level.FATAL): PostRequest) ~> route ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[Unit] shouldEqual ()
+        responseAs[Done] shouldEqual Done
       }
     }
 
@@ -348,7 +350,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
       val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve ESW.test1 to a valid Akka location")
 
-      when(adminService.setLogLevel(componentId, Level.FATAL))
+      when(adminApi.setLogLevel(componentId, Level.FATAL))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
 
       post(SetLogLevel(componentId, Level.FATAL): PostRequest) ~> route ~> check {

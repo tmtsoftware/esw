@@ -41,12 +41,12 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   override def clientContentType: ContentType = ContentType.Json
 
-  private val cswCtxMocks = new CswWiringMocks()
+  implicit val typedSystem: ActorSystem[_] = system.toTyped
+  private val cswCtxMocks                  = new CswWiringMocks()
   import cswCtxMocks._
 
   private var wsClient: WSProbe                        = _
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
-  implicit val typedSystem: ActorSystem[_]             = system.toTyped
 
   private val eventApi: EventApi                             = new EventImpl(eventService, eventSubscriberUtil)
   private def websocketHandlerImpl(contentType: ContentType) = new GatewayWebsocketHandler(resolver, eventApi, contentType)

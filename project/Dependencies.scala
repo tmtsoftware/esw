@@ -185,26 +185,27 @@ object Dependencies {
       Csw.`csw-alarm-api`,
       Csw.`csw-command-api`.value,
       Csw.`csw-logging-models`.value,
-      Csw.`csw-admin-api`.value,
       Csw.`csw-event-api`
     )
   )
 
   val EswGatewayImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Akka.`akka-actor-typed`,
       Csw.`csw-event-client`,
       Libs.caffeine,
       Csw.`csw-location-api`.value,
-      Libs.`mockito-scala`     % Test,
-      Libs.scalatest.value     % Test,
-      Libs.`tmt-test-reporter` % Test
+      Libs.`mockito-scala`            % Test,
+      Libs.scalatest.value            % Test,
+      Libs.`tmt-test-reporter`        % Test,
+      Akka.`akka-remote`              % Test,
+      Akka.`akka-actor-testkit-typed` % Test
     )
   )
 
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-impl-jvm`,
-      Csw.`csw-admin-impl`,
       Libs.`tmt-test-reporter`        % Test,
       Libs.`mockito-scala`            % Test,
       Libs.scalatest.value            % Test,

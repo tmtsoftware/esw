@@ -1,5 +1,6 @@
 package esw.gateway.server.metrics
-
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -29,15 +30,15 @@ import scala.concurrent.Future
 class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
   override def clientContentType: ContentType = ContentType.Json
-
-  private val cswCtxMocks = new CswWiringMocks()
+  implicit val typedSystem: ActorSystem[_]    = system.toTyped
+  private val cswCtxMocks                     = new CswWiringMocks()
 
   import cswCtxMocks._
   private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
   private val commandRoles       = Future.successful(CommandRoles.empty)
 
   private val postHandlerImpl =
-    new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)
+    new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
   private val postRoute = new PostRouteFactory[PostRequest]("post-endpoint", postHandlerImpl).make(true)
   private val prefix    = Prefix("esw.test")
 

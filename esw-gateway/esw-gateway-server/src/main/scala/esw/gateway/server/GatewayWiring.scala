@@ -5,16 +5,14 @@ import java.nio.file.Path
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
-import csw.admin.api.AdminService
-import csw.admin.impl.AdminServiceImpl
 import csw.command.client.auth.CommandRoles
 import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.client.ActorSystemFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
-import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
-import esw.gateway.impl._
+import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
+import esw.gateway.impl.{AdminImpl, AlarmImpl, EventImpl, LoggerCache, LoggingImpl}
 import esw.gateway.server.handlers.{GatewayPostHandler, GatewayWebsocketHandler}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{HttpService, ServerWiring}
@@ -38,7 +36,7 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
-  lazy val adminApi: AdminService = new AdminServiceImpl(locationService)
+  lazy val adminApi: AdminApi     = new AdminImpl(locationService)
 
   private lazy val configClient            = ConfigClientFactory.clientApi(actorSystem, locationService)
   private lazy val configUtils             = new ConfigUtils(configClient)
