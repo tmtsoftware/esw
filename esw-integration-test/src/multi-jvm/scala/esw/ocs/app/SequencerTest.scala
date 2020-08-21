@@ -56,7 +56,7 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
 
       // creating subscriber for event which will be publish in onSubmit handler for sample assembly
       val testProbe                 = TestProbe[Event]()
-      val eventSubscriber           = ocsSequencerWiring.cswWiring.eventService.defaultSubscriber
+      val eventSubscriber           = ocsSequencerWiring.eventService.defaultSubscriber
       val multiJVMCommandEventKey   = EventKey("tcs.filter.wheel.setup-command-from-tcs-sequencer")
       val multiJVMEventSubscription = eventSubscriber.subscribeActorRef(Set(multiJVMCommandEventKey), testProbe.ref)
       multiJVMEventSubscription.ready().await

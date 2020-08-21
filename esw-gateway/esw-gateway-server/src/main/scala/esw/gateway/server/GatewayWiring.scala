@@ -5,11 +5,8 @@ import java.nio.file.Path
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.http.scaladsl.model.ws.WebSocketRequest
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
-import csw.admin.api.AdminApi
-import csw.admin.impl.AdminImpl
 import csw.alarm.api.scaladsl.AlarmService
 import csw.alarm.client.AlarmServiceFactory
 import csw.command.client.auth.CommandRoles
@@ -29,12 +26,11 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.{GatewayPostHandler, GatewayWebsocketHandler}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{ActorRuntime, HttpService, ServerWiring}
-import msocket.api.StreamRequestHandler
 import io.lettuce.core.RedisClient
-import msocket.api.ContentType
+import msocket.api.StreamRequestHandler
 import msocket.impl.RouteFactory
 import msocket.impl.post.{HttpPostHandler, PostRouteFactory}
-import msocket.impl.ws.{WebsocketHandler, WebsocketRouteFactory}
+import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
 
@@ -86,9 +82,6 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
     new PostRouteFactory[GatewayRequest]("post-endpoint", postHandler),
     new WebsocketRouteFactory[GatewayStreamRequest]("websocket-endpoint", websocketHandlerFactory)
   )
-
-  def websocketHandlerFactory(): WebsocketHandler[WebSocketRequest] =
-    new GatewayWebsocketHandler(resolver, eventApi)
 
   private def shutdownRedisOnTermination(client: RedisClient): Unit =
     actorRuntime.coordinatedShutdown.addTask(

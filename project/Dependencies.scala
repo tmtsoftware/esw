@@ -126,7 +126,6 @@ object Dependencies {
       Csw.`csw-commons`,
       Csw.`csw-network-utils`,
       Csw.`csw-location-client`,
-      Csw.`csw-aas-http`, // todo : can be removed
       Akka.`akka-actor-typed`,
       AkkaHttp.`akka-http`,
       AkkaHttp.`akka-http-cors`,
@@ -217,7 +216,6 @@ object Dependencies {
 
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-admin-impl`,
       Csw.`csw-command-client`,
       Csw.`csw-config-client`,
       Libs.`msocket-impl-jvm`,
