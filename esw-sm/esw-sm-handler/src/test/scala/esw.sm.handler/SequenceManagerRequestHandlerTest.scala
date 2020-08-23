@@ -9,9 +9,9 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
-import esw.sm.api.codecs.SequenceManagerHttpCodec
+import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.{AgentStatus, ProvisionConfig}
-import esw.sm.api.protocol.SequenceManagerPostRequest._
+import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 import esw.sm.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
@@ -20,15 +20,15 @@ import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future
 
-class SequenceManagerPostHandlerTest
+class SequenceManagerRequestHandlerTest
     extends BaseTestSuite
     with ScalatestRouteTest
-    with SequenceManagerHttpCodec
+    with SequenceManagerServiceCodecs
     with ClientHttpCodecs {
   private val sequenceManagerApi = mock[SequenceManagerApi]
   private val securityDirectives = mock[SecurityDirectives]
-  private val postHandler        = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
-  private val route              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
+  private val postHandler        = new SequenceManagerRequestHandler(sequenceManagerApi, securityDirectives)
+  private val route              = new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler).make()
 
   private val string10    = randomString(10)
   private val obsMode     = ObsMode(string10)
@@ -45,8 +45,8 @@ class SequenceManagerPostHandlerTest
     reset(securityDirectives, sequenceManagerApi)
   }
 
-  implicit class Narrower(x: SequenceManagerPostRequest) {
-    def narrow: SequenceManagerPostRequest = x
+  implicit class Narrower(x: SequenceManagerRequest) {
+    def narrow: SequenceManagerRequest = x
   }
 
   "SequenceManagerPostHandler" must {

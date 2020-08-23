@@ -8,11 +8,11 @@ import csw.command.client.auth.CommandRoles
 import csw.command.client.handlers.CommandServiceRequestHandler
 import csw.location.api.models.ComponentId
 import esw.gateway.api.codecs.GatewayCodecs._
-import esw.gateway.api.protocol.PostRequest
-import esw.gateway.api.protocol.PostRequest._
+import esw.gateway.api.protocol.GatewayRequest
+import esw.gateway.api.protocol.GatewayRequest._
 import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.utils.Resolver
-import esw.ocs.api.protocol.SequencerPostRequest
+import esw.ocs.api.protocol.SequencerRequest
 import esw.ocs.handler.SequencerPostHandler
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
@@ -26,10 +26,10 @@ class GatewayPostHandler(
     adminApi: AdminApi,
     securityDirectives: SecurityDirectives,
     commandRoles: Future[CommandRoles]
-) extends HttpPostHandler[PostRequest]
+) extends HttpPostHandler[GatewayRequest]
     with ServerHttpCodecs {
 
-  override def handle(request: PostRequest): Route =
+  override def handle(request: GatewayRequest): Route =
     request match {
       case ComponentCommand(componentId, command) => onComponentCommand(componentId, command)
       case SequencerCommand(componentId, command) => onSequencerCommand(componentId, command)
@@ -46,7 +46,7 @@ class GatewayPostHandler(
       new CommandServiceRequestHandler(commandService, securityDirectives, Some(componentId.prefix), roles).handle(command)
     }
 
-  private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =
+  private def onSequencerCommand(componentId: ComponentId, command: SequencerRequest): Route =
     onSuccess(resolver.sequencerCommandService(componentId)) { sequencerApi =>
       new SequencerPostHandler(sequencerApi, securityDirectives, Some(componentId.prefix)).handle(command)
     }

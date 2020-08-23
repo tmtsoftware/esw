@@ -7,8 +7,8 @@ import csw.logging.models.{Level, LogMetadata}
 import csw.params.events.{EventKey, EventName, ObserveEvent, SystemEvent}
 import csw.prefix.models.Subsystem
 import esw.contract.data.sequencer.SequencerData
-import esw.gateway.api.protocol.PostRequest._
-import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol.GatewayRequest._
+import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 
 trait GatewayData extends SequencerData {
@@ -21,19 +21,20 @@ trait GatewayData extends SequencerData {
 
   val logMetadata: LogMetadata = LogMetadata(Level.INFO, Level.DEBUG, Level.INFO, Level.ERROR)
 
-  val postComponentCommand: PostRequest.ComponentCommand = PostRequest.ComponentCommand(componentId, observeValidate)
-  val postSequencerCommand: PostRequest.SequencerCommand = PostRequest.SequencerCommand(componentId, prepend)
-  val publishEvent: PublishEvent                         = PublishEvent(observeEvent)
-  val getEvent: GetEvent                                 = GetEvent(Set(eventKey))
-  val alarmKey: AlarmKey                                 = AlarmKey(prefix, "someAlarm")
-  val setAlarmSeverity: SetAlarmSeverity                 = SetAlarmSeverity(alarmKey, AlarmSeverity.Okay)
-  val log: Log                                           = Log(prefix, Level.DEBUG, "message", Map("additional-info" -> 45))
-  val setLogLevel: SetLogLevel                           = SetLogLevel(componentId, Level.ERROR)
-  val getLogMetadata: GetLogMetadata                     = GetLogMetadata(componentId)
+  val postComponentCommand: GatewayRequest.ComponentCommand = GatewayRequest.ComponentCommand(componentId, observeValidate)
+  val postSequencerCommand: GatewayRequest.SequencerCommand = GatewayRequest.SequencerCommand(componentId, prepend)
+  val publishEvent: PublishEvent                            = PublishEvent(observeEvent)
+  val getEvent: GetEvent                                    = GetEvent(Set(eventKey))
+  val alarmKey: AlarmKey                                    = AlarmKey(prefix, "someAlarm")
+  val setAlarmSeverity: SetAlarmSeverity                    = SetAlarmSeverity(alarmKey, AlarmSeverity.Okay)
+  val log: Log                                              = Log(prefix, Level.DEBUG, "message", Map("additional-info" -> 45))
+  val setLogLevel: SetLogLevel                              = SetLogLevel(componentId, Level.ERROR)
+  val getLogMetadata: GetLogMetadata                        = GetLogMetadata(componentId)
 
-  val websocketComponentCommand: WebsocketRequest.ComponentCommand = WebsocketRequest.ComponentCommand(componentId, queryFinal)
-  val websocketSequencerCommand: WebsocketRequest.SequencerCommand =
-    WebsocketRequest.SequencerCommand(componentId, sequencerQueryFinal)
+  val websocketComponentCommand: GatewayStreamRequest.ComponentCommand =
+    GatewayStreamRequest.ComponentCommand(componentId, queryFinal)
+  val websocketSequencerCommand: GatewayStreamRequest.SequencerCommand =
+    GatewayStreamRequest.SequencerCommand(componentId, sequencerQueryFinal)
   val subscribe: Subscribe                       = Subscribe(Set(eventKey), Some(10))
   val subscribeWithPattern: SubscribeWithPattern = SubscribeWithPattern(Subsystem.CSW, Some(10), "[a-b]*")
 

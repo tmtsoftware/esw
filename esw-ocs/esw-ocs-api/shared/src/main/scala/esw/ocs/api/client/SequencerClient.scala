@@ -8,21 +8,21 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.SequencerPostRequest._
-import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
 import msocket.api.Transport
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerClient(
-    postClient: Transport[SequencerPostRequest],
-    websocketClient: Transport[SequencerWebsocketRequest]
+    postClient: Transport[SequencerRequest],
+    websocketClient: Transport[SequencerStreamRequest]
 )(implicit ec: ExecutionContext)
     extends SequencerApi
-    with SequencerHttpCodecs {
+    with SequencerServiceCodecs {
 
   private val extensions = new SequencerCommandServiceExtension(this)
 

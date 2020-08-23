@@ -7,14 +7,14 @@ import csw.aas.http.SecurityDirectives
 import csw.location.client.ActorSystemFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.service.api.codecs.AgentHttpCodecs
+import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.app.handlers.AgentServicePostHandler
 import esw.agent.service.impl.AgentServiceImpl
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.impl.post.PostRouteFactory
 
-class AgentServiceWiring(port: Option[Int] = None) extends AgentHttpCodecs {
+class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
 
   lazy val prefix: Prefix                                          = Prefix(ESW, "agent_service")
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")

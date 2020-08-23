@@ -10,7 +10,7 @@ import csw.params.commands.CommandResponse.{SubmitResponse, ValidateResponse}
 import csw.params.events.Event
 import csw.prefix.models.Subsystem
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest.{
+import esw.gateway.api.protocol.GatewayRequest.{
   ComponentCommand,
   GetEvent,
   GetLogMetadata,
@@ -20,7 +20,7 @@ import esw.gateway.api.protocol.PostRequest.{
   SetAlarmSeverity,
   SetLogLevel
 }
-import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import esw.ocs.api.protocol.OkOrUnhandledResponse
 
@@ -45,7 +45,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     ModelType(Level)
   )
 
-  private val httpRequests = new RequestSet[PostRequest] {
+  private val httpRequests = new RequestSet[GatewayRequest] {
     requestType(postComponentCommand)
     requestType(postSequencerCommand)
     requestType(publishEvent)
@@ -56,7 +56,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     requestType(getLogMetadata)
   }
 
-  private val websocketRequests = new RequestSet[WebsocketRequest] {
+  private val websocketRequests = new RequestSet[GatewayStreamRequest] {
     requestType(websocketComponentCommand)
     requestType(websocketSequencerCommand)
     requestType(subscribe)
@@ -90,14 +90,14 @@ object GatewayContract extends GatewayCodecs with GatewayData {
 
   private val webSocketEndpoints: List[Endpoint] = List(
     Endpoint(
-      name[WebsocketRequest.ComponentCommand],
+      name[GatewayStreamRequest.ComponentCommand],
       name[SubmitResponse],
       description = Some(
         "Response type will depend on the command passed to componentCommand request. For all possible request and response type mappings refer to websocket endpoint documentation of command service in CSW."
       )
     ),
     Endpoint(
-      name[WebsocketRequest.SequencerCommand],
+      name[GatewayStreamRequest.SequencerCommand],
       name[SubmitResponse],
       description = Some(
         "Response type will depend on the command passed to sequencerCommand request. For all possible request and response type mappings refer to websocket endpoint documentation of sequencer service in ESW."

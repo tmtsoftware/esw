@@ -7,13 +7,13 @@ import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.location.api.models.{AkkaLocation, HttpLocation, Location, TcpLocation}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.client.SequencerClient
-import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.{SequencerPostRequest, SequencerWebsocketRequest}
+import esw.ocs.api.codecs.SequencerServiceCodecs
+import esw.ocs.api.protocol.{SequencerRequest, SequencerStreamRequest}
 import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
 
-object SequencerApiFactory extends SequencerHttpCodecs {
+object SequencerApiFactory extends SequencerServiceCodecs {
 
   def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): SequencerApi =
     componentLocation match {
@@ -28,8 +28,8 @@ object SequencerApiFactory extends SequencerHttpCodecs {
     val baseUri         = httpLocation.uri.toString
     val postUri         = Uri(baseUri).withPath(Path("/post-endpoint")).toString()
     val webSocketUri    = Uri(baseUri).withScheme("ws").withPath(Path("/websocket-endpoint")).toString()
-    val postClient      = new HttpPostTransport[SequencerPostRequest](postUri, ContentType.Json, () => None)
-    val websocketClient = new WebsocketTransport[SequencerWebsocketRequest](webSocketUri, ContentType.Json)
+    val postClient      = new HttpPostTransport[SequencerRequest](postUri, ContentType.Json, () => None)
+    val websocketClient = new WebsocketTransport[SequencerStreamRequest](webSocketUri, ContentType.Json)
     new SequencerClient(postClient, websocketClient)
   }
 }

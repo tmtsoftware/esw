@@ -1,20 +1,20 @@
 package esw.gateway.api.protocol
 
-import csw.command.api.messages.CommandServiceStreamingRequest
+import csw.command.api.messages.CommandServiceStreamRequest
 import csw.location.api.models.ComponentId
 import csw.params.events.EventKey
 import csw.prefix.models.Subsystem
-import esw.ocs.api.protocol.SequencerWebsocketRequest
+import esw.ocs.api.protocol.SequencerStreamRequest
 import msocket.api.Labelled
 
-sealed trait WebsocketRequest
+sealed trait GatewayStreamRequest
 
-object WebsocketRequest {
-  case class ComponentCommand(componentId: ComponentId, command: CommandServiceStreamingRequest) extends WebsocketRequest
-  case class SequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest)      extends WebsocketRequest
-  case class Subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int] = None)               extends WebsocketRequest
+object GatewayStreamRequest {
+  case class ComponentCommand(componentId: ComponentId, command: CommandServiceStreamRequest) extends GatewayStreamRequest
+  case class SequencerCommand(componentId: ComponentId, command: SequencerStreamRequest)      extends GatewayStreamRequest
+  case class Subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int] = None)            extends GatewayStreamRequest
   case class SubscribeWithPattern(subsystem: Subsystem, maxFrequency: Option[Int] = None, pattern: String = "*")
-      extends WebsocketRequest
+      extends GatewayStreamRequest
 
   private val commandMsgLabel             = "command_msg"
   private val sequencerMsgLabel           = "sequencer_msg"
@@ -31,7 +31,7 @@ object WebsocketRequest {
       subsystemLabel
     )
 
-  implicit val websocketRequestLabelled: Labelled[WebsocketRequest] =
+  implicit val websocketRequestLabelled: Labelled[GatewayStreamRequest] =
     Labelled.make(labelNames) {
       case ComponentCommand(_, command) => Map(commandMsgLabel -> Labelled.createLabel(command))
       case SequencerCommand(_, command) => Map(sequencerMsgLabel -> Labelled.createLabel(command))

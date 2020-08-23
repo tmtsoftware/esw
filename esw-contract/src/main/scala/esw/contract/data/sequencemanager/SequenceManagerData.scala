@@ -12,7 +12,7 @@ import esw.sm.api.models.{AgentProvisionConfig, AgentStatus, ProvisionConfig, Se
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, FailedToStartSequencers}
 import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, SpawningSequenceComponentsFailed, Success}
-import esw.sm.api.protocol.SequenceManagerPostRequest._
+import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol.StartSequencerResponse._
 import esw.sm.api.protocol._
 
@@ -42,7 +42,7 @@ trait SequenceManagerData {
   val shutdownAllSequencers: ShutdownAllSequencers.type                 = ShutdownAllSequencers
   val shutdownSequenceComponent: ShutdownSequenceComponent              = ShutdownSequenceComponent(seqCompPrefix)
   val shutdownAllSequenceComponents: ShutdownAllSequenceComponents.type = ShutdownAllSequenceComponents
-  val getAgentStatus: SequenceManagerPostRequest.GetAgentStatus.type    = GetAgentStatus
+  val getAgentStatus: SequenceManagerRequest.GetAgentStatus.type        = GetAgentStatus
   val configureSuccess: ConfigureResponse.Success                       = ConfigureResponse.Success(sequencerComponentId)
   val configurationMissing: ConfigurationMissing                        = ConfigurationMissing(obsMode)
   val conflictingResourcesWithRunningObsMode: ConflictingResourcesWithRunningObsMode = ConflictingResourcesWithRunningObsMode(

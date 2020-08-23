@@ -28,7 +28,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
-import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
@@ -50,7 +50,7 @@ private[ocs] class SequencerWiring(
     val subsystem: Subsystem,
     val obsMode: ObsMode,
     sequenceComponentPrefix: Prefix
-) extends SequencerHttpCodecs {
+) extends SequencerServiceCodecs {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   private[ocs] lazy val config: Config  = actorSystem.settings.config

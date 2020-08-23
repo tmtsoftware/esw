@@ -7,10 +7,10 @@ import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.service.api.codecs.AgentHttpCodecs
+import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
-import esw.agent.service.api.protocol.AgentPostRequest
-import esw.agent.service.api.protocol.AgentPostRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.service.api.protocol.AgentServiceRequest
+import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
@@ -22,11 +22,11 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.Future
 
-class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentHttpCodecs {
+class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentServiceCodecs {
 
-  val postClient: Transport[AgentPostRequest] = mock[Transport[AgentPostRequest]]
-  val agentServiceClient                      = new AgentServiceClient(postClient)
-  private val agentPrefix: Prefix             = Prefix(ESW, "primary")
+  val postClient: Transport[AgentServiceRequest] = mock[Transport[AgentServiceRequest]]
+  val agentServiceClient                         = new AgentServiceClient(postClient)
+  private val agentPrefix: Prefix                = Prefix(ESW, "primary")
 
   "AgentServiceClient" must {
     "return SpawnResponse for spawnSequenceManager request" in {

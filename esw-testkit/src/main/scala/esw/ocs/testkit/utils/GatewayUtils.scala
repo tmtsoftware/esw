@@ -12,7 +12,7 @@ import csw.location.api.models.ComponentType
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
+import esw.gateway.api.protocol.{GatewayRequest, GatewayStreamRequest}
 import esw.gateway.server.GatewayWiring
 import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
@@ -33,21 +33,21 @@ trait GatewayUtils extends LocationUtils with GatewayCodecs {
       .getString("prefix")
   )
 
-  lazy val gatewayPort: Int                                      = SocketUtils.getFreePort
-  lazy val gatewayPostClient: HttpPostTransport[PostRequest]     = gatewayHTTPClient()
-  lazy val gatewayWsClient: WebsocketTransport[WebsocketRequest] = gatewayWebSocketClient(gatewayPrefix)
+  lazy val gatewayPort: Int                                          = SocketUtils.getFreePort
+  lazy val gatewayPostClient: HttpPostTransport[GatewayRequest]      = gatewayHTTPClient()
+  lazy val gatewayWsClient: WebsocketTransport[GatewayStreamRequest] = gatewayWebSocketClient(gatewayPrefix)
 
   // ESW-98, ESW-95
   private[esw] def gatewayHTTPClient(tokenFactory: () => Option[String] = () => None) = {
     val httpLocation = resolveHTTPLocation(gatewayPrefix, ComponentType.Service)
     val httpUri      = Uri(httpLocation.uri.toString).withPath(Path("/post-endpoint")).toString()
-    new HttpPostTransport[PostRequest](httpUri, ContentType.Json, tokenFactory)
+    new HttpPostTransport[GatewayRequest](httpUri, ContentType.Json, tokenFactory)
   }
 
   private def gatewayWebSocketClient(prefix: Prefix) = {
     val httpLocation = resolveHTTPLocation(prefix, ComponentType.Service)
     val webSocketUri = Uri(httpLocation.uri.toString).withScheme("ws").withPath(Path("/websocket-endpoint")).toString()
-    new WebsocketTransport[WebsocketRequest](webSocketUri, ContentType.Json)
+    new WebsocketTransport[GatewayStreamRequest](webSocketUri, ContentType.Json)
   }
 
   def spawnGateway(authEnabled: Boolean = false, path: file.Path = commandRolesPath): GatewayWiring = {

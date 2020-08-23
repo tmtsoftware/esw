@@ -3,17 +3,17 @@ package esw.sm.api.client
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
-import esw.sm.api.codecs.SequenceManagerHttpCodec
+import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol.SequenceManagerPostRequest._
+import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 import msocket.api.Transport
 
 import scala.concurrent.Future
 
-class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
+class SequenceManagerClient(postClient: Transport[SequenceManagerRequest])
     extends SequenceManagerApi
-    with SequenceManagerHttpCodec {
+    with SequenceManagerServiceCodecs {
 
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
     postClient.requestResponse[ConfigureResponse](Configure(obsMode))

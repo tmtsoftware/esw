@@ -6,7 +6,7 @@ import csw.location.api.codec.LocationCodecs
 import csw.logging.models.codecs.LoggingCodecs
 import csw.params.events.EventKey
 import esw.gateway.api.protocol._
-import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.codecs.SequencerServiceCodecs
 import io.bullet.borer.Dom.MapElem
 import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
@@ -16,23 +16,23 @@ import msocket.api.ErrorProtocol
 import scala.annotation.nowarn
 
 object GatewayCodecs extends GatewayCodecs
-trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with LoggingCodecs with SequencerHttpCodecs {
+trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with LoggingCodecs with SequencerServiceCodecs {
 
   implicit lazy val gatewayExceptionCodecValue: Codec[GatewayException] = deriveAllCodecs
 
-  implicit lazy val postRequestValue: Codec[PostRequest] = {
+  implicit lazy val postRequestValue: Codec[GatewayRequest] = {
     @nowarn implicit lazy val metadataEnc: Encoder[Map[String, Any]] = Encoder[MapElem].contramap(ElementConverter.fromMap)
     @nowarn implicit lazy val metadataDec: Decoder[Map[String, Any]] = Decoder[MapElem].map(ElementConverter.toMap)
     deriveAllCodecs
   }
 
-  implicit lazy val websocketRequestCodecValue: Codec[WebsocketRequest] = deriveAllCodecs
+  implicit lazy val websocketRequestCodecValue: Codec[GatewayStreamRequest] = deriveAllCodecs
 
   //Todo: move to csw
   implicit lazy val eventKeyCodec: Codec[EventKey] = deriveCodec
   implicit lazy val alarmKeyCodec: Codec[AlarmKey] = deriveCodec
 
-  implicit lazy val PostRequestErrorProtocol: ErrorProtocol[PostRequest] = ErrorProtocol.bind[PostRequest, GatewayException]
-  implicit lazy val WebsocketRequestErrorProtocol: ErrorProtocol[WebsocketRequest] =
-    ErrorProtocol.bind[WebsocketRequest, GatewayException]
+  implicit lazy val PostRequestErrorProtocol: ErrorProtocol[GatewayRequest] = ErrorProtocol.bind[GatewayRequest, GatewayException]
+  implicit lazy val WebsocketRequestErrorProtocol: ErrorProtocol[GatewayStreamRequest] =
+    ErrorProtocol.bind[GatewayStreamRequest, GatewayException]
 }

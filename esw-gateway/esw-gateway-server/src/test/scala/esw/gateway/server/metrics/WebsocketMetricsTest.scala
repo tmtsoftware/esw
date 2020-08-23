@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.testkit.scaladsl.TestSource
 import akka.util.Timeout
-import csw.command.api.messages.CommandServiceStreamingRequest.QueryFinal
+import csw.command.api.messages.CommandServiceStreamRequest.QueryFinal
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.api.models.ComponentId
@@ -17,12 +17,12 @@ import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe}
+import esw.gateway.api.protocol.GatewayStreamRequest.{ComponentCommand, SequencerCommand, Subscribe}
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.GatewayWebsocketHandler
-import esw.ocs.api.protocol.SequencerWebsocketRequest
+import esw.ocs.api.protocol.SequencerStreamRequest
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import io.prometheus.client.CollectorRegistry
@@ -95,7 +95,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
     )
 
   private def runWsGaugeTest[Res](
-      req: WebsocketRequest,
+      req: GatewayStreamRequest,
       res: Res,
       getGaugeValue: => Double,
       getCounterValue: => Double,
@@ -125,7 +125,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
     when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
 
-    val queryFinal: WebsocketRequest = ComponentCommand(componentId, QueryFinal(runId, timeout))
+    val queryFinal: GatewayStreamRequest = ComponentCommand(componentId, QueryFinal(runId, timeout))
 
     runWsGaugeTest(queryFinal, Completed(runId), commandGaugeValue, commandCounterValue, 1) { p =>
       when(commandService.queryFinal(runId)(timeout)).thenReturn(p.future)
@@ -145,8 +145,8 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
     when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
     when(sequencer.queryFinal(sequenceId)).thenReturn(Future.successful(queryFinalResponse))
 
-    val seqQueryFinal: WebsocketRequest =
-      SequencerCommand(componentId, SequencerWebsocketRequest.QueryFinal(runId, timeout))
+    val seqQueryFinal: GatewayStreamRequest =
+      SequencerCommand(componentId, SequencerStreamRequest.QueryFinal(runId, timeout))
 
     runWsGaugeTest(seqQueryFinal, Completed(runId), sequencerGaugeValue, sequencerCounterValue, 1) { p =>
       when(sequencer.queryFinal(runId)(timeout)).thenReturn(p.future)
@@ -154,12 +154,12 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
   }
 
   "increment websocket gauge on every Subscribe request and counter per message passing through ws, decrement gauge on completion | ESW-197" in {
-    val eventKey                                   = EventKey("tcs.event.key")
-    val subscribeLabelNames                        = labels(msg = "Subscribe", subscribedEventKeys = WebsocketRequest.createLabel(Set(eventKey)))
-    def subscribeGaugeValue: Double                = getGaugeValue(subscribeLabelNames)
-    def subscribeCounterValue: Double              = getCounterValue(subscribeLabelNames)
-    val wsClient                                   = WSProbe()
-    val eventSubscriptionRequest: WebsocketRequest = Subscribe(Set(eventKey), Some(10))
+    val eventKey                                       = EventKey("tcs.event.key")
+    val subscribeLabelNames                            = labels(msg = "Subscribe", subscribedEventKeys = GatewayStreamRequest.createLabel(Set(eventKey)))
+    def subscribeGaugeValue: Double                    = getGaugeValue(subscribeLabelNames)
+    def subscribeCounterValue: Double                  = getCounterValue(subscribeLabelNames)
+    val wsClient                                       = WSProbe()
+    val eventSubscriptionRequest: GatewayStreamRequest = Subscribe(Set(eventKey), Some(10))
 
     val (probe, rawStream) = TestSource.probe[Event].preMaterialize()
     val eventStream        = rawStream.mapMaterializedValue(_ => mock[EventSubscription])

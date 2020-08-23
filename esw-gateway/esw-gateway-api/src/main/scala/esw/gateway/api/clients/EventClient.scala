@@ -6,14 +6,14 @@ import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest.{GetEvent, PublishEvent}
-import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol.GatewayRequest.{GetEvent, PublishEvent}
+import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import msocket.api.{Subscription, Transport}
 
 import scala.concurrent.Future
 
-class EventClient(postClient: Transport[PostRequest], websocketClient: Transport[WebsocketRequest])
+class EventClient(postClient: Transport[GatewayRequest], websocketClient: Transport[GatewayStreamRequest])
     extends EventApi
     with GatewayCodecs {
 

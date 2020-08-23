@@ -5,9 +5,9 @@ import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import csw.prefix.models.Prefix
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.codecs.SequencerHttpCodecs._
-import esw.ocs.api.protocol.SequencerPostRequest
-import esw.ocs.api.protocol.SequencerPostRequest._
+import esw.ocs.api.codecs.SequencerServiceCodecs._
+import esw.ocs.api.protocol.SequencerRequest
+import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.auth.SubsystemUserRolePolicy
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
@@ -15,12 +15,12 @@ class SequencerPostHandler(
     sequencerApi: SequencerApi,
     securityDirectives: SecurityDirectives,
     destinationPrefix: Option[Prefix] = None
-) extends HttpPostHandler[SequencerPostRequest]
+) extends HttpPostHandler[SequencerRequest]
     with ServerHttpCodecs {
 
   import sequencerApi._
 
-  override def handle(request: SequencerPostRequest): Route =
+  override def handle(request: SequencerRequest): Route =
     request match {
       case LoadSequence(sequence) => sPost(complete(loadSequence(sequence)))
       case StartSequence          => sPost(complete(startSequence()))

@@ -12,11 +12,11 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
-import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.SequencerPostRequest._
-import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
-import esw.ocs.api.protocol.{SequencerPostRequest, _}
+import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
+import esw.ocs.api.protocol.{SequencerRequest, _}
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
@@ -26,10 +26,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
-class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
+class SequencerClientTest extends BaseTestSuite with SequencerServiceCodecs {
 
-  private val postClient      = mock[Transport[SequencerPostRequest]]
-  private val websocketClient = mock[Transport[SequencerWebsocketRequest]]
+  private val postClient      = mock[Transport[SequencerRequest]]
+  private val websocketClient = mock[Transport[SequencerStreamRequest]]
   private val sequencer       = new SequencerClient(postClient, websocketClient)
 
   "SequencerClient" must {

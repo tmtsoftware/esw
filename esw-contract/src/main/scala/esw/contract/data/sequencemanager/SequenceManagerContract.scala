@@ -4,11 +4,11 @@ import csw.contract.ResourceFetcher
 import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
 import csw.prefix.models.Subsystem
-import esw.sm.api.codecs.SequenceManagerHttpCodec
-import esw.sm.api.protocol.SequenceManagerPostRequest._
+import esw.sm.api.codecs.SequenceManagerServiceCodecs
+import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 
-object SequenceManagerContract extends SequenceManagerHttpCodec with SequenceManagerData {
+object SequenceManagerContract extends SequenceManagerServiceCodecs with SequenceManagerData {
 
   private val models: ModelSet = ModelSet.models(
     ModelType[ConfigureResponse](
@@ -45,7 +45,7 @@ object SequenceManagerContract extends SequenceManagerHttpCodec with SequenceMan
     ModelType(agentProvisionConfig)
   )
 
-  private val httpRequests = new RequestSet[SequenceManagerPostRequest] {
+  private val httpRequests = new RequestSet[SequenceManagerRequest] {
     requestType(configure)
     requestType(provision)
     requestType(getRunningObsModes)

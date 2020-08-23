@@ -13,9 +13,9 @@ import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
 import esw.ocs.TestHelper.Narrower
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.SequencerPostRequest
-import esw.ocs.api.protocol.SequencerPostRequest._
+import esw.ocs.api.codecs.SequencerServiceCodecs
+import esw.ocs.api.protocol.SequencerRequest
+import esw.ocs.api.protocol.SequencerRequest._
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
@@ -26,7 +26,11 @@ import org.scalatest.prop.Tables.Table
 
 import scala.concurrent.Future
 
-class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
+class SequencerPostHandlerAuthTest
+    extends BaseTestSuite
+    with ScalatestRouteTest
+    with SequencerServiceCodecs
+    with ClientHttpCodecs {
   override def clientContentType: ContentType = ContentType.Json
 
   private val componentName        = randomString(10)
@@ -38,7 +42,7 @@ class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest
   private val sequencer: SequencerApi                = mock[SequencerApi]
   private val securityDirectives: SecurityDirectives = mock[SecurityDirectives]
   private val postHandler                            = new SequencerPostHandler(sequencer, securityDirectives, Some(prefix)) // started with auth
-  private val route: Route                           = new PostRouteFactory[SequencerPostRequest]("post-endpoint", postHandler).make()
+  private val route: Route                           = new PostRouteFactory[SequencerRequest]("post-endpoint", postHandler).make()
 
   override protected def beforeEach(): Unit = {
     reset(sequencer, securityDirectives, accessToken)
@@ -54,7 +58,7 @@ class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest
     val hint      = randomString(5)
 
     val responseF = Future.failed(new RuntimeException("test")) // common response for all
-    val testCasesForAuthEnabledHandlers = Table[SequencerPostRequest, SequencerApi => Unit](
+    val testCasesForAuthEnabledHandlers = Table[SequencerRequest, SequencerApi => Unit](
       ("msg", "api"),
       (LoadSequence(sequence), _.loadSequence(sequence)),
       (StartSequence, _.startSequence()),
@@ -91,7 +95,7 @@ class SequencerPostHandlerAuthTest extends BaseTestSuite with ScalatestRouteTest
         }
     }
 
-    val testCasesForAuthDisabledRoutes = Table[SequencerPostRequest, SequencerApi => Unit](
+    val testCasesForAuthDisabledRoutes = Table[SequencerRequest, SequencerApi => Unit](
       ("msg", "api"),
       (GetSequence, _.getSequence),
       (GetSequenceComponent, _.getSequenceComponent),

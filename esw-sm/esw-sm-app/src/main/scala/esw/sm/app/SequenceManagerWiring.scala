@@ -31,8 +31,8 @@ import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerApiFactory
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.codecs.SequenceManagerHttpCodec
-import esw.sm.handler.SequenceManagerPostHandler
+import esw.sm.api.codecs.SequenceManagerServiceCodecs
+import esw.sm.handler.SequenceManagerRequestHandler
 import esw.sm.impl.config.SequenceManagerConfigParser
 import esw.sm.impl.core.SequenceManagerBehavior
 import esw.sm.impl.utils._
@@ -101,9 +101,9 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
     )
 
   private[sm] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, locationService)
-  private lazy val postHandler            = new SequenceManagerPostHandler(sequenceManager, securityDirectives)
+  private lazy val postHandler            = new SequenceManagerRequestHandler(sequenceManager, securityDirectives)
 
-  import SequenceManagerHttpCodec._
+  import SequenceManagerServiceCodecs._
   lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
 
   private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)

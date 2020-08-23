@@ -26,10 +26,10 @@ import csw.prefix.models.Subsystem.IRIS
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.exceptions.UnresolvedAkkaLocationException
-import esw.gateway.api.protocol.PostRequest._
+import esw.gateway.api.protocol.GatewayRequest._
 import esw.gateway.api.protocol._
 import esw.gateway.server.handlers.GatewayPostHandler
-import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
+import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerRequest}
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.api.models.{GenericError, ServiceError}
@@ -58,11 +58,11 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
   "Submit Command" must {
     "handle submit command and return started command response | ESW-91, ESW-216" in {
-      val runId                      = Id("123")
-      val componentType              = Assembly
-      val command                    = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
-      val componentId                = ComponentId(destination, componentType)
-      val submitRequest: PostRequest = ComponentCommand(componentId, Submit(command))
+      val runId                         = Id("123")
+      val componentType                 = Assembly
+      val command                       = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
+      val componentId                   = ComponentId(destination, componentType)
+      val submitRequest: GatewayRequest = ComponentCommand(componentId, Submit(command))
 
       when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
@@ -73,11 +73,11 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "handle validate command and return accepted command response | ESW-91, ESW-216" in {
-      val runId                        = Id("123")
-      val componentType                = Assembly
-      val command                      = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
-      val componentId                  = ComponentId(destination, componentType)
-      val validateRequest: PostRequest = ComponentCommand(componentId, Validate(command))
+      val runId                           = Id("123")
+      val componentType                   = Assembly
+      val command                         = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
+      val componentId                     = ComponentId(destination, componentType)
+      val validateRequest: GatewayRequest = ComponentCommand(componentId, Validate(command))
 
       when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
@@ -88,11 +88,11 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "handle oneway command and return accepted command response | ESW-91, ESW-216" in {
-      val runId                      = Id("123")
-      val componentType              = Assembly
-      val command                    = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
-      val componentId                = ComponentId(destination, componentType)
-      val onewayRequest: PostRequest = ComponentCommand(componentId, Oneway(command))
+      val runId                         = Id("123")
+      val componentType                 = Assembly
+      val command                       = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
+      val componentId                   = ComponentId(destination, componentType)
+      val onewayRequest: GatewayRequest = ComponentCommand(componentId, Oneway(command))
 
       when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
@@ -103,10 +103,10 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "return InvalidComponent response for invalid component id | ESW-91, ESW-216" in {
-      val componentType              = Assembly
-      val command                    = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
-      val componentId                = ComponentId(destination, componentType)
-      val submitRequest: PostRequest = ComponentCommand(componentId, Submit(command))
+      val componentType                 = Assembly
+      val command                       = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
+      val componentId                   = ComponentId(destination, componentType)
+      val submitRequest: GatewayRequest = ComponentCommand(componentId, Submit(command))
 
       val message = "component does not exist"
       when(resolver.commandService(componentId)).thenReturn(Future.failed(InvalidComponent(message)))
@@ -120,10 +120,10 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
   "SequencerRoutes" must {
     "handle submit command and return started command response | ESW-250" in {
-      val sequence                   = Sequence(Setup(source, CommandName("c1"), Some(ObsId("obsId"))))
-      val componentId                = ComponentId(destination, Sequencer)
-      val submitRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.Submit(sequence))
-      val submitResponse             = Started(Id("123"))
+      val sequence                      = Sequence(Setup(source, CommandName("c1"), Some(ObsId("obsId"))))
+      val componentId                   = ComponentId(destination, Sequencer)
+      val submitRequest: GatewayRequest = SequencerCommand(componentId, SequencerRequest.Submit(sequence))
+      val submitResponse                = Started(Id("123"))
 
       when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.submit(sequence)).thenReturn(Future.successful(submitResponse))
@@ -134,10 +134,10 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "handle query command and return query response | ESW-250" in {
-      val runId                     = Id("runId")
-      val componentId               = ComponentId(destination, Sequencer)
-      val queryRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.Query(runId))
-      val queryResponse             = Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
+      val runId                        = Id("runId")
+      val componentId                  = ComponentId(destination, Sequencer)
+      val queryRequest: GatewayRequest = SequencerCommand(componentId, SequencerRequest.Query(runId))
+      val queryResponse                = Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
 
       when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.query(runId)).thenReturn(Future.successful(queryResponse))
@@ -148,8 +148,8 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "handle go online command and return Ok response | ESW-250" in {
-      val componentId                  = ComponentId(destination, Sequencer)
-      val goOnlineRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.GoOnline)
+      val componentId                     = ComponentId(destination, Sequencer)
+      val goOnlineRequest: GatewayRequest = SequencerCommand(componentId, SequencerRequest.GoOnline)
 
       when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.goOnline()).thenReturn(Future.successful(Ok))
@@ -162,10 +162,10 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
   "Publish Event" must {
     "return Done on successful publish | ESW-92, ESW-216" in {
-      val prefix                    = Prefix("tcs.test.gateway")
-      val name                      = EventName("event1")
-      val event                     = SystemEvent(prefix, name, Set.empty)
-      val publishEvent: PostRequest = PublishEvent(event)
+      val prefix                       = Prefix("tcs.test.gateway")
+      val name                         = EventName("event1")
+      val event                        = SystemEvent(prefix, name, Set.empty)
+      val publishEvent: GatewayRequest = PublishEvent(event)
 
       when(eventPublisher.publish(event)).thenReturn(Future.successful(Done))
 
@@ -175,10 +175,10 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "return EventServerUnavailable error when EventServer is down | ESW-92, ESW-216" in {
-      val prefix                    = Prefix("tcs.test.gateway")
-      val name                      = EventName("event1")
-      val event                     = SystemEvent(prefix, name, Set.empty)
-      val publishEvent: PostRequest = PublishEvent(event)
+      val prefix                       = Prefix("tcs.test.gateway")
+      val name                         = EventName("event1")
+      val event                        = SystemEvent(prefix, name, Set.empty)
+      val publishEvent: GatewayRequest = PublishEvent(event)
 
       when(eventPublisher.publish(event))
         .thenReturn(Future.failed(PublishFailure(event, new RuntimeException("Event server is down"))))
@@ -192,11 +192,11 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
   "Get Event" must {
     "return an event successfully | ESW-94, ESW-216" in {
-      val prefix                = Prefix("tcs.test.gateway")
-      val name                  = EventName("event1")
-      val event                 = SystemEvent(prefix, name, Set.empty)
-      val eventKey              = EventKey(prefix, name)
-      val getEvent: PostRequest = GetEvent(Set(eventKey))
+      val prefix                   = Prefix("tcs.test.gateway")
+      val name                     = EventName("event1")
+      val event                    = SystemEvent(prefix, name, Set.empty)
+      val eventKey                 = EventKey(prefix, name)
+      val getEvent: GatewayRequest = GetEvent(Set(eventKey))
 
       when(eventSubscriber.get(Set(eventKey))).thenReturn(Future.successful(Set(event)))
 
@@ -206,17 +206,17 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
-      post(GetEvent(Set()): PostRequest) ~> route ~> check {
+      post(GetEvent(Set()): GatewayRequest) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[GatewayException] shouldEqual EmptyEventKeys()
       }
     }
 
     "return EventServerUnavailable error when EventServer is down | ESW-94, ESW-216" in {
-      val prefix                = Prefix("tcs.test.gateway")
-      val name                  = EventName("event1")
-      val eventKey              = EventKey(prefix, name)
-      val getEvent: PostRequest = GetEvent(Set(eventKey))
+      val prefix                   = Prefix("tcs.test.gateway")
+      val name                     = EventName("event1")
+      val eventKey                 = EventKey(prefix, name)
+      val getEvent: GatewayRequest = GetEvent(Set(eventKey))
 
       when(eventSubscriber.get(Set(eventKey)))
         .thenReturn(Future.failed(EventServerNotAvailable(new RuntimeException("Redis server is not available"))))
@@ -232,7 +232,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
       val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
 
-      post(GetEvent(Set(eventKey)): PostRequest) ~> route ~> check {
+      post(GetEvent(Set(eventKey)): GatewayRequest) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[ServiceError] shouldEqual ServiceError.fromThrowable(new RuntimeException("failed"))
       }
@@ -241,10 +241,10 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
   "Set Alarm Severity" must {
     "return Done on success | ESW-193, ESW-216, ESW-233, CSW-83" in {
-      val alarmName                     = "testAlarmName"
-      val majorSeverity                 = AlarmSeverity.Major
-      val alarmKey                      = AlarmKey(Prefix(IRIS, "test_component"), alarmName)
-      val setAlarmSeverity: PostRequest = SetAlarmSeverity(alarmKey, majorSeverity)
+      val alarmName                        = "testAlarmName"
+      val majorSeverity                    = AlarmSeverity.Major
+      val alarmKey                         = AlarmKey(Prefix(IRIS, "test_component"), alarmName)
+      val setAlarmSeverity: GatewayRequest = SetAlarmSeverity(alarmKey, majorSeverity)
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.successful(Done))
 
@@ -254,10 +254,10 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "return SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233, CSW-83" in {
-      val alarmName                     = "testAlarmName"
-      val majorSeverity                 = AlarmSeverity.Major
-      val alarmKey                      = AlarmKey(Prefix(IRIS, "test_component"), alarmName)
-      val setAlarmSeverity: PostRequest = SetAlarmSeverity(alarmKey, majorSeverity)
+      val alarmName                        = "testAlarmName"
+      val majorSeverity                    = AlarmSeverity.Major
+      val alarmKey                         = AlarmKey(Prefix(IRIS, "test_component"), alarmName)
+      val setAlarmSeverity: GatewayRequest = SetAlarmSeverity(alarmKey, majorSeverity)
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new KeyNotFoundException("")))
 
@@ -270,7 +270,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
   "Log" must {
     "log the message, metadata and return Done | ESW-200, CSW-63, CSW-78" in {
-      val log: PostRequest = Log(
+      val log: GatewayRequest = Log(
         Prefix("esw.test"),
         Level.FATAL,
         "test-message",
@@ -293,7 +293,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
 
     "log the message and return Done | ESW-200, CSW-63, CSW-78" in {
-      val log: PostRequest = Log(
+      val log: GatewayRequest = Log(
         Prefix("esw.test"),
         Level.FATAL,
         "test-message"
@@ -315,7 +315,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
       when(adminApi.getLogMetadata(componentId)).thenReturn(Future.successful(metadata))
 
-      post(GetLogMetadata(componentId): PostRequest) ~> route ~> check {
+      post(GetLogMetadata(componentId): GatewayRequest) ~> route ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[LogMetadata] shouldEqual metadata
       }
@@ -328,7 +328,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
       when(adminApi.getLogMetadata(componentId))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
 
-      post(GetLogMetadata(componentId): PostRequest) ~> route ~> check {
+      post(GetLogMetadata(componentId): GatewayRequest) ~> route ~> check {
         responseAs[GenericError] shouldEqual error
       }
     }
@@ -340,7 +340,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
       when(adminApi.setLogLevel(componentId, Level.FATAL)).thenReturn(Future.successful(Done))
 
-      post(SetLogLevel(componentId, Level.FATAL): PostRequest) ~> route ~> check {
+      post(SetLogLevel(componentId, Level.FATAL): GatewayRequest) ~> route ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[Done] shouldEqual Done
       }
@@ -353,7 +353,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
       when(adminApi.setLogLevel(componentId, Level.FATAL))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
 
-      post(SetLogLevel(componentId, Level.FATAL): PostRequest) ~> route ~> check {
+      post(SetLogLevel(componentId, Level.FATAL): GatewayRequest) ~> route ~> check {
         responseAs[GenericError] shouldEqual error
       }
     }

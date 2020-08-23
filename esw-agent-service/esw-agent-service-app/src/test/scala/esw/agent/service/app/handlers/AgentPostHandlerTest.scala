@@ -12,10 +12,10 @@ import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import esw.agent.service.api.AgentServiceApi
-import esw.agent.service.api.codecs.AgentHttpCodecs
+import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models._
-import esw.agent.service.api.protocol.AgentPostRequest
-import esw.agent.service.api.protocol.AgentPostRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.service.api.protocol.AgentServiceRequest
+import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.app.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
@@ -23,7 +23,7 @@ import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future
 
-class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with AgentHttpCodecs with ClientHttpCodecs {
+class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with AgentServiceCodecs with ClientHttpCodecs {
 
   def clientContentType: ContentType = ContentType.Json
 
@@ -33,7 +33,7 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
   private val route =
     new PostRouteFactory("post-endpoint", new AgentServicePostHandler(agentService, securityDirective)).make()
 
-  private def post(entity: AgentPostRequest): HttpRequest = Post("/post-endpoint", entity)
+  private def post(entity: AgentServiceRequest): HttpRequest = Post("/post-endpoint", entity)
 
   private val sequenceCompName       = randomString(10)
   private val dummyDirective         = BasicDirectives.extract[AccessToken](_ => AccessToken())

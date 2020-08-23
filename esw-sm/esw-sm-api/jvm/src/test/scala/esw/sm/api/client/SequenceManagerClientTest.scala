@@ -5,9 +5,9 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.codecs.SequenceManagerHttpCodec
+import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol.SequenceManagerPostRequest.{GetRunningObsModes, _}
+import esw.sm.api.protocol.SequenceManagerRequest.{GetRunningObsModes, _}
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
@@ -16,13 +16,13 @@ import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future
 
-class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCodec {
+class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServiceCodecs {
   private val obsMode                  = ObsMode("IRIS_darknight")
   private val componentId: ComponentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
   private val seqCompPrefix: Prefix    = Prefix(ESW, "primary")
 
-  val postClient: Transport[SequenceManagerPostRequest] = mock[Transport[SequenceManagerPostRequest]]
-  val client                                            = new SequenceManagerClient(postClient)
+  val postClient: Transport[SequenceManagerRequest] = mock[Transport[SequenceManagerRequest]]
+  val client                                        = new SequenceManagerClient(postClient)
 
   "SequenceManagerClient" must {
     "return running observation modes for getRunningObsModes request" in {

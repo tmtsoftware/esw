@@ -6,13 +6,13 @@ import csw.contract.generator._
 import csw.location.api.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
-import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.{Step, StepList, StepStatus}
-import esw.ocs.api.protocol.SequencerPostRequest._
-import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
 
-object SequencerContract extends SequencerData with SequencerHttpCodecs {
+object SequencerContract extends SequencerData with SequencerServiceCodecs {
   private val models: ModelSet = ModelSet.models(
     ModelType[SequenceCommand](observeSequenceCommand, setupSequenceCommand, waitSequenceCommand),
     ModelType[OkOrUnhandledResponse](ok, unhandled),
@@ -30,7 +30,7 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     ModelType[StepStatus](pendingStepStatus, inFlightStepStatus, successStepStatus, failureStepStatus)
   )
 
-  private val httpRequests = new RequestSet[SequencerPostRequest] {
+  private val httpRequests = new RequestSet[SequencerRequest] {
     requestType(loadSequence)
     requestType(add)
     requestType(prepend)
@@ -53,7 +53,7 @@ object SequencerContract extends SequencerData with SequencerHttpCodecs {
     requestType(getSequenceComponent)
   }
 
-  private val websocketRequests = new RequestSet[SequencerWebsocketRequest] {
+  private val websocketRequests = new RequestSet[SequencerStreamRequest] {
     requestType(sequencerQueryFinal)
   }
 

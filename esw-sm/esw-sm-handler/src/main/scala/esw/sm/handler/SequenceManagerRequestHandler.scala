@@ -4,18 +4,18 @@ import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import esw.sm.api.SequenceManagerApi
-import esw.sm.api.codecs.SequenceManagerHttpCodec._
-import esw.sm.api.protocol.SequenceManagerPostRequest
-import esw.sm.api.protocol.SequenceManagerPostRequest._
+import esw.sm.api.codecs.SequenceManagerServiceCodecs._
+import esw.sm.api.protocol.SequenceManagerRequest
+import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.auth.EswUserRolePolicy
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
-class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi, securityDirectives: SecurityDirectives)
-    extends HttpPostHandler[SequenceManagerPostRequest]
+class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securityDirectives: SecurityDirectives)
+    extends HttpPostHandler[SequenceManagerRequest]
     with ServerHttpCodecs {
 
   import sequenceManager._
-  override def handle(request: SequenceManagerPostRequest): Route =
+  override def handle(request: SequenceManagerRequest): Route =
     request match {
       case GetRunningObsModes                   => complete(getRunningObsModes)
       case GetAgentStatus                       => complete(getAgentStatus)

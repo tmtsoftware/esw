@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import csw.command.api.messages.CommandServiceStreamingRequest.{QueryFinal, SubscribeCurrentState}
+import csw.command.api.messages.CommandServiceStreamRequest.{QueryFinal, SubscribeCurrentState}
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.api.models.ComponentId
@@ -20,11 +20,11 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol.GatewayStreamRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.handlers.GatewayWebsocketHandler
-import esw.ocs.api.protocol.SequencerWebsocketRequest
+import esw.ocs.api.protocol.SequencerStreamRequest
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
@@ -60,10 +60,10 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   "QueryFinal for Component" must {
 
     "return SubmitResponse for a command | ESW-100, ESW-216" in {
-      val runId                        = Id("123")
-      val componentType                = Assembly
-      val componentId                  = ComponentId(destination, componentType)
-      val queryFinal: WebsocketRequest = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
+      val runId                            = Id("123")
+      val componentType                    = Assembly
+      val componentId                      = ComponentId(destination, componentType)
+      val queryFinal: GatewayStreamRequest = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
       when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
@@ -77,10 +77,10 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
     }
 
     "return InvalidComponent for invalid component id | ESW-100, ESW-216" in {
-      val runId                        = Id("123")
-      val componentType                = Assembly
-      val componentId                  = ComponentId(destination, componentType)
-      val queryFinal: WebsocketRequest = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
+      val runId                            = Id("123")
+      val componentType                    = Assembly
+      val componentId                      = ComponentId(destination, componentType)
+      val queryFinal: GatewayStreamRequest = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
       val errmsg = s"No component is registered with id $componentId "
 
@@ -101,8 +101,8 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val componentId               = ComponentId(destination, Sequencer)
       implicit val timeout: Timeout = Timeout(10.seconds)
 
-      val queryFinalRequest: WebsocketRequest =
-        SequencerCommand(componentId, SequencerWebsocketRequest.QueryFinal(sequenceId, timeout))
+      val queryFinalRequest: GatewayStreamRequest =
+        SequencerCommand(componentId, SequencerStreamRequest.QueryFinal(sequenceId, timeout))
       val queryFinalResponse = Completed(sequenceId)
 
       when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
@@ -119,12 +119,12 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   "Subscribe current state" must {
     "returns successfully for given componentId | ESW-223, ESW-216" in {
-      val componentType                           = Assembly
-      val componentId                             = ComponentId(destination, componentType)
-      val stateNames                              = Set(StateName("stateName1"), StateName("stateName2"))
-      val subscribeCurrentState: WebsocketRequest = ComponentCommand(componentId, SubscribeCurrentState(stateNames))
-      val currentState1                           = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
-      val currentState2                           = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
+      val componentType                               = Assembly
+      val componentId                                 = ComponentId(destination, componentType)
+      val stateNames                                  = Set(StateName("stateName1"), StateName("stateName2"))
+      val subscribeCurrentState: GatewayStreamRequest = ComponentCommand(componentId, SubscribeCurrentState(stateNames))
+      val currentState1                               = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
+      val currentState2                               = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
       val currentStateSubscription = mock[Subscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
@@ -153,7 +153,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val eventKey2       = EventKey(tcsEventKeyStr2)
       val eventKeys       = Set(eventKey1, eventKey2)
 
-      val eventSubscriptionRequest: WebsocketRequest = Subscribe(eventKeys, None)
+      val eventSubscriptionRequest: GatewayStreamRequest = Subscribe(eventKeys, None)
 
       val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
       val event2: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key2"))
@@ -186,7 +186,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val eventKey2       = EventKey(tcsEventKeyStr2)
       val eventKeys       = Set(eventKey1, eventKey2)
 
-      val eventSubscriptionRequest: WebsocketRequest = Subscribe(eventKeys, Some(10))
+      val eventSubscriptionRequest: GatewayStreamRequest = Subscribe(eventKeys, Some(10))
 
       val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
       val event2: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key2"))
@@ -219,7 +219,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val eventKey2       = EventKey(tcsEventKeyStr2)
       val eventKeys       = Set(eventKey1, eventKey2)
 
-      val eventSubscriptionRequest: WebsocketRequest = Subscribe(eventKeys, Some(-1))
+      val eventSubscriptionRequest: GatewayStreamRequest = Subscribe(eventKeys, Some(-1))
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
@@ -230,7 +230,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   "Subscribe events with pattern" must {
     "return set of events on subscribe events with a given pattern | ESW-93, ESW-216" in {
-      val eventSubscriptionRequest: WebsocketRequest = SubscribeWithPattern(TCS, None, "*")
+      val eventSubscriptionRequest: GatewayStreamRequest = SubscribeWithPattern(TCS, None, "*")
 
       val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
       val eventSubscription: EventSubscription = new EventSubscription {
@@ -255,8 +255,8 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
     }
 
     "return set of events when maxFrequency = 5 | ESW-93, ESW-216" in {
-      val eventSubscriptionRequest: WebsocketRequest = SubscribeWithPattern(TCS, Some(5), "*")
-      val event1: Event                              = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
+      val eventSubscriptionRequest: GatewayStreamRequest = SubscribeWithPattern(TCS, Some(5), "*")
+      val event1: Event                                  = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
 
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)
@@ -282,7 +282,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
     }
 
     "return InvalidMaxFrequency when maxFrequency <= 0 | ESW-93, ESW-216" in {
-      val eventSubscriptionRequest: WebsocketRequest = SubscribeWithPattern(TCS, Some(-1), "*")
+      val eventSubscriptionRequest: GatewayStreamRequest = SubscribeWithPattern(TCS, Some(-1), "*")
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true

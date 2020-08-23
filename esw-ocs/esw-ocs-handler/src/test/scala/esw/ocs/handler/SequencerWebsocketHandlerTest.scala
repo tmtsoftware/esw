@@ -8,9 +8,9 @@ import akka.util.Timeout
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.SequencerWebsocketRequest
-import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
+import esw.ocs.api.codecs.SequencerServiceCodecs
+import esw.ocs.api.protocol.SequencerStreamRequest
+import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
@@ -23,7 +23,11 @@ import msocket.impl.ws.WebsocketRouteFactory
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequencerWebsocketHandlerTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
+class SequencerWebsocketHandlerTest
+    extends BaseTestSuite
+    with ScalatestRouteTest
+    with SequencerServiceCodecs
+    with ClientHttpCodecs {
 
   override def clientContentType: ContentType = ContentType.Json
 
@@ -34,7 +38,7 @@ class SequencerWebsocketHandlerTest extends BaseTestSuite with ScalatestRouteTes
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
   lazy val route: Route =
-    new WebsocketRouteFactory[SequencerWebsocketRequest]("websocket-endpoint", websocketHandlerFactory).make()
+    new WebsocketRouteFactory[SequencerStreamRequest]("websocket-endpoint", websocketHandlerFactory).make()
 
   private val wsClient = WSProbe()
 
@@ -46,7 +50,7 @@ class SequencerWebsocketHandlerTest extends BaseTestSuite with ScalatestRouteTes
       when(sequencer.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(ContentType.Json.strictMessage(QueryFinal(id, timeout): SequencerWebsocketRequest))
+        wsClient.sendMessage(ContentType.Json.strictMessage(QueryFinal(id, timeout): SequencerStreamRequest))
         isWebSocketUpgrade shouldBe true
 
         val response = decodeMessage[SubmitResponse](wsClient)

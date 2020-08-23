@@ -10,8 +10,8 @@ import csw.params.commands._
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.protocol.SequencerPostRequest._
-import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
 
 trait SequencerData extends CommandData {

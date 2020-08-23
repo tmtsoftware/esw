@@ -14,11 +14,11 @@ import csw.params.core.models.ObsId
 import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest
-import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
+import esw.gateway.api.protocol.GatewayRequest
+import esw.gateway.api.protocol.GatewayRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
 import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.GatewayPostHandler
-import esw.ocs.api.protocol.SequencerPostRequest.Pause
+import esw.ocs.api.protocol.SequencerRequest.Pause
 import esw.testcommons.BaseTestSuite
 import io.prometheus.client.CollectorRegistry
 import msocket.api.ContentType
@@ -39,7 +39,7 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
 
   private val postHandlerImpl =
     new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
-  private val postRoute = new PostRouteFactory[PostRequest]("post-endpoint", postHandlerImpl).make(true)
+  private val postRoute = new PostRouteFactory[GatewayRequest]("post-endpoint", postHandlerImpl).make(true)
   private val prefix    = Prefix("esw.test")
 
   private val defaultRegistry = CollectorRegistry.defaultRegistry
@@ -80,7 +80,7 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
   private def getCounterValue(labelValues: List[String]): Double =
     defaultRegistry.getSampleValue("http_requests_total", labelNames.toArray, labelValues.toArray)
 
-  private def runCounterTest(postRequest: PostRequest, labels: List[String]): Unit = {
+  private def runCounterTest(postRequest: GatewayRequest, labels: List[String]): Unit = {
 
     def counterValue = getCounterValue(labels)
 
