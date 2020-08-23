@@ -3,9 +3,9 @@ package esw.gateway.server.handlers
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
-import csw.command.api.messages.CommandServiceHttpMessage
+import csw.command.api.messages.CommandServiceRequest
 import csw.command.client.auth.CommandRoles
-import csw.command.client.handlers.CommandServiceHttpHandlers
+import csw.command.client.handlers.CommandServiceRequestHandler
 import csw.location.api.models.ComponentId
 import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.PostRequest
@@ -41,9 +41,9 @@ class GatewayPostHandler(
       case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
     }
 
-  private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
+  private def onComponentCommand(componentId: ComponentId, command: CommandServiceRequest): Route =
     onSuccess(resolver.commandService(componentId) zip commandRoles) { (commandService, roles) =>
-      new CommandServiceHttpHandlers(commandService, securityDirectives, Some(componentId.prefix), roles).handle(command)
+      new CommandServiceRequestHandler(commandService, securityDirectives, Some(componentId.prefix), roles).handle(command)
     }
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =

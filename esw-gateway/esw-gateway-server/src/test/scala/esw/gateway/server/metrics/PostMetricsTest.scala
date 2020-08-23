@@ -5,7 +5,7 @@ import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.SecurityDirectives
-import csw.command.api.messages.CommandServiceHttpMessage.Submit
+import csw.command.api.messages.CommandServiceRequest.Submit
 import csw.command.client.auth.CommandRoles
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Assembly

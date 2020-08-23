@@ -7,10 +7,10 @@ import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
-import esw.ocs.api.SequencerApi
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
@@ -29,7 +29,7 @@ class SequencerWebsocketHandlerTest extends BaseTestSuite with ScalatestRouteTes
 
   private val sequencer: SequencerApi = mock[SequencerApi]
 
-  private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencer, contentType)
+  private lazy val websocketHandlerFactory = new SequencerWebsocketHandler(sequencer)
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 

@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.testkit.scaladsl.TestSource
 import akka.util.Timeout
-import csw.command.api.messages.CommandServiceWebsocketMessage.QueryFinal
+import csw.command.api.messages.CommandServiceStreamingRequest.QueryFinal
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.api.models.ComponentId
@@ -46,7 +46,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 
   private val eventApi         = new EventImpl(eventService, eventSubscriberUtil)
-  private val websocketHandler = new GatewayWebsocketHandler(resolver, eventApi, _)
+  private val websocketHandler = new GatewayWebsocketHandler(resolver, eventApi)
   private val wsRoute          = new WebsocketRouteFactory("websocket-endpoint", websocketHandler).make(metricsEnabled = true)
 
   private val runId       = Id("123")

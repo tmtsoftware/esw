@@ -1,20 +1,17 @@
 package esw.ocs.handler
 
-import akka.NotUsed
-import akka.http.scaladsl.model.ws.Message
-import akka.stream.scaladsl.Source
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerHttpCodecs._
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
-import msocket.api.ContentType
-import msocket.impl.ws.WebsocketHandler
+import msocket.api.{StreamRequestHandler, StreamResponse}
 
-class SequencerWebsocketHandler(sequencerApi: SequencerApi, contentType: ContentType)
-    extends WebsocketHandler[SequencerWebsocketRequest](contentType) {
+import scala.concurrent.Future
 
-  override def handle(request: SequencerWebsocketRequest): Source[Message, NotUsed] =
+class SequencerWebsocketHandler(sequencerApi: SequencerApi) extends StreamRequestHandler[SequencerWebsocketRequest] {
+
+  override def handle(request: SequencerWebsocketRequest): Future[StreamResponse] =
     request match {
-      case QueryFinal(sequenceId, timeout) => stream(sequencerApi.queryFinal(sequenceId)(timeout))
+      case QueryFinal(sequenceId, timeout) => future(sequencerApi.queryFinal(sequenceId)(timeout))
     }
 }

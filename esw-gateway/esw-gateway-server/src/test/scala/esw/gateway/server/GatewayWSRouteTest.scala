@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import csw.command.api.messages.CommandServiceWebsocketMessage.{QueryFinal, SubscribeCurrentState}
+import csw.command.api.messages.CommandServiceStreamingRequest.{QueryFinal, SubscribeCurrentState}
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.api.models.ComponentId
@@ -48,10 +48,10 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   private var wsClient: WSProbe                        = _
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  private val eventApi: EventApi                             = new EventImpl(eventService, eventSubscriberUtil)
-  private def websocketHandlerImpl(contentType: ContentType) = new GatewayWebsocketHandler(resolver, eventApi, contentType)
-  private val route                                          = new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl).make()
-  private val destination                                    = Prefix(TCS, "test")
+  private val eventApi: EventApi   = new EventImpl(eventService, eventSubscriberUtil)
+  private val websocketHandlerImpl = new GatewayWebsocketHandler(resolver, eventApi)
+  private val route                = new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl).make()
+  private val destination          = Prefix(TCS, "test")
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()

@@ -1,10 +1,7 @@
 package esw.gateway.server.handlers
 
-import akka.NotUsed
-import akka.http.scaladsl.model.ws.Message
-import akka.stream.scaladsl.Source
-import csw.command.api.messages.CommandServiceWebsocketMessage
-import csw.command.client.handlers.CommandServiceWebsocketHandlers
+import csw.command.api.messages.CommandServiceStreamingRequest
+import csw.command.client.handlers.CommandServiceStreamingRequestHandler
 import csw.location.api.models.ComponentId
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs._
@@ -13,13 +10,14 @@ import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCom
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.handler.SequencerWebsocketHandler
-import msocket.api.ContentType
-import msocket.impl.ws.WebsocketHandler
+import msocket.api.{StreamRequestHandler, StreamResponse}
 
-class GatewayWebsocketHandler(resolver: Resolver, eventApi: EventApi, contentType: ContentType)
-    extends WebsocketHandler[WebsocketRequest](contentType) {
+import scala.concurrent.{ExecutionContext, Future}
 
-  override def handle(request: WebsocketRequest): Source[Message, NotUsed] =
+class GatewayWebsocketHandler(resolver: Resolver, eventApi: EventApi)(implicit ec: ExecutionContext)
+    extends StreamRequestHandler[WebsocketRequest] {
+
+  override def handle(request: WebsocketRequest): Future[StreamResponse] =
     request match {
       case ComponentCommand(componentId, command)                 => onComponentCommand(componentId, command)
       case SequencerCommand(componentId, command)                 => onSequencerCommand(componentId, command)
@@ -27,13 +25,11 @@ class GatewayWebsocketHandler(resolver: Resolver, eventApi: EventApi, contentTyp
       case SubscribeWithPattern(subsystem, maxFrequency, pattern) => stream(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
     }
 
-  private def onComponentCommand(componentId: ComponentId, command: CommandServiceWebsocketMessage): Source[Message, NotUsed] =
-    Source
-      .future(resolver.commandService(componentId))
-      .flatMapConcat(commandService => new CommandServiceWebsocketHandlers(commandService, contentType).handle(command))
+  private def onComponentCommand(componentId: ComponentId, command: CommandServiceStreamingRequest): Future[StreamResponse] = {
+    resolver.commandService(componentId).flatMap(new CommandServiceStreamingRequestHandler(_).handle(command))
+  }
 
-  private def onSequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest): Source[Message, NotUsed] =
-    Source
-      .future(resolver.sequencerCommandService(componentId))
-      .flatMapConcat(sequencerApi => new SequencerWebsocketHandler(sequencerApi, contentType).handle(command))
+  private def onSequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest): Future[StreamResponse] = {
+    resolver.sequencerCommandService(componentId).flatMap(new SequencerWebsocketHandler(_).handle(command))
+  }
 }

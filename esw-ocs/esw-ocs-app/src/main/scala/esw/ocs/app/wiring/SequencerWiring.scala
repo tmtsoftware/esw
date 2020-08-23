@@ -37,7 +37,6 @@ import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
-import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
@@ -107,10 +106,10 @@ private[ocs] class SequencerWiring(
     config
   )
 
-  private lazy val sequencerApi                                 = new SequencerImpl(sequencerRef)
-  private lazy val securityDirectives                           = SecurityDirectives.authDisabled(config)
-  private lazy val postHandler                                  = new SequencerPostHandler(sequencerApi, securityDirectives)
-  private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencerApi, contentType)
+  private lazy val sequencerApi            = new SequencerImpl(sequencerRef)
+  private lazy val securityDirectives      = SecurityDirectives.authDisabled(config)
+  private lazy val postHandler             = new SequencerPostHandler(sequencerApi, securityDirectives)
+  private lazy val websocketHandlerFactory = new SequencerWebsocketHandler(sequencerApi)
 
   lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(
     new PostRouteFactory("post-endpoint", postHandler),

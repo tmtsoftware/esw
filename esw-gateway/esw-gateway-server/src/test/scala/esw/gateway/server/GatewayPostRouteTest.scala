@@ -10,7 +10,7 @@ import csw.aas.http.SecurityDirectives
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.command.api.messages.CommandServiceHttpMessage.{Oneway, Submit, Validate}
+import csw.command.api.messages.CommandServiceRequest.{Oneway, Submit, Validate}
 import csw.command.client.auth.CommandRoles
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.api.models.ComponentType.{Assembly, Sequencer}
