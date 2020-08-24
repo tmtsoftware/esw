@@ -13,33 +13,21 @@ import csw.location.api.scaladsl.LocationService
 import csw.logging.models.{Level, LogMetadata}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.exceptions.UnresolvedAkkaLocationException
-import org.mockito.MockitoSugar._
-import org.scalatest.{BeforeAndAfterEach, Ignore}
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatest.funsuite.AnyFunSuite
-import org.scalatest.matchers.should.Matchers
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
 
-//TODO Fix this, as failing on CI
-@Ignore
-class AdminImplTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
+class AdminImplTest extends BaseTestSuite {
+  lazy val actorTestKit: ActorTestKit      = ActorTestKit()
+  lazy implicit val system: ActorSystem[_] = actorTestKit.system
 
-  var actorTestKit: ActorTestKit = _
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    actorTestKit = ActorTestKit()
-  }
-
-  override def afterEach(): Unit = {
-    super.afterEach()
+  override def afterAll(): Unit = {
+    super.afterAll()
     actorTestKit.shutdownTestKit()
   }
 
-  test("getLogMetadata should get log metadata when component is discovered and it responds with metadata") {
-    implicit val system: ActorSystem[_]  = actorTestKit.system
+  "getLogMetadata should get log metadata when component is discovered and it responds with metadata" in {
     val locationService: LocationService = mock[LocationService]
     val expectedLogMetadata              = LogMetadata(Level.FATAL, Level.ERROR, Level.WARN, Level.DEBUG)
     val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetComponentLogMetadata] {
@@ -56,8 +44,7 @@ class AdminImplTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
     actualLogMetadata shouldBe expectedLogMetadata
   }
 
-  test("getLogMetadata should get log metadata when sequencer is discovered and it responds with metadata") {
-    implicit val system: ActorSystem[_]  = actorTestKit.system
+  "getLogMetadata should get log metadata when sequencer is discovered and it responds with metadata" in {
     val locationService: LocationService = mock[LocationService]
     val expectedLogMetadata              = LogMetadata(Level.FATAL, Level.ERROR, Level.WARN, Level.DEBUG)
     val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetComponentLogMetadata] {
@@ -75,8 +62,7 @@ class AdminImplTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
     actualLogMetadata shouldBe expectedLogMetadata
   }
 
-  test("getLogMetadata should fail with UnresolvedAkkaLocationException when componentId is not not resolved") {
-    implicit val system: ActorSystem[_]  = actorTestKit.system
+  "getLogMetadata should fail with UnresolvedAkkaLocationException when componentId is not not resolved" in {
     val locationService: LocationService = mock[LocationService]
     val adminService: AdminImpl          = new AdminImpl(locationService)
     val componentId                      = models.ComponentId(Prefix(Subsystem.AOESW, "test_sequencer"), ComponentType.Sequencer)
@@ -86,8 +72,7 @@ class AdminImplTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
     }
   }
 
-  test("setLogLevel should get log metadata when component is discovered") {
-    implicit val system: ActorSystem[_]  = actorTestKit.system
+  "setLogLevel should get log metadata when component is discovered" in {
     val locationService: LocationService = mock[LocationService]
     val probe                            = actorTestKit.createTestProbe[SetComponentLogLevel]()
     val adminService: AdminImpl          = new AdminImpl(locationService)
@@ -99,8 +84,7 @@ class AdminImplTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
     probe.expectMessage(500.millis, SetComponentLogLevel(Level.FATAL))
   }
 
-  test("setLogLevel should get log metadata when sequencer is discovered") {
-    implicit val system: ActorSystem[_]  = actorTestKit.system
+  "setLogLevel should get log metadata when sequencer is discovered" in {
     val locationService: LocationService = mock[LocationService]
     val probe                            = actorTestKit.createTestProbe[SetComponentLogLevel]()
     val adminService: AdminImpl          = new AdminImpl(locationService)
@@ -112,8 +96,7 @@ class AdminImplTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
     probe.expectMessage(500.millis, SetComponentLogLevel(Level.FATAL))
   }
 
-  test("setLogLevel should fail with UnresolvedAkkaLocationException when componentId is not not resolved") {
-    implicit val system: ActorSystem[_]  = actorTestKit.system
+  "setLogLevel should fail with UnresolvedAkkaLocationException when componentId is not not resolved" in {
     val locationService: LocationService = mock[LocationService]
     val adminService: AdminImpl          = new AdminImpl(locationService)
     val componentId                      = models.ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Sequencer)
