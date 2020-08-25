@@ -7,7 +7,7 @@ import caseapp.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix
 import esw.commons.Timeouts
-import esw.http.core.commons.EswCommandApp
+import esw.commons.cli.EswCommandApp
 import esw.sm.app.SequenceManagerAppCommand._
 
 import scala.concurrent.Await

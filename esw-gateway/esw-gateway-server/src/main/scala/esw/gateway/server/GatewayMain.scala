@@ -3,8 +3,8 @@ package esw.gateway.server
 import java.nio.file.Path
 
 import caseapp.RemainingArgs
+import esw.commons.cli.EswCommandApp
 import esw.gateway.server.ServerCommand.StartCommand
-import esw.http.core.commons.EswCommandApp
 
 // $COVERAGE-OFF$
 object GatewayMain extends EswCommandApp[ServerCommand] {

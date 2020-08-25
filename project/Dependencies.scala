@@ -57,6 +57,7 @@ object Dependencies {
 
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Libs.`case-app`,
       Libs.`msocket-impl-jvm`,
       Libs.scalatest.value            % Test,
       Libs.`mockito-scala`            % Test,
@@ -129,7 +130,6 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       AkkaHttp.`akka-http`,
       AkkaHttp.`akka-http-cors`,
-      Libs.`case-app`,
       Libs.`scala-async`,
       Libs.scalatest.value     % Test,
       Libs.`mockito-scala`     % Test,
@@ -217,7 +217,9 @@ object Dependencies {
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-command-client`,
+      Csw.`csw-command-client`,
       Csw.`csw-config-client`,
+      Libs.`case-app`,
       Libs.`msocket-impl-jvm`,
       Libs.`tmt-test-reporter`        % Test,
       Libs.`mockito-scala`            % Test,
@@ -268,6 +270,7 @@ object Dependencies {
 
   val EswSmApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Libs.`case-app`,
       Libs.scalatest.value            % Test,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,
@@ -289,6 +292,7 @@ object Dependencies {
     Seq(
       Csw.`csw-location-api`.value,
       Akka.`akka-stream-typed`        % Provided,
+      Libs.`case-app`                 % Provided,
       Akka.`akka-remote`              % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test,

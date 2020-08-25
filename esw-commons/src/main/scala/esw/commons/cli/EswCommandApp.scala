@@ -1,7 +1,6 @@
-package esw.http.core.commons
+package esw.commons.cli
 
-import caseapp.core
-import caseapp.core.app.CommandApp
+import caseapp.{CommandApp, core}
 import caseapp.core.commandparser.CommandParser
 import caseapp.core.help.CommandsHelp
 import csw.location.api.models.AkkaLocation

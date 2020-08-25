@@ -8,9 +8,9 @@ import csw.location.api.models.AkkaLocation
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
+import esw.commons.cli.EswCommandApp
 import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
-import esw.http.core.commons.EswCommandApp
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
 import esw.ocs.api.models.ObsMode
