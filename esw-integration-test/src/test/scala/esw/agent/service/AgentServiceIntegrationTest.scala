@@ -8,14 +8,12 @@ import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.AgentSettings
-import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.{Killed, Spawned}
 import esw.agent.service.app.AgentServiceWiring
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
-import esw.{BinaryFetcherUtil, GitUtil}
 
 import scala.concurrent.duration.DurationInt
 
@@ -27,7 +25,7 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
   private var agentServiceWiring: AgentServiceWiring = _
 
   //start agent
-  private lazy val eswVersion      = Some(GitUtil.latestCommitSHA("esw"))
+  private lazy val eswVersion      = Some("0.1.0-SNAPSHOT")
   private lazy val channel: String = "file://" + getClass.getResource("/apps.json").getPath
   private lazy val eswAgentPrefix  = Prefix(ESW, "machine_A1")
 
@@ -48,8 +46,6 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
 
   "AgentService" must {
     "start and kill sequence component on the given agent | ESW-361, ESW-367" in {
-      BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
-
       val seqCompName   = "ESW_1"
       val seqCompPrefix = Prefix(eswAgentPrefix.subsystem, seqCompName)
 
@@ -67,8 +63,6 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
     }
 
     "start and kill sequence manager on the given agent | ESW-361, ESW-367" in {
-      BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
-
       val smPrefix = Prefix(ESW, "sequence_manager")
 
       // spawn sequence manager

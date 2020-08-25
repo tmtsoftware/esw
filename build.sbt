@@ -1,13 +1,12 @@
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
-lazy val aggregateProjects: Seq[ProjectReference] =
+lazy val publishLocalProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
     `esw-ocs-handler`,
     `esw-http-core`,
     `esw-gateway`,
-    `esw-integration-test`,
     `esw-agent-akka`,
     `esw-agent-service`,
     `esw-contract`,
@@ -18,6 +17,8 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-testkit`,
     `esw-shell`
   )
+
+lazy val aggregateProjects: Seq[ProjectReference] = publishLocalProjects :+ (`esw-integration-test`: ProjectReference)
 
 lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`, `esw-sm-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
@@ -207,6 +208,12 @@ lazy val `esw-integration-test` = project
     `esw-testkit`,
     `esw-agent-service-app`,
     `esw-test-commons` % Test
+  )
+  .settings(
+    Test / test := {
+      publishLocalProjects.map(_ / publishLocal).join.value
+      (Test / test).value
+    }
   )
 
 lazy val `esw-gateway` = project

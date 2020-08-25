@@ -9,7 +9,6 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.akka.app.AgentSettings
-import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Killed, Spawned}
 import esw.commons.utils.location.LocationServiceUtil
@@ -18,7 +17,6 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
-import esw.{BinaryFetcherUtil, GitUtil}
 
 import scala.concurrent.duration.DurationLong
 
@@ -26,7 +24,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
 
   private val irisPrefix               = Prefix("esw.iris")
   private val irisSeqCompConnection    = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
-  private val appVersion               = GitUtil.latestCommitSHA("esw")
+  private val appVersion               = "0.1.0-SNAPSHOT"
   private val agentPrefix: Prefix      = Prefix(ESW, "machine_A1")
   private var agentClient: AgentClient = _
   private val locationServiceUtil      = new LocationServiceUtil(locationService)
@@ -37,8 +35,6 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
     super.beforeAll()
     val channel: String = "file://" + getClass.getResource("/apps.json").getPath
     spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
-    BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.ocsApp(eswVersion), eswVersion)
-    BinaryFetcherUtil.fetchBinaryFor(channel, Coursier.smApp(eswVersion), eswVersion)
     agentClient = AgentClient.make(agentPrefix, locationServiceUtil).rightValue
   }
 

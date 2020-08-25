@@ -8,9 +8,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.ext.ProcessExt.ProcessOps
-import esw.agent.akka.app.process.cs.Coursier
 import esw.ocs.testkit.EswTestKit
-import esw.{BinaryFetcherUtil, GitUtil}
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import os.{Path, up}
 
@@ -20,7 +18,7 @@ class SequencerScriptLauncherTest extends EswTestKit {
 
   private val className = "SampleScript"
 
-  private val ocsAppVersion        = GitUtil.latestCommitSHA("esw")
+  private val ocsAppVersion        = "0.1.0-SNAPSHOT"
   private val tmtCsChannel: String = "file://" + getClass.getResource("/apps.json").getPath
 
   private val sampleScriptPath = getClass.getResource(s"/$className.kts").getPath
@@ -50,9 +48,6 @@ class SequencerScriptLauncherTest extends EswTestKit {
   }
 
   override def beforeAll(): Unit = {
-    // fetch upfront to prevent timing out
-    val version = Some(ocsAppVersion)
-    BinaryFetcherUtil.fetchBinaryFor(tmtCsChannel, Coursier.ocsApp(version), version)
     super.beforeAll()
   }
 

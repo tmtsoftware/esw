@@ -12,8 +12,8 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metada
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
+import esw.ChannelFactory
 import esw.agent.akka.app.AgentSettings
-import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.Spawned
@@ -23,14 +23,12 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
-import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
-import esw.sm.api.models.ProvisionConfig
+import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
 import esw.sm.app.TestSetup.obsModeConfigPath
-import esw.{BinaryFetcherUtil, GitUtil}
 import msocket.impl.HttpError
 
 import scala.concurrent.Await
@@ -42,8 +40,8 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   private val IRIS_DARKNIGHT               = ObsMode("IRIS_Darknight")
   private val sequenceManagerPrefix        = Prefix(ESW, "sequence_manager")
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
-  private val ocsAppVersion                = GitUtil.latestCommitSHA("esw")
-  private val testCsChannel: String        = BinaryFetcherUtil.eswChannel(ocsAppVersion)
+  private val ocsAppVersion                = "0.1.0-SNAPSHOT"
+  private val testCsChannel: String        = ChannelFactory.eswChannel(ocsAppVersion)
 
   private var agentService: AgentServiceApi          = _
   private var agentServiceWiring: AgentServiceWiring = _
@@ -51,7 +49,6 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    BinaryFetcherUtil.fetchBinaryFor(testCsChannel, Coursier.ocsApp(ocsVersionOpt))
     agentServiceWiring = new AgentServiceWiring(Some(4449))
     agentServiceWiring.start().futureValue
     val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
