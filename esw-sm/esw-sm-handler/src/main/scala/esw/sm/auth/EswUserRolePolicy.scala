@@ -1,7 +1,7 @@
 package esw.sm.auth
 
 import csw.aas.http.AuthorizationPolicy.CustomPolicy
-import csw.command.client.auth.Roles
+import csw.aas.http.Roles
 import csw.prefix.models.Subsystem.ESW
 
 object EswUserRolePolicy {
