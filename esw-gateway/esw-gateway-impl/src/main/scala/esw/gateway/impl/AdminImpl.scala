@@ -13,7 +13,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.logging.models.{Level, LogMetadata}
 import esw.gateway.api.AdminApi
-import esw.gateway.api.exceptions.UnresolvedAkkaLocationException
+import esw.gateway.api.protocol.InvalidComponent
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -29,7 +29,7 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
 
     locationService
       .find(akkaConnection)
-      .flatMap(mayBeAkkaLocation =>
+      .flatMap(mayBeAkkaLocation => {
         mayBeAkkaLocation
           .map(akkaLocation => {
             log.info(
@@ -42,8 +42,8 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
             }
             response
           })
-          .getOrElse[Future[LogMetadata]](throw new UnresolvedAkkaLocationException(prefix))
-      )
+          .getOrElse[Future[LogMetadata]](throw InvalidComponent(s"Could not find component : $componentId"))
+      })
   }
 
   override def setLogLevel(componentId: ComponentId, level: Level): Future[Done] = {
@@ -52,7 +52,7 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
 
     locationService
       .find(akkaConnection)
-      .map(mayBeAkkaLocation =>
+      .map(mayBeAkkaLocation => {
         mayBeAkkaLocation
           .map(akkaLocation => {
             log.info(
@@ -65,7 +65,7 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
             }
             Done
           })
-          .getOrElse[Done](throw new UnresolvedAkkaLocationException(prefix))
-      )
+          .getOrElse[Done](throw InvalidComponent(s"Could not find component : $componentId"))
+      })
   }
 }

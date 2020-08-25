@@ -236,7 +236,7 @@ lazy val `esw-gateway-impl` = project
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayImpl.value
   )
-  .dependsOn(`esw-gateway-api`.jvm, `esw-test-commons` % Test)
+  .dependsOn(`esw-commons`,`esw-gateway-api`.jvm, `esw-test-commons` % Test)
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
