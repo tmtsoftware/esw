@@ -2,6 +2,7 @@ package esw.agent.akka.app
 
 import java.nio.file.Path
 
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
@@ -89,6 +90,21 @@ class SpawnComponentTest extends AgentSetup {
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None)
       probe.expectMessage(Failed(s"$seqCompComponentId is not registered with location service"))
+    }
+
+    "reply 'Failed' if process fails before registration is successful | ESW-367" in {
+      val agentActorRef = spawnAgentActor(name = "test-actor10")
+      val probe         = TestProbe[SpawnResponse]()
+
+      when(locationService.find(argEq(seqCompConn))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
+
+      mockSuccessfulProcess()
+      when(process.isAlive).thenReturn(false)
+      when(locationService.unregister(seqCompConn)).thenReturn(Future.successful(Done))
+
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None)
+      probe.expectMessage(Failed("Process terminated before registration was successful"))
     }
 
     "reply 'Spawned' and spawn sequence manager process | ESW-180" in {
