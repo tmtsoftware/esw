@@ -11,7 +11,7 @@ import scala.concurrent.duration.DurationLong
 
 class ComponentFactory(
     locationService: LocationService,
-    commandServiceFactory: ICommandServiceFactory = ICommandServiceFactory.default
+    commandServiceFactory: ICommandServiceFactory = ICommandServiceFactory.default // todo: remove this and add function here
 )(implicit typedSystem: ActorSystem[_]) {
 
   import typedSystem.executionContext
