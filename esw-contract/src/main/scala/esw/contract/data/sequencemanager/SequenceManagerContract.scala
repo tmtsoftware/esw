@@ -36,13 +36,8 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     ModelType[AgentStatusResponse](agentStatusSuccess, locationServiceError, unhandled),
     ModelType(sequencerPrefix),
     ModelType(obsMode),
-    ModelType(sequencerComponentId),
     ModelType(Subsystem),
-    ModelType(sequenceComponentStatus),
-    ModelType(agentSeqCompsStatus),
-    ModelType(akkaLocation),
-    ModelType(provisionConfig),
-    ModelType(agentProvisionConfig)
+    ModelType(provisionConfig)
   )
 
   private val httpRequests = new RequestSet[SequenceManagerRequest] {

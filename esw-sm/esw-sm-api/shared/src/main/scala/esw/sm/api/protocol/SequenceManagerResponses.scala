@@ -39,8 +39,13 @@ object StartSequencerResponse {
   }
   case class LoadScriptError(msg: String) extends Failure with RestartSequencerResponse.Failure
 
-  case class SequenceComponentNotAvailable(subsystems: List[Subsystem]) extends Failure with ConfigureResponse.Failure {
-    override val msg: String = s"No sequence components found for subsystems : $subsystems"
+  case class SequenceComponentNotAvailable private[sm] (subsystems: List[Subsystem], msg: String)
+      extends Failure
+      with ConfigureResponse.Failure
+
+  object SequenceComponentNotAvailable {
+    def apply(subsystems: List[Subsystem]): SequenceComponentNotAvailable =
+      new SequenceComponentNotAvailable(subsystems, s"No sequence components found for subsystems : $subsystems")
   }
 }
 
