@@ -522,7 +522,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
 
     val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
 
-    val expectedStatus = List(
+    val expectedStatus = Set(
       AgentStatus(
         ComponentId(irisAgentPrefix, Machine),
         List(
@@ -538,7 +538,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
     )
 
     val actualResponse = sequenceManager.getAgentStatus.futureValue.asInstanceOf[AgentStatusResponse.Success]
-    actualResponse.agentStatus.toSet should ===(expectedStatus.toSet)
+    actualResponse.agentStatus.toSet should ===(expectedStatus)
     actualResponse.seqCompsWithoutAgent should ===(List.empty)
 
     sequenceManager.shutdownAllSequenceComponents().futureValue

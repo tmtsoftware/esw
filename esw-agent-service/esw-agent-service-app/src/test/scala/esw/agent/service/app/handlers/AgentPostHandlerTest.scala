@@ -105,7 +105,7 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
 
   }
 
-  "StopComponent" must {
+  "KillComponent" must {
     val componentId          = ComponentId(Prefix(randomSubsystem, randomString(10)), Service)
     val connection           = AkkaConnection(componentId)
     val stopComponentRequest = KillComponent(connection)
