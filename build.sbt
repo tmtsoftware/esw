@@ -131,11 +131,6 @@ lazy val `esw-ocs-app` = project
     `esw-test-commons` % Test
   )
 
-lazy val `esw-wiring` = project
-  .in(file("esw-wiring"))
-  .enablePlugins(EswBuildInfo)
-  .settings(libraryDependencies ++= Dependencies.EswWiring.value)
-
 lazy val `esw-agent-akka` = project
   .in(file("esw-agent-akka"))
   .aggregate(`esw-agent-akka-client`, `esw-agent-akka-app`)
@@ -243,7 +238,7 @@ lazy val `esw-gateway-impl` = project
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayImpl.value
   )
-  .dependsOn(`esw-commons`,`esw-gateway-api`.jvm, `esw-test-commons` % Test)
+  .dependsOn(`esw-commons`, `esw-gateway-api`.jvm, `esw-test-commons` % Test)
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
