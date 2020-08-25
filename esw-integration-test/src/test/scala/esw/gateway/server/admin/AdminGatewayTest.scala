@@ -28,11 +28,11 @@ import csw.params.commands.{CommandName, Setup}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.clients.AdminClient
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.InvalidComponent
 import esw.gateway.server.TestAppender
 import esw.gateway.server.admin.FrameworkAssertions._
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
-import msocket.api.models.{GenericError, ServiceError}
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
@@ -179,14 +179,24 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       }
     }
 
-    "return appropriate error when component is not resolved for akka connection | ESW-254, CSW-81, ESW-279" in {
-      val serviceError = intercept[ServiceError] {
-        Await.result(adminClient.getLogMetadata(ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)), 5.seconds)
+    "return appropriate error when component is not resolved for akka connection while getting log metadata | ESW-254, CSW-81, ESW-279, ESW-372" in {
+      val nonRegisteredCompId = ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)
+
+      val serviceError = intercept[InvalidComponent] {
+        Await.result(adminClient.getLogMetadata(nonRegisteredCompId), 5.seconds)
       }
 
-      serviceError.generic_error should ===(
-        GenericError("UnresolvedAkkaLocationException", "Could not resolve TCS.abc to a valid Akka location")
-      )
+      serviceError should ===(InvalidComponent("Could not find component : ComponentId(TCS.abc,HCD)"))
+    }
+
+    "return appropriate error when component is not resolved for akka connection while setting log level | ESW-254, CSW-81, ESW-279, ESW-372" in {
+      val nonRegisteredCompId = ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)
+
+      val serviceError = intercept[InvalidComponent] {
+        Await.result(adminClient.setLogLevel(nonRegisteredCompId, ERROR), 5.seconds)
+      }
+
+      serviceError should ===(InvalidComponent("Could not find component : ComponentId(TCS.abc,HCD)"))
     }
 
     "return appropriate exception when logging level is incorrect | ESW-254, CSW-81, ESW-279" in {
