@@ -1,24 +1,22 @@
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
-lazy val publishLocalProjects: Seq[ProjectReference] =
-  Seq(
-    `esw-ocs`,
-    `esw-ocs-handler`,
-    `esw-http-core`,
-    `esw-gateway`,
-    `esw-agent-akka`,
-    `esw-agent-service`,
-    `esw-contract`,
-    examples,
-    `esw-commons`,
-    `esw-test-commons`,
-    `esw-sm`,
-    `esw-testkit`,
-    `esw-shell`
-  )
-
-lazy val aggregateProjects: Seq[ProjectReference] = publishLocalProjects :+ (`esw-integration-test`: ProjectReference)
+lazy val aggregateProjects: Seq[ProjectReference] = Seq(
+  `esw-ocs`,
+  `esw-ocs-handler`,
+  `esw-http-core`,
+  `esw-gateway`,
+  `esw-agent-akka`,
+  `esw-agent-service`,
+  `esw-contract`,
+  examples,
+  `esw-commons`,
+  `esw-test-commons`,
+  `esw-sm`,
+  `esw-testkit`,
+  `esw-shell`,
+  `esw-integration-test`
+)
 
 lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`, `esw-sm-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
@@ -46,6 +44,7 @@ lazy val esw = (project in file("."))
   .settings(
     generateContract := ContractPlugin.generate(`esw-contract`).value
   )
+
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
   .aggregate(
@@ -206,7 +205,7 @@ lazy val `esw-integration-test` = project
   )
   .settings(
     Test / test := {
-      publishLocalProjects.map(_ / publishLocal).join.value
+      publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
       (Test / test).value
     }
   )
