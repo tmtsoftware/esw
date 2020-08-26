@@ -27,6 +27,7 @@ class AdminImplTest extends BaseTestSuite {
     actorTestKit.shutdownTestKit()
   }
 
+  //Story number not added in test names as its only code movement from csw to esw
   "getLogMetadata" must {
     "get log metadata when component is discovered and it responds with metadata" in {
       val locationService: LocationService = mock[LocationService]
