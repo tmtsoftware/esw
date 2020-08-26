@@ -12,7 +12,6 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metada
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
-import esw.ChannelFactory
 import esw.agent.akka.app.AgentSettings
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
@@ -41,7 +40,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
   private val sequenceManagerPrefix        = Prefix(ESW, "sequence_manager")
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
   private val ocsAppVersion                = "0.1.0-SNAPSHOT"
-  private val testCsChannel: String        = ChannelFactory.eswChannel(ocsAppVersion)
+  private val testCsChannel: String        = "file://" + getClass.getResource("/apps.json").getPath
 
   private var agentService: AgentServiceApi          = _
   private var agentServiceWiring: AgentServiceWiring = _

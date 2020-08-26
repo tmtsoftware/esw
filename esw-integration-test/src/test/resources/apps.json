@@ -2,7 +2,7 @@
   "ocs-app": {
     "repositories": ["jitpack", "central"],
     "dependencies": [
-      "com.github.tmtsoftware.esw:examples_2.13:latest.release"
+      "com.github.tmtsoftware.esw:examples_2.13:0.1.0-SNAPSHOT"
     ],
     "mainClass": "esw.ocs.app.SequencerApp",
     "properties": {
