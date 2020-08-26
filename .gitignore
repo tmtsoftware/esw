@@ -18,6 +18,7 @@ dist
 .DS_Store
 test-output/
 *.class
+.talismanrc
 
 build
 

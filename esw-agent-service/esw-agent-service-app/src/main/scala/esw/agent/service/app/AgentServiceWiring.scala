@@ -20,7 +20,7 @@ class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
 
   lazy val prefix: Prefix                                          = Prefix(ESW, "agent_service")
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
-  private lazy val actorRuntime                                    = new ActorRuntime(actorSystem)
+  lazy val actorRuntime                                            = new ActorRuntime(actorSystem)
   import actorRuntime._
 
   private[agent] lazy val wiring = new ServerWiring(port, Some(prefix), actorSystem = actorSystem)

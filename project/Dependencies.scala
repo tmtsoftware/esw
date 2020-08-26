@@ -90,6 +90,7 @@ object Dependencies {
 
   val AgentServiceApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Libs.`case-app`,
       Csw.`csw-aas-http`,
       Libs.`msocket-impl-jvm`,
       Libs.scalatest.value         % Test,
