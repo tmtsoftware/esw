@@ -1,6 +1,7 @@
 package esw.contract.data
 
 import csw.contract.generator.Services
+import esw.contract.data.agent.AgentContract
 import esw.contract.data.gateway.GatewayContract
 import esw.contract.data.sequencemanager.SequenceManagerContract
 import esw.contract.data.sequencer.SequencerContract
@@ -10,7 +11,8 @@ object EswData {
     Map(
       "sequencer-service"        -> SequencerContract.service,
       "gateway-service"          -> GatewayContract.service,
-      "sequence-manager-service" -> SequenceManagerContract.service
+      "sequence-manager-service" -> SequenceManagerContract.service,
+      "agent-service"            -> AgentContract.service
     )
   )
 }

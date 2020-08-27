@@ -259,7 +259,8 @@ lazy val `esw-contract` = project
   .dependsOn(
     `esw-ocs-api`.jvm,
     `esw-gateway-api`.jvm,
-    `esw-sm-api`.jvm
+    `esw-sm-api`.jvm,
+    `esw-agent-service-api`.jvm
   )
 
 /* ================= Paradox Docs ============== */
