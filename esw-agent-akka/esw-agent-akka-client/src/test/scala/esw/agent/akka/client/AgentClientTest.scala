@@ -80,7 +80,7 @@ class AgentClientTest extends ActorTestSuit {
   }
 
   "spawnSequenceComponent" should {
-    "send SpawnSequenceComponent message to agent and return a future with agent response" in {
+    "send SpawnSequenceComponent message to agent and return a future with agent response | ESW-362" in {
       val prefix        = Prefix(s"esw.$randomString5")
       val componentName = prefix.componentName
       val spawnResponse = mock[SpawnResponse]
@@ -93,7 +93,7 @@ class AgentClientTest extends ActorTestSuit {
   }
 
   "killComponent" should {
-    "send KillComponent message to agent and return a future with agent response | ESW-367" in {
+    "send KillComponent message to agent and return a future with agent response | ESW-367, ESW-362" in {
       val location =
         AkkaLocation(AkkaConnection(ComponentId(Prefix("IRIS.filter"), SequenceComponent)), new URI("uri"), Metadata.empty)
       val killResponse = mock[KillResponse]
@@ -106,7 +106,7 @@ class AgentClientTest extends ActorTestSuit {
   }
 
   "spawnSequenceManager" should {
-    "send spawnSequenceManager message to agent and return a future with agent response | ESW-180" in {
+    "send spawnSequenceManager message to agent and return a future with agent response | ESW-180, ESW-362" in {
       val configPath    = Path.of("obsMode.conf")
       val spawnResponse = mock[SpawnResponse]
       withBehavior {

@@ -44,7 +44,7 @@ class SequencerImplTest extends ActorTestSuit {
 
   private def randomString5 = Random.nextString(5)
 
-  "getSequence | ESW-222" in {
+  "getSequence | ESW-222, ESW-362" in {
     val getSequenceResponse = mock[Option[StepList]]
     withBehavior {
       case GetSequence(replyTo) => replyTo ! getSequenceResponse
@@ -53,7 +53,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "isAvailable return false if sequencer loaded | ESW-222" in {
+  "isAvailable return false if sequencer loaded | ESW-222, ESW-362" in {
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Loaded
     } check { s =>
@@ -61,7 +61,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "isAvailable returns true if sequencer idle | ESW-222" in {
+  "isAvailable returns true if sequencer idle | ESW-222, ESW-362" in {
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Idle
     } check { s =>
@@ -69,7 +69,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "isOnline returns true if sequencer loaded | ESW-222" in {
+  "isOnline returns true if sequencer loaded | ESW-222, ESW-362" in {
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Loaded
     } check { s =>
@@ -77,7 +77,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "isOnline returns false if sequencer offline | ESW-222" in {
+  "isOnline returns false if sequencer offline | ESW-222, ESW-362" in {
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Offline
     } check { s =>
@@ -85,7 +85,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "add | ESW-222" in {
+  "add | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
     withBehavior {
       case Add(List(`command`), replyTo) => replyTo ! okOrUnhandledResponse
@@ -94,7 +94,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "prepend | ESW-222" in {
+  "prepend | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
     withBehavior {
       case Prepend(List(`command`), replyTo) => replyTo ! okOrUnhandledResponse
@@ -103,7 +103,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "replace | ESW-222" in {
+  "replace | ESW-222, ESW-362" in {
     val genericResponse = mock[GenericResponse]
     withBehavior {
       case Replace(`stepId`, List(`command`), replyTo) => replyTo ! genericResponse
@@ -112,7 +112,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "insertAfter | ESW-222" in {
+  "insertAfter | ESW-222, ESW-362" in {
     val genericResponse = mock[GenericResponse]
     withBehavior {
       case InsertAfter(`stepId`, List(`command`), replyTo) => replyTo ! genericResponse
@@ -121,7 +121,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "delete | ESW-222" in {
+  "delete | ESW-222, ESW-362" in {
     val genericResponse = mock[GenericResponse]
     withBehavior {
       case Delete(`stepId`, replyTo) => replyTo ! genericResponse
@@ -130,7 +130,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "pause | ESW-222" in {
+  "pause | ESW-222, ESW-362" in {
     val pauseResponse = mock[PauseResponse]
     withBehavior {
       case Pause(replyTo) => replyTo ! pauseResponse
@@ -139,7 +139,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "resume | ESW-222" in {
+  "resume | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
     withBehavior {
       case Resume(replyTo) => replyTo ! okOrUnhandledResponse
@@ -148,7 +148,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "addBreakpoint | ESW-222" in {
+  "addBreakpoint | ESW-222, ESW-362" in {
     val genericResponse = mock[GenericResponse]
     withBehavior {
       case AddBreakpoint(`stepId`, replyTo) => replyTo ! genericResponse
@@ -157,7 +157,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "removeBreakpoint | ESW-222" in {
+  "removeBreakpoint | ESW-222, ESW-362" in {
     val removeBreakpointResponse = mock[RemoveBreakpointResponse]
     withBehavior {
       case RemoveBreakpoint(`stepId`, replyTo) => replyTo ! removeBreakpointResponse
@@ -166,7 +166,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "reset | ESW-222" in {
+  "reset | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
     withBehavior {
       case Reset(replyTo) => replyTo ! okOrUnhandledResponse
@@ -175,7 +175,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "abortSequence | ESW-222" in {
+  "abortSequence | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
     withBehavior {
       case AbortSequence(replyTo) => replyTo ! okOrUnhandledResponse
@@ -184,7 +184,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "stop | ESW-222" in {
+  "stop | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
     withBehavior {
       case Stop(replyTo) => replyTo ! okOrUnhandledResponse
@@ -195,7 +195,7 @@ class SequencerImplTest extends ActorTestSuit {
 
   // commandApi
 
-  "loadSequence | ESW-222" in {
+  "loadSequence | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
     withBehavior {
       case LoadSequence(`sequence`, replyTo) => replyTo ! okOrUnhandledResponse
@@ -204,7 +204,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "startSequence | ESW-222" in {
+  "startSequence | ESW-222, ESW-362" in {
     val sequencerSubmitResponse = mock[SequencerSubmitResponse]
     val submitResponse          = mock[SubmitResponse]
     when(sequencerSubmitResponse.toSubmitResponse()).thenReturn(submitResponse)
@@ -215,7 +215,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "submit | ESW-222" in {
+  "submit | ESW-222, ESW-362" in {
     val sequencerSubmitResponse = mock[SequencerSubmitResponse]
     val submitResponse          = mock[SubmitResponse]
     when(sequencerSubmitResponse.toSubmitResponse()).thenReturn(submitResponse)
@@ -226,7 +226,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "submitAndWait | ESW-222" in {
+  "submitAndWait | ESW-222, ESW-362" in {
     val id                 = Id(randomString5)
     val queryFinalResponse = mock[SubmitResponse]
     withBehavior {
@@ -237,7 +237,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "queryFinal | ESW-222" in {
+  "queryFinal | ESW-222, ESW-362" in {
     val submitResponse = mock[SubmitResponse]
     withBehavior {
       case QueryFinal(`sequenceId`, replyTo) => replyTo ! submitResponse
@@ -246,7 +246,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "diagnosticMode | ESW-143" in {
+  "diagnosticMode | ESW-143, ESW-362" in {
     val diagnosticModeResponse = mock[DiagnosticModeResponse]
     withBehavior {
       case DiagnosticMode(`startTime`, `hint`, replyTo) => replyTo ! diagnosticModeResponse
@@ -255,7 +255,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "operationsMode | ESW-143" in {
+  "operationsMode | ESW-143, ESW-362" in {
     val operationsModeResponse = mock[OperationsModeResponse]
     withBehavior {
       case OperationsMode(replyTo) => replyTo ! operationsModeResponse
@@ -264,7 +264,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "getSequenceComponent | ESW-255" in {
+  "getSequenceComponent | ESW-255, ESW-362" in {
     val getSequenceComponentResponse =
       AkkaLocation(
         AkkaConnection(ComponentId(Prefix(randomSubsystem, randomString5), SequenceComponent)),

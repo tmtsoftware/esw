@@ -39,7 +39,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
   private val obsMode   = ObsMode(randomString5)
   private val subsystem = randomSubsystem
 
-  "LoadScript | ESW-103" in {
+  "LoadScript | ESW-103, ESW-362" in {
     val loadScriptResponse = mock[ScriptResponseOrUnhandled]
     withBehavior {
       case LoadScript(`subsystem`, `obsMode`, replyTo) => replyTo ! loadScriptResponse
@@ -48,7 +48,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
     }
   }
 
-  "Restart | ESW-141" in {
+  "Restart | ESW-141, ESW-362" in {
     val restartResponse = mock[ScriptResponseOrUnhandled]
     withBehavior {
       case RestartScript(replyTo) => replyTo ! restartResponse
@@ -57,7 +57,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
     }
   }
 
-  "GetStatus | ESW-103" in {
+  "GetStatus | ESW-103, ESW-362" in {
     val akkaLocation =
       AkkaLocation(
         AkkaConnection(ComponentId(Prefix(subsystem, "sequence_component"), SequenceComponent)),
@@ -72,7 +72,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
     }
   }
 
-  "UnloadScript | ESW-103" in {
+  "UnloadScript | ESW-103, ESW-362" in {
     withBehavior {
       case UnloadScript(replyTo) => replyTo ! Ok
     } check { sc =>
@@ -80,7 +80,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
     }
   }
 
-  "Shutdown | ESW-329" in {
+  "Shutdown | ESW-329, ESW-362" in {
     withBehavior {
       case Shutdown(replyTo) => replyTo ! Ok
     } check { sc =>
