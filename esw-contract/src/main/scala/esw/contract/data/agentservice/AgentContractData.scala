@@ -1,4 +1,4 @@
-package esw.contract.data.agent
+package esw.contract.data.agentservice
 
 import java.nio.file.Path
 
@@ -10,7 +10,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.models.{Failed, KillResponse, Killed, SpawnResponse, Spawned}
 import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 
-trait AgentData {
+trait AgentContractData {
   val spawned: SpawnResponse = Spawned
   val killed: KillResponse   = Killed
   val failed: Failed         = Failed("Spawn failed")

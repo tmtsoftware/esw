@@ -1,4 +1,4 @@
-package esw.contract.data.agent
+package esw.contract.data.agentservice
 
 import csw.contract.ResourceFetcher
 import csw.contract.generator.ClassNameHelpers._
@@ -8,7 +8,7 @@ import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 
-object AgentContract extends AgentServiceCodecs with AgentData {
+object AgentServiceContract extends AgentServiceCodecs with AgentContractData {
   private val httpRequests = new RequestSet[AgentServiceRequest] {
     requestType(spawnSequenceComponent)
     requestType(killComponent)
