@@ -11,7 +11,7 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.{Killed, Spawned}
-import esw.agent.service.app.AgentServiceWiring
+import esw.agent.service.app.{AgentServiceApp, AgentServiceWiring}
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 
@@ -33,8 +33,7 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
     super.beforeAll()
     //start agent service
     spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel))
-    agentServiceWiring = new AgentServiceWiring(Some(4449))
-    agentServiceWiring.start().futureValue
+    agentServiceWiring = AgentServiceApp.start()
     val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
     agentService = AgentServiceClientFactory(httpLocation, () => tokenWithEswUserRole())
   }

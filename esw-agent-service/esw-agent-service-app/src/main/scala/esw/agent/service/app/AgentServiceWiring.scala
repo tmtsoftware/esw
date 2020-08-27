@@ -37,7 +37,7 @@ class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
 
   lazy val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
-  private[esw] def start() = httpService.startAndRegisterServer()
+  private[app] def start() = httpService.startAndRegisterServer()
 
   private[esw] def stop() = shutdown(UnknownReason)
 }

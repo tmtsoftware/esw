@@ -20,11 +20,12 @@ object AgentServiceApp extends EswCommandApp[AgentServiceAppCommand] {
     start()
   }
 
-  def start(): Unit = {
+  def start(): AgentServiceWiring = {
     val httpWiring = new AgentServiceWiring()
     try {
       httpWiring.actorRuntime.startLogging(progName, appVersion)
       Await.result(httpWiring.start(), 10.seconds)
+      httpWiring
     }
     catch {
       case NonFatal(e) =>

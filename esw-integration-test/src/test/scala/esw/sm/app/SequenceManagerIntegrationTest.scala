@@ -16,7 +16,7 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.Spawned
-import esw.agent.service.app.AgentServiceWiring
+import esw.agent.service.app.{AgentServiceApp, AgentServiceWiring}
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
@@ -48,8 +48,7 @@ class SequenceManagerIntegrationTest extends EswTestKit(AAS) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    agentServiceWiring = new AgentServiceWiring(Some(4449))
-    agentServiceWiring.start().futureValue
+    agentServiceWiring = AgentServiceApp.start()
     val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
     agentService = AgentServiceClientFactory(httpLocation, () => tokenWithEswUserRole())
   }
