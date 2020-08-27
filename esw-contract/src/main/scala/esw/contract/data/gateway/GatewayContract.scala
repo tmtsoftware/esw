@@ -24,6 +24,7 @@ import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPa
 import esw.gateway.api.protocol._
 import esw.ocs.api.protocol.OkOrUnhandledResponse
 
+// ESW-278 Contract samples for gateway service. These samples are also used in `RoundTripTest`
 object GatewayContract extends GatewayCodecs with GatewayData {
 
   private val models: ModelSet = ModelSet.models(

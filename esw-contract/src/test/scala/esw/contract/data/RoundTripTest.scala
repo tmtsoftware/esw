@@ -9,7 +9,7 @@ class RoundTripTest extends AnyFreeSpec with Matchers {
 
   EswData.services.data.foreach {
     case (serviceName, service) =>
-      serviceName - {
+      s"$serviceName | ESW-278, ESW-355" - {
         "models" - {
           service.models.modelTypes.foreach { modelType =>
             modelType.name - {

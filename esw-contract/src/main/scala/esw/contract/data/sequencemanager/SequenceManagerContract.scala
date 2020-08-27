@@ -8,6 +8,7 @@ import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 
+// ESW-355 Contract samples for sequence manager service. These samples are also used in `RoundTripTest`
 object SequenceManagerContract extends SequenceManagerServiceCodecs with SequenceManagerData {
 
   private val models: ModelSet = ModelSet.models(
