@@ -12,7 +12,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.ObsMode
-import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, OkOrUnhandled, ScriptResponseOrUnhandled}
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.util.Random
@@ -60,7 +60,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
   "GetStatus | ESW-103" in {
     val akkaLocation =
       AkkaLocation(
-        AkkaConnection(ComponentId(Prefix(ESW, "sequence_component"), SequenceComponent)),
+        AkkaConnection(ComponentId(Prefix(subsystem, "sequence_component"), SequenceComponent)),
         new URI("uri"),
         Metadata.empty
       )
