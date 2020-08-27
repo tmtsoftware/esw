@@ -12,7 +12,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.service.api.models.{KillResponse, SpawnResponse, Spawned}
+import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}

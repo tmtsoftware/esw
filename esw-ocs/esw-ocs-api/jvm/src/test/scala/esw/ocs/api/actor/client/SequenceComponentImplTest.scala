@@ -12,7 +12,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.ObsMode
-import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, OkOrUnhandled, ScriptResponseOrUnhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.util.Random
