@@ -8,6 +8,7 @@ import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 
+// ESW-376 Contract samples for agent service. These samples are also used in `RoundTripTest`
 object AgentServiceContract extends AgentServiceCodecs with AgentContractData {
   private val httpRequests = new RequestSet[AgentServiceRequest] {
     requestType(spawnSequenceComponent)
