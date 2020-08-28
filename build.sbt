@@ -347,7 +347,8 @@ lazy val `esw-testkit` = project
     `esw-gateway-server`,
     `esw-ocs-app`,
     `esw-agent-akka-app`,
-    `esw-sm-app`
+    `esw-sm-app`,
+    `esw-agent-service-app`
   )
 
 lazy val `esw-shell` = project

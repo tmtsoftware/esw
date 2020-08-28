@@ -58,10 +58,10 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   private lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   private lazy val alarmService: AlarmService               = alarmServiceFactory.makeClientApi(locationService)
 
-  private lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
-  private lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
-  private lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
-  private lazy val adminApi: AdminApi     = new AdminImpl(locationService)
+  lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
+  lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
+  lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
+  lazy val adminApi: AdminApi     = new AdminImpl(locationService)
 
   private lazy val configClient            = ConfigClientFactory.clientApi(actorSystem, locationService)
   private lazy val configUtils             = new ConfigUtils(configClient)

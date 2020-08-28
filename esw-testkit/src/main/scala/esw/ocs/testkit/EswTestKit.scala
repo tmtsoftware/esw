@@ -4,7 +4,7 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.FrameworkTestKit
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.ocs.testkit.Service.{AAS, Gateway, MachineAgent}
+import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, MachineAgent}
 
 abstract class EswTestKit(services: Service*)
     extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)
@@ -17,6 +17,7 @@ abstract class EswTestKit(services: Service*)
     if (services.contains(AAS)) startKeycloak()
     if (services.contains(Gateway)) spawnGateway()
     if (services.contains(MachineAgent)) spawnAgent(agentSettings)
+    if (services.contains(AgentService)) spawnAgentService()
   }
 
   override def afterAll(): Unit = {
@@ -24,6 +25,7 @@ abstract class EswTestKit(services: Service*)
     shutdownGateway()
     shutdownAgent()
     stopKeycloak()
+    shutdownAgentService()
     super.afterAll()
   }
 

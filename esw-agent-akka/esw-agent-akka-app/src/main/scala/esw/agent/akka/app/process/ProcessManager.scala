@@ -24,14 +24,13 @@ class ProcessManager(
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings
 )(implicit system: ActorSystem[_], log: Logger) {
-  import agentSettings._
   import system.executionContext
 
   def spawn(command: SpawnCommand): Future[Either[String, Process]] =
     verifyComponentIsNotAlreadyRegistered(command.connection)
       .flatMapE(_ => startComponent(command))
       .flatMapE(process =>
-        waitForRegistration(command.connection, durationToWaitForComponentRegistration).flatMapE(_ =>
+        waitForRegistration(command.connection, agentSettings.durationToWaitForComponentRegistration).flatMapE(_ =>
           reconcile(process, command.connection)
         )
       )
@@ -68,7 +67,7 @@ class ProcessManager(
   private def startComponent(command: SpawnCommand) =
     Future.successful(
       processExecutor
-        .runCommand(command.executableCommandStr(coursierChannel, agentSettings.prefix), command.prefix)
+        .runCommand(command.executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix), command.prefix)
         .map(_.tap(onProcessExit(_, command.connection)))
     )
 

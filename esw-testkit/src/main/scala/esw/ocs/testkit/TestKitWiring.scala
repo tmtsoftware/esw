@@ -4,9 +4,15 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.location.api.scaladsl.LocationService
 import csw.testkit.FrameworkTestKit
-import esw.ocs.testkit.utils.{AgentUtils, GatewayUtils, KeycloakUtils, LocationUtils, SequencerUtils}
+import esw.ocs.testkit.utils.{AgentServiceUtils, AgentUtils, GatewayUtils, KeycloakUtils, LocationUtils, SequencerUtils}
 
-trait TestKitWiring extends LocationUtils with SequencerUtils with AgentUtils with GatewayUtils with KeycloakUtils {
+trait TestKitWiring
+    extends LocationUtils
+    with SequencerUtils
+    with AgentUtils
+    with GatewayUtils
+    with KeycloakUtils
+    with AgentServiceUtils {
   def underlyingFrameworkTestKit: FrameworkTestKit
 
   implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = underlyingFrameworkTestKit.actorSystem
