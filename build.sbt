@@ -14,6 +14,7 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-test-commons`,
   `esw-sm`,
   `esw-testkit`,
+  `esw-backend-testkit`,
   `esw-shell`,
   `esw-integration-test`
 )
@@ -350,6 +351,10 @@ lazy val `esw-testkit` = project
     `esw-sm-app`,
     `esw-agent-service-app`
   )
+
+lazy val `esw-backend-testkit` = project
+  .in(file("esw-backend-testkit"))
+  .dependsOn(`esw-testkit`)
 
 lazy val `esw-shell` = project
   .in(file("esw-shell"))
