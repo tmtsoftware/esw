@@ -159,7 +159,6 @@ object Dependencies {
       Akka.`akka-multi-node-testkit`  % Test,
       Csw.`csw-logging-client`        % Test,
       Csw.`csw-logging-models`.value  % Test,
-      Csw.`csw-integration-multi-jvm` % Test,
       Libs.scalatest.value            % Test,
       Libs.`tmt-test-reporter`        % Test
     )
