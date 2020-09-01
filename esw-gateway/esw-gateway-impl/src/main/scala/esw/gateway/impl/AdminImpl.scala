@@ -12,6 +12,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.logging.models.{Level, LogMetadata}
+import esw.constants.Timeouts
 import esw.gateway.api.AdminApi
 import esw.gateway.api.protocol.InvalidComponent
 
@@ -37,8 +38,8 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
               Map("prefix" -> prefix.toString, "location" -> akkaLocation.toString)
             )
             val response: Future[LogMetadata] = componentId.componentType match {
-              case Sequencer => akkaLocation.sequencerRef ? GetComponentLogMetadata
-              case _         => akkaLocation.componentRef ? GetComponentLogMetadata
+              case Sequencer => (akkaLocation.sequencerRef ? GetComponentLogMetadata)(Timeouts.GetLogMetadata, actorSystem.scheduler)
+              case _         => (akkaLocation.componentRef ? GetComponentLogMetadata)(Timeouts.GetLogMetadata, actorSystem.scheduler)
             }
             response
           })

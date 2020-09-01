@@ -11,6 +11,7 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-contract`,
   examples,
   `esw-commons`,
+  `esw-constants`,
   `esw-test-commons`,
   `esw-sm`,
   `esw-testkit`,
@@ -63,7 +64,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .jvmConfigure(
     _.enablePlugins(MaybeCoverage)
       .settings(libraryDependencies ++= Dependencies.OcsApiJvm.value)
-      .dependsOn(`esw-test-commons` % Test)
+      .dependsOn(`esw-constants`, `esw-test-commons` % Test)
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
@@ -139,7 +140,7 @@ lazy val `esw-agent-akka-client` = project
   .in(file("esw-agent-akka/esw-agent-akka-client"))
   .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentAkkaClient.value)
-  .dependsOn(`esw-agent-service-api`.jvm, `esw-test-commons` % Test)
+  .dependsOn(`esw-agent-service-api`.jvm, `esw-constants`, `esw-test-commons` % Test)
 
 lazy val `esw-agent-akka-app` = project
   .in(file("esw-agent-akka/esw-agent-akka-app"))
@@ -238,7 +239,7 @@ lazy val `esw-gateway-impl` = project
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayImpl.value
   )
-  .dependsOn(`esw-commons`, `esw-gateway-api`.jvm, `esw-test-commons` % Test)
+  .dependsOn(`esw-commons`, `esw-constants`, `esw-gateway-api`.jvm, `esw-test-commons` % Test)
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
@@ -292,7 +293,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
   .jvmConfigure(
     _.enablePlugins(MaybeCoverage)
       .settings(libraryDependencies ++= Dependencies.SmApiJvm.value)
-      .dependsOn(`esw-commons`, `esw-test-commons` % Test, `esw-ocs-api`.jvm)
+      .dependsOn(`esw-commons`, `esw-constants`, `esw-test-commons` % Test, `esw-ocs-api`.jvm)
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
@@ -338,6 +339,9 @@ lazy val `esw-commons` = project
 lazy val `esw-test-commons` = project
   .in(file("esw-test-commons"))
   .settings(libraryDependencies ++= Dependencies.EswTestCommons.value)
+
+lazy val `esw-constants` = project
+  .in(file("esw-constants"))
 
 lazy val `esw-testkit` = project
   .in(file("esw-testkit"))

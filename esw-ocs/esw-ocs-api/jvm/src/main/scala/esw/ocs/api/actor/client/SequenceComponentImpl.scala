@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
+import esw.constants.Timeouts
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, RestartScript, Shutdown, UnloadScript}
@@ -22,27 +23,19 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
 
   override def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[ScriptResponseOrUnhandled] =
     (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(subsystem, obsMode, x) })(
-      SequenceComponentApiTimeout.LoadScriptTimeout,
+      Timeouts.LoadScriptTimeout,
       actorSystem.scheduler
     )
 
   override def restartScript(): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? RestartScript)(SequenceComponentApiTimeout.RestartScriptTimeout, actorSystem.scheduler)
+    (sequenceComponentRef ? RestartScript)(Timeouts.RestartScriptTimeout, actorSystem.scheduler)
 
   override def status: Future[GetStatusResponse] =
-    (sequenceComponentRef ? GetStatus)(SequenceComponentApiTimeout.StatusTimeout, actorSystem.scheduler)
+    (sequenceComponentRef ? GetStatus)(Timeouts.StatusTimeout, actorSystem.scheduler)
 
   override def unloadScript(): Future[Ok.type] =
-    (sequenceComponentRef ? UnloadScript)(SequenceComponentApiTimeout.UnloadScriptTimeout, actorSystem.scheduler)
+    (sequenceComponentRef ? UnloadScript)(Timeouts.UnloadScriptTimeout, actorSystem.scheduler)
 
   override def shutdown(): Future[Ok.type] =
-    (sequenceComponentRef ? Shutdown)(SequenceComponentApiTimeout.ShutdownTimeout, actorSystem.scheduler)
-}
-
-object SequenceComponentApiTimeout {
-  val StatusTimeout: FiniteDuration        = 1.seconds
-  val LoadScriptTimeout: FiniteDuration    = 5.seconds
-  val UnloadScriptTimeout: FiniteDuration  = 3.seconds
-  val RestartScriptTimeout: FiniteDuration = UnloadScriptTimeout + LoadScriptTimeout
-  val ShutdownTimeout: FiniteDuration      = 4.seconds
+    (sequenceComponentRef ? Shutdown)(Timeouts.ShutdownTimeout, actorSystem.scheduler)
 }

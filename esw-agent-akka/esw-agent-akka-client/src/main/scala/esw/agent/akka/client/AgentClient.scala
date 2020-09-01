@@ -15,6 +15,7 @@ import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, 
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
+import esw.constants.Timeouts
 
 import scala.concurrent.Future
 import scala.jdk.DurationConverters.JavaDurationOps
@@ -26,14 +27,14 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
   private val agentPrefix                      = akkaLocation.prefix
 
   def spawnSequenceComponent(componentName: String, version: Option[String] = None): Future[SpawnResponse] =
-    agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version))
+    (agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version)))(Timeouts.AgentSpawn, actorSystem.scheduler)
 
   def spawnSequenceManager(
       obsModeConfigPath: Path,
       isConfigLocal: Boolean,
       version: Option[String] = None
   ): Future[SpawnResponse] =
-    agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version))
+    (agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version)))(Timeouts.AgentSpawn, actorSystem.scheduler)
 
   def killComponent(location: Location): Future[KillResponse] = agentRef ? (KillComponent(_, location))
 }
