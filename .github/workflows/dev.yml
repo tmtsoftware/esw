@@ -35,4 +35,4 @@ jobs:
           sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on esw-integration-test/testOnly esw.agent.akka.AgentIntegrationTest
+        run: sbt -Dakka.actor.serialize-messages=on test:test
