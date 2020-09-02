@@ -32,7 +32,7 @@ class AgentServiceStubImpl extends AgentServiceApi {
 
 class AgentServiceStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
     extends LocationUtils {
-  private var agentServiceWiring: Option[AgentServiceWiring]            = _
+  private var agentServiceWiring: Option[AgentServiceWiring] = _
   def spawnMockAgentService(): AgentServiceWiring = {
     val wiring = new AgentServiceWiring() {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
