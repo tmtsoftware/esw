@@ -1,10 +1,9 @@
 name: dev
 
 on:
-  pull_request:
-    branches: [master]
   push:
-    branches: [master]
+    branches:
+      - 'mausam/actor-proxy-timeouts'
     paths-ignore:
       - "scripts/**"
       - "tools/**"
@@ -22,9 +21,6 @@ jobs:
           java-version: adopt@1.11
       - uses: coursier/cache-action@v3
 
-      - name: Install Redis
-        run: sudo apt-get install redis-server
-
       - name: Install CS native
         run: |
           curl -fLo cs https://git.io/coursier-cli-linux
@@ -32,55 +28,5 @@ jobs:
           sudo mv cs /usr/local/bin
           cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
 
-      - name: Install Kotlin
-        run: |
-          curl -s https://get.sdkman.io | bash
-          source "/home/runner/.sdkman/bin/sdkman-init.sh"
-          sdk install kotlin
-          sudo ln -s $(which kotlinc) /usr/local/bin/kotlinc
-
-      - name: Build
-        run: |
-          sbt scalafmtCheck
-          sbt clean makeSite
-          sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
-
       - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
-
-      - name: Coverage Report
-        run: |
-          sbt -DenableCoverage=true coverageReport
-          sbt coverageAggregate
-
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v1
-        with:
-          name: Coverage Report
-          path: target/scala-2.13/scoverage-report
-
-      - name: Multi-Jvm Tests
-        run: sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test
-
-      - name: Generate RTM
-        if: always()
-        continue-on-error: true
-        run: |
-          ./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
-
-      - name: Upload RTM
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v1
-        with:
-          name: RTM
-          path: target/RTM
-
-      - name: Notify slack
-        if: always()
-        continue-on-error: true
-        uses: kpritam/slack-job-status-action@v1
-        with:
-          job-status: ${{ job.status }}
-          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          channel: ci-dev
+        run: sbt -Dakka.actor.serialize-messages=on esw-integration-test/testOnly esw.agent.akka.AgentIntegrationTest

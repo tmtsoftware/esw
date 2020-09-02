@@ -6,6 +6,7 @@ import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.agent.akka.app.AgentSettings
@@ -30,6 +31,7 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
   private val locationServiceUtil      = new LocationServiceUtil(locationService)
 
   private val eswVersion: Some[String] = Some(appVersion)
+  LoggingSystemFactory.forTestingOnly()
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -44,14 +46,12 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
   private def spawnSequenceComponent(componentName: String) = agentClient.spawnSequenceComponent(componentName, eswVersion)
 
   "Agent" must {
-    "start and register itself with location service | ESW-237" in {
-      val agentLocation = locationService.resolve(AkkaConnection(ComponentId(agentPrefix, Machine)), 5.seconds).futureValue
-      agentLocation should not be empty
-    }
 
     "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325, ESW-366, ESW-367" in {
-      val darknight = ObsMode("darknight")
+      val darknight  = ObsMode("darknight")
+      val startSpawn = System.currentTimeMillis()
       spawnSequenceComponent(irisPrefix.componentName).futureValue should ===(Spawned)
+      println(s"*****************Spawn Sequence Component*************************${System.currentTimeMillis() - startSpawn}")
       // Verify registration in location service
       val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
       seqCompLoc.connection shouldBe irisSeqCompConnection
@@ -66,8 +66,9 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
 
       // verify sequencer location from load script and looked up from location service is the same
       loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
-
+      val startKill = System.currentTimeMillis()
       agentClient.killComponent(seqCompLoc).futureValue should ===(Killed)
+      println(s"*****************Kill Sequence Component*************************${System.currentTimeMillis() - startKill}")
       // Verify not registered in location service
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
@@ -75,7 +76,11 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
     "return Spawned on SpawnSequenceManager | ESW-180, ESW-366, ESW-367" in {
       val obsModeConfigPath = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
       // spawn sequence manager
-      agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, eswVersion).futureValue should ===(Spawned)
+      val startKill = System.currentTimeMillis()
+      agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, Some("1deb5acc58")).futureValue should ===(
+        Spawned
+      )
+      println(s"*****************Spawn Sequence Manager*************************${System.currentTimeMillis() - startKill}")
 
       // Verify registration in location service
       val seqManagerConnection   = AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))
