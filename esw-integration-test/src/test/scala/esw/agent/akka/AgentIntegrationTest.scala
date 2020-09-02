@@ -47,31 +47,31 @@ class AgentIntegrationTest extends EswTestKit(AAS) with LocationServiceCodecs {
 
   "Agent" must {
 
-    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325, ESW-366, ESW-367" in {
-      val darknight  = ObsMode("darknight")
-      val startSpawn = System.currentTimeMillis()
-      spawnSequenceComponent(irisPrefix.componentName).futureValue should ===(Spawned)
-      println(s"*****************Spawn Sequence Component*************************${System.currentTimeMillis() - startSpawn}")
-      // Verify registration in location service
-      val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
-      seqCompLoc.connection shouldBe irisSeqCompConnection
-
-      // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
-      seqCompLoc.metadata.getAgentPrefix.value should ===(agentPrefix)
-      seqCompLoc.metadata.value.contains("PID") shouldBe true
-
-      // start sequencer i.e. load IRIS darknight script
-      val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
-      val loadScriptResponse = seqCompApi.loadScript(IRIS, darknight).futureValue
-
-      // verify sequencer location from load script and looked up from location service is the same
-      loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
-      val startKill = System.currentTimeMillis()
-      agentClient.killComponent(seqCompLoc).futureValue should ===(Killed)
-      println(s"*****************Kill Sequence Component*************************${System.currentTimeMillis() - startKill}")
-      // Verify not registered in location service
-      locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
-    }
+//    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325, ESW-366, ESW-367" in {
+//      val darknight  = ObsMode("darknight")
+//      val startSpawn = System.currentTimeMillis()
+//      spawnSequenceComponent(irisPrefix.componentName).futureValue should ===(Spawned)
+//      println(s"*****************Spawn Sequence Component*************************${System.currentTimeMillis() - startSpawn}")
+//      // Verify registration in location service
+//      val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
+//      seqCompLoc.connection shouldBe irisSeqCompConnection
+//
+//      // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
+//      seqCompLoc.metadata.getAgentPrefix.value should ===(agentPrefix)
+//      seqCompLoc.metadata.value.contains("PID") shouldBe true
+//
+//      // start sequencer i.e. load IRIS darknight script
+//      val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
+//      val loadScriptResponse = seqCompApi.loadScript(IRIS, darknight).futureValue
+//
+//      // verify sequencer location from load script and looked up from location service is the same
+//      loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
+//      val startKill = System.currentTimeMillis()
+//      agentClient.killComponent(seqCompLoc).futureValue should ===(Killed)
+//      println(s"*****************Kill Sequence Component*************************${System.currentTimeMillis() - startKill}")
+//      // Verify not registered in location service
+//      locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
+//    }
 
     "return Spawned on SpawnSequenceManager | ESW-180, ESW-366, ESW-367" in {
       val obsModeConfigPath = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
