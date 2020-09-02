@@ -19,15 +19,14 @@ import org.mockito.ArgumentMatchers.any
 
 import scala.concurrent.Future
 
-class GatewayStub(val locationService: LocationService, _actorSystem: ActorSystem[SpawnProtocol.Command]) extends LocationUtils {
+class GatewayStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
+    extends LocationUtils {
 
   private lazy val commandRolesPath = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
   private lazy val directives       = SecurityDirectives.authDisabled(actorSystem.settings.config)
 
   private var gatewayWiring: Option[GatewayWiring] = None
   lazy val gatewayPort: Int                        = SocketUtils.getFreePort
-
-  override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
 
   //command service mocks
   private lazy val _resolver: Resolver            = mock[Resolver]

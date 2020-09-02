@@ -66,14 +66,13 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
     )
 }
 
-class SequenceManagerStub(val locationService: LocationService, _actorSystem: ActorSystem[SpawnProtocol.Command])
+class SequenceManagerStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
     extends LocationUtils {
-  private var seqManagerWiring: Option[SequenceManagerWiring]           = _
-  override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+  private var seqManagerWiring: Option[SequenceManagerWiring] = _
 
   def spawnMockSm(): SequenceManagerWiring = {
     val wiring = new SequenceManagerWiring(IOUtils.writeResourceToFile("smObsModeConfig.conf"), true, None) {
-      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
       override lazy val sequenceManager: SequenceManagerApi             = new SequenceManagerStubImpl()
     }
     seqManagerWiring = Some(wiring)
@@ -81,7 +80,5 @@ class SequenceManagerStub(val locationService: LocationService, _actorSystem: Ac
     wiring
   }
 
-  def shutdown(): Unit = {
-    seqManagerWiring.foreach(_.shutdown(UnknownReason).futureValue)
-  }
+  def shutdown(): Unit = seqManagerWiring.foreach(_.shutdown(UnknownReason).futureValue)
 }

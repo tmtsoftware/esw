@@ -32,11 +32,11 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
     val servicesWithoutGatewayAndAgent = services.filterNot(x => x == Gateway || x == AgentService)
     val eswTestKit: EswTestKit         = new EswTestKit(servicesWithoutGatewayAndAgent: _*) {}
 
-    var gatewayWiring: Option[GatewayStub]                 = None
-    var sequenceManagerWiring: Option[SequenceManagerStub] = None
-    var agentServiceWiring: Option[AgentServiceStub]       = None
-    val locationService: LocationService                   = eswTestKit.locationService
-    val actorSystem: ActorSystem[SpawnProtocol.Command]    = eswTestKit.actorSystem
+    var gatewayWiring: Option[GatewayStub]                       = None
+    var sequenceManagerWiring: Option[SequenceManagerStub]       = None
+    var agentServiceWiring: Option[AgentServiceStub]             = None
+    val locationService: LocationService                         = eswTestKit.locationService
+    implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = eswTestKit.actorSystem
 
     def shutdown(): Unit = {
       gatewayWiring.foreach(_.shutdownGateway())
@@ -59,17 +59,17 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
       eswTestKit.beforeAll()
       if (services.contains(WrappedCSWService(AlarmServer))) initDefaultAlarms()
       if (services.contains(Gateway)) {
-        val gateway = new GatewayStub(locationService, actorSystem)
+        val gateway = new GatewayStub(locationService)
         gatewayWiring = Some(gateway)
         gateway.spawnMockGateway(services.contains(AAS), commandRoles)
       }
       if (services.contains(SequenceManager)) {
-        val sequenceManagerStub = new SequenceManagerStub(locationService, actorSystem)
+        val sequenceManagerStub = new SequenceManagerStub(locationService)
         sequenceManagerWiring = Some(sequenceManagerStub)
         sequenceManagerStub.spawnMockSm()
       }
       if (services.contains(AgentService)) {
-        val agentServiceStub = new AgentServiceStub(locationService, actorSystem)
+        val agentServiceStub = new AgentServiceStub(locationService)
         agentServiceWiring = Some(agentServiceStub)
         agentServiceStub.spawnMockAgentService()
       }

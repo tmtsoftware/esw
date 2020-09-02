@@ -30,13 +30,12 @@ class AgentServiceStubImpl extends AgentServiceApi {
   override def killComponent(connection: Connection): Future[KillResponse] = Future.successful(Killed)
 }
 
-class AgentServiceStub(val locationService: LocationService, _actorSystem: ActorSystem[SpawnProtocol.Command])
+class AgentServiceStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
     extends LocationUtils {
   private var agentServiceWiring: Option[AgentServiceWiring]            = _
-  override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
   def spawnMockAgentService(): AgentServiceWiring = {
     val wiring = new AgentServiceWiring() {
-      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
       override lazy val agentService: AgentServiceApi                   = new AgentServiceStubImpl()
     }
     agentServiceWiring = Some(wiring)

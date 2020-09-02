@@ -24,26 +24,23 @@ class EventStubImpl(_actorSystem: ActorSystem[SpawnProtocol.Command]) extends Ev
     Future.successful(Done)
   }
 
-  override def get(eventKeys: Set[EventKey]): Future[Set[Event]] = {
+  override def get(eventKeys: Set[EventKey]): Future[Set[Event]] =
     Future.successful(events.filter(e => eventKeys.contains(e.eventKey)))
-  }
 
   override def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Subscription] = {
-    {
-      val futureStream = future(2.seconds, Source(events.filter(e => eventKeys.contains(e.eventKey))))
-      Source
-        .futureSource(futureStream)
-        .mapMaterializedValue(_ => () => ())
-    }.withSubscription()
+    val futureStream = future(2.seconds, Source(events.filter(e => eventKeys.contains(e.eventKey))))
+    Source
+      .futureSource(futureStream)
+      .mapMaterializedValue(_ => () => ())
+      .withSubscription()
   }
 
   override def pSubscribe(subsystem: Subsystem, maxFrequency: Option[Int], pattern: String): Source[Event, Subscription] = {
-    {
-      val futureStream = future(2.seconds, Source(events.filter(e => e.source.subsystem == subsystem)))
-      Source
-        .futureSource(futureStream)
-        .mapMaterializedValue(_ => () => ())
-    }.withSubscription()
+    val futureStream = future(2.seconds, Source(events.filter(e => e.source.subsystem == subsystem)))
+    Source
+      .futureSource(futureStream)
+      .mapMaterializedValue(_ => () => ())
+      .withSubscription()
   }
 
 }

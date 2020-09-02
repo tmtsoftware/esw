@@ -25,13 +25,9 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
   private val runId: Id = Id("123")
   private val stepList  = StepList(Sequence(Setup(Prefix("CSW.IRIS"), CommandName("command-1"), None)))
 
-  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = {
-    Future.successful(Ok)
-  }
+  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = Future.successful(Ok)
 
-  override def startSequence(): Future[SubmitResponse] = {
-    Future.successful(Started(runId))
-  }
+  override def startSequence(): Future[SubmitResponse] = Future.successful(Started(runId))
 
   override def getSequence: Future[Option[StepList]] = Future.successful(Some(stepList))
 
@@ -61,13 +57,9 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   override def isOnline: Future[Boolean] = Future.successful(true)
 
-  override def goOnline(): Future[GoOnlineResponse] = {
-    Future.successful(Ok)
-  }
+  override def goOnline(): Future[GoOnlineResponse] = Future.successful(Ok)
 
-  override def goOffline(): Future[GoOfflineResponse] = {
-    Future.successful(Ok)
-  }
+  override def goOffline(): Future[GoOfflineResponse] = Future.successful(Ok)
 
   override def abortSequence(): Future[OkOrUnhandledResponse] = Future.successful(Ok)
 
@@ -82,10 +74,7 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
   override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
     Future.successful(Started(runId))
 
-  override def query(runId: Id): Future[SubmitResponse] =
-    Future.successful(Started(runId))
+  override def query(runId: Id): Future[SubmitResponse] = Future.successful(Started(runId))
 
-  override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = {
-    Future.successful(Started(runId))
-  }
+  override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = Future.successful(Started(runId))
 }
