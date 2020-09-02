@@ -16,7 +16,8 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-testkit`,
   `esw-backend-testkit`,
   `esw-shell`,
-  `esw-integration-test`
+  `esw-integration-test`,
+  `esw-http-template-wiring`
 )
 
 lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`, `esw-sm-app`)
@@ -363,3 +364,9 @@ lazy val `esw-shell` = project
     fork := false // this is needed for the ammonite shell to run
   )
   .dependsOn(`esw-ocs-impl`)
+
+lazy val `esw-http-template-wiring` = project
+  .dependsOn(`esw-http-core`)
+  .settings(
+    libraryDependencies ++= Dependencies.Template.value
+  )
