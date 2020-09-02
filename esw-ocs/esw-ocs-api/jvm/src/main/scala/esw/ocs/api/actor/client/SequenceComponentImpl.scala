@@ -13,7 +13,6 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
 
 import scala.concurrent.Future
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
     actorSystem: ActorSystem[_]

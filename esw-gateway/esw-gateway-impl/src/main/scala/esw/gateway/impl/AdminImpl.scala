@@ -2,7 +2,7 @@ package esw.gateway.impl
 
 import akka.Done
 import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.AskPattern.{Askable, _}
+import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
@@ -38,8 +38,9 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
               Map("prefix" -> prefix.toString, "location" -> akkaLocation.toString)
             )
             val response: Future[LogMetadata] = componentId.componentType match {
-              case Sequencer => (akkaLocation.sequencerRef ? GetComponentLogMetadata)(Timeouts.GetLogMetadata, actorSystem.scheduler)
-              case _         => (akkaLocation.componentRef ? GetComponentLogMetadata)(Timeouts.GetLogMetadata, actorSystem.scheduler)
+              case Sequencer =>
+                (akkaLocation.sequencerRef ? GetComponentLogMetadata)(Timeouts.GetLogMetadata, actorSystem.scheduler)
+              case _ => (akkaLocation.componentRef ? GetComponentLogMetadata)(Timeouts.GetLogMetadata, actorSystem.scheduler)
             }
             response
           })

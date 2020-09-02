@@ -3,7 +3,7 @@ package esw.agent.akka
 import java.nio.file.Paths
 
 import csw.location.api.codec.LocationServiceCodecs
-import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
+import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.logging.client.scaladsl.LoggingSystemFactory

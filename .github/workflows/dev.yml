@@ -30,7 +30,8 @@ jobs:
 
       - name: Build
         run: |
-          sbt clean
+          sbt scalafmtCheck
+          sbt clean makeSite
           sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Tests

@@ -68,7 +68,7 @@ object SequenceManagerTimeout {
   val StartSequencerTimeout: FiniteDuration =
     Timeouts.StatusTimeout +     // Lookup for subsystem idle sequence component
       Timeouts.StatusTimeout +   // lookup for ESW idle sequence component as fallback
-      10.seconds +                                  // spawn sequence component using agent timeout as fallback
+      10.seconds +               // spawn sequence component using agent timeout as fallback
       Timeouts.LoadScriptTimeout // load script in seq comp to start sequencer
 
   val RestartSequencerTimeout: FiniteDuration = 5.seconds + // get seq comp location by asking sequencer
