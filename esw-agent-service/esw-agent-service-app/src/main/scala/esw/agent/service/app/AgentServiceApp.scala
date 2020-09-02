@@ -1,7 +1,7 @@
 package esw.agent.service.app
 
 import akka.actor.CoordinatedShutdown.UnknownReason
-import caseapp.RemainingArgs
+import caseapp.core.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
 import esw.commons.Timeouts
 import esw.commons.cli.EswCommandApp

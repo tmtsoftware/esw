@@ -78,5 +78,5 @@ class GatewayStub(val locationService: LocationService, _actorSystem: ActorSyste
     wiring
   }
 
-  def shutdownGateway(): Unit = gatewayWiring.foreach(_.wiring.actorRuntime.shutdown(UnknownReason).futureValue)
+  def shutdownGateway(): Unit = gatewayWiring.foreach(_.actorRuntime.shutdown(UnknownReason).futureValue)
 }

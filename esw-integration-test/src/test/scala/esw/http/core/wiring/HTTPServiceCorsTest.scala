@@ -1,11 +1,15 @@
 package esw.http.core.wiring
 
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{HttpOrigin, Origin}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import csw.location.api.models.NetworkType
+import csw.location.api.models.{ComponentType, NetworkType}
+import csw.location.client.ActorSystemFactory
+import csw.logging.api.scaladsl.Logger
+import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.Networks
 import esw.ocs.testkit.EswTestKit
 
@@ -23,8 +27,22 @@ class HTTPServiceCorsTest extends EswTestKit {
   private val hostname                                 = Networks(NetworkType.Public.envKey).hostname
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
 
-  lazy val wiring: ServerWiring = ServerWiring.make(Some(gatewayPort))
-  import wiring._
+  override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+    ActorSystemFactory.remote(SpawnProtocol(), "http-core-server-system")
+
+  //todo ask about overriding the actor system
+//  lazy val wiring: ServerWiring = ServerWiring.make(Some(gatewayPort))
+//  import wiring._
+
+  lazy val actorRuntime = new ActorRuntime(actorSystem)
+  import actorRuntime.typedSystem
+
+  private lazy val config = actorSystem.settings.config
+  lazy val settings       = new Settings(Some(gatewayPort), None, config, ComponentType.Service)
+
+  private lazy val loggerFactory = new LoggerFactory(settings.httpConnection.prefix)
+  lazy val logger: Logger        = loggerFactory.getLogger
+
   lazy val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
   lazy val requestOriginHeader = Origin(HttpOrigin(s"http://${hostname}:6000"))

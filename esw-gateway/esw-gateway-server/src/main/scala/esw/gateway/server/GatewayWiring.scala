@@ -16,16 +16,19 @@ import csw.event.api.scaladsl.EventService
 import csw.event.client.EventServiceFactory
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.event.client.models.EventStores.RedisStore
+import csw.location.api.models.ComponentType
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.logging.api.scaladsl.Logger
+import csw.logging.client.scaladsl.LoggerFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{GatewayRequest, GatewayStreamRequest}
 import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.{GatewayPostHandler, GatewayWebsocketHandler}
 import esw.gateway.server.utils.Resolver
-import esw.http.core.wiring.{ActorRuntime, HttpService, ServerWiring}
+import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import io.lettuce.core.RedisClient
 import msocket.api.StreamRequestHandler
 import msocket.impl.RouteFactory
@@ -39,10 +42,14 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   private[server] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "gateway-system")
 
-  lazy val wiring       = new ServerWiring(_port, actorSystem = actorSystem)
   lazy val actorRuntime = new ActorRuntime(actorSystem)
   import actorRuntime.{ec, typedSystem}
-  import wiring._
+
+  private lazy val config = actorSystem.settings.config
+  lazy val settings       = new Settings(_port, None, config, ComponentType.Service)
+
+  private lazy val loggerFactory = new LoggerFactory(settings.httpConnection.prefix)
+  lazy val logger: Logger        = loggerFactory.getLogger
 
   private lazy val redisClient: RedisClient = {
     val client = RedisClient.create()
