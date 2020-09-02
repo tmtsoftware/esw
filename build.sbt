@@ -363,3 +363,14 @@ lazy val `esw-shell` = project
     fork := false // this is needed for the ammonite shell to run
   )
   .dependsOn(`esw-ocs-impl`)
+
+lazy val `template` = project
+  .in(file("template"))
+  .dependsOn(`esw-http-core`)
+  .settings(
+    libraryDependencies ++= Dependencies.Template.value
+  )
+
+lazy val `my-app` = project
+  .in(file("my-app"))
+  .dependsOn(`template`)

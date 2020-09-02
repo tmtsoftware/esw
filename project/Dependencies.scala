@@ -156,11 +156,11 @@ object Dependencies {
 
   val IntegrationTest = Def.setting(
     Seq(
-      Akka.`akka-multi-node-testkit`  % Test,
-      Csw.`csw-logging-client`        % Test,
-      Csw.`csw-logging-models`.value  % Test,
-      Libs.scalatest.value            % Test,
-      Libs.`tmt-test-reporter`        % Test
+      Akka.`akka-multi-node-testkit` % Test,
+      Csw.`csw-logging-client`       % Test,
+      Csw.`csw-logging-models`.value % Test,
+      Libs.scalatest.value           % Test,
+      Libs.`tmt-test-reporter`       % Test
     )
   )
 
@@ -325,6 +325,21 @@ object Dependencies {
     Seq(
       Csw.`csw-framework`,
       Libs.`ammonite`
+    )
+  )
+
+  val Template = Def.setting(
+    Seq(
+      Csw.`csw-aas-http`,
+      Csw.`csw-alarm-api`,
+      Csw.`csw-alarm-client`,
+      Csw.`csw-command-api`.value,
+      Csw.`csw-command-client`,
+      Csw.`csw-config-client`,
+      Csw.`csw-event-api`,
+      Csw.`csw-event-client`,
+      Csw.`csw-time-scheduler`,
+      Libs.`case-app`
     )
   )
 }
