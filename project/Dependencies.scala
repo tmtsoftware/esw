@@ -340,7 +340,8 @@ object Dependencies {
       Csw.`csw-event-client`,
       Csw.`csw-time-scheduler`,
       Libs.`case-app`,
-      Csw.`csw-testkit` % Test
+      Csw.`csw-testkit`        % Test,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 }
