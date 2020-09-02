@@ -356,6 +356,9 @@ lazy val `esw-testkit` = project
 lazy val `esw-backend-testkit` = project
   .in(file("esw-backend-testkit"))
   .dependsOn(`esw-testkit`)
+  .settings(
+    libraryDependencies ++= Dependencies.BackendTestkit.value
+  )
 
 lazy val `esw-shell` = project
   .in(file("esw-shell"))

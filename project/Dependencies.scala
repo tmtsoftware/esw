@@ -316,8 +316,14 @@ object Dependencies {
       Akka.`akka-actor-testkit-typed`,
       Csw.`csw-testkit`,
       Libs.scalatest.value,
-      Libs.`tmt-test-reporter` % Test,
-      Libs.`embedded-keycloak`
+      Libs.`embedded-keycloak`,
+      Libs.`tmt-test-reporter` % Test
+    )
+  )
+
+  val BackendTestkit = Def.setting(
+    Seq(
+      Libs.`tmt-test-reporter` % Test
     )
   )
 
