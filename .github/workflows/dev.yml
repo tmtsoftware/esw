@@ -28,11 +28,5 @@ jobs:
           sudo mv cs /usr/local/bin
           cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
 
-      - name: Build
-        run: |
-          sbt scalafmtCheck
-          sbt clean makeSite
-          sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
-
       - name: Tests
         run: sbt -Dakka.actor.serialize-messages=on esw-integration-test/testOnly esw.agent.akka.AgentIntegrationTest

@@ -1,4 +1,5 @@
 import org.tmt.sbt.docs.{Settings => DocSettings}
+import sbt.Test
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
@@ -207,6 +208,10 @@ lazy val `esw-integration-test` = project
   )
   .settings(
     Test / test := {
+      publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
+      (Test / test).value
+    },
+    Test / testOnly := {
       publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
       (Test / test).value
     }
