@@ -62,7 +62,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     println(s"*****************Load Sequence*************************${System.currentTimeMillis() - startLoadSequence}")
 
     val startStartSequence = System.currentTimeMillis()
-    val startedResponse = ocsSequencer.startSequence().futureValue
+    val startedResponse    = ocsSequencer.startSequence().futureValue
     startedResponse shouldBe a[Started]
     println(s"*****************Start Sequence*************************${System.currentTimeMillis() - startStartSequence}")
 
@@ -74,7 +74,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     val expectedSequence = StepList(expectedSteps)
 
-    val startGetSequence = System.currentTimeMillis()
+    val startGetSequence       = System.currentTimeMillis()
     val actualSequenceResponse = ocsSequencer.getSequence.futureValue.get
     println(s"*****************Get Sequence*************************${System.currentTimeMillis() - startGetSequence}")
 
@@ -180,7 +180,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     //****************** Go offline ******************************
 
     //sending sequence to ocs sequencer(TestScript2)
-    val sequence = Sequence(command1, command2)
+    val sequence           = Sequence(command1, command2)
     val startSubmitAndWait = System.currentTimeMillis()
     ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed] // asserting the response
     println(s"*****************SubmitAndWait*************************${System.currentTimeMillis() - startSubmitAndWait}")
@@ -259,7 +259,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     )
     val expectedSequence = Some(StepList(expectedSteps))
     val expectedResponse = Completed(startedResponse.runId)
-    val startQueryFinal = System.currentTimeMillis()
+    val startQueryFinal  = System.currentTimeMillis()
     ocsSequencer.queryFinal(startedResponse.runId).futureValue should ===(expectedResponse)
     println(s"*****************QueryFinal*************************${System.currentTimeMillis() - startQueryFinal}")
 
@@ -341,7 +341,9 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     //assert that getSequenceComponent returns sequenceComponentLocation where sequencer is running
     val startSequenceComponent = System.currentTimeMillis()
     sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
-    println(s"*****************Get Sequence Component*************************${System.currentTimeMillis() - startSequenceComponent}")
+    println(
+      s"*****************Get Sequence Component*************************${System.currentTimeMillis() - startSequenceComponent}"
+    )
 
     //clean-up
     sequenceComponentImpl.unloadScript()
