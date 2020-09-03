@@ -22,19 +22,19 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
 
   override def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[ScriptResponseOrUnhandled] =
     (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(subsystem, obsMode, x) })(
-      Timeouts.LoadScriptTimeout,
+      Timeouts.LoadScript,
       actorSystem.scheduler
     )
 
   override def restartScript(): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? RestartScript)(Timeouts.RestartScriptTimeout, actorSystem.scheduler)
+    (sequenceComponentRef ? RestartScript)(Timeouts.RestartScript, actorSystem.scheduler)
 
   override def status: Future[GetStatusResponse] =
-    (sequenceComponentRef ? GetStatus)(Timeouts.StatusTimeout, actorSystem.scheduler)
+    (sequenceComponentRef ? GetStatus)(Timeouts.Status, actorSystem.scheduler)
 
   override def unloadScript(): Future[Ok.type] =
-    (sequenceComponentRef ? UnloadScript)(Timeouts.UnloadScriptTimeout, actorSystem.scheduler)
+    (sequenceComponentRef ? UnloadScript)(Timeouts.UnloadScript, actorSystem.scheduler)
 
   override def shutdown(): Future[Ok.type] =
-    (sequenceComponentRef ? Shutdown)(Timeouts.ShutdownTimeout, actorSystem.scheduler)
+    (sequenceComponentRef ? Shutdown)(Timeouts.Shutdown, actorSystem.scheduler)
 }
