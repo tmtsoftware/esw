@@ -210,10 +210,6 @@ lazy val `esw-integration-test` = project
     Test / test := {
       publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
       (Test / test).value
-    },
-    Test / testOnly := {
-      publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
-      (Test / test).value
     }
   )
 
