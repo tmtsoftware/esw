@@ -9,12 +9,10 @@ import akka.util.Timeout
 import com.typesafe.config.Config
 import csw.aas.http.SecurityDirectives
 import csw.alarm.api.javadsl.IAlarmService
-import csw.alarm.api.scaladsl.AlarmService
 import csw.alarm.client.AlarmServiceFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.api.scaladsl.EventService
 import csw.event.client.EventServiceFactory
-import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.event.client.models.EventStores.RedisStore
 import csw.location.api.AkkaRegistrationFactory
@@ -72,14 +70,6 @@ private[ocs] class SequencerWiring(
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  lazy val redisClient: RedisClient                 = RedisClient.create()
-  lazy val eventSubscriberUtil: EventSubscriberUtil = new EventSubscriberUtil()
-  lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))
-  lazy val eventService: EventService               = eventServiceFactory.make(locationService)
-
-  lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
-  lazy val alarmService: AlarmService               = alarmServiceFactory.makeClientApi(locationService)
-
   lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
     actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
       Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
@@ -96,8 +86,12 @@ private[ocs] class SequencerWiring(
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
 
-  lazy val jEventService: JEventService         = new JEventService(eventService)
-  private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
+  lazy val redisClient: RedisClient                 = RedisClient.create()
+  lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))
+  lazy val eventService: EventService               = eventServiceFactory.make(locationService)
+  lazy val jEventService: JEventService             = new JEventService(eventService)
+  lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
+  private lazy val jAlarmService: IAlarmService     = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
 
   private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
