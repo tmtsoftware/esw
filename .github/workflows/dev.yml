@@ -29,4 +29,4 @@ jobs:
           cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
 
       - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on test:test
+        run: sbt -Dakka.actor.serialize-messages=on "esw-integration-test/testOnly esw.ocs.app.SequencerClientIntegrationTest"
