@@ -10,6 +10,7 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-agent-service`,
   `esw-contract`,
   examples,
+  `esw-constants`,
   `esw-commons`,
   `esw-test-commons`,
   `esw-sm`,
