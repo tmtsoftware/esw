@@ -130,8 +130,8 @@ private[core] case class SequencerData(
   private def getSequencerResponse: SubmitResponse =
     stepList
       .flatMap {
-        _.steps.map(_.status).collectFirst {
-          case Finished.Failure(message) => Error(runId.get, message)
+        _.steps.collectFirst {
+          case s @ Step(_, _, Finished.Failure(message), _) => Error(runId.get, s"${s.info}, reason: $message")
         }
       }
       .getOrElse(Completed(runId.get))

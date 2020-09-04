@@ -359,14 +359,15 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       configTestKit.deleteServerFiles()
     }
 
-    "be able to handle unexpected exception and finish the sequence | ESW-241, CSW-81" in {
-      val command1 = Setup(Prefix("esw.test"), CommandName("check-exception-1"), None)
-      val command2 = Setup(Prefix("esw.test"), CommandName("check-exception-2"), None)
-      val sequence = Sequence(command1, command2)
+    "be able to handle unexpected exception and finish the sequence | ESW-241, CSW-81, ESW-294" in {
+      val failCmdName = CommandName("check-exception-1")
+      val command1    = Setup(Prefix("esw.test"), failCmdName, None)
+      val command2    = Setup(Prefix("esw.test"), CommandName("check-exception-2"), None)
+      val sequence    = Sequence(command1, command2)
 
       val response = ocsSequencer.submitAndWait(sequence).futureValue
       response shouldBe an[Error]
-      response.asInstanceOf[Error].message should ===("boom")
+      response.asInstanceOf[Error].message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: boom"
     }
 
   }

@@ -140,7 +140,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       sequenceResult.submitResponse shouldBe a[Started]
       val startedResponse = sequenceResult.toSubmitResponse()
 
-      verify(script).executeNewSequenceHandler() // ESW-303: varifies newSequenceHandler is called
+      verify(script).executeNewSequenceHandler() // ESW-303: verifies newSequenceHandler is called
       assertSequencerState(InProgress)
 
       startPullNext()
@@ -150,7 +150,9 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       val qfProbe = TestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(startedResponse.runId, qfProbe.ref)
-      qfProbe.expectMessage(Error(startedResponse.runId, errorMessage))
+      val error = qfProbe.expectMessageType[Error]
+      error.runId should ===(startedResponse.runId)
+      error.message should fullyMatch regex "StepId: .*, CommandName: command-1, reason: Some error"
     }
   }
 

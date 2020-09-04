@@ -44,7 +44,8 @@ class SequencerContractTest extends EswTestKit(Gateway, EventServer) with Gatewa
     "handle submit, queryFinal commands with error | ESW-250" in {
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
-      val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("fail-command"), Some(ObsId("obsId"))))
+      val failCmdName = CommandName("fail-command")
+      val sequence    = Sequence(Setup(Prefix("esw.test"), failCmdName, Some(ObsId("obsId"))))
       val componentId = ComponentId(Prefix(s"$subsystem.${obsMode.name}"), ComponentType.Sequencer)
 
       val sequencer = clientFactory.sequencer(componentId)
@@ -54,9 +55,9 @@ class SequencerContractTest extends EswTestKit(Gateway, EventServer) with Gatewa
       submitResponse shouldBe a[Started]
 
       //queryFinal
-      sequencer.queryFinal(submitResponse.runId).futureValue should ===(
-        Error(submitResponse.runId, "fail-command")
-      )
+      val response = sequencer.queryFinal(submitResponse.runId).futureValue.asInstanceOf[Error]
+      response.runId should ===(submitResponse.runId)
+      response.message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: fail-command"
     }
   }
 }

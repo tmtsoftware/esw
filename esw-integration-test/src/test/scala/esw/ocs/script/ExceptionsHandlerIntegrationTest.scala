@@ -5,10 +5,10 @@ import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
-import csw.params.commands._
+import csw.params.commands.{CommandResponse, _}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
+import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.client.SequencerImpl
@@ -135,25 +135,31 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       assertMessage(testProbe, globalExHandlerEventMessage)
     }
 
-    "call global exception handler if there is an exception in command handler even after retrying | ESW-249, ESW-139, CSW-81" in {
-      val globalExHandlerEventMessage   = "command-failed"
-      val globalExHandlerEventKey       = EventKey(prefix, EventName(globalExHandlerEventMessage))
-      val globalExHandlerEventTestProbe = createProbeFor(globalExHandlerEventKey)
+    "call global exception handler if there is an exception in command handler even after retrying | ESW-249, ESW-139, CSW-81, ESW-294" in {
+      val globalExHandlerEventTestProbe = createProbeFromPSubscript(TCS, "filter.wheel.Error*")
 
       val onErrorEventMessage   = "onError-event"
       val onErrorEventKey       = EventKey(prefix, EventName(onErrorEventMessage))
       val onErrorEventTestProbe = createProbeFor(onErrorEventKey)
 
       val sequencer     = spawnSequencerProxy(tcsSubsystem, tcsObsMode)
-      val setupSequence = Sequence(Setup(prefix, CommandName("error-handling"), None))
+      val failCmdName   = CommandName("error-handling")
+      val setupSequence = Sequence(Setup(prefix, failCmdName, None))
 
-      sequencer.submitAndWait(setupSequence)
+      val responseF = sequencer.submitAndWait(setupSequence)
 
       assertMessage(onErrorEventTestProbe, onErrorEventMessage)
       assertMessage(onErrorEventTestProbe, onErrorEventMessage)
       assertMessage(onErrorEventTestProbe, onErrorEventMessage)
 
-      assertMessage(globalExHandlerEventTestProbe, globalExHandlerEventMessage)
+      // verify global handler
+      val event = globalExHandlerEventTestProbe.expectMessageType[SystemEvent]
+      event.isInvalid shouldBe false
+      event.eventName.name should fullyMatch regex """Error\(Id\(.*\),command-failed\)"""
+
+      //ESW-294
+      val error = responseF.futureValue.asInstanceOf[CommandResponse.Error]
+      error.message should fullyMatch regex s"""StepId: .*, CommandName: ${failCmdName.name}, reason: Error\\(Id\\(.*\\),command-failed\\)"""
     }
 
     "not fail the command on negative submit response if resumeOnError=false | ESW-249, ESW-139, CSW-81" in {
@@ -184,6 +190,13 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
     val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
     subscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard msg
+    testProbe
+  }
+
+  private def createProbeFromPSubscript(subsystem: Subsystem, pattern: String): TestProbe[Event] = {
+    val testProbe    = TestProbe[Event]()
+    val subscription = eventSubscriber.pSubscribeCallback(subsystem, pattern, testProbe.ref ! _)
+    subscription.ready().futureValue
     testProbe
   }
 }

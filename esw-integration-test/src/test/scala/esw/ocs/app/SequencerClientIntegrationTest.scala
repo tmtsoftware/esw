@@ -134,19 +134,21 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     )
   }
 
-  "Short circuit on first failed command and getEvent failed sequence response | ESW-158, ESW-145, ESW-222" in {
-    val failCommandName = "fail-command"
-
-    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+  "Short circuit on first failed command and getEvent failed sequence response | ESW-158, ESW-145, ESW-222, ESW-294" in {
+    val command1        = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+    val failedCmdPrefix = Prefix("esw.test")
+    val failedCmdName   = CommandName("fail-command")
     // TestScript.scala returns Error on receiving command with prefix "fail-command"
-    val command2 = Setup(Prefix("esw.test"), CommandName(failCommandName), None)
+    val command2 = Setup(failedCmdPrefix, failedCmdName, None)
     val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
     val sequence = Sequence(command1, command2, command3)
 
     val submitResponseF = ocsSequencer.submitAndWait(sequence)
     eventually(ocsSequencer.getSequence.futureValue should not be empty)
 
-    submitResponseF.futureValue shouldBe an[Error]
+    // ESW-294: Improve error response returned to caller
+    val error = submitResponseF.futureValue.asInstanceOf[Error]
+    error.message should fullyMatch regex s"StepId: .*, CommandName: ${failedCmdName.name}, reason: fail-command"
 
     compareStepList(
       ocsSequencer.getSequence.futureValue,
@@ -154,7 +156,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
         StepList(
           List(
             Step(command1, Success, hasBreakpoint = false),
-            Step(command2, Failure(failCommandName), hasBreakpoint = false),
+            Step(command2, Failure("fail-command"), hasBreakpoint = false),
             Step(command3, Pending, hasBreakpoint = false)
           )
         )

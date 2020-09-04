@@ -33,6 +33,8 @@ case class Step private[ocs] (id: Id, command: SequenceCommand, status: StepStat
     }
 
   private[ocs] def withId(id: Id): Step = copy(id = id)
+
+  private[ocs] def info = s"StepId: ${id.id}, CommandName: ${command.commandName.name}"
 }
 
 object Step {
