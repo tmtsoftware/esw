@@ -4,8 +4,8 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 object Timeouts {
   // agent client apis
-  val AgentSpawn: FiniteDuration = 7.seconds // 10
-  val AgentKill: FiniteDuration  = 1.seconds // 2
+  val AgentSpawn: FiniteDuration = 10.seconds // 7
+  val AgentKill: FiniteDuration  = 2.seconds // 1
 
   // admin
   val GetLogMetadata: FiniteDuration = 2.seconds // 2
