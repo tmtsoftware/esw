@@ -7,7 +7,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
 
-// TODO: not getting unregistered when kill control+C.
 trait ServerApp[T] extends CommandApp[T] {
 
   def start(wiring: ServerWiring, metadata: Metadata): Unit = {
