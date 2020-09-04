@@ -8,7 +8,8 @@ import csw.command.api.scaladsl.CommandService
 import csw.location.api.scaladsl.LocationService
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse._
-import csw.params.commands.{CommandResponse, ControlCommand}
+import csw.params.commands.{CommandResponse, ControlCommand, Result}
+import csw.params.core.generics.KeyType.IntKey
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import csw.prefix.models.Prefix
@@ -32,8 +33,9 @@ class CommandServiceStubImpl(val locationService: LocationService, _actorSystem:
     Future.successful(Accepted(Id()))
 
   override def submit(controlCommand: ControlCommand): Future[CommandResponse.SubmitResponse] = {
-    val runId = Id()
-    future(delayDuration, Completed(runId)).map(res => crm.put(runId, res))
+    val runId        = Id()
+    val numbersParam = IntKey.make("numbers").set(1, 2, 3)
+    future(delayDuration, Completed(runId, Result.emptyResult.add(numbersParam))).map(res => crm.put(runId, res))
     val res = Started(runId)
     crm.put(runId, res)
     Future.successful(res)
