@@ -23,7 +23,7 @@ class CommandServiceStubImpl(val locationService: LocationService, _actorSystem:
     extends CommandService
     with LocationUtils {
 
-  private val delayDuration: FiniteDuration        = 5.seconds
+  private val delayDuration: FiniteDuration        = 2.seconds
   private val crm: mutable.Map[Id, SubmitResponse] = mutable.Map()
 
   override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
@@ -38,14 +38,6 @@ class CommandServiceStubImpl(val locationService: LocationService, _actorSystem:
     crm.put(runId, res)
     Future.successful(res)
   }
-
-  override def submitAndWait(
-      controlCommand: ControlCommand
-  )(implicit timeout: Timeout): Future[CommandResponse.SubmitResponse] =
-    submit(controlCommand).flatMap {
-      case Started(runId) => queryFinal(runId)(timeout)
-      case submitResponse => Future.successful(submitResponse)
-    }
 
   override def oneway(controlCommand: ControlCommand): Future[CommandResponse.OnewayResponse] = Future.successful(Accepted(Id()))
 
@@ -63,17 +55,24 @@ class CommandServiceStubImpl(val locationService: LocationService, _actorSystem:
     Source.futureSource(futureStream).mapMaterializedValue(_ => () => ())
   }
 
+  // Unimplemented as they are not supported over http
+  override def subscribeCurrentState(callback: CurrentState => Unit): Subscription = ???
+
+  override def subscribeCurrentState(names: Set[StateName], callback: CurrentState => Unit): Subscription = ???
+
   override def onewayAndMatch(
       controlCommand: ControlCommand,
       stateMatcher: StateMatcher
   ): Future[CommandResponse.MatchingResponse] = ???
 
+  // Following methods are unimplemented as these will not have any corresponding msg at Gateway side
+  // They are implemented using client side composition
   override def submitAllAndWait(submitCommands: List[ControlCommand])(implicit
       timeout: Timeout
   ): Future[List[CommandResponse.SubmitResponse]] = ???
 
-  override def subscribeCurrentState(callback: CurrentState => Unit): Subscription = ???
-
-  override def subscribeCurrentState(names: Set[StateName], callback: CurrentState => Unit): Subscription = ???
+  override def submitAndWait(
+      controlCommand: ControlCommand
+  )(implicit timeout: Timeout): Future[CommandResponse.SubmitResponse] = ???
 
 }
