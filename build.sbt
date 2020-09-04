@@ -64,7 +64,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .jvmConfigure(
     _.enablePlugins(MaybeCoverage)
       .settings(libraryDependencies ++= Dependencies.OcsApiJvm.value)
-      .dependsOn(`esw-test-commons` % Test)
+      .dependsOn(`esw-constants`,`esw-test-commons` % Test)
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
@@ -293,7 +293,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
   .jvmConfigure(
     _.enablePlugins(MaybeCoverage)
       .settings(libraryDependencies ++= Dependencies.SmApiJvm.value)
-      .dependsOn(`esw-commons`, `esw-test-commons` % Test, `esw-ocs-api`.jvm)
+      .dependsOn(`esw-constants`, `esw-commons`, `esw-test-commons` % Test, `esw-ocs-api`.jvm)
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
@@ -329,6 +329,9 @@ lazy val `esw-sm-app` = project
     `esw-http-core`,
     `esw-sm-handler`
   )
+
+lazy val `esw-constants` = project
+  .in(file("esw-constants"))
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))
