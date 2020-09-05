@@ -10,4 +10,8 @@ object Timeouts {
   val Shutdown: FiniteDuration                = 4.seconds
   val RestartScript: FiniteDuration           = UnloadScript + LoadScript
   require(RestartScript <= 8.seconds)
+
+  // sequencer apis
+  val SequencerOperation: FiniteDuration     = 2.second
+  val ScriptHandlerExecution: FiniteDuration = 5.second
 }

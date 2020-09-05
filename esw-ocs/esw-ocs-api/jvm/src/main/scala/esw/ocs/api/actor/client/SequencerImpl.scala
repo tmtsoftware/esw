@@ -11,6 +11,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
+import esw.constants.Timeouts
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
@@ -18,11 +19,10 @@ import esw.ocs.api.actor.messages.SequencerState.{Idle, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
 
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_]) extends SequencerApi {
-  private implicit val timeout: Timeout     = SequenceApiTimeout.AskTimeout
+  private implicit val timeout: Timeout     = Timeouts.SequencerOperation
   private implicit val ec: ExecutionContext = system.executionContext
 
   private val extensions = new SequencerCommandServiceExtension(this)
@@ -42,8 +42,14 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
   override def addBreakpoint(id: Id): Future[GenericResponse]             = sequencer ? (AddBreakpoint(id, _))
   override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
   override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
-  override def abortSequence(): Future[OkOrUnhandledResponse]             = sequencer ? AbortSequence
-  override def stop(): Future[OkOrUnhandledResponse]                      = sequencer ? Stop
+  override def abortSequence(): Future[OkOrUnhandledResponse] = {
+    implicit val timeout: Timeout = Timeouts.ScriptHandlerExecution
+    sequencer ? AbortSequence
+  }
+  override def stop(): Future[OkOrUnhandledResponse] = {
+    implicit val timeout: Timeout = Timeouts.ScriptHandlerExecution
+    sequencer ? Stop
+  }
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
 
@@ -57,11 +63,13 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
     sequencer ? (LoadSequence(sequence, _))
 
   override def startSequence(): Future[SubmitResponse] = {
+    implicit val timeout: Timeout                         = Timeouts.ScriptHandlerExecution
     val sequenceResponse: Future[SequencerSubmitResponse] = sequencer ? StartSequence
     sequenceResponse.map(_.toSubmitResponse())
   }
 
   override def submit(sequence: Sequence): Future[SubmitResponse] = {
+    implicit val timeout: Timeout                          = Timeouts.ScriptHandlerExecution
     val sequenceResponseF: Future[SequencerSubmitResponse] = sequencer ? (SubmitSequenceInternal(sequence, _))
     sequenceResponseF.map(_.toSubmitResponse())
   }
@@ -73,18 +81,25 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = sequencer ? (QueryFinal(runId, _))
 
-  override def goOnline(): Future[GoOnlineResponse] = sequencer ? GoOnline
+  override def goOnline(): Future[GoOnlineResponse] = {
+    implicit val timeout: Timeout = Timeouts.ScriptHandlerExecution
+    sequencer ? GoOnline
+  }
 
-  override def goOffline(): Future[GoOfflineResponse] = sequencer ? GoOffline
+  override def goOffline(): Future[GoOfflineResponse] = {
+    implicit val timeout: Timeout = Timeouts.ScriptHandlerExecution
+    sequencer ? GoOffline
+  }
 
-  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] =
+  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = {
+    implicit val timeout: Timeout = Timeouts.ScriptHandlerExecution
     sequencer ? (DiagnosticMode(startTime, hint, _))
+  }
 
-  override def operationsMode(): Future[OperationsModeResponse] = sequencer ? OperationsMode
+  override def operationsMode(): Future[OperationsModeResponse] = {
+    implicit val timeout: Timeout = Timeouts.ScriptHandlerExecution
+    sequencer ? OperationsMode
+  }
 
   override def getSequenceComponent: Future[AkkaLocation] = sequencer ? GetSequenceComponent
-}
-
-object SequenceApiTimeout {
-  val AskTimeout: Timeout = 5.seconds
 }
