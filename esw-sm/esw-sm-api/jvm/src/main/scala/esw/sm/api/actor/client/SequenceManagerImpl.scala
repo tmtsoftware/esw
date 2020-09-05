@@ -2,12 +2,10 @@ package esw.sm.api.actor.client
 
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.Timeouts
-import esw.constants
+import esw.constants.Timeouts
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
@@ -16,61 +14,50 @@ import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol._
 
 import scala.concurrent.Future
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
-
-  implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
-    smRef ? (Configure(obsMode, _))
+    (smRef ? (Configure(obsMode, _)))(Timeouts.Configure, actorSystem.scheduler)
 
-  override def provision(config: ProvisionConfig): Future[ProvisionResponse] = smRef ? (Provision(config, _))
+  override def provision(config: ProvisionConfig): Future[ProvisionResponse] =
+    (smRef ? (Provision(config, _)))(Timeouts.Provision, actorSystem.scheduler)
 
-  override def getRunningObsModes: Future[GetRunningObsModesResponse] = smRef ? GetRunningObsModes
+  override def getRunningObsModes: Future[GetRunningObsModesResponse] =
+    (smRef ? GetRunningObsModes)(Timeouts.GetAllRunningObsMode, actorSystem.scheduler)
 
   override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, obsMode, x) })(
-      SequenceManagerTimeout.StartSequencerTimeout,
+      Timeouts.StartSequencer,
       actorSystem.scheduler
     )
 
   override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, obsMode, x) })(
-      SequenceManagerTimeout.RestartSequencerTimeout,
+      Timeouts.RestartSequencer,
       actorSystem.scheduler
     )
 
   override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    smRef ? (ShutdownSequencer(subsystem, obsMode, _))
+    (smRef ? (ShutdownSequencer(subsystem, obsMode, _)))(Timeouts.ShutdownSequencer, actorSystem.scheduler)
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
-    smRef ? (ShutdownSubsystemSequencers(subsystem, _))
+    (smRef ? (ShutdownSubsystemSequencers(subsystem, _)))(Timeouts.ShutdownSequencer, actorSystem.scheduler)
 
   override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    smRef ? (ShutdownObsModeSequencers(obsMode, _))
+    (smRef ? (ShutdownObsModeSequencers(obsMode, _)))(Timeouts.ShutdownSequencer, actorSystem.scheduler)
 
   override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
-    smRef ? ShutdownAllSequencers
+    (smRef ? ShutdownAllSequencers)(Timeouts.ShutdownSequencer, actorSystem.scheduler)
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
-    smRef ? (ShutdownSequenceComponent(prefix, _))
+    (smRef ? (ShutdownSequenceComponent(prefix, _)))(Timeouts.ShutdownSequenceComponent, actorSystem.scheduler)
 
   override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
-    smRef ? ShutdownAllSequenceComponents
+    (smRef ? ShutdownAllSequenceComponents)(Timeouts.ShutdownSequenceComponent, actorSystem.scheduler)
 
-  override def getAgentStatus: Future[AgentStatusResponse] = smRef ? GetAllAgentStatus
-}
-
-object SequenceManagerTimeout {
-  val StartSequencerTimeout: FiniteDuration =
-    constants.Timeouts.SequenceComponentStatus +   // Lookup for subsystem idle sequence component
-      constants.Timeouts.SequenceComponentStatus + // lookup for ESW idle sequence component as fallback
-      10.seconds +                                 // spawn sequence component using agent timeout as fallback
-      constants.Timeouts.LoadScript                // load script in seq comp to start sequencer
-
-  val RestartSequencerTimeout: FiniteDuration = 5.seconds + // get seq comp location by asking sequencer
-    constants.Timeouts.RestartScript
+  override def getAgentStatus: Future[AgentStatusResponse] =
+    (smRef ? GetAllAgentStatus)(Timeouts.GetAllAgentStatus, actorSystem.scheduler)
 }
