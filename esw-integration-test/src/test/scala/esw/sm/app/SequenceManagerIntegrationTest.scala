@@ -28,7 +28,7 @@ import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsM
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
 import esw.sm.app.TestSetup.obsModeConfigPath
-import msocket.impl.HttpError
+import msocket.http.HttpError
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt

@@ -19,7 +19,7 @@ import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.api.protocol._
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
-import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future
 

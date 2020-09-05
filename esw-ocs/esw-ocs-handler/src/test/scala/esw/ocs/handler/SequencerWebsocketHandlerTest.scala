@@ -15,10 +15,10 @@ import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
 import msocket.api.ContentType
-import msocket.impl.CborByteString
-import msocket.impl.post.ClientHttpCodecs
-import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
-import msocket.impl.ws.WebsocketRouteFactory
+import msocket.http.CborByteString
+import msocket.http.post.ClientHttpCodecs
+import msocket.http.ws.WebsocketExtensions.WebsocketEncoding
+import msocket.http.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong

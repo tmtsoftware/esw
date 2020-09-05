@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "f131e22"
+  private val MSocketVersion = "a423b83"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
@@ -12,7 +12,7 @@ object Libs {
   val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.2") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
-  val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl"       % MSocketVersion
+  val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
   val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.5"
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
@@ -26,7 +26,7 @@ object Libs {
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "da54dab" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "064d75d" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version

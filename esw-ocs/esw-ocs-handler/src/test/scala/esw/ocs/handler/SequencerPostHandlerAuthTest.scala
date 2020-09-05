@@ -18,7 +18,7 @@ import esw.ocs.api.protocol.SequencerRequest
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
-import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.captor.{ArgCaptor, Captor}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll

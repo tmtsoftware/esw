@@ -30,15 +30,18 @@ import esw.gateway.server.handlers.{GatewayPostHandler, GatewayWebsocketHandler}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import io.lettuce.core.RedisClient
-import msocket.api.StreamRequestHandler
-import msocket.impl.RouteFactory
-import msocket.impl.post.{HttpPostHandler, PostRouteFactory}
-import msocket.impl.ws.WebsocketRouteFactory
+import msocket.jvm.stream.StreamRequestHandler
+import msocket.http.RouteFactory
+import msocket.http.post.{HttpPostHandler, PostRouteFactory}
+import msocket.http.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
 
 class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: Path, metricsEnabled: Boolean = false)
-    extends GatewayCodecs {
+    extends GatewayCodecs
+    with GatewayRequestLabels
+    with GatewayStreamRequestLabels {
+
   private[server] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "gateway-system")
 

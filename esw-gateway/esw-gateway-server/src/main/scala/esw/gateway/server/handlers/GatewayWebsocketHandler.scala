@@ -10,7 +10,7 @@ import esw.gateway.api.protocol.GatewayStreamRequest.{ComponentCommand, Sequence
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerStreamRequest
 import esw.ocs.handler.SequencerWebsocketHandler
-import msocket.api.{StreamRequestHandler, StreamResponse}
+import msocket.jvm.stream.{StreamRequestHandler, StreamResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 

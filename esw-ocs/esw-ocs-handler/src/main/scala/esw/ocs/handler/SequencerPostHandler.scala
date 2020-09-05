@@ -9,7 +9,7 @@ import esw.ocs.api.codecs.SequencerServiceCodecs._
 import esw.ocs.api.protocol.SequencerRequest
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.auth.SubsystemUserRolePolicy
-import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
+import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
 class SequencerPostHandler(
     sequencerApi: SequencerApi,

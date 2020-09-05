@@ -15,8 +15,8 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{GatewayRequest, GatewayStreamRequest}
 import esw.gateway.server.GatewayWiring
 import msocket.api.ContentType
-import msocket.impl.post.HttpPostTransport
-import msocket.impl.ws.WebsocketTransport
+import msocket.http.post.HttpPostTransport
+import msocket.http.ws.WebsocketTransport
 
 trait GatewayUtils extends LocationUtils with GatewayCodecs {
 

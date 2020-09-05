@@ -15,19 +15,24 @@ import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayRequest
-import esw.gateway.api.protocol.GatewayRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
-import esw.gateway.server.CswTestMocks
+import esw.gateway.api.protocol.GatewayRequest.{ComponentCommand, GetEvent, SequencerCommand}
 import esw.gateway.server.handlers.GatewayPostHandler
+import esw.gateway.server.{CswTestMocks, GatewayRequestLabels}
 import esw.ocs.api.protocol.SequencerRequest.Pause
 import esw.testcommons.BaseTestSuite
 import io.prometheus.client.CollectorRegistry
 import msocket.api.ContentType
-import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import org.scalatest.prop.Tables.Table
 
 import scala.concurrent.Future
 
-class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
+class PostMetricsTest
+    extends BaseTestSuite
+    with ScalatestRouteTest
+    with GatewayCodecs
+    with ClientHttpCodecs
+    with GatewayRequestLabels {
 
   override def clientContentType: ContentType = ContentType.Json
   implicit val typedSystem: ActorSystem[_]    = system.toTyped
@@ -72,7 +77,7 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
     (GetEvent(Set(eventKey)), labelValues("GetEvent"))
   ).foreach {
     case (request, labels) =>
-      s"increment http counter on every ${createLabel(request)} request | ESW-197" in {
+      s"increment http counter on every ${GatewayRequestLabels.createLabel(request)} request | ESW-197" in {
         runCounterTest(request, labels)
       }
   }

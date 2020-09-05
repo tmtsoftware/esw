@@ -19,7 +19,7 @@ object Dependencies {
     Seq(
       Csw.`csw-command-client`,
       AkkaHttp.`akka-http`,
-      Libs.`msocket-impl-jvm`,
+      Libs.`msocket-http`,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
@@ -29,7 +29,7 @@ object Dependencies {
     Seq(
       Csw.`csw-aas-http`,
       AkkaHttp.`akka-http`,
-      Libs.`msocket-impl-jvm`,
+      Libs.`msocket-http`,
       Libs.scalatest.value         % Test,
       AkkaHttp.`akka-http-testkit` % Test,
       Akka.`akka-stream-testkit`   % Test,
@@ -46,7 +46,7 @@ object Dependencies {
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
       Libs.enumeratum.value,
-      Libs.`msocket-impl-jvm`,
+      Libs.`msocket-http`,
       Libs.blockhound,
       Libs.scalatest.value            % Test,
       Akka.`akka-actor-testkit-typed` % Test,
@@ -58,7 +58,7 @@ object Dependencies {
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
-      Libs.`msocket-impl-jvm`,
+      Libs.`msocket-http`,
       Libs.scalatest.value            % Test,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,
@@ -76,7 +76,7 @@ object Dependencies {
   )
 
   val AgentServiceApiJvm: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Libs.`msocket-impl-jvm`)
+    Seq(Libs.`msocket-http`)
   )
 
   val AgentServiceImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
@@ -92,7 +92,7 @@ object Dependencies {
     Seq(
       Libs.`case-app`,
       Csw.`csw-aas-http`,
-      Libs.`msocket-impl-jvm`,
+      Libs.`msocket-http`,
       Libs.scalatest.value         % Test,
       Libs.`mockito-scala`         % Test,
       Libs.`tmt-test-reporter`     % Test,
@@ -220,7 +220,7 @@ object Dependencies {
       Csw.`csw-command-client`,
       Csw.`csw-config-client`,
       Libs.`case-app`,
-      Libs.`msocket-impl-jvm`,
+      Libs.`msocket-http`,
       Libs.`tmt-test-reporter`        % Test,
       Libs.`mockito-scala`            % Test,
       Libs.scalatest.value            % Test,
@@ -281,7 +281,7 @@ object Dependencies {
   val EswSmHandlers: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-aas-http`,
-      Libs.`msocket-impl-jvm`,
+      Libs.`msocket-http`,
       AkkaHttp.`akka-http`,
       AkkaHttp.`akka-http-testkit` % Test,
       Akka.`akka-stream-testkit`   % Test

@@ -9,7 +9,7 @@ import esw.sm.api.client.SequenceManagerClient
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.protocol.SequenceManagerRequest
 import msocket.api.ContentType
-import msocket.impl.post.HttpPostTransport
+import msocket.http.post.HttpPostTransport
 
 object SequenceManagerApiFactory {
 

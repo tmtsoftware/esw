@@ -16,7 +16,7 @@ import esw.gateway.server.utils.Resolver
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
-import msocket.impl.HttpError
+import msocket.http.HttpError
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}

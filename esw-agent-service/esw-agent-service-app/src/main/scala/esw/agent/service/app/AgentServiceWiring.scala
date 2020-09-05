@@ -20,7 +20,7 @@ import esw.agent.service.app.handlers.AgentServicePostHandler
 import esw.agent.service.impl.AgentServiceImpl
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
-import msocket.impl.post.PostRouteFactory
+import msocket.http.post.PostRouteFactory
 
 import scala.concurrent.Future
 

@@ -8,7 +8,7 @@ import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.protocol.AgentServiceRequest
 import msocket.api.ContentType
-import msocket.impl.post.HttpPostTransport
+import msocket.http.post.HttpPostTransport
 
 object AgentServiceClientFactory {
 

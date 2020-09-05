@@ -36,8 +36,8 @@ import esw.sm.handler.SequenceManagerRequestHandler
 import esw.sm.impl.config.SequenceManagerConfigParser
 import esw.sm.impl.core.SequenceManagerBehavior
 import esw.sm.impl.utils._
-import msocket.impl.RouteFactory
-import msocket.impl.post.PostRouteFactory
+import msocket.http.RouteFactory
+import msocket.http.post.PostRouteFactory
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}

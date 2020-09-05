@@ -4,7 +4,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs._
 import esw.ocs.api.protocol.SequencerStreamRequest
 import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
-import msocket.api.{StreamRequestHandler, StreamResponse}
+import msocket.jvm.stream.{StreamRequestHandler, StreamResponse}
 
 import scala.concurrent.Future
 

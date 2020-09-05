@@ -16,7 +16,7 @@ import esw.sm.api.protocol._
 import esw.sm.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
-import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future
 

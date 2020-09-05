@@ -32,7 +32,7 @@ import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerRequest}
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.api.models.ServiceError
-import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future

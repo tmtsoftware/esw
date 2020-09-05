@@ -44,9 +44,9 @@ import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import io.lettuce.core.RedisClient
-import msocket.impl.RouteFactory
-import msocket.impl.post.PostRouteFactory
-import msocket.impl.ws.WebsocketRouteFactory
+import msocket.http.RouteFactory
+import msocket.http.post.PostRouteFactory
+import msocket.http.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}

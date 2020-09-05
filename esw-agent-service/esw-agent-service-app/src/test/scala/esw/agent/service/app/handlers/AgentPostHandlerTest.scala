@@ -19,7 +19,7 @@ import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnS
 import esw.agent.service.app.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
-import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future
 

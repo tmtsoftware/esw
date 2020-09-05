@@ -8,7 +8,7 @@ import esw.sm.api.codecs.SequenceManagerServiceCodecs._
 import esw.sm.api.protocol.SequenceManagerRequest
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.auth.EswUserRolePolicy
-import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
+import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
 class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securityDirectives: SecurityDirectives)
     extends HttpPostHandler[SequenceManagerRequest]

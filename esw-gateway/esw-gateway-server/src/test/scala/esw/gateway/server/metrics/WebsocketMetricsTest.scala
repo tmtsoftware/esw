@@ -20,24 +20,29 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayStreamRequest.{ComponentCommand, SequencerCommand, Subscribe}
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
-import esw.gateway.server.CswTestMocks
 import esw.gateway.server.handlers.GatewayWebsocketHandler
+import esw.gateway.server.{CswTestMocks, GatewayStreamRequestLabels}
 import esw.ocs.api.protocol.SequencerStreamRequest
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import io.prometheus.client.CollectorRegistry
 import msocket.api.ContentEncoding.JsonText
 import msocket.api.ContentType
-import msocket.impl.CborByteString
-import msocket.impl.post.ClientHttpCodecs
-import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
-import msocket.impl.ws.WebsocketRouteFactory
+import msocket.http.CborByteString
+import msocket.http.post.ClientHttpCodecs
+import msocket.http.ws.WebsocketExtensions.WebsocketEncoding
+import msocket.http.ws.WebsocketRouteFactory
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
-class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
+class WebsocketMetricsTest
+    extends BaseTestSuite
+    with ScalatestRouteTest
+    with GatewayCodecs
+    with ClientHttpCodecs
+    with GatewayStreamRequestLabels {
 
   implicit val typedSystem: ActorSystem[_] = system.toTyped
   private val cswCtxMocks                  = new CswTestMocks()
@@ -154,8 +159,9 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
   }
 
   "increment websocket gauge on every Subscribe request and counter per message passing through ws, decrement gauge on completion | ESW-197" in {
-    val eventKey                                       = EventKey("tcs.event.key")
-    val subscribeLabelNames                            = labels(msg = "Subscribe", subscribedEventKeys = GatewayStreamRequest.createLabel(Set(eventKey)))
+    val eventKey = EventKey("tcs.event.key")
+    val subscribeLabelNames =
+      labels(msg = "Subscribe", subscribedEventKeys = GatewayStreamRequestLabels.createLabel(Set(eventKey)))
     def subscribeGaugeValue: Double                    = getGaugeValue(subscribeLabelNames)
     def subscribeCounterValue: Double                  = getCounterValue(subscribeLabelNames)
     val wsClient                                       = WSProbe()

@@ -10,8 +10,8 @@ import esw.ocs.api.client.SequencerClient
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.protocol.{SequencerRequest, SequencerStreamRequest}
 import msocket.api.ContentType
-import msocket.impl.post.HttpPostTransport
-import msocket.impl.ws.WebsocketTransport
+import msocket.http.post.HttpPostTransport
+import msocket.http.ws.WebsocketTransport
 
 object SequencerApiFactory extends SequencerServiceCodecs {
 

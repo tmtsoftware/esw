@@ -14,7 +14,7 @@ import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerRequest
 import esw.ocs.handler.SequencerPostHandler
-import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
+import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
 import scala.concurrent.Future
 
