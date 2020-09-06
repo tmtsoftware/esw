@@ -44,17 +44,17 @@ import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
 class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPrefix: Option[Prefix]) {
-  private[sm] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+  private[sm] lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
-  lazy val actorRuntime = new ActorRuntime(actorSystem)
+  lazy val actorRuntime = new ActorRuntime(smActorSystem)
   import actorRuntime._
   private implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
   private val prefix = Prefix(ESW, "sequence_manager")
 
-  private lazy val locationService: LocationService         = HttpLocationServiceFactory.makeLocalClient(actorSystem)
-  private lazy val configClientService: ConfigClientService = ConfigClientFactory.clientApi(actorSystem, locationService)
-  private lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(actorSystem)
+  private lazy val locationService: LocationService         = HttpLocationServiceFactory.makeLocalClient(smActorSystem)
+  private lazy val configClientService: ConfigClientService = ConfigClientFactory.clientApi(smActorSystem, locationService)
+  private lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(smActorSystem)
   private lazy val loggerFactory                            = new LoggerFactory(prefix)
   private lazy val logger: Logger                           = loggerFactory.getLogger
 
@@ -81,11 +81,11 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
     )
 
   private lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] = Await.result(
-    actorSystem ? (Spawn(sequenceManagerBehavior.setup, "sequence-manager", Props.empty, _)),
+    smActorSystem ? (Spawn(sequenceManagerBehavior.setup, "sequence-manager", Props.empty, _)),
     Timeouts.DefaultTimeout
   )
 
-  private lazy val config     = actorSystem.settings.config
+  private lazy val config     = smActorSystem.settings.config
   private lazy val connection = AkkaConnection(ComponentId(prefix, ComponentType.Service))
   private lazy val locationMetadata =
     agentPrefix
@@ -101,7 +101,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
       AkkaLocation(registration.connection, registration.actorRefURI, registration.metadata)
     )
 
-  private[sm] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, locationService)
+  private[sm] lazy val securityDirectives = SecurityDirectives(smActorSystem.settings.config, locationService)
   private lazy val postHandler            = new SequenceManagerRequestHandler(sequenceManager, securityDirectives)
 
   import SequenceManagerServiceCodecs._
@@ -133,7 +133,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
     }
 
   def shutdown(reason: CoordinatedShutdown.Reason): Future[Done] =
-    shutdownHttpService.flatMap(_ => CoordinatedShutdown(actorSystem).run(reason))
+    shutdownHttpService.flatMap(_ => CoordinatedShutdown(smActorSystem).run(reason))
 }
 
 private[sm] object SequenceManagerWiring {
@@ -145,7 +145,7 @@ private[sm] object SequenceManagerWiring {
       _securityDirectives: SecurityDirectives
   ): SequenceManagerWiring =
     new SequenceManagerWiring(obsModeConfig, isLocal, agentPrefix) {
-      override private[sm] lazy val actorSystem        = _actorSystem
+      override private[sm] lazy val smActorSystem      = _actorSystem
       override private[sm] lazy val securityDirectives = _securityDirectives
     }
 }

@@ -72,8 +72,8 @@ class SequenceManagerStub(val locationService: LocationService)(implicit val act
 
   def spawnMockSm(): SequenceManagerWiring = {
     val wiring = new SequenceManagerWiring(IOUtils.writeResourceToFile("smObsModeConfig.conf"), true, None) {
-      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
-      override lazy val sequenceManager: SequenceManagerApi             = new SequenceManagerStubImpl()
+      override lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
+      override lazy val sequenceManager: SequenceManagerApi               = new SequenceManagerStubImpl()
     }
     seqManagerWiring = Some(wiring)
     wiring.start()
