@@ -35,8 +35,8 @@ class AgentServiceStub(val locationService: LocationService)(implicit val actorS
   private var agentServiceWiring: Option[AgentServiceWiring] = _
   def spawnMockAgentService(): AgentServiceWiring = {
     val wiring = new AgentServiceWiring() {
-      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
-      override lazy val agentService: AgentServiceApi                   = new AgentServiceStubImpl()
+      override lazy val agentActorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
+      override lazy val agentService: AgentServiceApi                        = new AgentServiceStubImpl()
     }
     agentServiceWiring = Some(wiring)
     wiring.start()

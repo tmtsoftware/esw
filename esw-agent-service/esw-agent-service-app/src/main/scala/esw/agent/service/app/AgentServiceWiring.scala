@@ -27,19 +27,19 @@ import scala.concurrent.Future
 
 class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
 
-  lazy val prefix: Prefix                                  = Prefix(ESW, "agent_service")
-  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
-  lazy val actorRuntime                                    = new ActorRuntime(actorSystem)
+  lazy val agentActorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
+  lazy val actorRuntime                                         = new ActorRuntime(agentActorSystem)
   import actorRuntime._
 
-  private lazy val config = actorSystem.settings.config
+  private lazy val config = agentActorSystem.settings.config
+  lazy val prefix: Prefix = Prefix(ESW, "agent_service")
   lazy val settings       = new Settings(port, Some(prefix), config, ComponentType.Service)
 
   private lazy val loggerFactory = new LoggerFactory(settings.httpConnection.prefix)
   lazy val logger: Logger        = loggerFactory.getLogger
 
-  lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
-  private val securityDirective             = SecurityDirectives(actorSystem.settings.config, locationService)
+  lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(agentActorSystem)
+  private val securityDirective             = SecurityDirectives(agentActorSystem.settings.config, locationService)
 
   private val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val agentService: AgentServiceApi = new AgentServiceImpl(locationServiceUtil)
