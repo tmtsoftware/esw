@@ -19,6 +19,7 @@ import esw.ocs.api.protocol.SequencerRequest._
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.jvm.metrics.LabelExtractorImplicits
 import org.mockito.ArgumentMatchers.any
 import org.mockito.captor.{ArgCaptor, Captor}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
@@ -42,7 +43,9 @@ class SequencerPostHandlerAuthTest
   private val sequencer: SequencerApi                = mock[SequencerApi]
   private val securityDirectives: SecurityDirectives = mock[SecurityDirectives]
   private val postHandler                            = new SequencerPostHandler(sequencer, securityDirectives, Some(prefix)) // started with auth
-  private val route: Route                           = new PostRouteFactory[SequencerRequest]("post-endpoint", postHandler).make()
+
+  import LabelExtractorImplicits.default
+  private val route: Route = new PostRouteFactory[SequencerRequest]("post-endpoint", postHandler).make()
 
   override protected def beforeEach(): Unit = {
     reset(sequencer, securityDirectives, accessToken)

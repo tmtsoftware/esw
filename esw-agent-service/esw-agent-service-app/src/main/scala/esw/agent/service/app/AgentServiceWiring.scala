@@ -21,6 +21,7 @@ import esw.agent.service.impl.AgentServiceImpl
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import msocket.http.post.PostRouteFactory
+import msocket.jvm.metrics.LabelExtractorImplicits
 
 import scala.concurrent.Future
 
@@ -42,6 +43,8 @@ class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
 
   private val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val agentService: AgentServiceApi = new AgentServiceImpl(locationServiceUtil)
+
+  import LabelExtractorImplicits.default
   private lazy val route: Route =
     new PostRouteFactory("post-endpoint", new AgentServicePostHandler(agentService, securityDirective)).make()
 

@@ -47,6 +47,7 @@ import io.lettuce.core.RedisClient
 import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
 import msocket.http.ws.WebsocketRouteFactory
+import msocket.jvm.metrics.LabelExtractorImplicits
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
@@ -121,6 +122,7 @@ private[ocs] class SequencerWiring(
   private lazy val postHandler             = new SequencerPostHandler(sequencerApi, securityDirectives)
   private lazy val websocketHandlerFactory = new SequencerWebsocketHandler(sequencerApi)
 
+  import LabelExtractorImplicits.default
   lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(
     new PostRouteFactory("post-endpoint", postHandler),
     new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)

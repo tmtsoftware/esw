@@ -20,6 +20,7 @@ import esw.ocs.api.protocol._
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.jvm.metrics.LabelExtractorImplicits
 
 import scala.concurrent.Future
 
@@ -28,7 +29,9 @@ class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest wit
   private val sequencer: SequencerApi                = mock[SequencerApi]
   private val securityDirectives: SecurityDirectives = mock[SecurityDirectives]
   private val postHandler                            = new SequencerPostHandler(sequencer, securityDirectives)
-  lazy val route: Route                              = new PostRouteFactory[SequencerRequest]("post-endpoint", postHandler).make()
+
+  import LabelExtractorImplicits.default
+  lazy val route: Route = new PostRouteFactory[SequencerRequest]("post-endpoint", postHandler).make()
 
   override def clientContentType: ContentType = ContentType.Json
 

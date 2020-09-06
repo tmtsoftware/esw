@@ -34,6 +34,7 @@ import msocket.jvm.stream.StreamRequestHandler
 import msocket.http.RouteFactory
 import msocket.http.post.{HttpPostHandler, PostRouteFactory}
 import msocket.http.ws.WebsocketRouteFactory
+import msocket.jvm.metrics.LabelExtractorImplicits
 
 import scala.concurrent.Future
 
@@ -88,6 +89,7 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
 
   lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
 
+  import LabelExtractorImplicits.default
   lazy val routes: Route = RouteFactory.combine(metricsEnabled)(
     new PostRouteFactory[GatewayRequest]("post-endpoint", postHandler),
     new WebsocketRouteFactory[GatewayStreamRequest]("websocket-endpoint", websocketHandlerFactory)

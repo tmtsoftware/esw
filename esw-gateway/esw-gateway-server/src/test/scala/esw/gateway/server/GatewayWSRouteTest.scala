@@ -33,6 +33,7 @@ import msocket.http.CborByteString
 import msocket.http.post.ClientHttpCodecs
 import msocket.http.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.http.ws.WebsocketRouteFactory
+import msocket.jvm.metrics.LabelExtractorImplicits
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -50,8 +51,10 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   private val eventApi: EventApi   = new EventImpl(eventService, eventSubscriberUtil)
   private val websocketHandlerImpl = new GatewayWebsocketHandler(resolver, eventApi)
-  private val route                = new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl).make()
-  private val destination          = Prefix(TCS, "test")
+
+  import LabelExtractorImplicits.default
+  private val route       = new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl).make()
+  private val destination = Prefix(TCS, "test")
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()

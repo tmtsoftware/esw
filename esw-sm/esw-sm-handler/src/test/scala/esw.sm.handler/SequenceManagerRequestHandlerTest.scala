@@ -17,6 +17,7 @@ import esw.sm.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.jvm.metrics.LabelExtractorImplicits
 
 import scala.concurrent.Future
 
@@ -28,7 +29,9 @@ class SequenceManagerRequestHandlerTest
   private val sequenceManagerApi = mock[SequenceManagerApi]
   private val securityDirectives = mock[SecurityDirectives]
   private val postHandler        = new SequenceManagerRequestHandler(sequenceManagerApi, securityDirectives)
-  private val route              = new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler).make()
+
+  import LabelExtractorImplicits.default
+  private val route = new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler).make()
 
   private val string10    = randomString(10)
   private val obsMode     = ObsMode(string10)

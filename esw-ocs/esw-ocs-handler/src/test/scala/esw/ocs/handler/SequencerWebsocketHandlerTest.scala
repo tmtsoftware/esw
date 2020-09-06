@@ -22,6 +22,7 @@ import msocket.http.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
+import msocket.jvm.metrics.LabelExtractorImplicits
 
 class SequencerWebsocketHandlerTest
     extends BaseTestSuite
@@ -37,6 +38,7 @@ class SequencerWebsocketHandlerTest
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
+  import LabelExtractorImplicits.default
   lazy val route: Route =
     new WebsocketRouteFactory[SequencerStreamRequest]("websocket-endpoint", websocketHandlerFactory).make()
 

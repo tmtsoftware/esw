@@ -20,6 +20,7 @@ import esw.agent.service.app.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.jvm.metrics.LabelExtractorImplicits
 
 import scala.concurrent.Future
 
@@ -30,6 +31,7 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
   private val agentService: AgentServiceApi = mock[AgentServiceApi]
   private val securityDirective             = mock[SecurityDirectives]
 
+  import LabelExtractorImplicits.default
   private val route =
     new PostRouteFactory("post-endpoint", new AgentServicePostHandler(agentService, securityDirective)).make()
 

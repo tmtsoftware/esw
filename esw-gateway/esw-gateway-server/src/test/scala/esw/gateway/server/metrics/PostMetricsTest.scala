@@ -23,6 +23,7 @@ import esw.testcommons.BaseTestSuite
 import io.prometheus.client.CollectorRegistry
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.jvm.metrics.LabelExtractor
 import org.scalatest.prop.Tables.Table
 
 import scala.concurrent.Future
@@ -77,7 +78,7 @@ class PostMetricsTest
     (GetEvent(Set(eventKey)), labelValues("GetEvent"))
   ).foreach {
     case (request, labels) =>
-      s"increment http counter on every ${GatewayRequestLabels.createLabel(request)} request | ESW-197" in {
+      s"increment http counter on every ${LabelExtractor.createLabel(request)} request | ESW-197" in {
         runCounterTest(request, labels)
       }
   }
