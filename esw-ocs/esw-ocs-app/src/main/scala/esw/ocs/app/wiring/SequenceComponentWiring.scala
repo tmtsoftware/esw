@@ -11,8 +11,8 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.Timeouts
 import esw.commons.utils.location.EswLocationError.RegistrationError
+import esw.constants.CommonTimeouts
 import esw.http.core.wiring.ActorRuntime
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.impl.core.SequenceComponentBehavior
@@ -35,7 +35,7 @@ private[esw] class SequenceComponentWiring(
   import actorRuntime._
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
-  implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
+  implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
 
   def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] = {
     val loggerFactory                   = new LoggerFactory(sequenceComponentPrefix)
@@ -61,7 +61,7 @@ private[esw] class SequenceComponentWiring(
     new SequenceComponentRegistration(subsystem, name, agentPrefix, locationService, sequenceComponentFactory)
 
   def start(): Either[RegistrationError, AkkaLocation] =
-    Await.result(sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount), Timeouts.DefaultTimeout)
+    Await.result(sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount), CommonTimeouts.Wiring)
 
 }
 private[ocs] object SequenceComponentWiring {

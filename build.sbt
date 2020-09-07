@@ -373,7 +373,7 @@ lazy val `esw-shell` = project
   .dependsOn(`esw-ocs-impl`)
 
 lazy val `esw-http-template-wiring` = project
-  .dependsOn(`esw-http-core`)
+  .dependsOn(`esw-constants`, `esw-http-core`)
   .settings(
     libraryDependencies ++= Dependencies.Template.value
   )

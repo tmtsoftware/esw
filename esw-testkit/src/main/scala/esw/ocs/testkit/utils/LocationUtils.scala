@@ -7,10 +7,10 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.constants.CommonTimeouts
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.models.ObsMode
 
-import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LocationUtils extends BaseTestSuite {
@@ -20,7 +20,7 @@ trait LocationUtils extends BaseTestSuite {
   implicit def ec: ExecutionContext = actorSystem.executionContext
 
   def resolveHTTPLocationAsync(prefix: Prefix, componentType: ComponentType): Future[HttpLocation] =
-    locationService.resolve(HttpConnection(ComponentId(prefix, componentType)), 5.seconds).map(_.value)
+    locationService.resolve(HttpConnection(ComponentId(prefix, componentType)), CommonTimeouts.ResolveLocation).map(_.value)
 
   def resolveHTTPLocation(prefix: Prefix, componentType: ComponentType): HttpLocation =
     resolveHTTPLocationAsync(prefix, componentType).futureValue
@@ -38,7 +38,7 @@ trait LocationUtils extends BaseTestSuite {
 
   def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType): AkkaLocation =
     locationService
-      .resolve(AkkaConnection(ComponentId(prefix, componentType)), 5.seconds)
+      .resolve(AkkaConnection(ComponentId(prefix, componentType)), CommonTimeouts.ResolveLocation)
       .futureValue
       .value
 

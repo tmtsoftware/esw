@@ -29,10 +29,10 @@ class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers w
   private val akkaLocation = AkkaLocation(akkaConnection, new URI("actor-path"), Metadata.empty)
   private val httpLocation = HttpLocation(httpConnection, new URI("actor-path"), Metadata.empty)
 
-  when(locationService.resolve(akkaConnection, 5.seconds)).thenReturn(Future.successful(Some(akkaLocation)))
+  when(locationService.resolve(akkaConnection, 3.seconds)).thenReturn(Future.successful(Some(akkaLocation)))
 
-  when(locationService.resolve(AkkaConnection(httpComponentId), 5.seconds)).thenReturn(Future.successful(None))
-  when(locationService.resolve(httpConnection, 5.seconds)).thenReturn(Future.successful(Some(httpLocation)))
+  when(locationService.resolve(AkkaConnection(httpComponentId), 3.seconds)).thenReturn(Future.successful(None))
+  when(locationService.resolve(httpConnection, 3.seconds)).thenReturn(Future.successful(Some(httpLocation)))
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 

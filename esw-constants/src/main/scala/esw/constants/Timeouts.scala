@@ -2,13 +2,18 @@ package esw.constants
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
+object CommonTimeouts {
+  val Wiring: FiniteDuration          = 10.seconds
+  val ResolveLocation: FiniteDuration = 3.seconds
+}
+
 object AgentTimeouts {
   val SpawnComponent: FiniteDuration = 20.seconds
   val KillComponent: FiniteDuration  = 3.seconds
 }
 
 object SequenceComponentTimeouts {
-  private val Processing: FiniteDuration = 1.second // This includes time for processing other than 3rd party calls
+  private val Processing: FiniteDuration = 1.second                                             // This includes time for processing other than 3rd party calls
   val Status: FiniteDuration             = 1.seconds
   val LoadScript: FiniteDuration         = SequencerTimeouts.ScriptHandlerExecution
   val UnloadScript: FiniteDuration       = SequencerTimeouts.ScriptHandlerExecution + 2.seconds // shutdown redis client
@@ -19,6 +24,7 @@ object SequenceComponentTimeouts {
 }
 
 object SequencerTimeouts {
+  val LongTimeout: FiniteDuration            = 10.hours
   val SequencerOperation: FiniteDuration     = 2.second
   val ScriptHandlerExecution: FiniteDuration = 5.second
   val GetSequenceComponent: FiniteDuration   = SequencerOperation
@@ -49,4 +55,8 @@ object SequenceManagerTimeouts {
 
   val GetAllAgentStatus: FiniteDuration = SequenceComponentTimeouts.Status + Processing
   require(GetAllAgentStatus <= 2.seconds, "max timeout violated for GetAllAgentStatus")
+}
+
+object AdminTimeouts {
+  val GetLogMetadata: FiniteDuration = 2.seconds
 }

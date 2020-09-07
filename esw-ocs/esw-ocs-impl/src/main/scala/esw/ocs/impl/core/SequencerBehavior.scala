@@ -17,7 +17,7 @@ import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
-import esw.commons.Timeouts
+import esw.constants.SequencerTimeouts
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState._
@@ -348,7 +348,7 @@ class SequencerBehavior(
       data: SequencerData
   )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     Behaviors.receive { (ctx, msg) =>
-      implicit val timeout: Timeout = Timeouts.LongTimeout
+      implicit val timeout: Timeout = SequencerTimeouts.LongTimeout
       debug(s"Sequencer in State: $state, received Message: $msg")
 
       msg match {

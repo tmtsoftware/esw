@@ -24,9 +24,9 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.commons.Timeouts
 import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.commons.utils.location.LocationServiceUtil
+import esw.constants.CommonTimeouts
 import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerApiFactory
@@ -48,7 +48,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(smActorSystem)
   import actorRuntime._
-  private implicit val timeout: Timeout = Timeouts.DefaultTimeout
+  private implicit val timeout: Timeout = CommonTimeouts.Wiring
 
   private val prefix = Prefix(ESW, "sequence_manager")
 
@@ -68,7 +68,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   private lazy val obsModeConfig =
     Await.result(
       new SequenceManagerConfigParser(configUtils).read(obsModeConfigPath, isLocal),
-      Timeouts.DefaultTimeout
+      CommonTimeouts.Wiring
     )
 
   private lazy val sequenceManagerBehavior =
@@ -82,7 +82,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
 
   private lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] = Await.result(
     smActorSystem ? (Spawn(sequenceManagerBehavior.setup, "sequence-manager", Props.empty, _)),
-    Timeouts.DefaultTimeout
+    CommonTimeouts.Wiring
   )
 
   private lazy val config     = smActorSystem.settings.config
@@ -104,9 +104,8 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   private[sm] lazy val securityDirectives = SecurityDirectives(smActorSystem.settings.config, locationService)
   private lazy val postHandler            = new SequenceManagerRequestHandler(sequenceManager, securityDirectives)
 
-  import SequenceManagerServiceCodecs._
-
   import LabelExtractorImplicits.default
+  import SequenceManagerServiceCodecs._
   lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
 
   private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)
@@ -115,9 +114,9 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
 
   def start(): Either[RegistrationError, AkkaLocation] = {
     logger.info(s"Starting Sequence Manager with prefix: $prefix")
-    Await.result(httpServerBinding, Timeouts.DefaultTimeout)
+    Await.result(httpServerBinding, CommonTimeouts.Wiring)
 
-    val loc = Await.result(locationServiceUtil.register(registration), Timeouts.DefaultTimeout)
+    val loc = Await.result(locationServiceUtil.register(registration), CommonTimeouts.Wiring)
 
     logger.info(s"Successfully started Sequence Manager with prefix: $prefix")
     loc
@@ -127,7 +126,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
     async {
       logger.debug("Shutting down Sequence Manager http service")
       val (serverBinding, registrationResult) = await(httpServerBinding)
-      val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
+      val eventualTerminated                  = serverBinding.terminate(CommonTimeouts.Wiring)
       val eventualDone                        = registrationResult.unregister()
       await(eventualTerminated.flatMap(_ => eventualDone))
     }

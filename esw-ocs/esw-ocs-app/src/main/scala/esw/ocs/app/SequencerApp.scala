@@ -7,9 +7,9 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Subsystem
-import esw.commons.Timeouts
 import esw.commons.cli.EswCommandApp
 import esw.commons.utils.location.EswLocationError.RegistrationError
+import esw.constants.{CommonTimeouts, SequenceComponentTimeouts}
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
@@ -51,7 +51,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     }
     catch {
       case NonFatal(e) =>
-        Await.result(shutdown(FailureReason(e)), Timeouts.DefaultTimeout)
+        Await.result(shutdown(FailureReason(e)), CommonTimeouts.Wiring)
         throw e
     }
     wiring
@@ -73,16 +73,17 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   ): ScriptResponseOrUnhandled = {
     import sequenceComponentWiring._
     import actorRuntime._
-    val actorRef: ActorRef[SequenceComponentMsg]    = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-    val response: Future[ScriptResponseOrUnhandled] = actorRef ? (LoadScript(subsystem, mode, _))
+    val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
+    val response: Future[ScriptResponseOrUnhandled] =
+      (actorRef ? (LoadScript(subsystem, mode, _)))(SequenceComponentTimeouts.LoadScript, actorRuntime.typedSystem.scheduler)
 
-    Await.result(response, Timeouts.DefaultTimeout)
+    Await.result(response, CommonTimeouts.Wiring)
   }
 
   private def reportSequencer(seqCompAppResult: ScriptResponseOrUnhandled) = {
     seqCompAppResult match {
       case Unhandled(_, _, msg) =>
-        logAndThrowError(log, msg, new RuntimeException(s"Failed to start with error: ${msg}"))
+        logAndThrowError(log, msg, new RuntimeException(s"Failed to start with error: $msg"))
       case SequencerLocation(location) =>
         logInfo(
           log,

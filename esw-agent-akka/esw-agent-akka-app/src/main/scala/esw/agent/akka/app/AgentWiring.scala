@@ -15,8 +15,8 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager, ProcessOutput}
 import esw.agent.akka.client.AgentCommand
+import esw.constants.CommonTimeouts
 
-import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
 
 // $COVERAGE-OFF$
@@ -24,7 +24,7 @@ class AgentWiring(agentSettings: AgentSettings) {
 
   val prefix: Prefix = agentSettings.prefix
 
-  implicit lazy val timeout: Timeout = Timeout(10.seconds)
+  implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
   implicit lazy val log: Logger      = new LoggerFactory(prefix).getLogger
 
   private[agent] val agentConnection: AkkaConnection = AkkaConnection(ComponentId(prefix, ComponentType.Machine))

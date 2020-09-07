@@ -12,16 +12,16 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.logging.models.{Level, LogMetadata}
+import esw.constants.AdminTimeouts
 import esw.gateway.api.AdminApi
 import esw.gateway.api.protocol.InvalidComponent
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationLong
 
 class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AdminApi {
   import actorSystem.executionContext
   private val log: Logger       = AdminLogger.getLogger
-  implicit val timeout: Timeout = Timeout(5.seconds)
+  implicit val timeout: Timeout = AdminTimeouts.GetLogMetadata
 
   override def getLogMetadata(componentId: ComponentId): Future[LogMetadata] = {
     val akkaConnection = AkkaConnection(componentId)

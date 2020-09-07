@@ -8,16 +8,16 @@ import csw.command.client.messages.ComponentMessage
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
-import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherJavaOps
 import esw.commons.utils.location.LocationServiceUtil
+import esw.constants.CommonTimeouts
 
 class CommandUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
   def jResolveAkkaLocation(prefix: Prefix, componentType: ComponentType): CompletionStage[AkkaLocation] =
     locationServiceUtil
-      .resolve(AkkaConnection(ComponentId(prefix, componentType)), Timeouts.DefaultResolveLocationDuration)
+      .resolve(AkkaConnection(ComponentId(prefix, componentType)), CommonTimeouts.ResolveLocation)
       .toJava
 
   def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =

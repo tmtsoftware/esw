@@ -9,7 +9,6 @@ import csw.prefix.models.Prefix
 import esw.agent.akka.app.AgentCliCommand.StartCommand
 
 import scala.concurrent.Await
-import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
@@ -32,7 +31,7 @@ object AgentApp extends CommandApp[AgentCliCommand] {
     import wiring._
     try {
       actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
-      LocationServerStatus.requireUpLocally(5.seconds)
+      LocationServerStatus.requireUpLocally()
       log.debug("starting machine agent", Map("prefix" -> prefix))
       Await.result(lazyAgentRegistration, timeout.duration)
 

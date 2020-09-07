@@ -28,9 +28,9 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
 import esw.commons.utils.location.LocationServiceUtil
+import esw.constants.CommonTimeouts
 import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
@@ -65,7 +65,7 @@ private[ocs] class SequencerWiring(
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, subsystem, obsMode)
   import sequencerConfig._
 
-  implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
+  implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
   lazy val actorRuntime              = new ActorRuntime(actorSystem)
   import actorRuntime.{ec, typedSystem}
 
@@ -75,7 +75,7 @@ private[ocs] class SequencerWiring(
     actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
       Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
     },
-    Timeouts.DefaultTimeout
+    CommonTimeouts.Wiring
   )
 
   //Pass lambda to break circular dependency shown below.
@@ -101,7 +101,7 @@ private[ocs] class SequencerWiring(
 
   private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: ObsMode) => //todo: revisit timeout value
     locationServiceUtil
-      .resolveSequencer(_subsystem, _obsMode.name, Timeouts.DefaultTimeout)
+      .resolveSequencer(_subsystem, _obsMode.name, CommonTimeouts.ResolveLocation)
       .mapRight(SequencerApiFactory.make)
       .toJava
 
@@ -136,7 +136,7 @@ private[ocs] class SequencerWiring(
     async {
       logger.debug("Shutting down Sequencer http service")
       val (serverBinding, registrationResult) = await(httpServerBinding)
-      val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
+      val eventualTerminated                  = serverBinding.terminate(CommonTimeouts.Wiring)
       val eventualDone                        = registrationResult.unregister()
       await(eventualTerminated.flatMap(_ => eventualDone))
     }
@@ -152,12 +152,12 @@ private[ocs] class SequencerWiring(
         logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
         new Engine(script).start(sequenceOperatorFactory())
 
-        Await.result(httpServerBinding, Timeouts.DefaultTimeout)
+        Await.result(httpServerBinding, CommonTimeouts.Wiring)
 
         val registration = AkkaRegistrationFactory.make(AkkaConnection(componentId), sequencerRef)
         val loc = Await.result(
           locationServiceUtil.register(registration).mapLeft(e => LocationServiceError(e.msg)),
-          Timeouts.DefaultTimeout
+          CommonTimeouts.Wiring
         )
 
         logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
@@ -175,10 +175,10 @@ private[ocs] class SequencerWiring(
     }
 
     override def shutDown(): Done = {
-      Await.result(sequencerRef ? Shutdown, Timeouts.DefaultTimeout)
+      Await.result(sequencerRef ? Shutdown, CommonTimeouts.Wiring)
       redisClient.shutdown()
       actorSystem.terminate()
-      Await.result(actorSystem.whenTerminated, Timeouts.DefaultTimeout)
+      Await.result(actorSystem.whenTerminated, CommonTimeouts.Wiring)
     }
   }
 }

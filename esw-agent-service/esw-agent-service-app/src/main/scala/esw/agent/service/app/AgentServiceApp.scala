@@ -3,11 +3,10 @@ package esw.agent.service.app
 import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.core.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
-import esw.commons.Timeouts
 import esw.commons.cli.EswCommandApp
+import esw.constants.CommonTimeouts
 
 import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
 
 object AgentServiceApp extends EswCommandApp[AgentServiceAppCommand] {
@@ -24,12 +23,12 @@ object AgentServiceApp extends EswCommandApp[AgentServiceAppCommand] {
     val httpWiring = new AgentServiceWiring()
     try {
       httpWiring.actorRuntime.startLogging(progName, appVersion)
-      Await.result(httpWiring.start(), 10.seconds)
+      Await.result(httpWiring.start(), CommonTimeouts.Wiring)
       httpWiring
     }
     catch {
       case NonFatal(e) =>
-        Await.result(httpWiring.actorRuntime.shutdown(UnknownReason), Timeouts.DefaultTimeout)
+        Await.result(httpWiring.actorRuntime.shutdown(UnknownReason), CommonTimeouts.Wiring)
         throw e
     }
   }

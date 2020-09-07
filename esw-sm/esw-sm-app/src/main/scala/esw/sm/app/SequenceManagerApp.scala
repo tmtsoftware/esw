@@ -6,8 +6,8 @@ import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix
-import esw.commons.Timeouts
 import esw.commons.cli.EswCommandApp
+import esw.constants.CommonTimeouts
 import esw.sm.app.SequenceManagerAppCommand._
 
 import scala.concurrent.Await
@@ -47,7 +47,7 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
     }
     catch {
       case NonFatal(e) =>
-        Await.result(actorRuntime.shutdown(UnknownReason), Timeouts.DefaultTimeout)
+        Await.result(actorRuntime.shutdown(UnknownReason), CommonTimeouts.Wiring)
         throw e
     }
   }

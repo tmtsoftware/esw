@@ -12,7 +12,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
-import esw.commons.Timeouts
+import esw.constants.CommonTimeouts
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.{ExecutionException, Future}
@@ -35,47 +35,47 @@ class CommandUtilTest extends BaseTestSuite {
   private val commandUtil = new CommandUtil(locationServiceUtil)
   "jResolveAkkaLocation" must {
     "return completion stage for akka location" in {
-      when(locationServiceUtil.resolve(connection, Timeouts.DefaultResolveLocationDuration))
+      when(locationServiceUtil.resolve(connection, CommonTimeouts.ResolveLocation))
         .thenReturn(Future.successful(Right(location)))
 
       val completableLocation = commandUtil.jResolveAkkaLocation(prefix, componentType)
 
       completableLocation.toCompletableFuture.get(10, TimeUnit.SECONDS) shouldBe location
-      verify(locationServiceUtil).resolve(connection, Timeouts.DefaultResolveLocationDuration)
+      verify(locationServiceUtil).resolve(connection, CommonTimeouts.ResolveLocation)
     }
 
     "throw exception if location service returns error" in {
-      when(locationServiceUtil.resolve(connection, Timeouts.DefaultResolveLocationDuration))
+      when(locationServiceUtil.resolve(connection, CommonTimeouts.ResolveLocation))
         .thenReturn(Future.successful(Left(LocationNotFound("Error while resolving location"))))
 
       val message = intercept[ExecutionException](
         commandUtil.jResolveAkkaLocation(prefix, componentType).toCompletableFuture.get(10, TimeUnit.SECONDS)
       ).getLocalizedMessage
       "esw.commons.utils.location.EswLocationError$LocationNotFound" shouldBe message
-      verify(locationServiceUtil).resolve(connection, Timeouts.DefaultResolveLocationDuration)
+      verify(locationServiceUtil).resolve(connection, CommonTimeouts.ResolveLocation)
     }
   }
 
   "jResolveComponentRef" must {
     "return completion stage for component ref" in {
-      when(locationServiceUtil.resolve(connection, Timeouts.DefaultResolveLocationDuration))
+      when(locationServiceUtil.resolve(connection, CommonTimeouts.ResolveLocation))
         .thenReturn(Future.successful(Right(location)))
 
       val completableComponentRef = commandUtil.jResolveComponentRef(prefix, componentType)
 
       completableComponentRef.toCompletableFuture.get(10, TimeUnit.SECONDS) shouldBe testRef
-      verify(locationServiceUtil).resolve(connection, Timeouts.DefaultResolveLocationDuration)
+      verify(locationServiceUtil).resolve(connection, CommonTimeouts.ResolveLocation)
     }
 
     "throw exception if location service returns error" in {
-      when(locationServiceUtil.resolve(connection, Timeouts.DefaultResolveLocationDuration))
+      when(locationServiceUtil.resolve(connection, CommonTimeouts.ResolveLocation))
         .thenReturn(Future.successful(Left(LocationNotFound("Error while resolving location"))))
 
       val message = intercept[ExecutionException](
         commandUtil.jResolveComponentRef(prefix, componentType).toCompletableFuture.get(10, TimeUnit.SECONDS)
       ).getLocalizedMessage
       "esw.commons.utils.location.EswLocationError$LocationNotFound" shouldBe message
-      verify(locationServiceUtil).resolve(connection, Timeouts.DefaultResolveLocationDuration)
+      verify(locationServiceUtil).resolve(connection, CommonTimeouts.ResolveLocation)
     }
   }
 }
