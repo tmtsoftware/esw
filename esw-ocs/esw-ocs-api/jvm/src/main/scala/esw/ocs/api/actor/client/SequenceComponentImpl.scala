@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
-import esw.constants.Timeouts
+import esw.constants.SequenceComponentTimeouts
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, RestartScript, Shutdown, UnloadScript}
@@ -22,19 +22,19 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
 
   override def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[ScriptResponseOrUnhandled] =
     (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(subsystem, obsMode, x) })(
-      Timeouts.LoadScript,
+      SequenceComponentTimeouts.LoadScript,
       actorSystem.scheduler
     )
 
   override def restartScript(): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? RestartScript)(Timeouts.RestartScript, actorSystem.scheduler)
+    (sequenceComponentRef ? RestartScript)(SequenceComponentTimeouts.RestartScript, actorSystem.scheduler)
 
   override def status: Future[GetStatusResponse] =
-    (sequenceComponentRef ? GetStatus)(Timeouts.SequenceComponentStatus, actorSystem.scheduler)
+    (sequenceComponentRef ? GetStatus)(SequenceComponentTimeouts.Status, actorSystem.scheduler)
 
   override def unloadScript(): Future[Ok.type] =
-    (sequenceComponentRef ? UnloadScript)(Timeouts.UnloadScript, actorSystem.scheduler)
+    (sequenceComponentRef ? UnloadScript)(SequenceComponentTimeouts.UnloadScript, actorSystem.scheduler)
 
   override def shutdown(): Future[Ok.type] =
-    (sequenceComponentRef ? Shutdown)(Timeouts.Shutdown, actorSystem.scheduler)
+    (sequenceComponentRef ? Shutdown)(SequenceComponentTimeouts.Shutdown, actorSystem.scheduler)
 }

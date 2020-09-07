@@ -141,7 +141,7 @@ lazy val `esw-agent-akka-client` = project
   .in(file("esw-agent-akka/esw-agent-akka-client"))
   .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentAkkaClient.value)
-  .dependsOn(`esw-agent-service-api`.jvm, `esw-test-commons` % Test)
+  .dependsOn(`esw-constants`, `esw-agent-service-api`.jvm, `esw-test-commons` % Test)
 
 lazy val `esw-agent-akka-app` = project
   .in(file("esw-agent-akka/esw-agent-akka-app"))

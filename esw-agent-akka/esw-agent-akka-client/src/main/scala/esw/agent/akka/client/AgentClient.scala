@@ -4,7 +4,6 @@ import java.nio.file.Path
 
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
@@ -15,27 +14,32 @@ import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, 
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
+import esw.constants.AgentTimeouts
 
 import scala.concurrent.Future
-import scala.jdk.DurationConverters.JavaDurationOps
 
 class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]) {
-  private implicit val timeout: Timeout = actorSystem.settings.config.getDuration("agent.akka.client.askTimeout").toScala
-
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefix                      = akkaLocation.prefix
 
   def spawnSequenceComponent(componentName: String, version: Option[String] = None): Future[SpawnResponse] =
-    agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version))
+    (agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version)))(
+      AgentTimeouts.SpawnComponent,
+      actorSystem.scheduler
+    )
 
   def spawnSequenceManager(
       obsModeConfigPath: Path,
       isConfigLocal: Boolean,
       version: Option[String] = None
   ): Future[SpawnResponse] =
-    agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version))
+    (agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version)))(
+      AgentTimeouts.SpawnComponent,
+      actorSystem.scheduler
+    )
 
-  def killComponent(location: Location): Future[KillResponse] = agentRef ? (KillComponent(_, location))
+  def killComponent(location: Location): Future[KillResponse] =
+    (agentRef ? (KillComponent(_, location)))(AgentTimeouts.KillComponent, actorSystem.scheduler)
 }
 
 object AgentClient {
