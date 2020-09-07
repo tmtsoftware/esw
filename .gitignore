@@ -1,9 +1,8 @@
+.bsp
 ignore
 .vagrant
 logs
 *.log
-project/project/target
-project/target
 target
 tmp
 .history
@@ -38,9 +37,6 @@ journal
 snapshots
 *.rdb
 .bloop
-project/.bloop
-project/project/.bloop
-
 .metals
 .gradle
 */**/.kotlintest

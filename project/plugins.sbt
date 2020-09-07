@@ -1,5 +1,4 @@
 addSbtPlugin("com.timushev.sbt"      % "sbt-updates"              % "0.5.1")
-addSbtPlugin("com.timushev.sbt"      % "sbt-rewarn"               % "0.1.0")
 addSbtPlugin("net.virtual-void"      % "sbt-dependency-graph"     % "0.10.0-RC1")
 addSbtPlugin("io.spray"              % "sbt-revolver"             % "0.9.1")
 addSbtPlugin("org.scoverage"         % "sbt-scoverage"            % "1.6.1")
@@ -36,5 +35,5 @@ scalacOptions ++= Seq(
   "-Xfuture"
 )
 
-// uncomment this to use csbt for updateSbtClassifiers, then comment back
-//addSbtCoursier
+// does not work with sbt 1.4.x, yet.
+// addSbtPlugin("com.timushev.sbt"   % "sbt-rewarn"               % "0.1.0")
