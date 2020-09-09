@@ -6,7 +6,7 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
 import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
 
-private[protocol] sealed trait SmFailure extends Throwable
+private[protocol] sealed trait SmFailure extends Exception
 
 sealed trait SmResponse extends SmAkkaSerializable
 
@@ -24,7 +24,9 @@ sealed trait GetRunningObsModesResponse extends SmResponse
 
 object GetRunningObsModesResponse {
   case class Success(runningObsModes: Set[ObsMode]) extends GetRunningObsModesResponse
-  case class Failed(msg: String)                    extends SmFailure with GetRunningObsModesResponse
+  case class Failed(msg: String) extends SmFailure with GetRunningObsModesResponse {
+    override def getMessage: String = msg
+  }
 }
 
 sealed trait StartSequencerResponse extends SmResponse
@@ -36,7 +38,9 @@ object StartSequencerResponse {
 
   sealed trait Failure extends SmFailure with StartSequencerResponse {
     def msg: String
+    override def getMessage: String = msg
   }
+
   case class LoadScriptError(msg: String) extends Failure with RestartSequencerResponse.Failure
 
   case class SequenceComponentNotAvailable private[sm] (subsystems: List[Subsystem], msg: String)
@@ -62,6 +66,7 @@ object RestartSequencerResponse {
 
   sealed trait Failure extends SmFailure with RestartSequencerResponse {
     def msg: String
+    override def getMessage: String = msg
   }
 }
 
@@ -83,7 +88,9 @@ object CommonFailure {
       with ShutdownSequencersResponse.Failure
       with ShutdownSequenceComponentResponse.Failure
       with ProvisionResponse.Failure
-      with AgentStatusResponse.Failure
+      with AgentStatusResponse.Failure {
+    override def getMessage: String = msg
+  }
 }
 
 sealed trait ProvisionResponse extends SmResponse

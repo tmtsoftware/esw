@@ -28,8 +28,9 @@ object SequenceComponentResponse {
   final case class SequencerLocation(location: AkkaLocation) extends ScriptErrorOrSequencerLocation
 }
 
-sealed trait ScriptError extends Throwable with ScriptErrorOrSequencerLocation {
+sealed trait ScriptError extends Exception with ScriptErrorOrSequencerLocation {
   def msg: String
+  override def getMessage: String = msg
 }
 
 object ScriptError {
