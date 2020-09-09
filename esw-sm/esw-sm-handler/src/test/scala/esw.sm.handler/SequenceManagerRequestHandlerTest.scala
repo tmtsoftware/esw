@@ -2,7 +2,6 @@ package esw.sm.handler
 
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import csw.aas.core.token.AccessToken
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
@@ -17,7 +16,8 @@ import esw.sm.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
-import msocket.jvm.metrics.LabelExtractorImplicits
+import msocket.jvm.metrics.LabelExtractor
+import msocket.security.models.AccessToken
 
 import scala.concurrent.Future
 
@@ -30,7 +30,7 @@ class SequenceManagerRequestHandlerTest
   private val securityDirectives = mock[SecurityDirectives]
   private val postHandler        = new SequenceManagerRequestHandler(sequenceManagerApi, securityDirectives)
 
-  import LabelExtractorImplicits.default
+  import LabelExtractor.Implicits.default
   private val route = new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler).make()
 
   private val string10    = randomString(10)

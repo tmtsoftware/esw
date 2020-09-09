@@ -5,7 +5,6 @@ import java.nio.file.Path
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import csw.aas.core.token.AccessToken
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Service
@@ -20,7 +19,8 @@ import esw.agent.service.app.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
-import msocket.jvm.metrics.LabelExtractorImplicits
+import msocket.jvm.metrics.LabelExtractor
+import msocket.security.models.AccessToken
 
 import scala.concurrent.Future
 
@@ -31,7 +31,7 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
   private val agentService: AgentServiceApi = mock[AgentServiceApi]
   private val securityDirective             = mock[SecurityDirectives]
 
-  import LabelExtractorImplicits.default
+  import LabelExtractor.Implicits.default
   private val route =
     new PostRouteFactory("post-endpoint", new AgentServicePostHandler(agentService, securityDirective)).make()
 

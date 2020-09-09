@@ -3,8 +3,6 @@ package esw.ocs.handler
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import csw.aas.core.token.AccessToken
-import csw.aas.core.token.claims.Access
 import csw.aas.http.AuthorizationPolicy.CustomPolicy
 import csw.aas.http.SecurityDirectives
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -19,7 +17,8 @@ import esw.ocs.api.protocol.SequencerRequest._
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
-import msocket.jvm.metrics.LabelExtractorImplicits
+import msocket.jvm.metrics.LabelExtractor
+import msocket.security.models.{Access, AccessToken}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.captor.{ArgCaptor, Captor}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
@@ -44,7 +43,7 @@ class SequencerPostHandlerAuthTest
   private val securityDirectives: SecurityDirectives = mock[SecurityDirectives]
   private val postHandler                            = new SequencerPostHandler(sequencer, securityDirectives, Some(prefix)) // started with auth
 
-  import LabelExtractorImplicits.default
+  import LabelExtractor.Implicits.default
   private val route: Route = new PostRouteFactory[SequencerRequest]("post-endpoint", postHandler).make()
 
   override protected def beforeEach(): Unit = {

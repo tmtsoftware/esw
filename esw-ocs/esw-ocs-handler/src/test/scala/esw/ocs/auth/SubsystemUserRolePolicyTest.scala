@@ -1,8 +1,7 @@
 package esw.ocs.auth
 
-import csw.aas.core.token.AccessToken
-import csw.aas.core.token.claims.Access
 import csw.prefix.models.Subsystem
+import msocket.security.models.{Access, AccessToken}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 

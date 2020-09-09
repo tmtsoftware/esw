@@ -38,7 +38,7 @@ import esw.sm.impl.core.SequenceManagerBehavior
 import esw.sm.impl.utils._
 import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
-import msocket.jvm.metrics.LabelExtractorImplicits
+import msocket.jvm.metrics.LabelExtractor
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
@@ -104,7 +104,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   private[sm] lazy val securityDirectives = SecurityDirectives(smActorSystem.settings.config, locationService)
   private lazy val postHandler            = new SequenceManagerRequestHandler(sequenceManager, securityDirectives)
 
-  import LabelExtractorImplicits.default
+  import LabelExtractor.Implicits.default
   import SequenceManagerServiceCodecs._
   lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
 

@@ -33,7 +33,7 @@ import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.api.models.ServiceError
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
-import msocket.jvm.metrics.LabelExtractorImplicits
+import msocket.jvm.metrics.LabelExtractor
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future
@@ -51,7 +51,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   private val postHandlerImpl =
     new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
 
-  import LabelExtractorImplicits.default
+  import LabelExtractor.Implicits.default
   private val route = new PostRouteFactory("post-endpoint", postHandlerImpl).make()
 
   private val source      = Prefix("esw.test")
