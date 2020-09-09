@@ -14,7 +14,7 @@ object AgentTimeouts {
 
 object SequenceComponentTimeouts {
   private val Processing: FiniteDuration = 1.second                                             // This includes time for processing other than 3rd party calls
-  val Status: FiniteDuration             = 1.seconds
+  val Status: FiniteDuration             = 1.second
   val LoadScript: FiniteDuration         = SequencerTimeouts.ScriptHandlerExecution
   val UnloadScript: FiniteDuration       = SequencerTimeouts.ScriptHandlerExecution + 2.seconds // shutdown redis client
   val Shutdown: FiniteDuration           = UnloadScript + Processing
@@ -25,14 +25,14 @@ object SequenceComponentTimeouts {
 
 object SequencerTimeouts {
   val LongTimeout: FiniteDuration            = 10.hours
-  val SequencerOperation: FiniteDuration     = 2.second
-  val ScriptHandlerExecution: FiniteDuration = 5.second
+  val SequencerOperation: FiniteDuration     = 2.seconds
+  val ScriptHandlerExecution: FiniteDuration = 5.seconds
   val GetSequenceComponent: FiniteDuration   = SequencerOperation
 }
 
 object SequenceManagerTimeouts {
   private val Processing: FiniteDuration   = 1.second // This includes time for processing other than 3rd party calls
-  val GetAllRunningObsMode: FiniteDuration = 3.second
+  val GetAllRunningObsMode: FiniteDuration = 3.seconds
 
   val Configure: FiniteDuration = SequenceComponentTimeouts.Status + SequenceComponentTimeouts.LoadScript + Processing
   require(Configure <= 7.seconds, "max timeout violated for Configure")
