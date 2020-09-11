@@ -170,16 +170,22 @@ private[ocs] class SequencerWiring(
       catch {
         // This error will be logged in SequenceComponent.Do not log it here,
         // because exception caused while initialising will fail the instance creation of logger.
-        case NonFatal(e) => Left(LoadingScriptFailed(e.getMessage))
+        case NonFatal(e) =>
+          terminateActorSystem()
+          Left(LoadingScriptFailed(e.getMessage))
       }
     }
 
     override def shutDown(): Done = {
       Await.result(sequencerRef ? Shutdown, CommonTimeouts.Wiring)
       redisClient.shutdown()
-      actorSystem.terminate()
-      Await.result(actorSystem.whenTerminated, CommonTimeouts.Wiring)
+      terminateActorSystem()
     }
+  }
+
+  private def terminateActorSystem(): Done = {
+    actorSystem.terminate()
+    Await.result(actorSystem.whenTerminated, CommonTimeouts.Wiring)
   }
 }
 // $COVERAGE-ON$
