@@ -65,7 +65,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .jvmConfigure(
     _.enablePlugins(MaybeCoverage)
       .settings(libraryDependencies ++= Dependencies.OcsApiJvm.value)
-      .dependsOn(`esw-constants`,`esw-test-commons` % Test)
+      .dependsOn(`esw-constants`, `esw-test-commons` % Test)
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
@@ -370,7 +370,7 @@ lazy val `esw-shell` = project
     libraryDependencies ++= Dependencies.EswShell.value,
     fork := false // this is needed for the ammonite shell to run
   )
-  .dependsOn(`esw-ocs-impl`)
+  .dependsOn(`esw-ocs-impl`, `esw-sm-api`.jvm)
 
 lazy val `esw-http-template-wiring` = project
   .dependsOn(`esw-constants`, `esw-http-core`)

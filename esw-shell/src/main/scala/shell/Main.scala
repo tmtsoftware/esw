@@ -1,13 +1,12 @@
 package shell
 
-import csw.framework.ShellWiring
-import esw.CommandServiceDsl
+import esw.EswWiring
 
 object Main {
 
   def main(args: Array[String]): Unit = {
     println("+++++ starting shell +++++")
-    val shellWiring = new ShellWiring
+    val eswWiring = new EswWiring
     ammonite
       .Main(
         predefCode = """
@@ -22,12 +21,15 @@ object Main {
                 |import csw.prefix.models.Prefix
                 |import shell.utils.Extensions._
                 |import shell.utils.Timeouts._
+                |import esw.ocs.api.models.ObsMode
                 |import commandService._
-                |import commandService.shellWiring.cswContext._
+                |import eswWiring.shellWiring.cswContext._
                 |""".stripMargin
       )
       .run(
-        "commandService" -> new CommandServiceDsl(shellWiring)
+        "eswWiring"              -> eswWiring,
+        "commandService"         -> eswWiring.commandServiceDsl,
+        "sequenceManagerService" -> eswWiring.sequenceManager _
       )
   }
 }
