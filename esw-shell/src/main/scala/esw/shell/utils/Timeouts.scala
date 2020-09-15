@@ -1,4 +1,4 @@
-package shell.utils
+package esw.shell.utils
 
 import akka.util.Timeout
 

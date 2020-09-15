@@ -1,20 +1,24 @@
-package esw
+package esw.shell
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.framework.ShellWiring
+import csw.framework.CswWiring
 import csw.location.api.models.ComponentType.{Machine, Service}
 import esw.agent.akka.client.AgentClient
+import esw.gateway.api.AdminApi
+import esw.gateway.impl.AdminImpl
+import esw.shell.utils.Extensions.FutureExt
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
-import shell.utils.Extensions.FutureExt
 
 class EswWiring {
-  lazy val shellWiring = new ShellWiring
+  private implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = cswWiring.wiring.actorSystem
 
-  implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = shellWiring.wiring.actorSystem
+  lazy val cswWiring = new CswWiring
 
-  private lazy val locationUtils = new LocationUtils(shellWiring.cswContext.locationService)
+  private lazy val locationUtils = new LocationUtils(cswWiring.cswContext.locationService)
   lazy val commandServiceDsl     = new CommandServiceDsl(locationUtils)
+
+  lazy val adminApi: AdminApi = new AdminImpl(cswWiring.cswContext.locationService)
 
   def sequenceManager(): SequenceManagerApi =
     locationUtils

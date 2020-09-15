@@ -1,4 +1,4 @@
-package esw
+package esw.shell
 
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
@@ -7,7 +7,7 @@ import csw.location.api.models.ComponentType.{Assembly, HCD}
 import csw.prefix.models.Subsystem
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerImpl
-import shell.utils.Extensions.FutureExt
+import esw.shell.utils.Extensions.FutureExt
 
 import scala.concurrent.ExecutionContext
 

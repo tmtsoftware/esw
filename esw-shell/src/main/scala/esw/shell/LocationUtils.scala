@@ -1,4 +1,4 @@
-package esw
+package esw.shell
 
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
