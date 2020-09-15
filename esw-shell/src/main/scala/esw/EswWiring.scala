@@ -2,7 +2,8 @@ package esw
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.framework.ShellWiring
-import csw.location.api.models.ComponentType.Service
+import csw.location.api.models.ComponentType.{Machine, Service}
+import esw.agent.akka.client.AgentClient
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
 import shell.utils.Extensions.FutureExt
@@ -20,4 +21,11 @@ class EswWiring {
       .findAkkaLocation("ESW.sequence_manager", Service)
       .map(new SequenceManagerImpl(_))(typedSystem.executionContext)
       .await()
+
+  def agentAkkaClient(agentPrefix: String): AgentClient =
+    locationUtils
+      .findAkkaLocation(agentPrefix, Machine)
+      .map(new AgentClient(_))(typedSystem.executionContext)
+      .await()
+
 }

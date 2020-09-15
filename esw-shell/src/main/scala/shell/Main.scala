@@ -3,7 +3,6 @@ package shell
 import esw.EswWiring
 
 object Main {
-
   def main(args: Array[String]): Unit = {
     println("+++++ starting shell +++++")
     val eswWiring = new EswWiring
@@ -24,12 +23,14 @@ object Main {
                 |import esw.ocs.api.models.ObsMode
                 |import commandService._
                 |import eswWiring.shellWiring.cswContext._
+                |import java.nio.file.Path
                 |""".stripMargin
       )
       .run(
         "eswWiring"              -> eswWiring,
         "commandService"         -> eswWiring.commandServiceDsl,
-        "sequenceManagerService" -> eswWiring.sequenceManager _
+        "sequenceManagerService" -> eswWiring.sequenceManager _,
+        "agentClient"            -> eswWiring.agentAkkaClient
       )
   }
 }
