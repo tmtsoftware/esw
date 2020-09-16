@@ -32,6 +32,17 @@ For any IO bound operations follow these steps:
 1. Create a new function and mark that with `suspend` keyword
 2. Wrap function body inside `withContext(Dispatchers.IO)`
 
+Following example demonstrate writing IO bound operation,
+In this example `BufferredReader.readLine()` is IO bound and takes more than few seconds to finish.
+
+Kotlin
+:   @@snip [io-bound.kt](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/ioIntensive.kt) { #io-bound-function }
+
+Following shows, usage of the above io heavy function in main sequencer script
+
+Kotlin
+:   @@snip [IOIntensiveScript.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/IOBoundScript.kts) { #io-bound-call }
+
 ## How does it work behind the scenes?
 
 `withContext(Dispatchers.CPU)` or `withContext(Dispatchers.IO)` construct calls specified function on a provided dispatcher which is different from the main script.
