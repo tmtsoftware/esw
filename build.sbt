@@ -204,6 +204,7 @@ lazy val `esw-integration-test` = project
     `esw-sm-app`,
     `esw-testkit`,
     `esw-agent-service-app`,
+    `esw-shell`,
     `esw-test-commons` % Test
   )
   .settings(
