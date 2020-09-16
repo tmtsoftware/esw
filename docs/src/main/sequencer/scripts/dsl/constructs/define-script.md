@@ -140,3 +140,6 @@ The usage of the above hypothetical compute function is shown as follows
 
 Kotlin
 :   @@snip [ComputeIntensiveScript.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ComputeIntensiveScript.kts) { #call-compute-intensive }
+
+Note:
+To read more on this topic the author of kotlin-coroutine explains it in much simpler way. [Link](https://medium.com/@elizarov/blocking-threads-suspending-coroutines-d33e11bf4761)
