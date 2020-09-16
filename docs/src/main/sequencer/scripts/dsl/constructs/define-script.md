@@ -125,4 +125,18 @@ The example below shows loading a reusable script into a State.
 Kotlin
 :   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #load-script-fsm }
 
+### Calling CPU intensive function within Script
+A compute intensive function cannot be called inside the main script because that would block the main thread halting the execution of the script.
+To call this cpu intensive function in a non-blocking manner, we do this semantically by wrapping it inside `withContext(Dispatchers.Default)`,
+this way we can avoid blocking the main thread and letting the default dispatcher assign it a new thread from its thread pool.
+secondly we make the function suspending, so we can call this function from anywhere without having to worry about whether it is blocking/non-blocking function.
 
+The following example shows how to write a cpu intensive function
+
+Kotlin
+:   @@snip [compute-intesive.kt](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/computeIntensive.kt) { #compute-intensive-function }
+
+The usage of the above hypothetical compute function is shown as follows
+
+Kotlin
+:   @@snip [ComputeIntensiveScript.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ComputeIntensiveScript.kts) { #call-compute-intensive }
