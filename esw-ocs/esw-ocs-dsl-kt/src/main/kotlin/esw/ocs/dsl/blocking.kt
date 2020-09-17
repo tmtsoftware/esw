@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
@@ -27,7 +28,12 @@ suspend fun <T> blockingCpu(block: CoroutineScope.() -> T): T = withContext(CpuB
 suspend fun <T> blockingIo(block: CoroutineScope.() -> T): T = withContext(Dispatchers.IO) { block() }
 
 // =========== INTERNAL ===========
-internal val CpuBound = lazy { Executors.newFixedThreadPool(4).asCoroutineDispatcher() }
-internal fun shutdownCpuBoundDispatcher() {
+private val cpuThreadPool: ExecutorService by lazy { Executors.newFixedThreadPool(4) }
+private val CpuBound = lazy { cpuThreadPool.asCoroutineDispatcher() }
+
+fun shutdownCpuBoundDispatcher() {
     if (CpuBound.isInitialized()) CpuBound.value.close()
 }
+
+fun isCpuBoundDispatcherShutdown() = cpuThreadPool.isShutdown
+
