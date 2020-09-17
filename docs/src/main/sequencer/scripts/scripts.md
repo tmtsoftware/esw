@@ -11,8 +11,7 @@ Script to maintain global state variables that can be accessed in a thread-safe 
 @@@ note {title="Do not starve the execution thread!" }
  
 The Script DSL is written to execute with a single thread. Script processing steps should not stay busy for long periods.
-For instance, do not execute a CPU-bound routine on the single thread. In stead, use an asynchronous approach using a
-different thread.
+For instance, do not execute a CPU-bound routine on the single thread. In stead, follow patterns mentioned @ref[here](dsl/constructs/blocking.md).
  
 @@@
 

@@ -15,6 +15,7 @@ import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
+import esw.ocs.dsl.shutdownCpuBoundDispatcher
 import esw.ocs.dsl.toScriptError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
@@ -57,7 +58,12 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
             scriptDsl.onAbortSequence { block.toCoroutineScope().toJava() }
 
     fun onShutdown(block: suspend HandlerScope.() -> Unit) =
-            scriptDsl.onShutdown { block.toCoroutineScope().toJava(shutdownHandlerCoroutineScope) }
+            scriptDsl.onShutdown {
+                block.toCoroutineScope().toJava(shutdownHandlerCoroutineScope).whenComplete { _, _ ->
+                    // cleanup cpu bound dispatcher in case script has used it, as a part of shutdown process
+                    shutdownCpuBoundDispatcher()
+                }
+            }
 
     fun onDiagnosticMode(block: suspend HandlerScope.(UTCTime, String) -> Unit) =
             scriptDsl.onDiagnosticMode { x: UTCTime, y: String ->

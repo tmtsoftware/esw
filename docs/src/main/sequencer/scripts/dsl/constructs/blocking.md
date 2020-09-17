@@ -2,6 +2,13 @@
 
 Script runs on a single thread, hence special care needs to be taken while performing blocking (CPU/IO) operations withing the script.
 
+@@@ note
+All the CSW related DSL's provided in the scripting environment does not block main script thread hence they can be used directly.
+
+Exception to this here is, callback based API's for an ex. `onEvent` where you want to perform CPU/IO intensive tasks.
+In this case, you need to follow one of the pattern mentioned below.
+@@@
+
 This section explains following two types of blocking operations and patterns/recommendations to be followed while performing those.
 
 1. CPU Bound
@@ -19,12 +26,12 @@ Main sequencer script, and the techniques mentioned here for performing blocking
 Hence, accessing/updating mutable state defined in script from these blocking functions is not thread safe.
 @@@
 
-## CPU bound
+## CPU Bound
 
 For any CPU bound operations follow these steps:
 
 1. Create a new function and mark that with `suspend` keyword
-2. Wrap function body inside `withContext(Dispatchers.Default)`
+2. Wrap function body inside `blockingCpu` utility function
 
 Following example demonstrate writing CPU bound operation, 
 In this example `BigInteger.probablePrime(4096, Random())` is CPU bound and takes more than few seconds to finish. 
@@ -37,12 +44,12 @@ Following shows, usage of the above compute heavy function in main sequencer scr
 Kotlin
 :   @@snip [ComputeIntensiveScript.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/ComputeIntensiveScript.kts) { #call-compute-intensive }
 
-## IO bound
+## IO Bound
 
 For any IO bound operations follow these steps:
 
 1. Create a new function and mark that with `suspend` keyword
-2. Wrap function body inside `withContext(Dispatchers.IO)`
+2. Wrap function body inside `blockingIo` utility function
 
 Following example demonstrate writing IO bound operation,
 In this example `BufferredReader.readLine()` is IO bound and takes more than few seconds to finish.
@@ -57,9 +64,8 @@ Kotlin
 
 ## How does it work behind the scenes?
 
-`withContext(Dispatchers.Default)` or `withContext(Dispatchers.IO)` construct calls specified function on a provided dispatcher which is different from the main script.
+`blockingCpu` or `blockingIo` construct underneath uses different thread pools than the main script thread.
 
-`Default` or `IO` dispatchers maintains separate thread pool than the main sequencer script which usage single thread.
 This means, accessing/updating mutable variables defined in sequencer script is not thread safe from these functions and should be avoided.
 
 You can read more about these patterns of blocking [here](https://medium.com/@elizarov/blocking-threads-suspending-coroutines-d33e11bf4761)
