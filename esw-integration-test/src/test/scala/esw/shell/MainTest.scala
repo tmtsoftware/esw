@@ -1,5 +1,7 @@
 package esw.shell
 
+import java.util.concurrent.TimeUnit
+
 import esw.testcommons.BaseTestSuite
 
 class MainTest extends BaseTestSuite {
@@ -14,9 +16,9 @@ class MainTest extends BaseTestSuite {
     assert(process.isAlive, "esw-shell failed to start!")
 
     process.descendants().map(_.destroyForcibly())
-    process.destroyForcibly()
+    process.destroyForcibly().waitFor(30, TimeUnit.SECONDS)
 
-    assert(!process.isAlive, "esw-shell did not terminate!")
+    assert(!process.isAlive, "esw-shell process did not terminate within 10 seconds!")
   }
 
 }
