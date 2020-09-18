@@ -3,13 +3,13 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "bee94b0"
+  private val MSocketVersion = "3201daa061"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
   val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.15.0" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.2") //Apache License 2.0
+  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.2.2") //Apache License 2.0 /
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
@@ -18,7 +18,7 @@ object Libs {
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "7fd5623"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "eec4468a11"
 
   val `ammonite` = "com.lihaoyi" % "ammonite" % "2.2.0" cross CrossVersion.full
 }
@@ -26,7 +26,7 @@ object Libs {
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "dcd5d87"
+  private val Version = "cf48b0f7f"
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version
@@ -53,7 +53,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.8"
+  private val Version     = "2.6.9"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
@@ -83,8 +83,8 @@ object Borer {
 }
 
 object Kotlin {
-  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % "1.3.72"
-  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.8"
+  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % "1.3.72" // todo version change to “1.4.10”
+  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.8"  // todo version change to “1.3.9”
   val kotlintest        = "io.kotlintest"         % "kotlintest-core"         % "3.4.2"
   val mockk             = "io.mockk"              % "mockk"                   % "1.10.0"
 }
