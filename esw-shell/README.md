@@ -42,9 +42,9 @@ You can add the TMT apps channel to your Coursier by below command.
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
 ```
 
-After adding TMT apps channel you can simply launch any csw app by executing
+After adding TMT apps channel you can simply launch esw-shell by executing
 ```
-cs launch <app name>:<version | SHA>
+cs launch esw-shell:<version | SHA>
 ```
 
 ## Usage of Command Service to interact with HCDs, Assemblies and Sequencers 
@@ -58,6 +58,18 @@ Get handle to the command service for a particular HCD/Assembly/Sequencer using 
  `val assemblyComponent = assemblyCommandService("iris.assembly_name")`
  - For Sequencers
  `val sequencer = sequencerCommandService(IRIS, "darknight")`
+
+Get handle to the services like SequenceManager/Agent using following commands within esw-shell repl
+ - For Sequence Manager
+ `val sequenceManager = sequenceManagerService()`
+ - For Agent
+ `val agent = agentClient("iris.machine_1")`
+ - For AdminApi
+ `adminApi`
+ - For EventService
+ `eventService`
+ - For AlarmService
+ `alarmService`
  
 **iris.hcd_name** and **iris.assembly_name** are the prefix by which both HCD and Assembly components were registered 
 with location service respectively.
@@ -89,6 +101,40 @@ val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("sa
 val sequence = Sequence(setup)
 ```
 
+### Creating the componentId to getLogMetadata by using AdminApi
+
+```scala
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem
+import csw.location.api.models.{ComponentId, ComponentType}
+
+val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
+```
+
+### Creating the event to publish by using eventService
+
+```scala
+import csw.params.core.generics.Parameter
+import csw.params.core.generics.KeyType.ByteKey
+import csw.prefix.models.Prefix
+import csw.params.events.{EventName, SystemEvent}
+
+val byteKey = ByteKey.make("byteKey")
+val paramSet: Set[Parameter[_]] = Set(byteKey.set(100, 100 ))
+val prefix = Prefix("tcs.assembly")
+val event = SystemEvent(prefix, EventName("event_1"), paramSet)
+```
+
+### Creating the alarmKey to setSeverity by using alarmService
+
+```scala
+import csw.alarm.models.Key.AlarmKey
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.NFIRAOS
+
+val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
+```
+
 ### Submitting the commands to components
 
 Submit the setup command object created in a previous step using command service for the HCD/Assembly
@@ -97,3 +143,23 @@ Submit the setup command object created in a previous step using command service
  
 Submit the sequence object created in a previous step using command service for the Sequencer
  - `val sequencerResponse = sequencer.submit(sequence).get`
+ 
+### Submitting the commands to service
+
+To Sequence Manager
+ - `val sequenceManager = sequenceManagerService()`
+ - `val configureResponse = sequenceManager.configure(ObsMode("darknight")).get`
+ - `val shutdownSequencerResponse = sequenceManager.shutdownSequencer(ESW, ObsMode("darknight")).get`
+ 
+To Agent
+ - `val agent = agentClient("iris.machine_1")`
+ - `val spawnResponse = agent.spawnSequenceComponent("ESW_1", Some("1.0.0")).get`
+
+To AdminApi
+ - `val logMetadata = adminApi.getLogMetadata(componentId).get`
+ 
+To EventService
+ - `val publishResponse = eventService.publish(event).get`
+ 
+To AlarmService
+ - `val response = alarmService.setSeverity(alarmKey, AlarmSeverity.Major).get`

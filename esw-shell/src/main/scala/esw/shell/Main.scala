@@ -14,6 +14,8 @@ object Main extends App {
                        |import akka.Done
                        |import scala.concurrent.duration.{Duration, DurationDouble}
                        |import scala.concurrent.{Await, Future}
+                       |import csw.alarm.models.AlarmSeverity
+                       |import csw.alarm.models.Key.AlarmKey
                        |import csw.params.core.generics.KeyType._
                        |import csw.params.events._
                        |import csw.params.commands._
@@ -24,7 +26,7 @@ object Main extends App {
                        |import csw.prefix.models.Prefix
                        |import csw.time.core.models._
                        |import csw.params.core.states._
-                       |import csw.location.api.models.ComponentId
+                       |import csw.location.api.models._
                        |import csw.logging.models.LogMetadata
                        |import csw.command.api.{DemandMatcher, DemandMatcherAll, PresenceMatcher}
                        |import esw.ocs.api.models._
@@ -40,11 +42,11 @@ object Main extends App {
                        |""".stripMargin
     )
     .run(
-      "eswWiring"              -> eswWiring,
-      "commandService"         -> eswWiring.commandServiceDsl,
-      "sequenceManagerService" -> eswWiring.sequenceManager _,
-      "agentClient"            -> eswWiring.agentAkkaClient,
-      "adminApi"               -> eswWiring.adminApi
+      "eswWiring"       -> eswWiring,
+      "commandService"  -> eswWiring.commandServiceDsl,
+      "sequenceManager" -> eswWiring.sequenceManager _,
+      "agentClient"     -> eswWiring.agentAkkaClient,
+      "adminApi"        -> eswWiring.adminApi
     )
     ._1
 
