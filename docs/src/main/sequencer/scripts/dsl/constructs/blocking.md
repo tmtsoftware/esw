@@ -62,6 +62,13 @@ Following shows, usage of the above io heavy function in main sequencer script
 Kotlin
 :   @@snip [IOIntensiveScript.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/IOBoundScript.kts) { #io-bound-call }
 
+## Recommendations/Best Practices
+
+- Create separate kotlin (.kt) file/files and maintain all the CPU/IO bound blocking tasks their
+- Creating separate file/files makes sure you accidentally don't access/modify mutable state present within the script 
+- Call these functions from script
+- Wrap calling these function inside `async` block if you want to run them in parallel
+
 ## How does it work behind the scenes?
 
 `blockingCpu` or `blockingIo` construct underneath uses different thread pools than the main script thread.
