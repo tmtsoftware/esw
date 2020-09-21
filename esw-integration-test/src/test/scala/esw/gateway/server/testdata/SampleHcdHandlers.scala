@@ -13,16 +13,13 @@ import csw.params.events.{EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 
-import scala.concurrent.Future
-
 class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
   import cswCtx._
 
   val log: Logger = loggerFactory.getLogger(ctx)
-  override def initialize(): Future[Unit] = {
+  override def initialize(): Unit = {
     log.info("Initializing Component TLA")
     Thread.sleep(100)
-    Future.unit
   }
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ???
@@ -46,9 +43,8 @@ class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
 
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = ???
 
-  override def onShutdown(): Future[Unit] = {
+  override def onShutdown(): Unit = {
     log.info("Shutting down Component TLA")
-    Future.unit
   }
 
   override def onGoOffline(): Unit = ???

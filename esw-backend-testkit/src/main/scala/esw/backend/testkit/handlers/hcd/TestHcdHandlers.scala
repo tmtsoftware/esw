@@ -10,11 +10,9 @@ import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 
-import scala.concurrent.Future
-
 class TestHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
-  override def initialize(): Future[Unit] = Future.unit
+  override def initialize(): Unit = {}
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {}
 
@@ -29,7 +27,7 @@ class TestHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContex
 
   override def onOperationsMode(): Unit = {}
 
-  override def onShutdown(): Future[Unit] = Future.unit
+  override def onShutdown(): Unit = {}
 
   override def onGoOffline(): Unit = {}
 

@@ -11,15 +11,13 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 
-import scala.concurrent.Future
-
 case class StartLogging()
 
 class GalilComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
   val log: Logger = cswCtx.loggerFactory.getLogger
 
-  override def initialize(): Future[Unit] = Future.successful(())
+  override def initialize(): Unit = {}
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ()
 
@@ -39,7 +37,7 @@ class GalilComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit =
     if (controlCommand.commandName.name == "StartLogging") startLogging()
 
-  override def onShutdown(): Future[Unit] = Future.successful(())
+  override def onShutdown(): Unit = {}
 
   override def onGoOffline(): Unit = ()
 
