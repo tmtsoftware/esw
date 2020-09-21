@@ -16,8 +16,8 @@ import csw.params.core.states.{CurrentState, StateName}
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.jdk.DurationConverters.ScalaDurationOps
 
 /**
@@ -66,7 +66,7 @@ class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
   private val tempState = CurrentState(prefix, StateName("temp"))
   private val tempKey   = IntKey.make("tempKey")
 
-  override def initialize(): Future[Unit] = Future.successful(())
+  override def initialize(): Unit = {}
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ???
 
@@ -99,7 +99,7 @@ class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
 
   override def onOperationsMode(): Unit = ???
 
-  override def onShutdown(): Future[Unit] = ???
+  override def onShutdown(): Unit = ???
 
   override def onGoOffline(): Unit = ???
 
