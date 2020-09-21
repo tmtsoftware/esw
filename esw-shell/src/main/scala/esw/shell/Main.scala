@@ -27,6 +27,8 @@ object Main extends App {
                        |import csw.time.core.models._
                        |import csw.params.core.states._
                        |import csw.location.api.models._
+                       |import csw.location.api.models.ComponentType._
+                       |import csw.location.api.models.ConnectionType._
                        |import csw.logging.models.LogMetadata
                        |import csw.command.api.{DemandMatcher, DemandMatcherAll, PresenceMatcher}
                        |import esw.ocs.api.models._
@@ -34,20 +36,15 @@ object Main extends App {
                        |import esw.sm.api.models.ProvisionConfig
                        |import esw.sm.api.protocol._
                        |import esw.agent.service.api.models._
+                       |import esw.shell.utils._
                        |import esw.shell.utils.Extensions._
                        |import esw.shell.utils.Timeouts._
-                       |import esw.shell.utils._
-                       |import commandService._
+                       |import eswWiring._
+                       |import eswWiring.factories._
                        |import eswWiring.cswWiring.cswContext._
                        |""".stripMargin
     )
-    .run(
-      "eswWiring"       -> eswWiring,
-      "commandService"  -> eswWiring.commandServiceDsl,
-      "sequenceManager" -> eswWiring.sequenceManager _,
-      "agentClient"     -> eswWiring.agentAkkaClient,
-      "adminApi"        -> eswWiring.adminApi
-    )
+    .run("eswWiring" -> eswWiring)
     ._1
 
   if (!ammoniteResponse.isSuccess) {
