@@ -18,7 +18,7 @@ object Libs {
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "eec4468a11"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "v0.1.7"
 
   val `ammonite` = "com.lihaoyi" % "ammonite" % "2.2.0" cross CrossVersion.full
 }
