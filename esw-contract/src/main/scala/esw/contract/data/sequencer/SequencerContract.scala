@@ -15,7 +15,12 @@ import esw.ocs.api.protocol._
 // ESW-278 Contract samples for sequencer service. These samples are also used in `RoundTripTest`
 object SequencerContract extends SequencerData with SequencerServiceCodecs {
   private val models: ModelSet = ModelSet.models(
-    ModelType[SequenceCommand](observeSequenceCommand, setupSequenceCommand, waitSequenceCommand),
+    ModelType[SequenceCommand](
+      observeSequenceCommand,
+      setupSequenceCommand,
+      waitSequenceCommand,
+      waitSequenceCommandWithoutObsId
+    ),
     ModelType[OkOrUnhandledResponse](ok, unhandled),
     ModelType[SubmitResponse](completed, cancelled, invalid, error, locked, started),
     ModelType[GenericResponse](ok, unhandled, idDoesNotExist, cannotOperateOnAnInFlightOrFinishedStep),

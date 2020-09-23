@@ -15,9 +15,10 @@ import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
 
 trait SequencerData extends CommandData {
-  val observeSequenceCommand: Observe = Observe(prefix, commandName, Some(obsId))
-  val setupSequenceCommand: Setup     = Setup(prefix, commandName, Some(obsId))
-  val waitSequenceCommand: Wait       = Wait(prefix, commandName, Some(obsId))
+  val observeSequenceCommand: Observe       = Observe(prefix, commandName, Some(obsId))
+  val setupSequenceCommand: Setup           = Setup(prefix, commandName, Some(obsId))
+  val waitSequenceCommand: Wait             = Wait(prefix, commandName, Some(obsId))
+  val waitSequenceCommandWithoutObsId: Wait = Wait(prefix, commandName)
 
   val sequence: Sequence = Sequence(setupSequenceCommand, observeSequenceCommand, waitSequenceCommand)
 
