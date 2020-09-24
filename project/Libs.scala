@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "3201daa061"
+  private val MSocketVersion = "0.2.0-M1"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
@@ -18,7 +18,7 @@ object Libs {
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "eec4468a11"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.2.0-M1"
 
   val `ammonite` = "com.lihaoyi" % "ammonite" % "2.2.0" cross CrossVersion.full
 }
@@ -26,7 +26,7 @@ object Libs {
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "dc81b95604"
+  private val Version = "3.0.0-M1"
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version

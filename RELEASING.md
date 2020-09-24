@@ -1,6 +1,6 @@
 # Releasing
 
-## Prerequisites (This is configured in `release.yml`)
+## Prerequisites (This is already configured in `release.yml`)
 
 * Git authentication works by running cmd: `ssh -vT git@github.com`
 * Node is installed
@@ -9,13 +9,13 @@
 
 ## Steps to release
 
-### Release msocket
+### Release Dependent Repos
 
 Refer RELEASING.md in `msocket`
-
-### Release csw
-
-Refer RELEASING.md in `csw` repository.
+Refer RELEASING.md in `embedded-keycloak`
+Refer RELEASING.md in `sbt-docs`
+Refer RELEASING.md in `kotlin-plugin`
+Refer RELEASING.md in `csw` 
 
 ### esw
 
@@ -27,11 +27,7 @@ Refer RELEASING.md in `csw` repository.
 1. Add changes mention in `CHANGELOG.md` of `esw-contract` in the change section of `README.md` of `esw-contract`
 1. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `README.md`
 1. Exclude projects from `build.sbt` which you do not want to release
-1. Update `msocket` and `csw` version in `Lib.scala`  
+1. Update dependent repo version in `Lib.scala`  
 1. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
 
     **Note:** `PROD=true` environment variable needs to be set before running `release.sh`
-
-### Release sequencer-scripts
-
-Refer RELEASING.md in `sequencer-scripts` repository.
