@@ -7,6 +7,7 @@ import akka.testkit.ImplicitSender
 import com.typesafe.config.ConfigFactory
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{ComponentId, ComponentType}
+import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.events.{Event, EventKey, SystemEvent}
@@ -44,6 +45,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
   private val sequenceComponentPrefix: Prefix = Prefix(ESW, "primary")
 
   override def initialParticipants: Int = roles.size
+  LoggingSystemFactory.forTestingOnly()
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -72,7 +74,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
       enterBarrier("submit-sequence-to-ocs")
       Thread.sleep(500)
 
-      val multiJVMCommandEvent = testProbe.expectMessageType[SystemEvent]
+      val multiJVMCommandEvent = testProbe.expectMessageType[SystemEvent](10.seconds)
       multiJVMCommandEvent.isInvalid should ===(false)
     }
 
