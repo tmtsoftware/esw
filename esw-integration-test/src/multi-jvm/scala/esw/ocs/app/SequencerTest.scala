@@ -45,7 +45,6 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
   private val sequenceComponentPrefix: Prefix = Prefix(ESW, "primary")
 
   override def initialParticipants: Int = roles.size
-  LoggingSystemFactory.forTestingOnly()
 
   override def beforeAll(): Unit = {
     super.beforeAll()
