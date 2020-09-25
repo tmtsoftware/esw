@@ -14,6 +14,7 @@ jobs:
       - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
+      - uses: coursier/cache-action@v3
 
       - uses: actions/setup-node@v1
         with:
@@ -26,16 +27,25 @@ jobs:
       - name: Install CS native
         run: |
           curl -fLo cs https://git.io/coursier-cli-linux &&
-            chmod +x cs &&
-            sudo mv cs /usr/local/bin
+          chmod +x cs
+          sudo mv cs /usr/local/bin
+          cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
+
+      - name: Install Kotlin
+        run: |
+          curl -s https://get.sdkman.io | bash
+          source "/home/runner/.sdkman/bin/sdkman-init.sh"
+          sdk install kotlin
+          sudo ln -s $(which kotlinc) /usr/local/bin/kotlinc
 
       - run: npm install -g junit-merge
       - run: npm install -g junit-viewer
 
       - name: Build
         run: |
-          sbt test:compile multi-jvm:compile
-          sbt makeSite
+          sbt scalafmtCheck
+          sbt clean makeSite
+          sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Tests
         run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
