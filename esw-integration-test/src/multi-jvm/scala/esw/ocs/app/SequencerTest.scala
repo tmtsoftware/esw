@@ -7,7 +7,6 @@ import akka.testkit.ImplicitSender
 import com.typesafe.config.ConfigFactory
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{ComponentId, ComponentType}
-import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.events.{Event, EventKey, SystemEvent}
