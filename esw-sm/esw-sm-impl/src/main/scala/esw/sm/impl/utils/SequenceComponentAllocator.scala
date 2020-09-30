@@ -24,10 +24,12 @@ class SequenceComponentAllocator() {
       (subsystem, seqCompLocation)
     }
 
+    // check if each sequencer subsystem has allocated sequence component
     val diff = subsystems.diff(mapping.map(_._1))
     if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(diff))
   }
 
+  // find sequence component for provided subsystem or ESW (fallback)
   private def findSeqComp(subsystem: Subsystem, seqCompLocations: List[SeqCompLocation]): Option[AkkaLocation] =
     seqCompLocations.find(_.prefix.subsystem == subsystem).orElse(seqCompLocations.find(_.prefix.subsystem == ESW))
 

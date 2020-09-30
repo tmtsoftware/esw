@@ -4,11 +4,12 @@
 
 @@@ index
 * [sequencer-app](sequencerapp.md): Starts SequenceComponent and/or Sequencer.
+* [sequence-manager-app](sequencemanagerapp.md): Starts Sequence Manager and Sequence Manager HTTP server.
 @@@
 
 ## Prerequisites
 
-For starting and running ESW apps for development, you need to run CSW services like `location-server`, `event-service` etc. 
+For starting and running ESW apps for development, you need to run CSW services like `location-server`, `event-service` etc.
 Please refer to the doc @extref[here](csw:commons/apps) to run CSW services.
 
 

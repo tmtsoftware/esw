@@ -32,6 +32,8 @@ case class ProvisionConfig(config: List[AgentProvisionConfig]) {
 
   private def groupPrefixBySubsystem = config.groupBy(_.agentPrefix.subsystem).values
 
+  // Sequence component prefix are generated using subsystem of agent machine on which sequence component is spawned. Component name
+  // for sequence component is generated as a combination of subsysem_<unique integer identifier> ex: ESW.ESW_3
   private def generateSeqCompPrefix(agentPrefix: AgentPrefix, count: Int, from: Int) = {
     (0 until count).map(i => (agentPrefix, Prefix(agentPrefix.subsystem, s"${agentPrefix.subsystem}_${from + i}"))).toList
   }
