@@ -17,8 +17,8 @@ suspend fun findBigPrime(): BigInteger =
 
 //#io-bound-function
 // Reading a line from a file is blocking IO operation and should be wrapped inside blockingIo utility function
-suspend fun BufferedReader.readMessage(): CharSequence? =
+suspend fun readMessage(bufferedReader: BufferedReader): CharSequence? =
         blockingIo {
-            readLine()
+            bufferedReader.readLine()
         }
 //#io-bound-function
