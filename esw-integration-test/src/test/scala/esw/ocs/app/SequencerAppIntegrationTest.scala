@@ -43,9 +43,11 @@ class SequencerAppIntegrationTest extends EswTestKit {
         ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)
       )
       sequenceCompLocation.prefix should ===(Prefix("ESW.primary"))
-      sequenceCompLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
-      sequenceCompLocation.metadata.value.contains("PID") shouldEqual true
 
+      // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
+      sequenceCompLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+      //As SequencerApp is used directly, no new process is spawned. test Pid should be equal to seqComp pid
+      sequenceCompLocation.metadata.getPid.get shouldBe ProcessHandle.current().pid()
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val probe      = TestProbe[ScriptResponseOrUnhandled]()

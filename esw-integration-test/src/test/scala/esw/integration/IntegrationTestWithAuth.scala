@@ -14,6 +14,7 @@ import csw.params.commands.CommandResponse.Started
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
+import esw.HelperMethods.getPidOf
 import esw.agent.akka.AgentSetup
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.client.AgentClient
@@ -215,7 +216,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
       seqCompLoc.metadata.getAgentPrefix.value should ===(agentPrefix)
-      seqCompLoc.metadata.value.contains("PID") shouldBe true
+      seqCompLoc.metadata.getPid.value should ===(getPidOf("esw.ocs.app.SequencerApp"))
 
       // start sequencer i.e. load IRIS darknight script
       val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
@@ -240,7 +241,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
       location.metadata.getAgentPrefix.get should ===(agentPrefix)
-      //      location.metadata.value.contains("PID") shouldBe true
+      location.metadata.getPid.get shouldBe getPidOf("esw.sm.app.SequenceManagerApp")
 
       agentClient.killComponent(location).futureValue
     }
