@@ -4,7 +4,7 @@
 
 @@@ index
 * [sequencer-app](sequencerapp.md): Starts SequenceComponent and/or Sequencer.
-* [sequence-manager-app](sequencemanagerapp.md): Starts Sequence Manager and Sequence Manager HTTP server.
+* [sequence-manager-app](sequence-manager-app.md): Starts Sequence Manager and Sequence Manager HTTP server.
 @@@
 
 ## Prerequisites
