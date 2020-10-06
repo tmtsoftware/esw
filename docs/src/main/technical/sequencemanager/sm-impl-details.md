@@ -38,9 +38,10 @@ Following flow chart shows algorithm for provision flow
 Configure is responsible for starting sequencers needed for an observing mode. It also checks for any resource conflicts with ongoing observations.
 Configure API, checks for required sequencers and resources in obsModeConfig file provided at boot up time sequence manager. This config file contains mapping of observing mode
 to required sequencers and resources. When configure for particular observing mode command is received by Sequence Manager, it checks following:
-- Mapping for required observing mode exists in configuration file
-- availability of adequate sequence components for starting sequencers
-- no resource conflict should occur with ongoing observations
+
+* Mapping for required observing mode exists in configuration file
+* availability of adequate sequence components for starting sequencers
+* no resource conflict should occur with ongoing observations
 
 ![Configure](../../images/sequencemanager/sm3.png)
 
@@ -64,7 +65,7 @@ subsystem, shutdown a particular sequencer and shutdown all running sequencers.
 Apart from APIs explained above, sequence manager also provides following APIs:
 
 * getRunningObsModes - gives information about all running observing modes
-* startSequencer - start sequencer for provided susbsystem and observing mode
-* restartSequencer - re-start sequencer for provided susbsystem and observing mode
+* startSequencer - start sequencer for provided subsystem and observing mode
+* restartSequencer - re-start sequencer for provided subsystem and observing mode
 * shutdownSequenceComponent - shutdown a sequence component with provided prefix
 * shutdownAllSequenceComponents - shutdown all running sequence components

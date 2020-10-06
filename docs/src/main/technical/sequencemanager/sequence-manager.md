@@ -14,10 +14,11 @@ are running on which agent. Sequence Manager is implemented using Akka actor. Se
 Sequence Manager implementation is distributed into following sub modules:
 
 ### esw-sm-api
-This sequence manager API module is responsible for providing
- 1. shared - API which is cross compiled to JVM as well JS
- 2. shared - HTTP client which can be used by JVM as well as scala-js applications
- 3. jvm - Akka client for JVM applications, Akka actor messages, akka serializer
+This sequence manager API module is responsible for providing:
+
+1. shared - API which is cross compiled to JVM as well JS
+2. shared - HTTP client which can be used by JVM as well as scala-js applications
+3. jvm - Akka client for JVM applications, Akka actor messages, akka serializer
 
 ### esw-sm-handler
 This sequence manager handler module is responsible for providing HTTP routes for sequence manager HTTP server.
