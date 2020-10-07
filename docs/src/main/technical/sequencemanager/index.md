@@ -13,8 +13,9 @@ The following sections provide details on the Sequence Manager.
 
 @@@ index
 
-* [Sequence Manager Introduction](sequence-manager.md)
-* [Sequence Manager Implementation Details](sm-impl-details.md)
-* [Sequencer Manager States](sm-state-transition.md)
+* [Sequence Manager Introduction](sequence-manager.md#Introduction)
+* [Sequence Manager Modules](sequence-manager.md#Modules)
+* [Sequence Manager Implementation Details](sequence-manager.md#ImplementationDetails)
+* [Sequencer Manager States](sequence-manager.md#StateTransition)
 
 @@@
