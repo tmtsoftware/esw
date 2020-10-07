@@ -3,12 +3,10 @@ package esw.ocs.dsl.highlevel
 import akka.Done
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.IRegistrationResult
-import esw.ocs.dsl.highlevel.models.*
 import csw.location.api.models.*
 import csw.location.api.models.Connection.HttpConnection
-import csw.prefix.models.Prefix
-import esw.ocs.dsl.highlevel.models.RegistrationResult
-import io.kotlintest.shouldBe
+import esw.ocs.dsl.highlevel.models.*
+import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk

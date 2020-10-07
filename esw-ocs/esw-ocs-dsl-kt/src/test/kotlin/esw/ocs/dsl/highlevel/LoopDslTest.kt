@@ -1,8 +1,8 @@
 package esw.ocs.dsl.highlevel
 
-import io.kotlintest.matchers.numerics.shouldBeLessThan
-import io.kotlintest.matchers.shouldBeInRange
-import io.kotlintest.shouldBe
+import io.kotest.matchers.ints.shouldBeLessThan
+import io.kotest.matchers.longs.shouldBeInRange
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

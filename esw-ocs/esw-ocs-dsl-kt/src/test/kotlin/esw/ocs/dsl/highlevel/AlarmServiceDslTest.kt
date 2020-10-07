@@ -6,7 +6,7 @@ import csw.alarm.models.Key.AlarmKey
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.Major
 import esw.ocs.dsl.highlevel.models.TCS
-import io.kotlintest.eventually
+import io.kotest.assertions.timing.eventually
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -18,7 +18,6 @@ import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.seconds
-import io.kotlintest.seconds as testSeconds
 
 class AlarmServiceDslTest : AlarmServiceDsl {
 
@@ -53,7 +52,7 @@ class AlarmServiceDslTest : AlarmServiceDsl {
         every { alarmService.setSeverity(alarmKey2, severity) } answers { doneF }
         every { alarmService.setSeverity(alarmKey3, severity) } answers { doneF }
 
-        eventually(5.testSeconds) {
+        eventually(5.seconds) {
             verify { alarmService.setSeverity(alarmKey1, severity) }
             verify { alarmService.setSeverity(alarmKey2, severity) }
             verify { alarmService.setSeverity(alarmKey3, severity) }

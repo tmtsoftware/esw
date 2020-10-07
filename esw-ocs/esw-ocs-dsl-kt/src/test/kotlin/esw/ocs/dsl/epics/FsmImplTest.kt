@@ -10,9 +10,9 @@ import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.StrandEc
-import io.kotlintest.eventually
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldThrow
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.timing.eventually
+import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -21,7 +21,6 @@ import kotlinx.coroutines.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.time.milliseconds
-import io.kotlintest.milliseconds as jMilliseconds
 
 class FsmImplTest {
 
@@ -41,7 +40,7 @@ class FsmImplTest {
     private val inProgress = "INPROGRESS"
     private val invalid = "INVALIDSTATE"
     private val testMachineName = "test-state-machine"
-    private val timeout = 100.jMilliseconds
+    private val timeout = 100.milliseconds
 
     private var initFlag = false
     private val initState: suspend FsmStateScope.(Params) -> Unit = { initFlag = true }
@@ -59,7 +58,7 @@ class FsmImplTest {
         initFlag = false
     }
 
-    private fun checkInitFlag() {
+    private suspend fun checkInitFlag() {
         eventually(timeout) { initFlag shouldBe true }
     }
 
@@ -184,7 +183,7 @@ class FsmImplTest {
 
         flag shouldBe false
         delay(100)
-        eventually(60.jMilliseconds) { flag shouldBe true }
+        eventually(60.milliseconds) { flag shouldBe true }
     }
 
     @Test
@@ -294,7 +293,7 @@ class FsmImplTest {
         fsm.start()
         fsm.become(inProgress)
         checkInitFlag()
-        withTimeout(timeout.toMillis()) {
+        withTimeout(timeout) {
             fsm.await()
         }
     }

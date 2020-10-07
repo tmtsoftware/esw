@@ -4,9 +4,9 @@ import csw.params.commands.CommandResponse.*
 import csw.params.commands.Result
 import csw.params.core.models.Id
 import esw.ocs.dsl.highlevel.models.CommandError
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotThrow
-import io.kotlintest.shouldThrow
+import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 

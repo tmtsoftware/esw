@@ -6,7 +6,7 @@ import csw.params.commands.Setup
 import csw.params.core.models.ObsId
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.ESW
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.*
