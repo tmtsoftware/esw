@@ -2,10 +2,9 @@ package esw.ocs.dsl.params
 
 import csw.params.core.models.ArrayData
 import csw.params.core.models.Choice
-import csw.params.core.models.MatrixData
 import csw.params.javadsl.JKeyType.*
-import io.kotlintest.matchers.types.shouldBeTypeOf
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test
 
 class KeysTest {

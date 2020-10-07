@@ -1,7 +1,7 @@
 package esw.ocs.dsl
 
-import io.kotlintest.matchers.string.shouldNotBeEqualIgnoringCase
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldNotBeEqualIgnoringCase
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
