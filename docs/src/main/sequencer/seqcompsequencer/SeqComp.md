@@ -1,16 +1,16 @@
 # Sequence Component
 
 The Sequence Component is a standalone application that can load scripts and become a Sequencer.
-The Sequence Component application and its arguments are described @ref[here](../../apps/sequencerapp.md).
+The Sequence Component application and its arguments are described @ref[here](../../apps/sequencer-app.md).
 
-The Sequence Component is written in Scala to provide integration with the CSW Component Framework and Services. Since component 
+The Sequence Component is written in Scala to provide integration with the CSW Component Framework and Services. Since component
 developers do not need to modify Sequence Component code, there is no Java version.
 
-The Sequence Component registers itself with the Location Service when started. This allows the Sequence Manager to 
+The Sequence Component registers itself with the Location Service when started. This allows the Sequence Manager to
 find the Sequence Component and send it commands. Sequence Component is started with a Subsystem and an optional name.
 While the Subsystem for a Sequence Component identifies to which subsystem the Sequence Component belongs, a Sequence
 Component can load Scripts for any subsystem, and therefore become a Sequencer for any subsystem.  For example, if for
-some reason the IRIS Sequence Component is not reachable, an IRIS Script can be loaded into an ESW Sequence Component 
+some reason the IRIS Sequence Component is not reachable, an IRIS Script can be loaded into an ESW Sequence Component
 and it can then be used as the IRIS Instrument Sequencer.
 
 The following table describes the registration of a Sequence Component in the Location Service
@@ -22,7 +22,7 @@ The following table describes the registration of a Sequence Component in the Lo
 
 Note that CSW always capitalizes a subsystem when it is displayed. Arguments can be entered as lowercase.
 
-The Sequence Component provides framework code to support the loading and unloading of Scripts and a few other 
+The Sequence Component provides framework code to support the loading and unloading of Scripts and a few other
 useful capabilities.
 
 | Message | Description |

@@ -3,10 +3,11 @@
 @@ toc { .main depth=1 }
 
 @@@ index
-* [sequencer-app](sequencerapp.md): Starts SequenceComponent and/or Sequencer.
+* [sequencer-app](sequencer-app.md): Starts SequenceComponent and/or Sequencer.
 * [sequence-manager-app](sequence-manager-app.md): Starts Sequence Manager and Sequence Manager HTTP server.
 * [agent-service-app](agent-service-app.md): Starts Agent Service server.
 * [agent-app](agent-app.md): Starts Agent actor.
+* [gateway-app](gateway-app.md): Starts ESW Gateway.
 @@@
 
 ## Prerequisites
