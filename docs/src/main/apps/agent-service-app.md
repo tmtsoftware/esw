@@ -16,7 +16,7 @@ To access any protected `AgentService` endpoints, `ESW-user` role is required.
 - Add TMT apps channel to your local Coursier installation using below command
 
 ```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
+cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
 ```
 
 - After adding TMT apps channel you can simply launch agent-service-app by executing

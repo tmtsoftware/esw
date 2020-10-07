@@ -1,12 +1,10 @@
 package esw.agent.service.api
 
-import java.lang.ArithmeticException
 import java.nio.file.Path
 
 import csw.location.api.models.Connection
 import csw.prefix.models.Prefix
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
-import jdk.vm.ci.meta.DeoptimizationReason
 
 import scala.concurrent.Future
 

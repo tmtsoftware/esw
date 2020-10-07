@@ -5,5 +5,6 @@
 @@@ index
 
 * [Sequence Manager](sequencemanager/index.md)
+* [Agent Service](agentservice/agent-service.md)
 
 @@@
