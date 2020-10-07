@@ -13,6 +13,8 @@ Agent Service is a http service build using msocket framework. It has following 
 - Implementation layer (which includes creating the `AgentClient` for the specific agent)
 - Agent (which spawns or kills the given component)
 
+![AgentService](../../images/agentservice/AgentService.svg)
+
 ##Module (esw-agent-service)
 Implementation of Agent Service is all distributed within following submodules:
 

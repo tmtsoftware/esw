@@ -1,6 +1,6 @@
 #Agent App
 
-This application will start the Agent.
+This application will start the Agent actor.
 
 ## Prerequisite
 
