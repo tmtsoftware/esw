@@ -5,7 +5,6 @@ import java.util
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
-import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.ext.ProcessExt.ProcessOps
