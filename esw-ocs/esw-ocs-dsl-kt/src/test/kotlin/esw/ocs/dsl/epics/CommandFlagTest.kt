@@ -4,17 +4,17 @@ import esw.ocs.dsl.highlevel.CommandServiceDsl
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.params.params
-import io.kotlintest.eventually
-import io.kotlintest.shouldBe
+import io.kotest.assertions.timing.eventually
+import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import io.kotlintest.milliseconds as jMilliseconds
+import kotlin.time.milliseconds
 
 class CommandFlagTest : CommandServiceDsl {
-    private val timeout = 100.jMilliseconds
+    private val timeout = 100.milliseconds
 
     @Test
     fun `set should update commandFlag value | ESW-252`() = runBlocking {

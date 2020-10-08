@@ -3,10 +3,10 @@ package esw.ocs.dsl.highlevel
 import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.Cancellable
 import csw.time.scheduler.api.TimeServiceScheduler
-import io.kotlintest.matchers.beGreaterThanOrEqualTo
-import io.kotlintest.matchers.beLessThanOrEqualTo
-import io.kotlintest.should
-import io.kotlintest.shouldBe
+import io.kotest.matchers.comparables.beGreaterThanOrEqualTo
+import io.kotest.matchers.comparables.beLessThanOrEqualTo
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

@@ -26,8 +26,8 @@ import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.script.utils.CommandUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import io.kotlintest.shouldNotThrow
-import io.kotlintest.shouldThrow
+import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.assertions.throwables.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic

@@ -11,7 +11,7 @@ import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.highlevel.models.TCS
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test

@@ -86,4 +86,4 @@ echo "[INFO] Compilation completed. Compiled jar name:" $JARNAME
 
 # ---------------- Launching sequencer ------------------
 echo "[INFO] Launching sequencer with Subsystem:" $SUBSYSTEM "and Observation Mode:" $OBS_MODE
-cs launch --channel $CS_CHANNEL --extra-jars $JARNAME -J -Dscripts.$SUBSYSTEM.$OBS_MODE.scriptClass="$CLASSNAME" ocs-app$VERSION -- sequencer -s $SUBSYSTEM -m $OBS_MODE
+cs launch --channel $CS_CHANNEL --extra-jars $JARNAME --java-opt -Dscripts.$SUBSYSTEM.$OBS_MODE.scriptClass="$CLASSNAME" ocs-app$VERSION -- sequencer -s $SUBSYSTEM -m $OBS_MODE

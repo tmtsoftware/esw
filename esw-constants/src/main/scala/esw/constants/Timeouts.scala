@@ -2,9 +2,25 @@ package esw.constants
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
+/**
+ * This file is created with intention to keep all timeouts used in esw at one place.
+ * Timeouts are grouped in separately according to their usages. For example,
+ *
+ * [[AgentTimeouts]] contain timeouts that are used by the agent APIs.
+ *
+ * [[CommonTimeouts]] contain timeouts that are commonly used more than one services.
+ *
+ * Some timeouts are composed from multiple other timeouts. For example,
+ * {{{val timeout1: FiniteDuration = timeout2 + timeout3}}}
+ * In such cases we have added a requirement that puts an upper bound on the resulting timeout
+ * so that it does not exceed some fixed amount of time when the underlying timeouts change:
+ * {{{require(timeout1 <= x.seconds)}}}
+ */
+
 object CommonTimeouts {
-  val Wiring: FiniteDuration          = 10.seconds
-  val ResolveLocation: FiniteDuration = 3.seconds
+  val Wiring: FiniteDuration =
+    10.seconds // Generic timeout to be used in apps and wiring for starting/stopping actor systems, http servers etc.
+  val ResolveLocation: FiniteDuration = 3.seconds // Generic timeout for resolving a location using location service
 }
 
 object AgentTimeouts {

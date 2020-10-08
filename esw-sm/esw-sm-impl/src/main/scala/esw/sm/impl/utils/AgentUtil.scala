@@ -44,6 +44,7 @@ class AgentUtil(
       .mapLeft(e => LocationServiceError(e.msg))
       .flatMapToAdt(provisionOn(_, provisionConfig), identity)
 
+  // returns map of agent and seq comps running on agent as well as list of seq comps without agent information available
   private def groupByAgentWithOrphans(seqComps: List[SeqCompLocation]) = {
     val (agentMap, orphans) = seqComps.partitionMap { loc =>
       loc.metadata.getAgentPrefix match {

@@ -15,7 +15,7 @@ jobs:
           java-version: adopt@1.11
 
       - name: Paradox Validate Links
-        run: sbt docs/Paradox/paradoxValidateLinks
+        run: sbt docs/paradoxValidateLinks
 
       - name: Notify slack
         if: always()

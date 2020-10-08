@@ -215,7 +215,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
       seqCompLoc.metadata.getAgentPrefix.value should ===(agentPrefix)
-      seqCompLoc.metadata.value.contains("PID") shouldBe true
+      seqCompLoc.metadata.getPid.isDefined should ===(true)
 
       // start sequencer i.e. load IRIS darknight script
       val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
@@ -240,7 +240,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
       location.metadata.getAgentPrefix.get should ===(agentPrefix)
-      //      location.metadata.value.contains("PID") shouldBe true
+      location.metadata.getPid.isDefined should ===(true)
 
       agentClient.killComponent(location).futureValue
     }

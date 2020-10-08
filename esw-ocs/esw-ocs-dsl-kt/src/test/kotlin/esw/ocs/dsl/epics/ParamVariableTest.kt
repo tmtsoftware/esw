@@ -10,7 +10,7 @@ import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.intKey
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test

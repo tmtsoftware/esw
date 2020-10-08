@@ -8,7 +8,7 @@ import csw.event.api.javadsl.IEventSubscription
 import csw.params.events.*
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.highlevel.models.Prefix
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
