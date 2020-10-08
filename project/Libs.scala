@@ -74,7 +74,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.6.1"
+  private val Version = "1.6.2"
   private val Org     = "io.bullet"
 
   val `borer-core`        = dep(Org %%% "borer-core" % Version)
