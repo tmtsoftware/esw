@@ -26,3 +26,18 @@ cs launch agent-service-app:<version | SHA> -- start
 ```
 
 Note: If you don't provide the version or SHA in above command, `agent-service-app` will start with the latest tagged binary of `esw-agent-service`
+
+### Setting the default log level
+
+The default log level for any component is specified in the `application.conf` file of the component.
+Use the java -D option to override configuration values at runtime.  For log level, the format is:
+
+```
+-Dcsw-logging.component-log-levels.<Subsystem>.<ComponentName>=<LEVEL>
+```
+
+For example, using the example above:
+
+```
+cs launch --java-opt -Dcsw-logging.component-log-levels.ESW.agent_service=TRACE agent-service-app:<version | SHA> -- start
+```

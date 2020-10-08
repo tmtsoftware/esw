@@ -43,3 +43,18 @@ cs launch gateway-server:<version | SHA> -- start -c command-role-mapping.conf -
 ```
 
 Note: If you don't provide the version or SHA in above command, `gateway-serve` will start with the latest tagged binary of `esw-gateway-server`
+
+### Setting the default log level
+
+The default log level for any component is specified in the `application.conf` file of the component.
+Use the java -D option to override configuration values at runtime.  For log level, the format is:
+
+```
+-Dcsw-logging.component-log-levels.<Subsystem>.<ComponentName>=<LEVEL>
+```
+
+For example, using the example above:
+
+```
+cs launch --java-opt -Dcsw-logging.component-log-levels.ESW.EswGateway=TRACE gateway-server:<version | SHA> -- start -c command-role-mapping.conf -m
+```
