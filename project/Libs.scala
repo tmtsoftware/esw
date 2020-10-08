@@ -86,5 +86,5 @@ object Kotlin {
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"         % "1.4.10"
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8"    % "1.3.9"
   val kotlintest        = "io.kotest"             % "kotest-assertions-core-jvm" % "4.2.6"
-  val mockk             = "io.mockk"              % "mockk"                      % "1.10.0"
+  val mockk             = "io.mockk"              % "mockk"                      % "1.10.2"
 }
