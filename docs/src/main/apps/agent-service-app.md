@@ -2,18 +2,26 @@
 
 This application will start the AgentService's server.
 
-##Protection on the Agent Service endpoints
+## Protection on the Agent Service endpoints
 To access any protected `AgentService` endpoints, `ESW-user` role is required.
 
 ## Prerequisite
 
  - Location server should be running.
 
-## How to start Agent Service
-
-### Running Agent Service App using Coursier
+## Running Agent Service App using Coursier
 
 * Add TMT Apps channel to your local Coursier installation using below command
+
+Channel needs to be added to install application using `cs install`
+
+For developer machine setup,
+
+```bash
+cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
+```
+
+For production machine setup,
 
 ```bash
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
@@ -48,7 +56,7 @@ cd /tmt/apps
 ./agent-service-app start
 ```
 
-### Setting the default log level
+## Setting the default log level
 
 The default log level for any component is specified in the `application.conf` file of the component.
 Use the java -D option to override configuration values at runtime.  For log level, the format is:

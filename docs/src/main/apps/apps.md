@@ -12,16 +12,21 @@
 
 ## Prerequisites
 
-For starting and running ESW apps for development, you need to run CSW services like `location-server`, `event-service` etc.
+1. For starting and running ESW apps for development, you need to run CSW services like `location-server`, `event-service`, `aas-service` etc.
 Please refer to the doc @extref[here](csw:commons/apps) to run CSW services.
+
+2. Install coursier
+
+Please refer to [coursier installation document](https://get-coursier.io/docs/cli-installation)
 
 
 ## Getting ESW Apps
 
-Developer has to download `esw-apps-<some-version>.zip` from [esw github releases](https://github.com/tmtsoftware/esw/releases) and unzip it.
-There are two folders, as follows, in `esw-apps-<some-version>`
+`cs install` command will be used to install executables/launchers of each of ESW apps.
 
-* bin
-* lib
+For example follwoing command shows installation for agent app,
+```bash
+cs install agent-app:<version | SHA>
+```
 
-All the apps provided by ESW reside in bin folder.
+Each app section explains installation and running procedure in detail.

@@ -1,4 +1,4 @@
-#Agent App
+# Agent App
 
 This application will start the Agent actor.
 
@@ -6,11 +6,19 @@ This application will start the Agent actor.
 
  - Location server should be running.
 
-## How to start Agent
-
-### Running Agent App using Coursier
+## Running Agent App using Coursier
 
 * Add TMT Apps channel to your local Coursier installation using below command
+
+Channel needs to be added to install application using `cs install`
+
+For developer machine setup,
+
+```bash
+cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
+```
+
+For production machine setup,
 
 ```bash
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
@@ -49,7 +57,7 @@ cd /tmt/apps
 ./agent-app start -p "tcs.primary_machine"
 ```
 
-### Setting the default log level
+## Setting the default log level
 
 The default log level for any component is specified in the `application.conf` file of the component.
 Use the java -D option to override configuration values at runtime.  For log level, the format is:

@@ -1,18 +1,29 @@
 # Sequencer App
 
-A command line application that facilitates starting Sequence Component and/or Sequencer.
+A command line application that facilitates starting Sequence Component and/or Sequencer using coursier.
 
-## How to start sequence component and sequencer
+## Prerequisite
 
-### Running ocs-app (sequencer and sequence component) using Coursier
+- Location server should be running.
+- event service should be running.
 
-#### Add TMT Apps channel to your local Coursier installation using below command
+## Add TMT Apps channel to your local Coursier installation using below command
+
+Channel needs to be added to install application using `cs install`
+
+For developer machine setup,
+
+```bash
+cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
+```
+
+For production machine setup,
 
 ```bash
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
 ```
 
-#### Install ocs-app
+## Install ocs-app
 
 Following command creates an executable file named gateway-server in the default installation directory.
 
@@ -29,20 +40,18 @@ cs install \
 ```
 Note: If you don't provide the version or SHA in above command, `ocs-app` will be installed with the latest tagged binary of `esw-ocs-app`
 
-#### Run ocs-app
+## Run ocs-app
 
 Supported Commands
 
-* seqcomp
-* sequencer
+* seqcomp - starts sequence component
+* sequencer - starts sequence components and sequencer in single command
 
-##### Sequence Component (seqcomp)
+* Sequence Component (seqcomp)
 
 Spawns a new Sequence Component with provided `subsytem` and `name`.
 Note that with this command, only sequence component is spawned, not a sequencer.
 A separate `loadScript` command needs to be sent to the sequence component to spawn a sequencer inside it.
-
-See @ref:[sequencer](#sequencer-sequencer-) command to spawn a sequence component, and a sequencer in single command.
 
 Options accepted by this command are described below:
 
@@ -83,7 +92,7 @@ If sequence component name is not specified, a new name (prefixed with `subsyste
 For e.g. `TCS_123`, `IRIS_123`
 @@@
 
-##### Sequencer
+* Sequencer
 
 Spawns two things:
 
@@ -119,7 +128,7 @@ cd /tmt/apps
 
 ```
 
-### Setting the default log level
+## Setting the default log level
 The default log level for any component is specified in the `application.conf` file of the component.  In this case,
 the Sequence Component is shared code among all Sequencers.  Therefore, to specify a log level for your Sequencer,
 use the java -D option to override configuration values at runtime.  For log level, the format is:
