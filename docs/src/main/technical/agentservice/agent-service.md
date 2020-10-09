@@ -9,7 +9,7 @@ To do so, it uses the agent running on that specific machine where component is 
 
 Agent Service is a http service build using msocket framework. It has following layers:
 
-- Http layer(server which interacts with the Http Interface)
+- Server (which interacts with the Http Interface)
 - Implementation layer (which includes creating the `AgentClient` for the specific agent)
 - Agent (which spawns or kills the given component)
 

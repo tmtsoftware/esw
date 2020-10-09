@@ -8,6 +8,8 @@ import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, 
 object SpawnCommandExt {
 
   implicit class SpawnCommandOps(private val command: SpawnCommand) extends AnyVal {
+
+    //returns a list of command strings which can be executed on the command line(e.g., bash etc)
     def executableCommandStr(coursierChannel: String, agentPrefix: Prefix): List[String] = {
       lazy val args = command.commandArgs(List("-a", agentPrefix.toString()))
 
