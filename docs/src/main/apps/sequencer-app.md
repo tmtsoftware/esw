@@ -135,5 +135,5 @@ For example, using the example above:
 cd /tmt/apps
 
 // run sequencer iris.darknight on iris.primary sequence component
-./esw-ocs-app -J-Dcsw-logging.component-log-levels.ESW.EswGateway=TRACE equencer -s iris -n primary -m darknight
+./esw-ocs-app -J-Dcsw-logging.component-log-levels.IRIS.darknight=TRACE sequencer -s iris -n primary -m darknight
 ```

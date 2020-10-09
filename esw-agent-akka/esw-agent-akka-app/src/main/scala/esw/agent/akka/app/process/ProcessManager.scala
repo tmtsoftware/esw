@@ -70,7 +70,6 @@ class ProcessManager(
       }
       .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
 
-
   //starts a process with the executable string of the given spawn command
   private def startComponent(command: SpawnCommand) =
     Future.successful(

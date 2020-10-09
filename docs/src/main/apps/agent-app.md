@@ -65,5 +65,5 @@ For example, using the example above:
 cd /tmt/apps
 
 // run sequence manager
-./agent-app -J-Dcsw-logging.component-log-levels.ESW.agent_servic=TRACE start -p "tcs.primary_machine"
+./agent-app -J-Dcsw-logging.component-log-levels.TCS.primary_machine=TRACE start -p "tcs.primary_machine"
 ```
