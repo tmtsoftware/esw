@@ -9,7 +9,7 @@ A command line application that facilitates starting Sequence Manager and HTTP s
 
 ## How to start Sequence Manager App
 
-#### Running sequence manager using Coursier
+### Running sequence manager using Coursier
 
 * Add TMT Apps channel to your local Coursier installation using below command
 
@@ -17,7 +17,26 @@ A command line application that facilitates starting Sequence Manager and HTTP s
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
 ```
 
-* After adding TMT apps channel you can simply launch sequence-manager by executing start command
+* Install sequence-manager app
+
+Following command creates an executable file named sequence-manager in the default installation directory.
+
+```bash
+cs install sequence-manager:<version | SHA>
+```
+
+One can specify installation directory like following:
+
+```bash
+cs install \
+    --install-dir /tmt/apps \
+    sequence-manager:<version | SHA>
+```
+Note: If you don't provide the version or SHA in above command, `sequence-manager` will be installed with the latest tagged binary of `esw-sm-app`
+
+* Run sequence manager app
+
+Once sequence-manager is installed, one can simply run sequence-manager by executing start command
 
 Start command supports following arguments:
 
@@ -30,19 +49,15 @@ Start command supports following arguments:
 
 This command starts Sequence Manager as well as HTTP server of Sequence Manager.
 
-### Examples:
-
 ```bash
-cs launch sequence-manager:<version | SHA> -- start -o obsmode.conf -l
+//cd to installation directory
+cd /tmt/apps
+
+// run sequence manager
+./sequence-manager start -o obsmode.conf
 ```
 
-```bash
-cs launch sequence-manager:<version | SHA> -- start -o obsmode.conf
-```
-
-Note: If you don't provide the version or SHA in above command, `sequence-manager` will start with the latest tagged binary of `esw-sm-app`
-
-### Setting the default log level
+### Setting the log level
 
 The default log level for any component is specified in the `application.conf` file of the component.
 Use the java -D option to override configuration values at runtime.  For log level, the format is:
@@ -53,6 +68,10 @@ Use the java -D option to override configuration values at runtime.  For log lev
 
 For example, using the example above:
 
-```
-cs launch --java-opt -Dcsw-logging.component-log-levels.ESW.sequence_manager=TRACE sequence-manager:<version | SHA> -- start -o obsmode.conf
+```bash
+//cd to installation directory
+cd /tmt/apps
+
+// run sequence manager
+./sequence-manager -J-Dcsw-logging.component-log-levels.ESW.sequence_manager=TRACE start -o obsmode.conf
 ```

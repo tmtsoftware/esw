@@ -11,21 +11,42 @@ To access any protected `AgentService` endpoints, `ESW-user` role is required.
 
 ## How to start Agent Service
 
-#### Running agent-service-app using Coursier
+### Running Agent Service App using Coursier
 
-- Add TMT apps channel to your local Coursier installation using below command
+* Add TMT Apps channel to your local Coursier installation using below command
 
 ```bash
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
 ```
 
-- After adding TMT apps channel you can simply launch agent-service-app by executing
+* Install agent-service-app
+
+Following command creates an executable file named agent-service-app in the default installation directory.
 
 ```bash
-cs launch agent-service-app:<version | SHA> -- start
+cs install agent-service-app:<version | SHA>
 ```
 
-Note: If you don't provide the version or SHA in above command, `agent-service-app` will start with the latest tagged binary of `esw-agent-service`
+One can specify installation directory like following:
+
+```bash
+cs install \
+    --install-dir /tmt/apps \
+    agent-service-app:<version | SHA>
+```
+Note: If you don't provide the version or SHA in above command, `agent-service-app` will be installed with the latest tagged binary of `esw-agent-service-app`
+
+* Run agent-service-app
+
+Once agent-service-app is installed, one can simply run agent-service-app by executing start command
+
+```bash
+//cd to installation directory
+cd /tmt/apps
+
+// run agent service app
+./agent-service-app start
+```
 
 ### Setting the default log level
 
@@ -38,6 +59,10 @@ Use the java -D option to override configuration values at runtime.  For log lev
 
 For example, using the example above:
 
-```
-cs launch --java-opt -Dcsw-logging.component-log-levels.ESW.agent_service=TRACE agent-service-app:<version | SHA> -- start
+```bash
+//cd to installation directory
+cd /tmt/apps
+
+// run sequence manager
+./agent-service-app -J-Dcsw-logging.component-log-levels.ESW.agent_servic=TRACE start
 ```
