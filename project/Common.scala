@@ -8,7 +8,7 @@ import sbt.librarymanagement.ScmInfo
 import sbtunidoc.GenJavadocPlugin.autoImport.unidocGenjavadocVersion
 
 object Common {
-  private val enableFatalWarnings: Boolean = sys.props.get("generateStoryReport").contains("true")
+  private val enableFatalWarnings: Boolean = sys.props.get("enableFatalWarnings").contains("true")
   private val storyReport: Boolean         = sys.props.get("generateStoryReport").contains("true")
   private val enableCoverage               = sys.props.get("enableCoverage").contains("true")
 
