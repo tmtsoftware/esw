@@ -3,13 +3,13 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "dfeb0f9"
+  private val MSocketVersion = "73728fd"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
   val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.15.0" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.2") //Apache License 2.0
+  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.4") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
@@ -26,7 +26,7 @@ object Libs {
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "620786ec2b"
+  private val Version = "04eaee2"
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version
@@ -65,7 +65,7 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.2.0" //all akka is Apache License 2.0
+  private val Version = "10.2.1" //all akka is Apache License 2.0
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
@@ -74,7 +74,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.6.1"
+  private val Version = "1.6.2"
   private val Org     = "io.bullet"
 
   val `borer-core`        = dep(Org %%% "borer-core" % Version)

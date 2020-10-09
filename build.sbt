@@ -1,5 +1,10 @@
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+import Common._
+
+inThisBuild(
+  CommonSettings
+)
 
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-ocs`,
@@ -21,7 +26,6 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-http-template-wiring`
 )
 
-lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`, `esw-sm-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
@@ -32,9 +36,6 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   examples,
   `esw-shell`
 )
-val jsTestArg              = testOptions in Test := Seq(Tests.Argument("-oDF"))
-val enableCoverage         = sys.props.get("enableCoverage").contains("true")
-val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
 
 lazy val esw = (project in file("."))
   .aggregate(aggregateProjects: _*)
@@ -43,7 +44,7 @@ lazy val esw = (project in file("."))
   .settings(DocSettings.makeSiteMappings(docs))
   .settings(Settings.addAliases())
   .settings(DocSettings.docExclusions(unidocExclusions))
-  .settings(GithubRelease.githubReleases(githubReleases))
+  .settings(GithubRelease.githubReleases)
   .settings(
     generateContract := ContractPlugin.generate(`esw-contract`).value
   )
@@ -209,7 +210,7 @@ lazy val `esw-integration-test` = project
   )
   .settings(
     Test / test := {
-      publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
+      val _ = publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
       (Test / test).value
     }
   )

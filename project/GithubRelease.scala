@@ -34,14 +34,14 @@ object GithubRelease extends AutoPlugin {
     Def.task {
       lazy val rtmZip = new File(target.value / "ghrelease", "requirement-test-mapping.zip")
       // filter out the index.html
-      IO.zip(Path.allSubpaths(new File(target.value, "RTM")).filterNot(_._2.endsWith("html")), rtmZip)
+      IO.zip(Path.allSubpaths(new File(target.value, "RTM")).filterNot(_._2.endsWith("html")), rtmZip, None)
       rtmZip
     }
 
   private def coverageReportZipTask =
     Def.task {
       lazy val coverageReportZip = new File(target.value / "ghrelease", "scoverage-report.zip")
-      IO.zip(Path.allSubpaths(new File(crossTarget.value, "scoverage-report")), coverageReportZip)
+      IO.zip(Path.allSubpaths(new File(crossTarget.value, "scoverage-report")), coverageReportZip, None)
       coverageReportZip
     }
 
@@ -61,7 +61,7 @@ object GithubRelease extends AutoPlugin {
           }
 
       // 1. include all xml files in single zip
-      IO.zip(xmlFiles, testReportZip)
+      IO.zip(xmlFiles, testReportZip, None)
       // 2. generate html report from xml files
       IO.withTemporaryDirectory { dir =>
         // copy xml files from all projects to single directory
@@ -91,7 +91,7 @@ object GithubRelease extends AutoPlugin {
     new ProcessBuilder(commandWithArgs.asJava).inheritIO.start.waitFor
   }
 
-  def githubReleases(projects: Seq[ProjectReference]): Setting[Task[Seq[sbt.File]]] =
+  def githubReleases: Setting[Task[Seq[sbt.File]]] =
     ghreleaseAssets := {
       val (testReportZip, testReportHtml) = testReportsKey.value
       Seq(

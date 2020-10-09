@@ -8,11 +8,11 @@ object Settings {
     ) ++
     addCommandAlias(
       "buildAll",
-      ";set every enableFatalWarnings := true; scalafmtCheck; clean; makeSite; test:compile; multi-jvm:compile; set every enableFatalWarnings := false"
+      ";scalafmtCheck; clean; makeSite; test:compile; multi-jvm:compile"
     ) ++
     addCommandAlias(
       "compileAll",
-      ";set every enableFatalWarnings := true; scalafmtCheck; test:compile; multi-jvm:compile; set every enableFatalWarnings := false;"
+      "; scalafmtCheck; test:compile; multi-jvm:compile"
     ) ++
     addCommandAlias(
       "validateSite",
