@@ -49,7 +49,7 @@ Once gateway-server is installed, one can simply run gateway-server by executing
 Start command supports following arguments:
 
  * `--port` , `-p` : Optional argument: HTTP server will be bound to this port. If a value is not provided, port will be picked up from configuration
- * `-l`, `--local` : optional aregument (true if config is to be read locally or false if from remote server) default value is false
+ * `-l`, `--local` : optional argument (true if config is to be read locally or false if from remote server) default value is false
  * `-c`, `--commandRoleConfigPath` : specifies command role mapping file path which gets fetched from config service or local file system based on --local option
  * `-m`, `--metrics` : optional argument: If true, enable gateway metrics. If not provided, default value is false and metrics will be disabled
 
@@ -89,7 +89,7 @@ The default log level for any component is specified in the `application.conf` f
 Use the java -D option to override configuration values at runtime.  For log level, the format is:
 
 ```
--Dcsw-logging.component-log-levels.<Subsystem>.<ComponentName>=<LEVEL>
+-J-Dcsw-logging.component-log-levels.<Subsystem>.<ComponentName>=<LEVEL>
 ```
 
 For example, using the example above:
