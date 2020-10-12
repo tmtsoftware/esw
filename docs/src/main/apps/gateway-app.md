@@ -61,22 +61,27 @@ from application.conf file
 
 This command starts Gateway Server.
 
+Example 1:
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
-// run sequence manager
-./gateway-server start -p 8090 -l -c command-role-mapping.conf
+// run gateway server with provided port, local command role config file and with metrics enabled
+./gateway-server start -p 8090 -l -c command-role-mapping.conf -m
 ```
-Or
 
+Example 2:
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
-// run gateway server
-./gateway-server start -p 8090 -l -c command-role-mapping.conf
+// run gateway server with remote command role config file
+./gateway-server start -c command-role-mapping.conf
 ```
+
+@@@notes
+Refer supported arguments section or `./gateway-server start --help` for starting gateway server with specific arguments
+@@@
 
 ## Setting the default log level
 

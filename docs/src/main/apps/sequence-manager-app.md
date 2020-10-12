@@ -65,6 +65,10 @@ cd /tmt/apps
 ./sequence-manager start -o obsmode.conf
 ```
 
+@@@notes
+Refer supported arguments section or `./sequence-manager start --help` for starting sequence manager with specific arguments
+@@@
+
 ## Setting the log level
 
 The default log level for any component is specified in the `application.conf` file of the component.

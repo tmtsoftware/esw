@@ -70,26 +70,29 @@ Start command supports following arguments:
 
 This command starts sequence component.
 
+Example 1:
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
-//start sequence component
-./esw-ocs-app seqcomp -s tcs -n primary
+//start sequence component with specified name
+./ocs-app seqcomp -s tcs -n primary
 ```
-Or
 
+
+Example 2:
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
-//start sequence component
-esw-ocs-app seqcomp -s tcs
+//start sequence component without name argument.
+./ocs-app seqcomp -s tcs
 ```
 
 @@@note
 If sequence component name is not specified, a new name (prefixed with `subsystem`) will be generated for the sequence component.
 For e.g. `TCS_123`, `IRIS_123`
+Refer supported arguments section or `./ocs-app start --help` for starting gateway server with specific arguments
 @@@
 
 * Sequencer
@@ -110,23 +113,28 @@ Options accepted by this command are described below:
 
 Following command starts sequence component and sequencer both:
 
+Example 1:
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
 //Below example will spawn a sequence component `OCS.primary` and a sequencer `TCS.darknight` in it.
-./esw-ocs-app sequencer -s ocs -n primary -i tcs -m darknight
+./ocs-app sequencer -s ocs -n primary -i tcs -m darknight
 ```
-Or
 
+Example 2:
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
 //Example below will spawn a sequence component `IRIS-primary` and a sequencer `IRIS-darknight` in it.
-./esw-ocs-app sequencer -s iris -n primary -m darknight
+./ocs-app sequencer -s iris -n primary -m darknight
 
 ```
+
+@@@notes
+Refer supported arguments section or `./ocs-app start --help` for starting esw  with specific arguments
+@@@
 
 ## Setting the default log level
 The default log level for any component is specified in the `application.conf` file of the component.  In this case,
@@ -144,5 +152,5 @@ For example, using the example above:
 cd /tmt/apps
 
 // run sequencer iris.darknight on iris.primary sequence component
-./esw-ocs-app -J-Dcsw-logging.component-log-levels.IRIS.darknight=TRACE sequencer -s iris -n primary -m darknight
+./ocs-app -J-Dcsw-logging.component-log-levels.IRIS.darknight=TRACE sequencer -s iris -n primary -m darknight
 ```
