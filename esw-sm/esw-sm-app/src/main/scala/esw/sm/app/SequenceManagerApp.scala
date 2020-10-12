@@ -30,7 +30,6 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
         start(obsModeConfigPath, isConfigLocal, agentPrefix, startLogging)
     }
 
-  // fixme: App ll not terminate on any failure. Use try/catch and shutdown ActorSystem
   def start(
       obsModeConfigPath: Path,
       isConfigLocal: Boolean,
