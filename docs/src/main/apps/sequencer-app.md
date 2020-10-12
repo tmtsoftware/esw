@@ -139,7 +139,7 @@ Refer supported arguments section or `./ocs-app start --help` for starting esw  
 ## Setting the default log level
 The default log level for any component is specified in the `application.conf` file of the component.  In this case,
 the Sequence Component is shared code among all Sequencers.  Therefore, to specify a log level for your Sequencer,
-use the java -D option to override configuration values at runtime.  For log level, the format is:
+use the java -J-D option to override configuration values at runtime.  For log level, the format is:
 
 ```
 -J-Dcsw-logging.component-log-levels.<Subsystem>.<obsMode>=<LEVEL>

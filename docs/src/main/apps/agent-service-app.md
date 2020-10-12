@@ -59,10 +59,10 @@ cd /tmt/apps
 ## Setting the default log level
 
 The default log level for any component is specified in the `application.conf` file of the component.
-Use the java -D option to override configuration values at runtime.  For log level, the format is:
+Use the java -J-D option to override configuration values at runtime.  For log level, the format is:
 
 ```
--Dcsw-logging.component-log-levels.<Subsystem>.<ComponentName>=<LEVEL>
+-J-Dcsw-logging.component-log-levels.<Subsystem>.<ComponentName>=<LEVEL>
 ```
 
 For example, using the example above:
