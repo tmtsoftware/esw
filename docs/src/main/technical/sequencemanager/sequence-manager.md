@@ -1,3 +1,4 @@
+
 # Sequence Manager
 ## Introduction
 
@@ -5,6 +6,7 @@ Sequence Manager is ESW component which takes care of provisioning sequence comp
 sequencer scripts as per observing mode. It has capabilities to start, re-start, shutdown sequencer/s, shutdown sequence components
 as well as to know status of TMT components like which sequencer script is loaded on which sequence component, which sequence component/s
 are running on which agent. Sequence Manager is implemented using Akka actor. Sequence Manager provides two interfaces.
+
 1. Akka interface
 2. HTTP interface
 
@@ -35,7 +37,7 @@ respective subsystem machines.
 
 Sequence Manager support multiple APIs which allows to configure for an observing mode, cleanup after observation is done etc.
 
-Flow for configuration of observing mode is descriobed below:
+Flow for configuration of observing mode is described below:
 
 ### GetAgentStatus
 This API allows to show status of TMT ecosystem components (agents, sequence components and sequencers).
@@ -86,7 +88,7 @@ Following flow chart shows algorithm for configure flow
 
 ### Shutdown Sequencers
 Once observation is complete, cleanup for that observation involves shutting down all sequencers of that observing mode.
-Sequence Manager provides shutdown sequencers API variations which allow to shutdown all sequencers of an observing mode, shutdown all sequencer beloging to specific
+Sequence Manager provides shutdown sequencers API variations which allow to shutdown all sequencers of an observing mode, shutdown all sequencer belonging to specific
 subsystem, shutdown a particular sequencer and shutdown all running sequencers.
 
 ![ObservationStart](../../images/sequencemanager/sm4.png)
@@ -111,8 +113,8 @@ Following digram depicts state transition for sequence manager:
 
 Implementation of these msgs is asynchronous in nature. So handling any other msgs while previous msg processing is incomplete can
 result in inconsistent system. For example,
-configure Observing_Mode_1 msg is received by Sequence Manager Actor. Let's assume that this reuires to start ESW, IRIS and TCS sequencers.
-Congigure flow has checked for resource conflict. No conflict is there so configure goes ahead with processing. During this processing,
+configure Observing_Mode_1 msg is received by Sequence Manager Actor. Let's assume that this requires to start ESW, IRIS and TCS sequencers.
+Configure flow has checked for resource conflict. No conflict is there so configure goes ahead with processing. During this processing,
 if any other msg like startSequencer for IRIS subsystem and Observing_Mode_2 is recieved then this will result in inconsistent behaviour.
 To avoid these cases, certain msgs are accepted only when sequence manager is idle. When any one of idle state msg is received, sequence manager
 goes into processing state where it accepts only common msgs (read state msgs which will not cause any inconsistency). In processing state, actor waits
