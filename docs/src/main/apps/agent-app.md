@@ -47,7 +47,7 @@ Once agent-app is installed, one can simply run agent-app by executing start com
 
 Start command supports following arguments:
 
-- `-p` : prefix of machine. tcs.primary_machine, ocs.machine1 etc
+- `-p` : prefix of machine. For exmaple, tcs.primary_machine, ocs.machine1 etc
 
 ```bash
 //cd to installation directory
