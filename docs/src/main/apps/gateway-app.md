@@ -9,7 +9,7 @@ A command line application that facilitates starting ESW Gateway Server
 
 ## Running esw gateway server using Coursier
 
-* Add TMT Apps channel to your local Coursier installation using below command
+### 1. Add TMT Apps channel to your local Coursier installation using below command
 
 Channel needs to be added to install application using `cs install`
 
@@ -25,7 +25,7 @@ For production machine setup,
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
 ```
 
-* Install gateway-server app
+### 2. Install gateway-server app
 
 Following command creates an executable file named gateway-server in the default installation directory.
 
@@ -42,7 +42,7 @@ cs install \
 ```
 Note: If you don't provide the version or SHA in above command, `gateway-server` will be installed with the latest tagged binary of `esw-gateway-server`
 
-* Run gateway server app
+### 3. Run gateway server app
 
 Once gateway-server is installed, one can simply run gateway-server by executing start command
 

@@ -9,7 +9,7 @@ A command line application that facilitates starting Sequence Manager and HTTP s
 
 ## Running sequence manager using Coursier
 
-* Add TMT Apps channel to your local Coursier installation using below command
+### 1. Add TMT Apps channel to your local Coursier installation using below command
 
 Channel needs to be added to install application using `cs install`
 
@@ -25,7 +25,7 @@ For production machine setup,
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
 ```
 
-* Install sequence-manager app
+### 2. Install sequence-manager app
 
 Following command creates an executable file named sequence-manager in the default installation directory.
 
@@ -42,7 +42,7 @@ cs install \
 ```
 Note: If you don't provide the version or SHA in above command, `sequence-manager` will be installed with the latest tagged binary of `esw-sm-app`
 
-* Run sequence manager app
+### 3. Run sequence manager app
 
 Once sequence-manager is installed, one can simply run sequence-manager by executing start command
 

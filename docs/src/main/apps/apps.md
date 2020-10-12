@@ -24,7 +24,7 @@ Please refer to [coursier installation document](https://get-coursier.io/docs/cl
 
 `cs install` command will be used to install executables/launchers of each of ESW apps.
 
-For example follwoing command shows installation for agent app,
+For example following command shows installation for agent app,
 ```bash
 cs install agent-app:<version | SHA>
 ```

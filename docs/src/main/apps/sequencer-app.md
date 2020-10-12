@@ -7,7 +7,7 @@ A command line application that facilitates starting Sequence Component and/or S
 - Location server should be running.
 - event service should be running.
 
-## Add TMT Apps channel to your local Coursier installation using below command
+## 1. Add TMT Apps channel to your local Coursier installation using below command
 
 Channel needs to be added to install application using `cs install`
 
@@ -23,7 +23,7 @@ For production machine setup,
 cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
 ```
 
-## Install ocs-app
+## 2. Install ocs-app
 
 Following command creates an executable file named gateway-server in the default installation directory.
 
@@ -40,14 +40,14 @@ cs install \
 ```
 Note: If you don't provide the version or SHA in above command, `ocs-app` will be installed with the latest tagged binary of `esw-ocs-app`
 
-## Run ocs-app
+## 3. Run ocs-app
 
 Supported Commands
 
 * seqcomp - starts sequence component
 * sequencer - starts sequence components and sequencer in single command
 
-* Sequence Component (seqcomp)
+### Sequence Component (seqcomp)
 
 Spawns a new Sequence Component with provided `subsytem` and `name`.
 Note that with this command, only sequence component is spawned, not a sequencer.
@@ -95,7 +95,7 @@ For e.g. `TCS_123`, `IRIS_123`
 Refer supported arguments section or `./ocs-app start --help` for starting gateway server with specific arguments
 @@@
 
-* Sequencer
+### Sequencer
 
 Spawns two things:
 
