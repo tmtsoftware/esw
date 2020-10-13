@@ -39,22 +39,3 @@ effectively destroying the Sequencer.
 
 
 ![sequencer-state-transition](../../images/ocs/state-transition.png)
-
-# Sequence Component Lifecycle
-
-The Sequence Component also has a lifecycle, but it is simpler than the Sequencer lifecycle. The following
-figure shows the Sequence Component has two states: `Idle` and `Running`.
-
-* **Idle:** This is the default state of a Sequence Component when it is started. It is ready for the loading
-of a Script that will create a Sequencer, which occurs on a `LoadScript` command. If successful, the Sequence
-Component transitions to the `Running` state. While in the `Idle` state, the Sequence Component responds to the `GetStatus` message
-and ignores the `UnloadScript` message without error.
-
-* **Running:** Once a Sequence Component has successfully loaded a Script, it is in the `Running` state. The new
-Sequencer will be available to process Sequences until it receives an `UnloadScript` message and transitions back
-to the `Idle` state. While in the `Running` state, the Sequence Component can also receive a `Restart` message, 
-which restarts a Sequencer by unloading the Script and shutting down the Sequencer, immediately followed by the 
-loading of the Script again. This has the effect of initializing the script. The `LoadScript` message is ignored 
-without error while in the `Running` state. The Sequence Component responds successfully to the `GetStatus` message.
-
-![sequencecomp-lifecycle](../../images/ocs/OCS-SeqCompLifecycle.png)
