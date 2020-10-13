@@ -46,8 +46,8 @@ class ProcessManager(
     }
 
   //it creates a process handle with pid extracted from the metadata of the given location
-  //and returns the processHandle as the Right value
-  //if there is no pid in the location's metadata it returns the error as the Left value
+  //and returns the processHandle
+  //if there is no pid in the location's metadata it returns the error
   private def getProcessHandle(location: Location): Either[String, ProcessHandle] =
     location.metadata.getPid.toRight(s"$location metadata does not contain Pid").flatMap(parsePid)
 
@@ -58,9 +58,9 @@ class ProcessManager(
 
   def processHandle(pid: Long): Option[ProcessHandle] = ProcessHandle.of(pid).toScala
 
-  //It checks if the component of the  given connection if already register in the location service
-  //If it is registered then it return an error message string as the Left value in a Future
-  //otherwise it return an unit value as Right value in the future
+  //It checks if the component of the given connection is already registered in the location service
+  //If it is registered then it returns an error message string as a Future
+  //otherwise it return an unit value as a Future
   private def verifyComponentIsNotAlreadyRegistered(connection: Connection): Future[Either[String, Unit]] =
     locationService
       .find(connection.of[Location])
@@ -80,9 +80,9 @@ class ProcessManager(
 
   //it checks if the given process is alive
   //if not it tries to unregister the component of the given connection
-  //and returns the error message as a Left value in the Future
-  //in case process is still alive it just returns process as the Right value in the Future
-  private def reconcile(process: Process, connection: Connection) =
+  //and returns the error message as a Future
+  //in case process is still alive it just returns process as a Future
+  private def reconcile(process: Process, connection: Connection): Future[Either[String, Process]] =
     if (!process.isAlive)
       unregisterComponent(connection).transform(_ =>
         Try(Left("Process terminated before registration was successful".tap(log.warn(_))))
@@ -90,8 +90,8 @@ class ProcessManager(
     else Future.successful(Right(process))
 
   //it checks if the component of the given connection is registered in the location service within the given timeout
-  //if not it returns the error message as a Left value in the Future
-  //otherwise it just returns unit as the Right value in the Future
+  //if not it returns the error message as a Future
+  //otherwise it just returns unit as a Future
   private def waitForRegistration(connection: Connection, timeout: FiniteDuration): Future[Either[String, Unit]] =
     locationService
       .resolve(connection.of[Location], timeout)

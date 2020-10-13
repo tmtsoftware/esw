@@ -45,8 +45,8 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
 object AgentClient {
 
   //create AgentClient(Actor client or proxy) for the agent of the given prefix
-  //if there is no agent running with the given prefix it returns the FindLocationError as a Left value in a Future
-  //else AgentClient gets returned as a Right value in a Future
+  //if there is no agent running with the given prefix it returns the FindLocationError as a Future
+  //else AgentClient gets returned as a Future
   def make(agentPrefix: Prefix, locationService: LocationServiceUtil)(implicit
       actorSystem: ActorSystem[_]
   ): Future[Either[EswLocationError.FindLocationError, AgentClient]] = {
