@@ -15,7 +15,7 @@ resolvers += "Jenkins repo" at "https://repo.jenkins-ci.org/public/"
 addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
 
 resolvers += Resolver.bintrayRepo("twtmt", "sbt-plugins")
-addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.2.0-M1")
+addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "1275b7a991")
 addSbtPlugin("com.github.tmtsoftware" % "kotlin-plugin" % "2.1.0-M1")
 
 resolvers += Resolver.jcenterRepo

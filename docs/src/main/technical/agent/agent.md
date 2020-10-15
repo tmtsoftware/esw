@@ -34,11 +34,11 @@ Implementation of Agent is all distributed within following submodules:
 ### esw-agent-akka-app
 
 In this module, agent actor's implementation and agent app is present. 
-This module depends on [esw-agent-akka-client](#esw-agent-akka-client) for the agent actor's messages and codecs.
+This module depends on @ref:[esw-agent-akka-client](#esw-agent-akka-client) for the agent actor's messages and codecs.
 
 ### esw-agent-akka-client
 
-In this module, [agent client](#agentclient) and the agent actor messages are present.   
+In this module, @ref:[agent client](#agentclient) and the agent actor messages are present.   
 
 
 ## AgentClient
