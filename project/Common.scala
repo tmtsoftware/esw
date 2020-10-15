@@ -68,6 +68,7 @@ object Common {
       fork := true,
       fork in Test := false,
       isSnapshot := !sys.props.get("prod.publish").contains("true"),
+      javaOptions in Test ++= Seq("-Dakka.actor.serialize-messages=on"),
       cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
       scalafmtOnCompile := true,
       unidocGenjavadocVersion := "0.16",
