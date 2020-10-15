@@ -1,14 +1,30 @@
 package esw.ocs.testkit
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
+import csw.location.api.scaladsl.LocationService
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.FrameworkTestKit
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, MachineAgent}
+import esw.ocs.testkit.utils._
 
 abstract class EswTestKit(services: Service*)
     extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)
-    with TestKitWiring {
+    with LocationUtils
+    with SequencerUtils
+    with AgentUtils
+    with GatewayUtils
+    with KeycloakUtils
+    with AgentServiceUtils {
+
+  implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = underlyingFrameworkTestKit.actorSystem
+
+  lazy val locationService: LocationService = underlyingFrameworkTestKit.frameworkWiring.locationService
+  lazy val eventService: EventService       = underlyingFrameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
+  lazy val eventSubscriber: EventSubscriber = eventService.defaultSubscriber
+  lazy val eventPublisher: EventPublisher   = eventService.defaultPublisher
 
   def underlyingFrameworkTestKit: FrameworkTestKit = frameworkTestKit
 
