@@ -48,7 +48,7 @@ The example below shows usages of the DSL for different types of keys. Some othe
 have also been provided for ease of access. Usage of these helper DSLs is also shown in the example below.
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #keys }  
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #keys }  
 
 
 ## Creating Parameters
@@ -56,7 +56,7 @@ Kotlin
 The example below shows different ways of creating parameters and adding them to a command.
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #creating-params }  
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #creating-params }  
 
 ## Extracting a parameter from Params/Command/Event
 
@@ -65,28 +65,28 @@ Kotlin
 You can extract a parameter from Params/Command/Event using another parameter with the same key name and key type (values of the parameter passed in are ignored).
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #find }  
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #find }  
 
 ### Extracting parameter by key
 
 Yuo can also use a `Key`:
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-key }  
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-key }  
 
 ### Extracting parameter by keyName and KeyType
 
 Or, you cam use the key name and type:
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-keyName-keyType }  
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-keyName-keyType }  
 
 ## Extracting values from a parameter
 
 The example below shows the accessing a `List` of values or a specific value of a parameter.
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-values }  
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-values }  
 
 @@@note
 Note that the shorthand alternatives shown with `// alternative` comment in above examples, do not return `optional` values
@@ -99,10 +99,10 @@ unlike their corresponding full version. This means, with shorthand DSL, an erro
 A parameter could be removed from a `Params` instance or from a `Command` directly. The example below demonstrates both of these DSL methods.
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #remove }  
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #remove }  
 
 ## Checking if a parameter exists
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #exists }
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #exists }
 

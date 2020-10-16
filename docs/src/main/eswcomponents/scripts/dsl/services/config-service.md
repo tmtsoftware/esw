@@ -13,7 +13,7 @@ The `existsConfig` DSL method checks if provided file path exists in Configurati
 specific revision id (if provided) and returns true or false based on whether or not the file exists.
 
 Kotlin
-:   @@snip [ConfigServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #exists-config }
+:   @@snip [ConfigServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #exists-config }
 
 ### getConfig
 
@@ -29,7 +29,7 @@ In the below example, we are performing following steps:
 1. When Sequencer receives `rotate-motor` command, then send `set-resolution` command to downstream motor HCD
 
 Kotlin
-:   @@snip [ConfigServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #get-config }
+:   @@snip [ConfigServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #get-config }
 
 The following example shows sample code for converting a `Config` object retrieved from the Configuration Service 
 to custom domain models. Note that TMT standard for configuration files is HOCON as supported by CSW.
@@ -37,7 +37,7 @@ to custom domain models. Note that TMT standard for configuration files is HOCON
 Refer to [this](https://github.com/lightbend/config) guide for complete usage of `Config`.
 
 Kotlin
-:   @@snip [ConfigServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #motor-commands }
+:   @@snip [ConfigServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #motor-commands }
 
 ### Source code for examples
 

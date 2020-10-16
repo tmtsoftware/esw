@@ -27,7 +27,7 @@ to explicitly await for the future to complete to achieve sequential flow.
 THe following example shows the creation of a database connection and a query to the database.
 
 Kotlin
-:   @@snip [DatabaseServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DatabaseServiceDslExample.kts) { #dsl-jooq-helper }
+:   @@snip [DatabaseServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DatabaseServiceDslExample.kts) { #dsl-jooq-helper }
 
 ## Create a Database Connection (Read/Write Access)
 
@@ -40,7 +40,7 @@ The following example shows the creation of a database connection with write acc
 to do queries.
 
 Kotlin
-:   @@snip [DatabaseServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DatabaseServiceDslExample.kts) { #dsl-context-with-write-access }
+:   @@snip [DatabaseServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DatabaseServiceDslExample.kts) { #dsl-context-with-write-access }
 
 ### Source code for examples
 

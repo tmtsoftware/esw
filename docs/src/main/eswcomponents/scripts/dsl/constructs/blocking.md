@@ -37,12 +37,12 @@ Following example demonstrate writing CPU bound operation,
 In this example `BigInteger.probablePrime(4096, Random())` is CPU bound and takes more than few seconds to finish. 
 
 Kotlin
-:   @@snip [compute-intesive.kt](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/blocking.kt) { #compute-intensive-function }
+:   @@snip [compute-intesive.kt](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/blocking.kt) { #compute-intensive-function }
 
 Following shows, usage of the above compute heavy function in main sequencer script
 
 Kotlin
-:   @@snip [ComputeIntensiveScript.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/ComputeIntensiveScript.kts) { #call-compute-intensive }
+:   @@snip [ComputeIntensiveScript.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/ComputeIntensiveScript.kts) { #call-compute-intensive }
 
 ## IO Bound
 
@@ -55,12 +55,12 @@ Following example demonstrate writing IO bound operation,
 In this example `BufferredReader.readLine()` is IO bound and takes more than few seconds to finish.
 
 Kotlin
-:   @@snip [io-bound.kt](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/blocking.kt) { #io-bound-function }
+:   @@snip [io-bound.kt](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/blocking.kt) { #io-bound-function }
 
 Following shows, usage of the above io heavy function in main sequencer script
 
 Kotlin
-:   @@snip [IOIntensiveScript.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/IOBoundScript.kts) { #io-bound-call }
+:   @@snip [IOIntensiveScript.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/IOBoundScript.kts) { #io-bound-call }
 
 ## Recommendations/Best Practices
 

@@ -7,7 +7,7 @@ behind Sequence Component is to reduce boot time of Sequencer Script. Sequence C
 JVM process which will load and unload different script. Sequencer will be started as a part of existing Sequence Component process,
 This results is minimizing boot up time for Sequencer.
 
-The Sequence Component application and its arguments are described @ref[here](../../../apps/sequencer-app.md).
+The Sequence Component application and its arguments are described @ref[here](../../apps/sequencer-app.md).
 
 ## Modules
 
@@ -91,7 +91,7 @@ in location service, terminates actor system and gracefully shutdown sequence co
 apart from `Idle` state shutdown, which is shutting down sequencer loaded on the sequence component.
 @@@
 
-![sequencecomp-lifecycle](../../../images/ocs/OCS-SeqCompLifecycle.png)
+![sequencecomp-lifecycle](../../images/ocs/OCS-SeqCompLifecycle.png)
 
 ## Sequence Component Technical Design
 

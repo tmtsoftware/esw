@@ -19,7 +19,7 @@ The `setSeverity` API requires user to provide `AlarmKey` and `AlarmSeverity`.
 The following example demonstrates the creation of an `AlarmKey`
 
 Kotlin
-:   @@snip [AlarmServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts) { #alarm-key }
+:   @@snip [AlarmServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts) { #alarm-key }
 
 ### AlarmSeverity
 
@@ -40,7 +40,7 @@ In this example, a temperature @ref[FSM](../constructs/fsm.md) is created, and b
 | ERROR | Temperature is greater than 40 | Major    |
 
 Kotlin
-:   @@snip [AlarmServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts) { #set-severity }
+:   @@snip [AlarmServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts) { #set-severity }
 
 ## Source code for examples
 

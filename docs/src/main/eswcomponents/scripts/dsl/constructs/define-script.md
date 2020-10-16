@@ -13,7 +13,7 @@ To define a handler-oriented script, a function named `script` needs to be invok
 The example below shows the way to declare the script.
 
 Kotlin
-:   @@snip [define-script.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #script }
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #script }
  
 The logic can be divided into 2 parts:
 
@@ -28,7 +28,7 @@ Everything except Script Handlers are considered as top-level statements and wil
 This is the place to **declare the Script specific variables** and tasks to be executed at initialization of the Script.
 
 Kotlin
-:   @@snip [define-script.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #script-example }
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #script-example }
 
 The example mainly demos:
 
@@ -53,7 +53,7 @@ In an FSM Script, script handlers can be defined in two scopes :
 The below code shows how to declare FSM Script and States. It also shows the scopes where handlers can be added.
 
 Kotlin
-:   @@snip [define-script.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script }
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script }
 
 Initialization of the Script takes place by executing the top-level statements, and then executing the *initial state*. 
 The **top-level scope is the place to declare variables** which can be used across all states in the Script. 
@@ -77,7 +77,7 @@ In below example, `[[ 1 ]]` shows use of `become` to change state. where `[[ 2 ]
 The ON state shows how to consume the Params.
 
 Kotlin
-:   @@snip [define-script.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script-become }
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script-become }
 
 The `state` scope can have top-level statements and Script handlers. The `state`'s top-level statements will be executed 
 when state transition happens. So invoking *become* will initialize the next state which includes calling the top-level 
@@ -86,7 +86,7 @@ last until state transition. After that, the state will be cleared, and the next
 it will be initialized again to default values. 
 
 Kotlin
-:   @@snip [define-script.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script-state }
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script-state }
 
 In the example, `initialPos` and `moved` demonstrate declaring State scoped variables. Whenever state transition happens 
 to some other state and the goes back to the `SETTING-UP` state, these variables will be reinitialized to their default 
@@ -106,7 +106,7 @@ of the script loading it.
 THe following code declares a Reusable Script with an Observe Command Handler.
 
 Kotlin
-:   @@snip [define-script.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #reusable-script-example }
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #reusable-script-example }
 
 ### Loading in a Handler-Oriented Script
 
@@ -114,7 +114,7 @@ To use Reusable Scripts, a Handler-Oriented script needs to call the `loadScript
 Script. Calling *loadScripts* will initialize the Reusable Script and then combine handlers of both scripts.
 
 Kotlin
-:   @@snip [define-script.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #load-script }
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #load-script }
 
 ### Loading in FSM Script
 
@@ -123,4 +123,4 @@ particular State of the FSM script.  THe `loadScripts` command and the logic fro
 The example below shows loading a reusable script into a State.
 
 Kotlin
-:   @@snip [define-script.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #load-script-fsm }
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #load-script-fsm }

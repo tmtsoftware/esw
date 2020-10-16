@@ -22,7 +22,7 @@ Assembly takes the following parameters:
 * `defaultTimeout`: optional command response timeout to be used when not explicitly provided for command
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #assembly }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #assembly }
 
 ## HCD
 
@@ -37,7 +37,7 @@ HCD takes the following parameters:
 * `defaultTimeout`: - optional command response timeout to be used when not explicitly provided for command
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #hcd }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #hcd }
 
 @@@ note { title="Resolving a Component with Location Service" }
 Since all the components in the TMT architecture are dynamic in nature, which implies they can be shutdown and spawned dynamically
@@ -72,7 +72,7 @@ before taking the next script step.
 The following example shows a `submit` to the Galil Assembly that is going to take a long time.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component }
 
 #### Error Handling in Scripts
 
@@ -95,7 +95,7 @@ shown below, along with an example of an `onError` handler for the sequence comm
 an if statement using the `isStarted` call on the `SubmitResponse` is convenient in many cases.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component-on-error }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component-on-error }
 
 If you desire to handle errors manually on a per-command basis, the `resumeOnError` flag can be used. If this flag is set to true,
 then script execution continues, and action is taken based on custom logic
@@ -104,7 +104,7 @@ This will cause similar behavior as when the flag is not set by calling the `onE
 if the `SubmitResponse` is some kind of error.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component-error-resume }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component-error-resume }
 
 ### SubmitAndWait
 
@@ -115,7 +115,7 @@ and the Sequence is terminated with failure. If timeout is not provided explicit
 instance of Assembly or HCD is used as default timeout.  This command follows the same error handling semantics as `submit` as described above.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-and-wait-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-and-wait-component }
 
 @@@ note { title="Do I Need a Result Variable?" }
 Note that this example does not save the `submitAndWait` result. If a `submitAndWait` does not return a result, and since the `submitAndWait` returns
@@ -131,7 +131,7 @@ Therefore, `query` can be used to poll for the final response. Note that if the 
 returned is an `Invalid` response with an `IdNotAvailableIssue`. This command follows the same error handling semantics as `submit` as described above.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #query-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #query-component }
 
 ### QueryFinal
 
@@ -143,7 +143,7 @@ then the timeout provided while creating instance of Assembly/HCD is used. Note 
 the response returned is an `Invalid` response with an `IdNotAvailableIssue`. This command follows the same error handling semantics as `submit` as described above.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #query-final-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #query-final-component }
 
 ### SubscribeCurrentState
 
@@ -152,7 +152,7 @@ all current state values are subscribed to. This DSL takes a callback (or lambda
 in the list of subscribed values.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #subscribe-current-state-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #subscribe-current-state-component }
 
 ## Going To online/offline Mode
 
@@ -167,7 +167,7 @@ triggering of the `onGoOffline` handler in the component. The following example
 shows a Sequencer sending the `goOffline` command to a downstream "Galil Assembly" when it receives a `goOffline` command.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #goOffline-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #goOffline-component }
 
 ### goOnline
 
@@ -176,7 +176,7 @@ the triggering of the `onGoOnline` handler in the component.
 The following example shows a Sequencer sending the `goOnline` command to a downstream "Galil Assembly" when it receives a `goOnline` command.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #goOnline-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #goOnline-component }
 
 
 ## Operations Mode and Diagnostic Mode
@@ -191,7 +191,7 @@ The hint is specifified by the component. Not all components have diagnostic mod
 shows a Sequencer sending the `diagnosticMode` command to a downstream "Galil Assembly" when it receives a `diagnosticMode` command.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #diagnostic-mode-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #diagnostic-mode-component }
 
 ### operationsMode
 
@@ -199,7 +199,7 @@ This `operationsMode` DSL method returns an Assembly/HCD to Operations mode, the
 The following example shows a Sequencer sending the `operationsMode` command to a downstream "Galil Assembly" when it receives an `operationsMode` command.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #operations-mode-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #operations-mode-component }
 
 ## Locking and Unlocking Assemblies and HCDs
 
@@ -214,7 +214,7 @@ This DSL returns a `LockingResponse` which can be `LockAcquired` in the successf
 This DSL also provides callbacks for `onLockAboutToExpire` and, `onLockExpired` where script writer can write custom logic. These callbacks are thread safe.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #lock-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #lock-component }
 
 ### unlock
 
@@ -223,7 +223,7 @@ can unlock it. This DSL returns a `LockingResponse` which can be `LockReleased` 
 in case of failure.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #unlock-component }
+:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #unlock-component }
 
 ## Source code for examples
 

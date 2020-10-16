@@ -12,7 +12,7 @@ and a consistent environment for a Sequencer. Scripts are stored in
 a dedicated script repository in the TMT Github called [sequencer-scripts](https://github.com/tmtsoftware/sequencer-scripts).
 *All scripts for all subsystems reside in the script repository*.
 
-![SeqCompPlusSequencer](../../../images/ocs/OCS-SeqCompScript.png)
+![SeqCompPlusSequencer](../images/ocs/OCS-SeqCompScript.png)
 
 A **Sequence** is defined in Common Software as a list of Sequence Commands: Setup, Observe, Wait. The only message type 
 a Sequencer can receive and process is a Sequence, which can contain 1 or more Sequence Commands. Note that a Sequence 
@@ -54,7 +54,7 @@ construction Sequencer hierarchy with OCS Master Sequencer, TCS Sequencer, and a
 hierarchy. Each Sequencer has a loaded Script. The Master Sequencer has received a Sequence and in processing that 
 Sequence. It has sent Sequences to the TCS and INS Sequencers.
 
-![MultiLevel](../../../images/ocs/OCS-MultiLevel.png)
+![MultiLevel](../images/ocs/OCS-MultiLevel.png)
 
 Note that in this hierarchical arrangement, a Sequencer can send commands to Assemblies using CSW Command Service 
 or, as with the OCS Master Sequencer, it can construct and send a Sequence within the Script. The point of this figure 

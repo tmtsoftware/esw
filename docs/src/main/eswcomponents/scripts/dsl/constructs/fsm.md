@@ -14,7 +14,7 @@ To create an instance of an FSM, a helper method `Fsm` is provided as shown in e
 3. `block` having states of the FSM
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #create-fsm }  
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #create-fsm }  
 
 ### Define State
 
@@ -22,7 +22,7 @@ As mentioned above, the third parameter of `Fsm` method is a block which is the 
 to be called with parameters `name` of the state and the `block` of actions to be performed in that state.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #define-state }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #define-state }
 
 @@@ note {title="State names" }
 
@@ -37,7 +37,7 @@ To transition between states, the `become` method needs to be called with name o
 and start executing it**. An `InvalidStateException` will be thrown if the provided next state is not defined.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition }
 
 
 @@@ warning {title='Caution with Become'}
@@ -52,7 +52,7 @@ the same state until a state transition happens. The @ref:[reactive variables](#
 re-evaluate the FSM state.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition-on-re-evaluation }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition-on-re-evaluation }
 
 In the example above, the FSM is in LOW state. If the temperature is below 20, then there won't be any state transition, 
 and the FSM in remain in the LOW state. A change in temperature after that will re-evaluate the "LOW" state again and if 
@@ -65,7 +65,7 @@ an @ref:[event based variable](#event-based-variables) which enables re-evaluati
 will be ignored. Therefore, it should be called at the end of a state.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #complete-fsm }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #complete-fsm }
 
 ### FSM Helper Constructs
 
@@ -74,17 +74,17 @@ The following are some useful FSM constructs.
 1. `entry` : executes the given `block` only when **state transition happens from a different state**
 
     Kotlin
-    :   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #entry }
+    :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #entry }
 
 2. `on` : executes the given `block` if the given `condition` evaluates to **true**. This construct should be used for conditional execution of a task.
 
     Kotlin
-    :   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #on }
+    :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #on }
 
 3. `after` : executes the given `block` after the given `duration`
 
     Kotlin
-    :   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #after }
+    :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #after }
 
 ## Start FSM
 
@@ -96,7 +96,7 @@ Calling `start` more than once is not supported and will lead to unpredictable b
 @@@
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #start-fsm }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #start-fsm }
 
 ## Wait for Completion
 
@@ -104,7 +104,7 @@ As an FSM has the ability to be complete itself, `await` can be called to **wait
 until the FSM is marked complete.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #await }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #await }
 
 Calling `await` before calling `start` will start the FSM internally and then wait for completion.
 
@@ -133,7 +133,7 @@ An EventVariable needs 2 parameters:
 - *duration*: (optional) polling period for updating the value of the Event (Significance of duration parameter is explained @ref:[below](#poll).)
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #event-var }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #event-var }
 
 #### ParamVariable
 A `ParamVariable` will be tied to a specific Parameter Key of an Event published on given EventKey
@@ -147,7 +147,7 @@ A ParamVariable takes 4 parameters:
 - *duration*: (optional) polling period for updating the value of the Parameter (Significance of duration parameter is explained @ref:[below](#poll).)
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #param-var }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #param-var }
 
 
 To make the FSM react to Event-based variables, we need to create an instance of the above event based variables and **bind the FSM** to it.
@@ -155,7 +155,7 @@ To make the FSM react to Event-based variables, we need to create an instance of
 An FSM can be bound to multiple variables and vice versa.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #binding }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #binding }
 
 
 Event-based variables have the **ability to behave in one of two ways**:
@@ -171,7 +171,7 @@ is updated (and the current state of the FSM is re-evaluated) whenever it is pub
 The following example shows how to create Event Variables with the subscribing behavior and `bind` FSM to it.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #subscribing }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #subscribing }
 
 #### Poll
 
@@ -182,7 +182,7 @@ This can be useful when the publisher is too fast and there is no need respond s
 The example code demonstrates this feature. The binding part is same as in previous example. 
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #polling }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #polling }
 
 ### CommandFlag
 
@@ -198,7 +198,7 @@ The following example shows how to create a `CommandFlag`, `bind` an FSM to it, 
 retrieve and set the value of parameters in the Command Flag.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #command-flag }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #command-flag }
 
 @@@ note
 - Binding FSM to reactive variables can be done anytime in the lifecycle of FSM not only before starting it. 
@@ -223,7 +223,7 @@ THe logic of state change is:
 |  else       |  OK     |
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/FsmExample.kts) { #example-fsm }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/FsmExample.kts) { #example-fsm }
 
 Full example code is available [here]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/FsmExample.kts).
 

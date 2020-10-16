@@ -1,5 +1,18 @@
 # Sequencers
 
+## Introduction
+
+Sequencers are OMOA components and must therefore contain the same basic functionality expected of all OMOA components. 
+This includes:
+
+* Supporting the component lifecycle.
+* Registering itself in the Location Service.
+* Using CSW to communicate with other components.
+
+The core of each Sequencer is a Sequence Component, a reusable framework component which is 
+used to construct a Sequencer as an OMOA component. Please refer @ref:[Sequencer Component](../sequencecomponent/sequence-component.md)
+for details about Sequence Component.
+
 Sequencers all use the same component framework. What makes a Sequencer unique is the Script it is loaded with. 
 A Sequencer is a Sequence Component configured with a specific Script. The Script is written with a specific observing mode 
 (or set of common observing modes) in mind. Which observing modes a Script can support is up to the developer, but the intention is that a Script can be 
@@ -68,4 +81,4 @@ The naming convention allows the following:
 
 ## Sequencer Technical Design
 
-See @ref:[Sequencer Technical Documentation](../../../technical/sequencer/sequencer.md).
+See @ref:[Sequencer Technical Documentation](../../technical/sequencer/sequencer.md).

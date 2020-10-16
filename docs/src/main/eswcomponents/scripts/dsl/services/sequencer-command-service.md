@@ -18,12 +18,12 @@ This can always be overridden in the specific `submitAndWait` and `queryFinal` c
 Here is an example:
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer }
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer }
 
 and here is one showing the setting of the default timeout:
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer-timeout }
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer-timeout }
 
 
 @@@ note { title="Resolving a Component with Location Service" }
@@ -41,7 +41,7 @@ list of `SequenceCommand` type instances, each of which can be one of the `Setup
 To create a Sequence, create individual `SequenceCommand` objects and then create a `Sequence` with the `sequenceOf` DSL method as shown below.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequence }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequence }  
 
 This example `Sequence` consists of two steps. The Sequencer sends the two step `Sequence` to the destination Sequencer and waits for it to complete, which means
 both of the two commands/steps are executed and completed.  All `Sequence` steps must complete successfully for the `Sequence` to complete successfully. 
@@ -55,7 +55,7 @@ In order to send a `Sequence` to another Sequencer, you can use the `submit` or 
 The `query` and `queryFinal` DSL is provided to check the response of a submitted sequence.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndQuery }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndQuery }  
 
 The `query` DSL method allows checking on the state of the `Sequence`. `query` returns the current response immediately, which could be either a final 
 response (eg. `Completed`) or the `Started` response. The `runId` of the submitted `Sequence` can be obtained from the `SubmitResponse` returned by `submit`.
@@ -72,7 +72,7 @@ Refer to @ref:[error handling](../constructs/handlers.md#error-handlers) section
 Alternatively, if you do not want to escalate a negative `SubmitResponse`, you can use `submit` Api with `resumeOnError` flag.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #resumeOnError }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #resumeOnError }  
 
 #### QueryFinal
 
@@ -80,12 +80,12 @@ While `query` returns immediately, `queryFinal` will wait for the final response
 specified at the time of creation of the `Sequencer` instance.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #queryFinal }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #queryFinal }  
 
 If you want to increase/decrease the `defaultTimeout`, you can use the other variation of the same `queryFinal` DSL method which takes a timeout.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #queryFinalWithTimeout }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #queryFinalWithTimeout }  
 
 #### Sending a Sequence with submitAndWait
 
@@ -95,12 +95,12 @@ If the `Sequence` was successfully `Started`, it will wait until the `defaultTim
 `Sequencer` instance.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndWait }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndWait }  
 
 If you want to increase/decrease the default timeout, you can use the other variation of the same DSL method which takes a timeout.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndWaitWithTimeout }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndWaitWithTimeout }  
 
 ## Handling Online and Offline
 
@@ -117,7 +117,7 @@ will be called. In case the handlers fail, a `GoOnlineHookFailed` response would
 Otherwise, an `Ok` response is returned, and the Sequencer goes in online(idle) state.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOnline }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOnline }  
 
 ### Sequencer Sends goOffline
 
@@ -133,7 +133,7 @@ In case the handlers fail, a `GoOfflineHookFailed` response would be sent, resul
 Otherwise an `Ok` message is sent, and the Sequencer goes to offline state.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOffline }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOffline }  
 
 ## Handling Diagnostic and Operations Mode
 
@@ -144,7 +144,7 @@ the @ref:[diagnostic mode handlers](../constructs/handlers.md#diagnostic-mode-ha
 an `Ok` response is sent; otherwise, the `DiagnosticHookFailed` response is sent.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #diagnosticMode }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #diagnosticMode }  
 
 ### Operations Mode
 
@@ -153,7 +153,7 @@ and an `OperationsModeResponse` is returned to the sender. If the Sequencer has 
 they will be called. If the handlers execute successfully, an `Ok` response is sent; otherwise, the `OperationsHookFailed` response is sent.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #operationsMode }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #operationsMode }  
 
 ## Aborting and Stopping a Sequence
 
@@ -175,7 +175,7 @@ pending steps, and the sequence is finished gracefully after the inflight step(s
 step immediately.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #abortSequence }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #abortSequence }  
 
 ### Stopping a Sequence
 
@@ -183,4 +183,4 @@ Stopping a Sequence is very similar to aborting. The only difference is that ins
 are called.
 
 Kotlin
-: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #stopSequence }  
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #stopSequence }  

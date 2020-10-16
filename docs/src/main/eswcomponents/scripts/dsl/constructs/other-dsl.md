@@ -7,7 +7,7 @@ This utility is provided to support running multiple tasks in parallel. A call t
 The following example demonstrates sending commands in parallel to multiple HCD's.
 
 Kotlin
-: @@snip [OtherDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts) { #par }  
+: @@snip [OtherDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts) { #par }  
 
 ## isOnline
 
@@ -15,14 +15,14 @@ A flag called `isOnline` is provided, which is `true` when sequencer is Online a
 This dsl is accessible in all the scopes.
 
 Kotlin
-: @@snip [OtherDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts) { #isOnline }  
+: @@snip [OtherDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts) { #isOnline }  
 
 ## prefix
 
 Prefix of the current sequencer is made available in all scopes by this dsl.
  
 Kotlin
-: @@snip [OtherDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts) { #prefix }  
+: @@snip [OtherDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts) { #prefix }  
 
 ## Source code for examples
 

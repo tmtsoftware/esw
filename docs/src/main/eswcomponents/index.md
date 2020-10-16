@@ -4,8 +4,10 @@
 
 @@@ index
 
-* [Sequencers and Sequence Components](sequencer/sequencer/index.md)
-* [Scripting](sequencer/scripts/scripts.md)
+* [OCS Terms](ocs-terms.md)
+* [Sequencers](sequencer/sequencer.md)
+* [Sequence Components](sequencecomponent/sequence-component.md)
+* [Scripting](scripts/scripts.md)
 * [ESW Gateway Server](eswgateway/esw-gateway.md)
 
 @@@

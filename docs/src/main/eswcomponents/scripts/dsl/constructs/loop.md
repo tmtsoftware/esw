@@ -19,14 +19,14 @@ In the loop body, a motor is being "moved" by 10 degrees in every iteration of t
 The loop will be terminated when motor's current position reaches the expected position of 100 degrees.
 
 Kotlin
-:   @@snip [LoopExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loop-default-interval }  
+:   @@snip [LoopExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loop-default-interval }  
 
 ### loop - With Custom Minimum Loop Interval
 
 The following example demonstrates the usage of the `loop` DSL when providing a custom loop interval.
 
 Kotlin
-:   @@snip [LoopExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loop-custom-interval }  
+:   @@snip [LoopExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loop-custom-interval }  
 
 @@@ note { title="Is there a minimum loop interval?" }
 
@@ -43,7 +43,7 @@ In the following example, `initializeMotor` method will start the initialization
 `waitFor { motorUp }` will check the value of `motorUp` flag every `50 milliseconds`, and when it is true, the rest of the code execution will continue.  
 
 Kotlin
-:   @@snip [LoopExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #waitFor }
+:   @@snip [LoopExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #waitFor }
 
 ### loopAsync - With a Default Loop Interval
 
@@ -58,14 +58,14 @@ In the loop body, a current temperature event is published every `50 millisecond
 The `loopAsync` will be terminated when `stopPublishingTemperature` flag becomes true, which is set to true in the `onStop` handler.
 
 Kotlin
-:   @@snip [LoopExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loopAsync-default-interval }  
+:   @@snip [LoopExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loopAsync-default-interval }  
 
 ### loopAsync - With a Custom Loop Interval
 
 The following example demonstrates the usage of `loopAsync` DSL with a custom loop interval specified.
 
 Kotlin
-:   @@snip [LoopExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loopAsync-custom-interval }
+:   @@snip [LoopExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loopAsync-custom-interval }
 
 ## Source code for examples
 

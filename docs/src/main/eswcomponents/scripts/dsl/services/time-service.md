@@ -15,14 +15,14 @@ Time access calls are made available to all scripts. Access to some time functio
 The `utcTimeNow` Time Service utility returns the current UTC time. The time value returned is a CSW `UTCTime` type, which is an absolute time value.
 
 Kotlin
-:   @@snip [TimeServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #utc-time-now }
+:   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #utc-time-now }
 
 ### Access TAI Time with taiTimeNow
 
 The `taiTimeNow` Time Service utility returns the current TAI time. The time value returned is a CSW `TAITime` type, which is an absolute time value.
 
 Kotlin
-:   @@snip [TimeServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #tai-time-now }
+:   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #tai-time-now }
 
 ### Access UTC time in the Future with utcTimeAfter
 
@@ -30,7 +30,7 @@ The `utcTimeAfter` Time Service utility provides an absolute UTC time some amoun
 provided is a duration such as "1 hour". The returned value is an absolute `UTCTime` type. The following example shows provides UTC time 1 hour from now.
 
 Kotlin
-:   @@snip [TimeServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #utc-time-after }
+:   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #utc-time-after }
 
 ### Access TAI Time in the Future with taiTimeAfter
 
@@ -38,7 +38,7 @@ The `taiTimeAfter` Time Service utility provides an absolute TAI time some amoun
 provided is a duration. The returned value is an absolute `TAITime` type. The following example shows provides TAI time 1 hour from now.
 
 Kotlin
-:   @@snip [TimeServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #tai-time-after }
+:   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #tai-time-after }
 
 ### Scheduling with Time Service
 
@@ -55,7 +55,7 @@ The following example shows an onSetup handler of a script extracting a schedule
  the scheduleOnce to send a motion command to a Galil Assembly at the scheduled time.
 
 Kotlin
-:   @@snip [TimeServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once }
+:   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once }
 
 ### Using scheduleOnceFromNow
 
@@ -67,7 +67,7 @@ The following example shows the scheduling of a task after 1 hour from now. The 
 which can be used to cancel the execution of the task if it has not yet executed.
 
 Kotlin
-:   @@snip [TimeServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once-from-now }
+:   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once-from-now }
 
 ### Using schedulePeriodically
 
@@ -81,7 +81,7 @@ The following examples show the scheduling of a task in `onSetup` handlers. The 
 every 5 seconds after *start time* until stopped.
 
 Kotlin
-:   @@snip [TimeServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-periodically }
+:   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-periodically }
 
 ### Using schedulePeriodicallyFromNow
 
@@ -93,7 +93,7 @@ The following example shows scheduling the publishing of an Event after 1 hour f
 until cancelled. 
 
 Kotlin
-:   @@snip [TimeServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-periodically-from-now }
+:   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-periodically-from-now }
 
 @@@ note { title="Limits of Scheduling" }
 

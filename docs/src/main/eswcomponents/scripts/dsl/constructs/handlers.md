@@ -22,7 +22,7 @@ is executed
 In this `onSetup` example, commands are sent in parallel to each of the WFOS filter wheels. 
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onSetup }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onSetup }
 
 In the block provided to this handler, all the CSW services (Event, Alarm, Time Service, etc) and control DSL (loop, par etc) are accessible.
 
@@ -39,7 +39,7 @@ The following example imagines a WFOS Sequencer receiving an `Observe` that cont
 The exposureTime is extracted into a `Setup` that is sent to the detector Assembly to start the exposure.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onObserve }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onObserve }
 
 ## Online and Offline Handlers
 
@@ -49,7 +49,7 @@ On receiving the `goOnline` command, the onGoOnline handler, if defined, will be
 handler executes successfully.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOnline }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOnline }
 
 ### onGoOffline
 
@@ -57,7 +57,7 @@ On receiving the `goOffline` command, the onGoOffline handler, if defined, will 
 handler executes successfully.  Offline handlers could be written to clear the sequencer state before going offline.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOffline }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOffline }
 
 ## Abort Sequence Handler
 
@@ -65,7 +65,7 @@ The abort handler could be used to perform any cleanup tasks that need to be don
 sequence is aborted (e.g. abort an exposure). Note that, even if the handlers fail, the sequence will be aborted.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #abort }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #abort }
 
 ## Stop Handler
 
@@ -73,7 +73,7 @@ This handler is provided to clear/save the Sequencer state or stop exposures bef
 Note that, even if the handlers fail, the sequence will be aborted.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #stop }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #stop }
 
 ## Shutdown Handler
 
@@ -81,7 +81,7 @@ This handler will be called just before the Sequencer is shutdown.
 Note that, even if the handlers fail, the Sequencer will be shutdown.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #shutdown }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #shutdown }
 
 ## Diagnostic Mode Handler
 
@@ -94,7 +94,7 @@ The handler gets access to two parameters:
 The Sequencer can choose to publish any diagnostic data in this handler based on the hint received, and/or send a diagnostic command to downstream components.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #diagnosticMode }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #diagnosticMode }
 
 ## Operations Mode Handler
 
@@ -103,7 +103,7 @@ Script writers can use this handler to stop all the publishing being done by the
 and/or send an operations mode command to downstream components.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #operationsMode }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #operationsMode }
 
 ## Error Handlers
 
@@ -142,7 +142,7 @@ then only the logging of error cause is done by the framework.
 Following example shows usage of `onGlobalError`
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
 
 @@@ note
 Error in all handlers **except the Shutdown Handler** will execute the global error handler provided by script. If an error handler is not provided, the framework will
@@ -159,12 +159,12 @@ In case of failure, `onError` will be called first followed by `onGlobalError` a
 After the error handling blocks are called, the command and sequence, terminate with an Error status.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-exception }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-exception }
 
 By default, a negative `SubmitResponse` is considered an error.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-negative-response }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-negative-response }
 
 **retry**: This construct can be attached to an `onSetup` or `onObserve` handler to automatically retry
  the handler code in the case of **Command Handler Failures**.
@@ -176,9 +176,9 @@ will be called before each retry attempt. If the command handler still fails aft
 The following example shows the `retry` construct used along with `onError`.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry }
 
 The following example shows `retry` with an interval specified and used without an `onError` block.
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry-with-interval }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry-with-interval }
