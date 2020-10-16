@@ -2,7 +2,7 @@ package esw.agent.service.api
 
 import java.nio.file.Path
 
-import csw.location.api.models.Connection
+import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
@@ -44,12 +44,12 @@ trait AgentServiceApi {
   def spawnSequenceComponent(agentPrefix: Prefix, componentName: String, version: Option[String] = None): Future[SpawnResponse]
 
   /**
-   * kill the component of given connection which was spawned by an agent
+   * kill the component of given componentId which was spawned by an agent
    * It will return [[esw.agent.service.api.models.Killed]] if component is killed successfully
    * otherwise it will return [[esw.agent.service.api.models.Failed]]
    *
-   * @param connection of component
+   * @param componentId of component
    * @return [[esw.agent.service.api.models.SpawnResponse]] as a Future value
    */
-  def killComponent(connection: Connection): Future[KillResponse]
+  def killComponent(componentId: ComponentId): Future[KillResponse]
 }

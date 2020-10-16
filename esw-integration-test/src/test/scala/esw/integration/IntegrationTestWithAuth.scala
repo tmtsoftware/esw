@@ -258,7 +258,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       resolveSequenceComponent(seqCompPrefix)
 
       // stop spawned component
-      agentService.killComponent(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent))).futureValue shouldBe Killed
+      agentService.killComponent(ComponentId(seqCompPrefix, SequenceComponent)).futureValue shouldBe Killed
 
       //verify that component is killed
       intercept[RuntimeException](resolveSequenceComponent(seqCompPrefix))
@@ -277,8 +277,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       resolveAkkaLocation(smPrefix, Service)
 
       // stop sequence manager
-      val smConnection = AkkaConnection(ComponentId(smPrefix, Service))
-      agentService.killComponent(smConnection).futureValue shouldBe Killed
+      agentService.killComponent(ComponentId(smPrefix, Service)).futureValue shouldBe Killed
 
       //verify that component is killed
       intercept[RuntimeException](resolveAkkaLocation(smPrefix, Service))

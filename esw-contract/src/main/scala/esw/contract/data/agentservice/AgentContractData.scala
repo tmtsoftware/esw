@@ -15,12 +15,12 @@ trait AgentContractData {
   val killed: KillResponse   = Killed
   val failed: Failed         = Failed("Spawn failed")
 
-  private val agentPrefix: Prefix        = Prefix(ESW, "agent1")
-  private val seqCompPrefix: Prefix      = Prefix(ESW, "comp")
-  private val connection: HttpConnection = HttpConnection(ComponentId(seqCompPrefix, SequenceComponent))
+  private val agentPrefix: Prefix      = Prefix(ESW, "agent1")
+  private val seqCompPrefix: Prefix    = Prefix(ESW, "comp")
+  private val componentId: ComponentId = ComponentId(seqCompPrefix, SequenceComponent)
 
   val spawnSequenceComponent: SpawnSequenceComponent = SpawnSequenceComponent(seqCompPrefix, "component_name", Some("1.0.0"))
-  val killComponent: KillComponent                   = KillComponent(connection)
+  val killComponent: KillComponent                   = KillComponent(componentId)
   val spawnSequenceManager: SpawnSequenceManager =
     SpawnSequenceManager(agentPrefix, Path.of("/somePath"), isConfigLocal = true, Some("1.0.0"))
 }

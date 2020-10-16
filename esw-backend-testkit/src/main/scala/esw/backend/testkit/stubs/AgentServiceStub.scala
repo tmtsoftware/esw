@@ -3,7 +3,7 @@ package esw.backend.testkit.stubs
 import java.nio.file.Path
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.location.api.models.Connection
+import csw.location.api.models.ComponentId
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.service.api.AgentServiceApi
@@ -27,7 +27,7 @@ class AgentServiceStubImpl extends AgentServiceApi {
       version: Option[String]
   ): Future[SpawnResponse] = Future.successful(Spawned)
 
-  override def killComponent(connection: Connection): Future[KillResponse] = Future.successful(Killed)
+  override def killComponent(componentId: ComponentId): Future[KillResponse] = Future.successful(Killed)
 }
 
 class AgentServiceStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])

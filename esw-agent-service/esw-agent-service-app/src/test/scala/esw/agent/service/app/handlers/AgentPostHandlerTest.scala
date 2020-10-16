@@ -8,7 +8,6 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Service
-import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
@@ -109,12 +108,11 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
 
   "KillComponent" must {
     val componentId          = ComponentId(Prefix(randomSubsystem, randomString(10)), Service)
-    val connection           = AkkaConnection(componentId)
-    val stopComponentRequest = KillComponent(connection)
+    val stopComponentRequest = KillComponent(componentId)
 
     "be able to stop component of the given componentId | ESW-361" in {
       when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
-      when(agentService.killComponent(connection)).thenReturn(Future.successful(Killed))
+      when(agentService.killComponent(componentId)).thenReturn(Future.successful(Killed))
 
       post(stopComponentRequest) ~> route ~> check {
         verify(securityDirective).sPost(EswUserRolePolicy())
@@ -124,7 +122,7 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
 
     "be able to send failure response when agent is not found | ESW-361" in {
       when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
-      when(agentService.killComponent(connection)).thenReturn(Future.successful(failedResponse))
+      when(agentService.killComponent(componentId)).thenReturn(Future.successful(failedResponse))
 
       post(stopComponentRequest) ~> route ~> check {
         verify(securityDirective).sPost(EswUserRolePolicy())

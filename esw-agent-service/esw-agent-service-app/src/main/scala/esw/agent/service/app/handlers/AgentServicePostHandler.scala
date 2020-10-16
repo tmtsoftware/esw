@@ -23,8 +23,8 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
       case SpawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version) =>
         sPost(complete(spawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version)))
 
-      case KillComponent(connection) =>
-        sPost(complete(killComponent(connection)))
+      case KillComponent(componentId) =>
+        sPost(complete(killComponent(componentId)))
     }
 
   private def sPost(route: => Route): Route = securityDirective.sPost(EswUserRolePolicy())(_ => route)

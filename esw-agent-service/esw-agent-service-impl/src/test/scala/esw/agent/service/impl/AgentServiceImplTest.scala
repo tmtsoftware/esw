@@ -105,10 +105,10 @@ class AgentServiceImplTest extends BaseTestSuite {
 
       "be able to kill component for the given componentId | ESW-361, ESW-367" in {
         when(agentClientMock.killComponent(componentLocation)).thenReturn(Future.successful(Killed))
-        when(locationService.find(componentConnection)).thenReturn(Future.successful(Right(componentLocation)))
-        agentService.killComponent(componentConnection).futureValue
+        when(locationService.list(componentId)).thenReturn(Future.successful(List(componentLocation)))
+        agentService.killComponent(componentId).futureValue
 
-        verify(locationService).find(componentConnection)
+        verify(locationService).list(componentId)
         verify(agentClientMock).killComponent(componentLocation)
       }
 
@@ -117,20 +117,20 @@ class AgentServiceImplTest extends BaseTestSuite {
         val agentConnection  = AkkaConnection(ComponentId(agentPrefix, Machine))
         val expectedErrorMsg = "error"
 
-        when(locationService.find(componentConnection)).thenReturn(Future.successful(Right(componentLocation)))
+        when(locationService.list(componentId)).thenReturn(Future.successful(List(componentLocation)))
         when(locationService.find(agentConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
         val agentService = new AgentServiceImpl(locationService)
-        agentService.killComponent(componentConnection).futureValue should ===(Failed(expectedErrorMsg))
+        agentService.killComponent(componentId).futureValue should ===(Failed(expectedErrorMsg))
 
         verify(locationService).find(agentConnection)
       }
 
       "be able to return an error if component location does not contain agent prefix | ESW-361, ESW-367" in {
         val compLocWithoutAgentPrefix = AkkaLocation(componentConnection, new URI("xyz"), Metadata.empty)
-        when(locationService.find(componentConnection)).thenReturn(Future.successful(Right(compLocWithoutAgentPrefix)))
+        when(locationService.list(componentId)).thenReturn(Future.successful(List(compLocWithoutAgentPrefix)))
 
-        agentService.killComponent(componentConnection).futureValue should ===(
+        agentService.killComponent(componentId).futureValue should ===(
           Failed(s"$compLocWithoutAgentPrefix metadata does not contain agent prefix")
         )
       }

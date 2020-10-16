@@ -4,7 +4,6 @@ import java.nio.file.Path
 
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.codecs.AgentServiceCodecs
@@ -64,9 +63,8 @@ class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentService
     "return KillResponse for killComponent request" in {
       val seqCompPrefix = Prefix(ESW, "TCS_1")
       val componentId   = ComponentId(seqCompPrefix, SequenceComponent)
-      val connection    = AkkaConnection(componentId)
 
-      val killComponentRequest = KillComponent(connection)
+      val killComponentRequest = KillComponent(componentId)
       val killResponse         = mock[KillResponse]
 
       when(
@@ -76,7 +74,7 @@ class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentService
         )
       ).thenReturn(Future.successful(killResponse))
 
-      agentServiceClient.killComponent(connection).futureValue shouldBe killResponse
+      agentServiceClient.killComponent(componentId).futureValue shouldBe killResponse
     }
   }
 

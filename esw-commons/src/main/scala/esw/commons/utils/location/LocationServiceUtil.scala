@@ -48,6 +48,10 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
         case e: OtherLocationIsRegistered => EswLocationError.OtherLocationIsRegistered(e.msg)
       }
 
+  def list(componentId: ComponentId): Future[List[Location]] = {
+    locationService.list.map(_.filter(loc => loc.connection.componentId == componentId))
+  }
+
   def listAkkaLocationsBy(
       subsystem: Subsystem,
       componentType: ComponentType

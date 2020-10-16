@@ -2,7 +2,7 @@ package esw.agent.service.api.client
 
 import java.nio.file.Path
 
-import csw.location.api.models.Connection
+import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
@@ -30,6 +30,6 @@ class AgentServiceClient(postClient: Transport[AgentServiceRequest]) extends Age
   ): Future[SpawnResponse] =
     postClient.requestResponse[SpawnResponse](SpawnSequenceComponent(agentPrefix, componentName, version))
 
-  override def killComponent(connection: Connection): Future[KillResponse] =
-    postClient.requestResponse[KillResponse](KillComponent(connection))
+  override def killComponent(componentId: ComponentId): Future[KillResponse] =
+    postClient.requestResponse[KillResponse](KillComponent(componentId))
 }
