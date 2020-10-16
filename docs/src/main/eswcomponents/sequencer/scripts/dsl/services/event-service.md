@@ -16,27 +16,27 @@ Language.
 Helper DSL to create a `SystemEvent` from the provided `prefix`, `event name` and `parameters` (optional).
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #system-event }
+:   @@snip [EventServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #system-event }
 
 ### ObserveEvent
 
 Helper DSL to create an `ObserveEvent` from the provided `prefix`, `event name` and `parameters` (optional).
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-event }
+:   @@snip [EventServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-event }
 
 ## publishEvent
 
 DSL to publish the given `Event`.
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #publish } 
+:   @@snip [EventServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #publish } 
 
 This DSL can also publish events periodically when provided with the optional `duration` and an `event generator` function. 
 In the below example, an Event with temperature Key will get published every 10 seconds, with current temperature value given by *getTemperature* method.
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #publish-async }
+:   @@snip [EventServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #publish-async }
 
 ## onEvent
 
@@ -44,13 +44,13 @@ DSL to subscribe to events getting published on the given `EventKey` names. This
 operates on an event.  The callback block will be invoked whenever an Event is published on any of the provided event keys.
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe }
+:   @@snip [EventServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe }
 
 This DSL has the ability to control the subscription rate by providing a `duration` with the `callback`.  This operates 
 like the @extref[Rate Adapter Mode](csw:services/event#controlling-subscription-rate) for regular Event Service subscriptions.
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe-async }
+:   @@snip [EventServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe-async }
 
 ## getEvent
 
@@ -58,9 +58,9 @@ DSL to get the latest Event published on each of the given `EventKey` names. The
 variation is to get the latest events against multiple keys.
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #get-event }
+:   @@snip [EventServiceDslExample.kts](../../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #get-event }
 
 
 ## Source code for examples
 
-* [Event Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts)
+* [Event Service Examples]($github.base_url$/../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts)

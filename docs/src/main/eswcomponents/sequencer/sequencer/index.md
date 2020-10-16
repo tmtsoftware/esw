@@ -19,6 +19,5 @@ The following sections provide details on the Sequence Component and Sequencer.
 * [OCS Terms](Terms.md)
 * [Sequence Component](SeqComp.md)
 * [Sequencers](./Sequencers.md)
-* [Sequencer States](./state-transition.md)
 
 @@@

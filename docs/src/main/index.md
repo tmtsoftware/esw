@@ -5,11 +5,9 @@
 @@@ index
 
 - [Getting Started](commons/getting-started.md)
-- [SequenceComponents](sequencer/seqcompsequencer/index.md)
-- [Scripting](sequencer/scripts/scripts.md)
+- [ESW Components](eswcomponents/index.md)
 - [ESW Service Contract](commons/contracts.md)
 - [Applications](apps/apps.md)
-- [ESW Gateway](eswgateway/esw-gateway.md)
 - [Technical Documentation](technical/technical.md)
 
 

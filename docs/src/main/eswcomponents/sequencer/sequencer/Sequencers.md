@@ -11,7 +11,7 @@ Since the Script defines the behavior of the Sequencer, one can be written to su
 such that development and testing can be performed with a Sequencer handling real Sequences, but only simulating its actions.
 Scripts can also be created for special purposes such as testing Assemblies or HCDs in the lab.
 
-### Defining Observing Modes
+## Defining Observing Modes
 
 Usually, observing modes are associated with instruments or engineering tasks. Observing modes must following a naming convention
 shown below:
@@ -30,7 +30,7 @@ If a subsystem is used, it should be capitalized to conform with other subsystem
 The `<modeName>` portion will generally be indicated by a selection in the observation planning tool. There are no restrictions on
 this name, but shorter is better. 
 
-### Registering Sequencers in Location Service
+## Registering Sequencers in Location Service
 
 A Sequencer is a Sequence Component that has a script loaded. A Sequencer converts a Sequence Component, but the Sequence Component stays around.
 A Sequencer must be started specifying the subsystem for the Sequencer and the observing mode (as described above). 
@@ -68,4 +68,4 @@ The naming convention allows the following:
 
 ## Sequencer Technical Design
 
-This section will be updated with the Sequencer technical design information in a future release.
+See @ref:[Sequencer Technical Documentation](../../../technical/sequencer/sequencer.md).
