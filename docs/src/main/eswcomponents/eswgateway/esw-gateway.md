@@ -18,7 +18,7 @@ commands and these roles.
 
 #### Role Hierarchy
 
-![Role Hierarchy](../images/eswgateway/role-hierarchy.png)
+![Role Hierarchy](../../images/eswgateway/role-hierarchy.png)
 
 This type of role hierarchy is created in Keycloak as one time setup.
 As per this hierarchy there should be three roles present for each subsystem which are composed in specific order.
@@ -35,7 +35,7 @@ user and these roles will automatically add their respective lower level roles T
  
 #### Examples:
 
-![User Roles](../images/eswgateway/user-roles.png)
+![User Roles](../../images/eswgateway/user-roles.png)
 
 #### Command Role Mapping
 Below shown are example entries in config table with commands and roles who can execute those commands.

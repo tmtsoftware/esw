@@ -55,7 +55,7 @@ the observing mode script for a specific packageId.
 
 The figure below shows the Sequence Component ESW_77 loading the IRIS instrument script for the IRIS_ifsonly observing mode.
 
-![SequenceCompNaming](../../images/ocs/OCS-SeqCompSeqNaming.png)
+![SequenceCompNaming](../../../images/ocs/OCS-SeqCompSeqNaming.png)
 
 Once loaded, a client can ask the Sequence Component what Sequencer it is running using the `GetStatus` message. A client can ask
 what Sequence Component a Sequencer is running on using the `GetSequenceComponent` message. Both commands return a Location Service `Location`.

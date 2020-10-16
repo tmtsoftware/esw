@@ -4,10 +4,9 @@ import java.nio.file.Path
 
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.HttpConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.service.api.models.{Failed, KillResponse, Killed, SpawnResponse, Spawned}
+import esw.agent.service.api.models._
 import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
 
 trait AgentContractData {

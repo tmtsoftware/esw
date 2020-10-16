@@ -91,7 +91,7 @@ in location service, terminates actor system and gracefully shutdown sequence co
 apart from `Idle` state shutdown, which is shutting down sequencer loaded on the sequence component.
 @@@
 
-![sequencecomp-lifecycle](../../images/ocs/OCS-SeqCompLifecycle.png)
+![sequencecomp-lifecycle](../../../images/ocs/OCS-SeqCompLifecycle.png)
 
 ## Sequence Component Technical Design
 
