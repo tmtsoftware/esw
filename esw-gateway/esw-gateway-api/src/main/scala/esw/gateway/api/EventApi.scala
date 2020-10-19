@@ -9,6 +9,7 @@ import msocket.api.Subscription
 import scala.concurrent.Future
 
 trait EventApi {
+
   /**
    * Publish a single [[csw.params.events.Event]]
    *

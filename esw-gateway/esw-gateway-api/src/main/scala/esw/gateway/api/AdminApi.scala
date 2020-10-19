@@ -7,6 +7,7 @@ import csw.logging.models.{Level, LogMetadata}
 import scala.concurrent.Future
 
 trait AdminApi {
+
   /**
    * Fetches the LogMetadata for given component
    *
