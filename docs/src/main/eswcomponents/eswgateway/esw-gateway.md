@@ -47,26 +47,6 @@ IRIS.filter.wheel.stopExposure: [IRIS-user, APS-eng]
 
 We need to create a config containing role mapping entries like shown above and use it when starting esw-gateway server. 
 
-#### How to start Gateway
-
-Use command role mapping file from local file system
-```
-./esw-gateway-server start --local --command-role-config-path /local/path/filename.conf
-```
-or
-```
-./esw-gateway-server start -l -c /local/path/filename.conf
-```
-
-Use command role mapping file from config service
-```
-./esw-gateway-server start --command-role-config-path /path/filename.conf
-```
-or
-```
-./esw-gateway-server start -c /path/filename.conf
-```
-
 ### Protection on Sequencer endpoints on Gateway.  
 
 On protected endpoints of sequencer commands in esw-gateway, {subsystem}-user role check is performed. 
