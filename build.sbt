@@ -48,6 +48,10 @@ lazy val esw = (project in file("."))
   .settings(
     generateContract := ContractPlugin.generate(`esw-contract`).value
   )
+  .settings(
+    ghreleaseRepoOrg := "tmtsoftware",
+    ghreleaseRepoName := EswKeys.projectName,
+  )
 
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))

@@ -12,17 +12,12 @@ addSbtPlugin("com.typesafe.sbt"                  % "sbt-multi-jvm"            % 
 addSbtPlugin("com.timushev.sbt"                  % "sbt-rewarn"               % "0.1.1")
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % "3.0.0")
 
-resolvers += "Jenkins repo" at "https://repo.jenkins-ci.org/public/"
-addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
-
 resolvers += Resolver.bintrayRepo("twtmt", "sbt-plugins")
-addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "1275b7a991")
+addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "bd4e9c37e4")
 addSbtPlugin("com.github.tmtsoftware" % "kotlin-plugin" % "2.1.0-M1")
 
 resolvers += Resolver.jcenterRepo
 addSbtPlugin("net.aichler" % "sbt-jupiter-interface" % "0.8.3")
-
-libraryDependencies += "com.sun.activation" % "javax.activation" % "1.2.0"
 
 scalacOptions ++= Seq(
   "-encoding",
