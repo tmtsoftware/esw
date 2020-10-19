@@ -8,5 +8,6 @@
 * [Agent](agent/agent.md)
 * [Agent Service](agentservice/agent-service.md)
 * [Sequencer](sequencer/index.md)
+* [ESW Gateway](gateway/gateway.md)
 
 @@@

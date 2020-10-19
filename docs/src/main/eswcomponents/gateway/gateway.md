@@ -5,12 +5,12 @@ This is provided to give access to all CSW and ESW services and components from 
 ## Esw Gateway with authentication and authorization
 
 Esw Gateway is accessible to public network and exposes API endpoints through Http interface, hence we need to
-protected its endpoints from unauthorized access.
+protect its endpoints from unauthorized access.
   
 ### Protection on Commands service endpoints on Gateway 
  
 There are commands which are more restrictive which need eng or above role and some commands which just need user
-level role. Also, these more restrictive eng commands need a fined grained control mechanism so that they can be
+level role. Also, these more restrictive eng commands need a fine-grained control mechanism so that they can be
 safely executed by authorized person having specific role at subsystem level. To achieve this we need to have a
 role hierarchy at subsystem level along with a config table containing the mapping between more restrictive
 commands and these roles.
@@ -18,7 +18,7 @@ commands and these roles.
 
 #### Role Hierarchy
 
-![Role Hierarchy](../../images/eswgateway/role-hierarchy.png)
+![Role Hierarchy](../../images/gateway/role-hierarchy.png)
 
 This type of role hierarchy is created in Keycloak as one time setup.
 As per this hierarchy there should be three roles present for each subsystem which are composed in specific order.
@@ -35,7 +35,7 @@ user and these roles will automatically add their respective lower level roles T
  
 #### Examples:
 
-![User Roles](../../images/eswgateway/user-roles.png)
+![User Roles](../../images/gateway/user-roles.png)
 
 #### Command Role Mapping
 Below shown are example entries in config table with commands and roles who can execute those commands.
@@ -51,5 +51,9 @@ We need to create a config containing role mapping entries like shown above and 
 
 On protected endpoints of sequencer commands in esw-gateway, {subsystem}-user role check is performed. 
 
-* Subsystem is obtained form componentId.prefix.subsystem
+* Subsystem is obtained from componentId
 * E.g. If current sequence to be executed is for esw.primary then user should have minimum ESW-user role.
+
+## Gateway Technical Design
+
+See @ref:[ESW Gateway Technical Documentation](../../technical/gateway/gateway.md).
