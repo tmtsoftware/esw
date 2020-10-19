@@ -1,4 +1,3 @@
-
 # Sequence Manager
 ## Introduction
 
@@ -9,6 +8,9 @@ are running on which agent. Sequence Manager is implemented using Akka actor. Se
 
 1. Akka interface
 2. HTTP interface
+
+Akka interface will be used by JVM applications to interact with Sequence Manager. HTTP interface is provided so UI applications
+can be built which will interact Sequence Manager.
 
 ## Modules
 

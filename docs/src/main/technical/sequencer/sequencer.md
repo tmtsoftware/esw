@@ -1,9 +1,69 @@
-# Sequencer Lifecycle
+# Sequencer
+## Introduction
 
-The Sequencer lifecycle is implemented as a Finite State Machine. At any given time a Sequencer is in exactly
-one of those states. The state of the Sequencer is tied to whether or not it has received a Sequence and whether
-or not the Sequence has started executing. Sequencer supports a set of commands/messages, and on receiving those commands, it
-takes an action and transitions to other states. 
+Sequencer is OMOA component which has responsibility of executing Sequence of Steps. In an observation, Sequencers will form
+hierarchy where top-level Sequencer sending sequence to downstream sequencers and downstream Sequencers sending commands to Assemblies/HCDs.
+Sequencer has two main parts:
+
+1. Sequencer Framework
+2. Scripting Support
+
+Sequencer Framework uses Akka Actor at a core and is responsible for executing Sequence, calling handlers from Script.
+Sequencer Script defines behaviour of Sequencer while executing Sequence. Scripts are written using Domain Specific Language
+provided as a part of Framework.
+
+## Modules
+
+* esw-ocs-api - 
+This is cross module, which is compiled into JVM as well as JS code. This consists of `SequencerApi`
+which defines an interface for Sequencer. This module also consists of core models, actor client, JVM and JS client for
+Sequencer.
+
+* esw-ocs-impl -
+This module consists of core implementation of Sequencer which is `SequencerBehaviour` (Sequencer Actor), Engine and SequencerData.
+
+* esw-ocs-app -
+This module consists of wiring as well as cli application to start Sequencer.
+
+* esw-ocs-dsl - 
+This module consists of Scala counterpart of Script DSL.
+
+* esw-ocs-dsl-kt -
+This module consists of Kotlin counterpart of Script DSL.
+
+* esw-ocs-handler -
+This sequence manager handler module is responsible for providing HTTP routes for Sequencer HTTP server.
+
+## Sequencer Interfaces
+
+Sequencer exposes two interfaces to outer world.
+
+1. Akka interface - Sequencer is registered as Akka registration. One can resolve Sequencer and use Akka client to interact with Sequencer.
+2. HTTP interface - Sequencer also exposes HTTP inteface as an embedded Sequencer Server (internal usage) as well as one can interact with Sequencer using 
+gateway (as public interface). Please refer Gateway documentation for details.
+
+## Implementation Details
+
+Sequencer framework uses Akka Actor as core implementation (Sequencer Actor). 
+Following figure explains architecture of Sequencer framework. Sequencer is registered with Location Service. SOSS will resolve
+Sequencer location and will send Sequence to top-level Sequencer. Engine continuously poll for next step as soon as previous step
+is finished with success. It will execute step using appropriate handler written in Script. 
+If any step in Sequence fails, Sequence is terminated with Error. Engine and Sequencer Actor are core parts of Framework. Framework
+part is same for every Sequencer and Script is a variable part. Script defines behaviour of Sequencer for each step within Sequence. 
+
+![Sequencer Architecture](../../images/ocs/sequencer.png)
+
+Following sections explains core components of Sequencer:
+
+1. Sequencer Actor
+2. Scripting Support
+
+### Sequencer Actor
+
+The Sequencer lifecycle is implemented as a Finite State Machine. This Section explains different states and messges accepted in 
+respective state of Sequencer. At any given time a Sequencer is in exactly one of those states. The state of the Sequencer is 
+tied to whether or not it has received a Sequence and whether or not the Sequence has started executing. 
+Sequencer supports a set of commands/messages, and on receiving those commands, it takes an action and transitions to other states. 
 
 Following are the states supported by the Sequencer:
 
@@ -39,3 +99,17 @@ effectively destroying the Sequencer.
 
 
 ![sequencer-state-transition](../../images/ocs/state-transition.png)
+
+
+### Scripting Support
+
+Sequencer Scripts are most important part of Sequencer Architecture. Scripting environment has following core requirements:
+
+1. Domain Specific Language (DSL) constructs for writing Scripts. For example, `par` to execute commands in parallel, `onSetup` like
+constructs where script writer will define logic to be executed when `Setup` command is received. Kotlin is used provide DSL for writing Script. Kotlin has excellent 
+language support for writing embedded DSL. 
+
+2. Mutable State within the script. To handle mutable state in thread safe manner, Script is implemented using Active Object Pattern.
+Every operation in Script need to be asynchronous and non-blocking in nature and this operation will be scheduled on Single Threaded Execution Context (StrandEC).
+This ensures that state inside Script can be accessed/modified at any place inside with the guaranty of thread safety. If there is need to have
+CPU intensive or blocking operations in Script, pattern supporting these needs to be followed which uses another Execution Context so that Script StrandEC is not blocked. 

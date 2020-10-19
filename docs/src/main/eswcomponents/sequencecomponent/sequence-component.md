@@ -13,11 +13,11 @@ The Sequence Component application and its arguments are described @ref[here](..
 
 * esw-ocs-api - 
 This is cross module, which is compiled into JVM as well as JS code. This consists of `SequenceComponentApi`
-which defines an interface for sequence component. This module also consists of core models, actor client, JVM and JS client for
-sequence component.
+which defines an interface for Sequence Component. This module also consists of core models, actor client, JVM and JS client for
+Sequence Component.
 
 * esw-ocs-impl -
-This module consists of core implementation of sequence component which is `SequenceComponentActor`.
+This module consists of core implementation of Sequence Component which is `SequenceComponentActor`.
 
 * esw-ocs-app -
 This module consists of wiring as well as cli application to start Sequence Component.
@@ -92,7 +92,3 @@ apart from `Idle` state shutdown, which is shutting down sequencer loaded on the
 @@@
 
 ![sequencecomp-lifecycle](../../images/ocs/OCS-SeqCompLifecycle.png)
-
-## Sequence Component Technical Design
-
-This section will be updated with the Sequence Component technical design information in a future release.

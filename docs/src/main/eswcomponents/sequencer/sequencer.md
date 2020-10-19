@@ -13,7 +13,7 @@ The core of each Sequencer is a Sequence Component, a reusable framework compone
 used to construct a Sequencer as an OMOA component. Please refer @ref:[Sequencer Component](../sequencecomponent/sequence-component.md)
 for details about Sequence Component.
 
-Sequencers all use the same component framework. What makes a Sequencer unique is the Script it is loaded with. 
+All Sequencers use the same component framework. What makes a Sequencer unique is the Script it is loaded with. 
 A Sequencer is a Sequence Component configured with a specific Script. The Script is written with a specific observing mode 
 (or set of common observing modes) in mind. Which observing modes a Script can support is up to the developer, but the intention is that a Script can be 
 developed independently of other Scripts to refine behavior specific to an observing mode, without affecting any other observing modes.
@@ -68,7 +68,7 @@ the observing mode script for a specific packageId.
 
 The figure below shows the Sequence Component ESW_77 loading the IRIS instrument script for the IRIS_ifsonly observing mode.
 
-![SequenceCompNaming](../../../images/ocs/OCS-SeqCompSeqNaming.png)
+![SequenceCompNaming](../../images/ocs/OCS-SeqCompSeqNaming.png)
 
 Once loaded, a client can ask the Sequence Component what Sequencer it is running using the `GetStatus` message. A client can ask
 what Sequence Component a Sequencer is running on using the `GetSequenceComponent` message. Both commands return a Location Service `Location`.
@@ -81,4 +81,4 @@ The naming convention allows the following:
 
 ## Sequencer Technical Design
 
-See @ref:[Sequencer Technical Documentation](../../technical/sequencer/sequencer.md).
+See @ref:[Sequencer Technical Documentation](../../technical/sequencer/index.md).
