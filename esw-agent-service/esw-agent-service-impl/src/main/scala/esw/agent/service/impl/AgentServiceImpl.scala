@@ -9,6 +9,7 @@ import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.models.{Failed, KillResponse, Killed, SpawnResponse}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,19 +37,19 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil)(implicit actorS
       .flatMapRight(_.spawnSequenceComponent(componentName, version))
       .mapToAdt(identity, Failed)
 
-  override def killComponent(componentId: ComponentId): Future[KillResponse] =
+  override def killComponent(componentId: ComponentId): Future[KillResponse] = {
     locationServiceUtil
       .list(componentId)
-      .flatMap { locL =>
-        Future.traverse(locL) { location =>
+      .flatMap { locations =>
+        Future.traverse(locations) { location =>
           Future.successful(getAgentPrefix(location)).flatMapE(agentClient).flatMapRight(_.killComponent(location))
         }
       }
-      .map {
-        case responses if responses.forall(_ == Right(Killed)) => Right(Killed)
-        case responses                                         => responses.find(_ != Right(Killed)).get
+      .map { responses =>
+        responses.sequence.map(_ => Killed).left.map(_.mkString(","))
       }
       .mapToAdt(identity, Failed)
+  }
 
   private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
     AgentClient.make(agentPrefix, locationServiceUtil).mapLeft(e => e.msg)

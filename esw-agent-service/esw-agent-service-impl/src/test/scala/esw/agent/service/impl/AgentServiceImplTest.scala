@@ -5,8 +5,8 @@ import java.nio.file.Path
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.Machine
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata, TcpLocation}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Failed, Killed, SpawnResponse}
@@ -113,7 +113,6 @@ class AgentServiceImplTest extends BaseTestSuite {
       }
 
       "give error message when agent is not there| ESW-361" in {
-        val locationService  = mock[LocationServiceUtil]
         val agentConnection  = AkkaConnection(ComponentId(agentPrefix, Machine))
         val expectedErrorMsg = "error"
 
@@ -132,6 +131,24 @@ class AgentServiceImplTest extends BaseTestSuite {
 
         agentService.killComponent(componentId).futureValue should ===(
           Failed(s"$compLocWithoutAgentPrefix metadata does not contain agent prefix")
+        )
+      }
+
+      "be able to return an error if component locations do not contain agent prefix | ESW-361, ESW-367" in {
+        val compLocWithoutAgentPrefix = AkkaLocation(componentConnection, new URI("xyz"), Metadata.empty)
+
+        val componentTcpConnection       = TcpConnection(componentId)
+        val compLocWithoutAgentPrefixTwo = TcpLocation(componentTcpConnection, new URI("xyz"), Metadata.empty)
+
+        when(locationService.list(componentId))
+          .thenReturn(Future.successful(List(compLocWithoutAgentPrefix, compLocWithoutAgentPrefixTwo)))
+
+        println(agentService.killComponent(componentId).futureValue)
+        agentService.killComponent(componentId).futureValue should ===(
+          Failed(
+            s"$compLocWithoutAgentPrefix metadata does not contain agent prefix," +
+              s"$compLocWithoutAgentPrefixTwo metadata does not contain agent prefix"
+          )
         )
       }
     }
