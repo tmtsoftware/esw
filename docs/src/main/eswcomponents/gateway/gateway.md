@@ -47,13 +47,56 @@ IRIS.filter.wheel.stopExposure: [IRIS-user, APS-eng]
 
 We need to create a config containing role mapping entries like shown above and use it when starting esw-gateway server. 
 
-### Protection on Sequencer endpoints on Gateway.  
+### Protection on Sequencer endpoints on Gateway  
 
 On protected endpoints of sequencer commands in esw-gateway, {subsystem}-user role check is performed. 
 
 * Subsystem is obtained from componentId
 * E.g. If current sequence to be executed is for esw.primary then user should have minimum ESW-user role.
 
+## Sample Requests
+
+#### Request without auth token
+```http request
+curl --location --request POST 'http://<host>:<port>/post-endpoint' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "_type": "ComponentCommand",
+    "componentId": {
+        "prefix": "IRIS.filter.wheel",
+        "componentType": "hcd"
+    },
+    "command": {
+        "_type": "Submit",
+        "controlCommand": {
+            "_type": "Setup",
+            "source": "CSW.ncc.trombone",
+            "commandName": "startExposure",
+            "maybeObsId": [
+                "obsId"
+            ],
+            "paramSet": []
+        }
+    }'
+```
+
+#### Request with auth token
+```http request
+curl --location --request POST 'http://<host>:<port>/post-endpoint' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: <bearer token> \
+--data-raw '{
+    "_type": "SetLogLevel",
+    "componentId": {
+        "prefix": "CSW.ncc.trombone",
+        "componentType": "HCD"
+    },
+    "level": "ERROR"
+}'
+```
+
+
 ## Gateway Technical Design
 
 See @ref:[ESW Gateway Technical Documentation](../../technical/gateway/gateway.md).
+

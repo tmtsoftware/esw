@@ -24,6 +24,22 @@ Some services are not part of the gateway. This is mainly because of 2 reasons:
 
 The security directives created in the app for command and sequencer services are passed on to the routes in order to 
 enable auth for command and sequencer services.
+
+# API call flow
+
+Let's take example of `GetSequence` command coming from browser to sequencer service via gateway:
+
+1. Since sequencer APIs are protected using auth, the UI app gets a valid token from `AAS` that will enable access to 
+sequencer API in gateway.
+2. The UI app will create a `getSequence` request using the auth token and send it to gateway.
+3. Gateway validates the request auth token and the role of UI app against the `command role config`.
+4. If the validation is successful, gateway delegates the request to sequencer service.
+5. Sequencer service executes the request and return the stepList as response.
+6. This response is given back to the UI app that made the request.
+
+Below diagram depicts the flow mapped by above points:
+
+![API call flow](../../images/gateway/api-flow.svg)
  
 # Modules
 
