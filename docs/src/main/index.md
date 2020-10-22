@@ -4,7 +4,7 @@
 
 @@@ index
 
-- [ESW Overview](esw/esw-index.md)
+- [ESW Overview](esw/eswOverview.md)
 - [Sequencers and Scripts](sequencersandscripts/seq-index.md)
 - [Scripting with Sequencers](scripts/scripts-index.md)
 - [UI Support](uisupport/uisupp-index.md)

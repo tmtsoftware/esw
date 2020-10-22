@@ -1,10 +1,9 @@
 # Sequencers and Sequence Components
 
-@@ toc { depth=2 }
+@@ toc { depth=3 }
 
 @@@ index
 
-* [Introduction](ocs-terms.md)
 * [Sequencer](sequencer.md)
 * [sequencer-app](sequencer-app.md): Starts SequenceComponent and/or Sequencer.
 

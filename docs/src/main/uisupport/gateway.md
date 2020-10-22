@@ -2,23 +2,39 @@
 
 This is provided to give access to all CSW and ESW services and components from browser-based user interfaces.
 
-## ESW Gateway with authentication and authorization
+## ESW Gateway with Authentication and Authorization
 
-Esw Gateway is accessible to public network and exposes API endpoints through Http interface, hence we need to
+All TMT users use browser-based user interfaces to interact with the control system, and all TMT users must be
+authenticated. Once authenticated, they are authorized to use certain commands based on their roles. 
+All UI programs must use the UI Gateway to reach the control system. The UI Gateway provides authorization and authentication 
+in the ESW/CSW system. 
+
+ESW UI Gateway is accessible to the public network and exposes API endpoints through an HTTP interface, hence we need to
 protect its endpoints from unauthorized access.
-  
-### Protection on Commands service endpoints on Gateway 
- 
-There are commands which are more restrictive which need eng or above role and some commands which just need user
-level role. Also, these more restrictive eng commands need a fine-grained control mechanism so that they can be
-safely executed by authorized person having specific role at subsystem level. To achieve this we need to have a
-role hierarchy at subsystem level along with a config table containing the mapping between more restrictive
-commands and these roles.
-     
 
-#### Role Hierarchy
+** PLEASE PROVIDE A FIGURE HERE explaining public network ***
+  
+### Protection on Command Service Endpoints on Gateway
+
+Each subsystem can control command access using three roles: **user**, **eng**, and **admin**. 
+For example: APS-user, APS-eng, and APS-admin.
+The user role is the least restrictive, eng role more restrictive, and admin the most restrictive. The eng role is
+meant for commands that should only be executed by qualified subsystem engineers. The admin command role should be reserved
+for commands that may damage or otherwise risk equipment. A subsystem is not required to have eng or admin role commands.
+It's okay to have only commands that are accessible to all subsystem users.  
+
+A TMT user must at least have a subsystem's user role to be allowed to access commands in a subsystem.
+By default, all commands are available to a user with the user role unless they are listed in the command map 
+as requiring a more restrictive role. The hierarchy of roles is shown in the following figure:
 
 ![Role Hierarchy](../images/gateway/role-hierarchy.png)
+ 
+There are often commands that are more restrictive that should not be accessible to every user. These commands 
+need eng or admin role for the most restricted or dangerous commands. 
+Also, these more restrictive eng commands need a fine-grained control mechanism so that they can be
+safely executed by authorized person having specific role at subsystem level. To achieve this we have the
+role hierarchy at subsystem level along with a config table containing the mapping between more restrictive
+commands and these roles.
 
 This type of role hierarchy is created in Keycloak as one time setup.
 As per this hierarchy there should be three roles present for each subsystem which are composed in specific order.
@@ -27,8 +43,7 @@ As per this hierarchy there should be three roles present for each subsystem whi
     * When you assign a user TCS-eng role, keycloak will automatically add TCS-user role to that user
     * When you assign a user TCS-admin role, keycloak will automatically add TCS-eng and TCS-user role to that user
 
-Also, there are three special roles. OSW-admin, OSW-eng and OSW-user which are composed of all respective subsystem
- level roles. 
+Also, there are three special roles. OSW-admin, OSW-eng and OSW-user which are composed of all respective subsystem level roles. 
 
 * E.g. When you assign a user OSW-eng role, keycloak will automatically add roles TCS-eng, APS-eng and so on to that
 user and these roles will automatically add their respective lower level roles TCS-user, APS-user and so on

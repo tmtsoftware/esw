@@ -58,4 +58,5 @@ At the ESW FDR, we planned using Scala for the scripting DSL. While this did wor
 for the scripting use case, and Kotlin provided the coroutine environment that provided the asynchronous feature of futures,
 but with a much clearer syntax.
 
-The scripting capability is in progress and we look forward to comments and suggestions from users of Release 1.
+The scripting capability has been updated from Release 1 based on comments, but it is still work in progress. 
+We look forward to comments and suggestions from users of Release 2 that can be folded into Release 3.
