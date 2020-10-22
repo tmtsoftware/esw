@@ -14,7 +14,7 @@ trait ServerApp[T] extends CommandApp[T] {
       wiring.actorRuntime.startLogging(progName, appVersion)
       wiring.logger.debug(s"starting $appName")
       val (binding, _) = Await.result(wiring.start(metadata), CommonTimeouts.Wiring)
-      wiring.logger.info(s"$appName online at http://${binding.localAddress.toString}/")
+      wiring.logger.info(s"$appName online at http://${binding.localAddress.getHostString}:${binding.localAddress.getPort}/")
     }
     catch {
       case NonFatal(ex) =>

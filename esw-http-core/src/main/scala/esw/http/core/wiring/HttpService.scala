@@ -44,7 +44,7 @@ class HttpService(
         s"unregistering-${registrationResult.location}"
       )(() => registrationResult.unregister())
 
-      log.info(s"Server online at http://${binding.localAddress.getHostName}:${binding.localAddress.getPort}/")
+      log.info(s"Server online at http://${binding.localAddress.getHostString}:${binding.localAddress.getPort}/")
       (binding, registrationResult)
     } recoverWith {
       case NonFatal(ex) => actorRuntime.shutdown(FailureReason(ex)).map(_ => throw ex)
