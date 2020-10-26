@@ -9,6 +9,9 @@ To use *any* ESW application, `coursier` must be installed on your machine.
 
 The install process is documented in the [coursier installation document](https://get-coursier.io/docs/cli-installation).
 
+This blog post: [Single Command Scala Setup](https://alexarchambault.github.io/posts/2020-09-21-cs-setup.html)
+by Alex Archambault, is a more friendly introduction to `coursier`.
+
 ## 2. Add TMT Apps channel to `coursier`
 
 TMT apps are installed using a `coursier` channel. The channel must be added to the local installation of `coursier` 
