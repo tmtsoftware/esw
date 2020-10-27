@@ -78,7 +78,7 @@ Service. It supports the OSW AAS authentication approach (@ref:[see here](gatewa
 including Command Service and Event Service.
 
 The UIAG is available in the release of ESW. There is a template project that can be used to create a Front-end UI
-application. See the dedicated documentation section @ref:[here](frontend-ui.md) and the @link:[esw-ui-template repo](https://github.com/tmtsoftware/esw-ui-template.g8) { open=new } 
+application. See the dedicated documentation section @ref:[here](frontend-template.md) and the @link:[esw-ui-template repo](https://github.com/tmtsoftware/esw-ui-template.g8) { open=new } 
 for more information. 
 
 ##Back-end UI Applications
@@ -96,5 +96,5 @@ duplicating this support is costly and error-prone. The following figure shows t
 
 There are challenges to creating a back-end server. The server must be secure and implement the same AAS model as the
 gateway. The back-end service must register itself with Location Service. To make this easier, there is also a back-end
-service template. See the dedicated documentation section @ref:[here](backend-ui.md) and the @link:[esw-backend-template repo](https://github.com/tmtsoftware/esw-backend-template.g8) { open=new } 
+service template. See the dedicated documentation section @ref:[here](backend-template.md) and the @link:[esw-backend-template repo](https://github.com/tmtsoftware/esw-backend-template.g8) { open=new } 
 for more information.

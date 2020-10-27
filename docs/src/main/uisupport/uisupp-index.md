@@ -5,8 +5,8 @@
 @@@ index
 
 * [User Interface Support Overview](UIOverview.md)
-* [Frontend UI Template](frontend-ui.md)
-* [Backend UI Template](backend-ui.md)
+* [Frontend UI Template](frontend-template.md)
+* [Backend UI Template](backend-template.md)
 * [Gateway](gateway.md)
 * [Gateway App](gateway-app.md)
 
