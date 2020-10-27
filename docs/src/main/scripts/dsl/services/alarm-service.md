@@ -4,6 +4,8 @@ The Alarm Service DSL is a wrapper for the Alarm Service module provided by CSW.
 You can refer to detailed documentation of the Alarm Service provided by CSW @extref[here](csw:services/alarm).
 
 This DSL provides an API to set the severity of an alarm. This is the the component API for CSW Alarm Service.
+While this API is available for special purposes, alarms should be maintained by lower-level Assemblies and HCDs, and
+not in the Sequencers. This is also a problem because Sequencers do not always execute 
 
 ## setSeverity
 
