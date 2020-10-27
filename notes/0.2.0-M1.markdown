@@ -8,4 +8,4 @@ See [CHANGELOG.md](CHANGELOG.md) for details of all releases.
 
 ### Documentation
 
-Paradox documentation can be found here: https://tmtsoftware.github.io/esw/0.2.0/
+Paradox documentation can be found here: https://tmtsoftware.github.io/esw/0.2.0-M1/
