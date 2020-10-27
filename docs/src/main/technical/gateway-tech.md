@@ -7,7 +7,7 @@ Gateway also enforces auth on command and sequencer APIs to protect from unautho
 
 # Implementation
 
-Gateway service is an HTTP service which relies on `msocket` framework. Internally it delegates to the various 
+Gateway service is an HTTP service which relies on `msocket` framework. Internally it delegates to the various
 services(of both ESW or CSW) needed as per the request.
 
 It provides access to following:
@@ -23,14 +23,14 @@ Some services are not part of the gateway. This is mainly because of 2 reasons:
 1. The services can be accessed via its own HTTP interface. Example, Config Service.
 2. The services are not user facing. Example, Sequence Manager Service.
 
-The security directives created in the app for command and sequencer services are passed on to the routes in order to 
+The security directives created in the app for command and sequencer services are passed on to the routes in order to
 enable auth for command and sequencer services.
 
 # API call flow
 
 Let's take example of `GetSequence` command coming from browser to sequencer service via gateway:
 
-1. Since sequencer APIs are protected using auth, the UI app gets a valid token from `AAS` that will enable access to 
+1. Since sequencer APIs are protected using auth, the UI app gets a valid token from `AAS` that will enable access to
 sequencer API in gateway.
 2. The UI app will create a `getSequence` request using the auth token and send it to gateway.
 3. Gateway validates the request auth token and the role of UI app against the `command role config`.
@@ -41,13 +41,13 @@ sequencer API in gateway.
 Below diagram depicts the flow mapped by above points:
 
 ![API call flow](../images/gateway/api-flow.svg)
- 
+
 # Modules
 
 ### esw-gateway-api
 
-All the request models, clients, and APIs exposed in gateway service resides within this module. 
-This also contains the codecs for the models. 
+All the request models, clients, and APIs exposed in gateway service resides within this module.
+This also contains the codecs for the models.
 
 It is a cross-compiled project which has following parts:
 
@@ -58,11 +58,15 @@ It is a cross-compiled project which has following parts:
 ### esw-gateway-impl
 
 This module depends on `esw-gateway-api` and contains implementation for all the apis declared in `esw-gateway-api`.
-In case of CSW services(ex, Event Service, Alarm Service), the implementation delegates the call to respective CSW service. 
+In case of CSW services(ex, Event Service, Alarm Service), the implementation delegates the call to respective CSW service.
 
 ### esw-gateway-server
 
-This module contains the main application which when run starts the gateway server. This includes server wiring, 
+This module contains the main application which when run starts the gateway server. This includes server wiring,
 post and websocket handlers and cli app.
 
-This module depends on `esw-http-core` for starting up an HTTP service.    
+This module depends on `esw-http-core` for starting up an HTTP service.
+
+# Running Gateway Server
+
+For running Gateway server, please refer @ref:[this](../uisupport/gateway-app.md).

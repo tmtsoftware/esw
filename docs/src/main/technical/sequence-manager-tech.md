@@ -57,7 +57,7 @@ Flow for configuration for an observing mode is described below:
 
 ### GetAgentStatus
 This API allows a future UI to show the status of TMT ecosystem components (Agents, Sequence Components and Sequencers).
-It allows showing which Agents are up and running, Sequence Components running on those Agents, and which Sequencer script is 
+It allows showing which Agents are up and running, Sequence Components running on those Agents, and which Sequencer script is
 loaded on each Sequence Component.
 
 @@@note
@@ -67,7 +67,7 @@ At this point of time no Sequence Components or Sequencers are present in the sy
 ![ObservationStart](../images/sequencemanager/sm1.png)
 
 ### Provision Sequence Components
-This API allows a future UI to provision Sequence Components per Agent. This API requires configuration which specifies 
+This API allows a future UI to provision Sequence Components per Agent. This API requires configuration which specifies
 the number of Sequence Components needed to be spawned on each particular Agent.
 
 The following diagram depicts status of TMT ecosystem after provisioning as per a config.
@@ -75,7 +75,7 @@ The following diagram depicts status of TMT ecosystem after provisioning as per 
 ![Provision](../images/sequencemanager/sm2.png)
 
 @@@note
-Provision API will first shutdown all running Sequence Components if any. After shutting down already running Sequence Components, 
+Provision API will first shutdown all running Sequence Components if any. After shutting down already running Sequence Components,
 it spawns new Sequence Components on Agents as per a configuration provided at the time of provision.
 @@@
 
@@ -87,8 +87,8 @@ The following flow chart shows the algorithm for provision flow.
 Configure is used for starting Sequencers needed for an observing mode. It also checks for any resource conflicts with ongoing observations.
 It is allowed that TMT run more than one concurrent observation as long as they do not conflict. The configure API ensures this is the case.
 
-Configure API, checks for required sequencers and resources in the obsModeConfig file provided at boot up time of Sequence Manager. 
-This config file contains mapping of observing mode to required Sequencers and resources. When configure for a particular observing mode 
+Configure API, checks for required sequencers and resources in the obsModeConfig file provided at boot up time of Sequence Manager.
+This config file contains mapping of observing mode to required Sequencers and resources. When configure for a particular observing mode
 command is received by Sequence Manager, it checks the following:
 
 * Mapping for required observing mode exists in configuration file
@@ -107,7 +107,7 @@ The following flow chart shows the algorithm for configure flow.
 
 ### Shutdown of Sequencers
 Once an observation is complete, cleanup for that observation may involve shutting down all Sequencers of that observing mode.
-Sequence Manager provides shutdown sequencers API variations which allow to shutdown of all Sequencers of an observing mode, 
+Sequence Manager provides shutdown sequencers API variations which allow to shutdown of all Sequencers of an observing mode,
 shutdown of all Sequencers belonging to specific subsystem, shutdown of a particular Sequencer, and shutdown of all running Sequencers.
 
 ![ObservationStart](../images/sequencemanager/sm4.png)
@@ -139,3 +139,7 @@ To avoid these cases, certain msgs are accepted only when sequence manager is id
 goes into processing state where it accepts only common msgs (read state msgs which will not cause any inconsistency). In processing state, actor waits
 for processing complete msg. Once processing complete msg is recieved, actor goes back to idle state and ready to process any of idle state msg. Both idle
 and processing state can handle commom msgs without any state change.
+
+## Running Sequence Manager
+
+For running Sequence Manager, please refer @ref:[this](./apps/sequence-manager-app.md).

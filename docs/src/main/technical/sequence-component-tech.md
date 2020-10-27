@@ -2,9 +2,9 @@
 
 ## Introduction
 The Sequence Component is a standalone application that can load scripts and in doing so, become a Sequencer. In the OCS
-*scripting* approach, the Sequence Component is the reusable environment that supports the execution of different scripts. 
+*scripting* approach, the Sequence Component is the reusable environment that supports the execution of different scripts.
 Use of the Sequence Component also reduces the time to load a Sequencer Script--similar to a scripting language shell.
- 
+
 Sequence Component will be a continuously running JVM process which will load and unload different script. Sequencer will be started as a part of existing Sequence Component process,
 This results is minimizing boot up time for Sequencer.
 
@@ -12,7 +12,7 @@ The Sequence Component application and its arguments are described @ref[here](..
 
 ## Modules
 
-* esw-ocs-api - 
+* esw-ocs-api -
 This is cross module, which is compiled into JVM as well as JS code. This consists of `SequenceComponentApi`
 which defines an interface for Sequence Component. This module also consists of core models, actor client, JVM and JS client for
 Sequence Component.
@@ -80,10 +80,10 @@ saying `RestartScript` in unhandled in `idle` state.
 
 * **Running:** Once a Sequence Component has successfully loaded a Script, it is in the `Running` state. The new
 Sequencer will be available to process Sequences until it receives an `UnloadScript` message and transitions back
-to the `Idle` state. While in the `Running` state, the Sequence Component can also receive a `RestartScript` message, 
-which restarts a Sequencer by unloading the Script and shutting down the Sequencer, immediately followed by the 
+to the `Idle` state. While in the `Running` state, the Sequence Component can also receive a `RestartScript` message,
+which restarts a Sequencer by unloading the Script and shutting down the Sequencer, immediately followed by the
 loading of the Script again. This has the effect of initializing the script. For `LoadScript` message, sequence component
-responds with error saying that `LoadScript` is unhandled in `Running` state. 
+responds with error saying that `LoadScript` is unhandled in `Running` state.
 The Sequence Component responds successfully to the `GetStatus` message.
 
 @@@note
@@ -93,3 +93,7 @@ apart from `Idle` state shutdown, which is shutting down sequencer loaded on the
 @@@
 
 ![sequencecomp-lifecycle](../images/ocs/OCS-SeqCompLifecycle.png)
+
+## Running Sequence Component
+
+For running Sequence Component Stand-alone or with Sequencer Script, please refer @ref:[this](../sequencersandscripts/sequencer-app.md).
