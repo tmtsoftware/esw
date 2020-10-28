@@ -131,7 +131,7 @@ cd /tmt/apps
 
 ```
 
-@@@notes
+@@@note
 Refer supported arguments section or `./ocs-app start --help` for starting ocs-app with specific arguments.
 @@@
 

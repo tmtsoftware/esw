@@ -1,15 +1,17 @@
 # Sequence Manager
 
 Sequence Manager is a service that is part of the Observatory Control System (OCS) subsystem of ESW.
+Sequence Manager provides functionality that will be used by the operators and users of the future telescope through user
+interfaces that will be developed as part of ESW HCMS. Sequence Manager provides functionality needed by user interfaces, but does
+not take actions by itself unless called by the future operator.
+
 Sequence Manager has the following high-level responsibilities in the ESW.OCS design:
 
-* Manage and track Observatory resources. Ensure that the resources needed for a Sequence are available allowing the Sequence to execute.
-* Start Sequence Components required by a specific Sequence and initialize each with correct Script.
+* Start Sequence Components on different machines setup to host Sequence Components and Sequencers.  This is called `provisioning`.
+* Start Sequencers as required by a specific Observing Mode/Sequence and initialize each with the correct Script.
+* Manage and track Observatory resources. Ensure that the resources needed for a Sequence are available 
+allowing parallel Sequences to execute when possible.
 * Monitor overall Sequence execution and perform cleanup at the conclusion of a Sequence.
-
-Sequence Manager provides functionality that will be used by the operators and users of the future telescope using user
-interfaces that will be developed as part of ESW. It provides functionality to be used by future user interfaces, but does
-not take actions by itself unless called.
 
 The following sections provide details on the Sequence Manager.
 
@@ -18,82 +20,107 @@ The following sections provide details on the Sequence Manager.
 Sequence Manager is an ESW component that takes care of provisioning Sequence Components needed for an observation and the configuration of
 Sequencer scripts as per observing mode. It has capabilities to start, re-start, shutdown Sequencer/s, shutdown Sequence Components
 as well as to know status of TMT components such as which script is loaded on which Sequence Component or which Sequence Component/s
-are running on which agent/host. Sequence Manager is implemented using Akka actors. Sequence Manager provides two communication interfaces.
+are running on which agent/host. Sequence Manager is implemented using Akka actors. Sequence Manager provides two communication interfaces
+that are registered with Location Service.
 
 1. Akka-based interface
 2. HTTP interface
 
-The Akka interface will be used by JVM applications to interact with Sequence Manager. The HTTP interface is provided so UI applications
-can be built which will interact directly with the Sequence Manager.
+The Akka interface will be used by JVM-based applications to interact with Sequence Manager. The HTTP interface is provided so UI applications
+can be built which will interact directly with the Sequence Manager (as opposed to using the User Interface Application Gateway).
+
+The Sequence Manager uses the Agent Service and Agents to provision Sequence Components. See: @ref:[Agent Service](agent-service-tech.md)
+for more information.
 
 ## Modules
 
 Sequence Manager implementation is distributed into the following modules:
 
 ### esw-sm-api
-This Sequence Manager API module is responsible for providing:
+This Sequence Manager API module code supports the following responsibilities:
 
-1. shared - API which is cross compiled to JVM as well JS
-2. shared - HTTP client which can be used by JVM as well as scala-js applications
-3. jvm - Akka client for JVM applications, Akka actor messages, akka serializer
+| Directory | Responsibility |
+| :---: | :--- |
+|  shared | API which is cross compiled to JVM as well JavaScript |
+| shared | HTTP client which can be used by JVM as well as scala-js applications |
+| jvm | Akka client for JVM applications, Akka actor messages, Akka message serializer |
 
 ### esw-sm-handler
 This Sequence Manager handler module is responsible for providing HTTP routes for the Sequence Manager HTTP server.
 
 ### esw-sm-impl
-This module contains core logic for Sequence Manager Actor.
+This module contains core logic for the Sequence Manager Akka Actor.
 
 ### esw-sm-app
 This module contains a CLI which starts Sequence Manager component as well as the HTTP server of Sequence Manager.
 
 ## Implementation Details
 
-Boot-up time for TMT ecosystem is expected to start an Agent on every machine, Sequence Manager on an ESW machine, and HCD/Assembly components on
-respective subsystem machines.
+Boot-up time for TMT ecosystem is expected to start an Agent on every machine that will host Sequence Components and Sequencers, 
+Sequence Manager on an ESW machine, and HCD/Assembly components on respective subsystem machines.
 
-Sequence Manager supports multiple APIs that allow it to configure a set of Sequencers based on an observing mode and cleanup Sequencers after an observation is done.
+Sequence Manager supports multiple APIs that allow it to configure a set of Sequencers based on an observing mode 
+and cleanup/shutdown Sequencers after an observation is completed.
 
-Flow for configuration for an observing mode is described below:
+An extended use case is used here to explain the use of the Sequence Manager API as it is intended to be used during
+observing. The use case leads to the configuration for an observing mode.
+
+
+@@@note
+The use case starts with no Sequence Components or Sequencers running in the system as provisioning is not yet done.
+But an Agent Service is started at boot-time on each machine that will host Sequence Components.
+@@@
 
 ### GetAgentStatus
 This API allows a future UI to show the status of TMT ecosystem components (Agents, Sequence Components and Sequencers).
-It allows showing which Agents are up and running, Sequence Components running on those Agents, and which Sequencer script is
-loaded on each Sequence Component.
+It allows showing which Agents are up and running, which Sequence Components are running on those Agents, 
+and which Sequencer and/or script is loaded on each Sequence Component.
 
-@@@note
-At this point of time no Sequence Components or Sequencers are present in the system as provisioning is not yet done.
-@@@
+The figure below shows a simple UI mockup that shows 4 machines are configured with Agents but there is nothing 
+running on the machines.
 
 ![ObservationStart](../images/sequencemanager/sm1.png)
 
 ### Provision Sequence Components
-This API allows a future UI to provision Sequence Components per Agent. This API requires configuration which specifies
-the number of Sequence Components needed to be spawned on each particular Agent.
+This API allows a future UI to provision Sequence Components per Agent. The provision API call requires a simple 
+configuration which specifies the number of Sequence Components needed to be spawned on each particular Agent.
 
-The following diagram depicts status of TMT ecosystem after provisioning as per a config.
+The following diagram depicts status of TMT ecosystem after provisioning as per a the configuration argument shown on
+the right side of the figure.
 
 ![Provision](../images/sequencemanager/sm2.png)
 
 @@@note
 Provision API will first shutdown all running Sequence Components if any. After shutting down already running Sequence Components,
-it spawns new Sequence Components on Agents as per a configuration provided at the time of provision.
+it spawns new Sequence Components on Agents as per a configuration provided with the provision call.
 @@@
 
 The following flow chart shows the algorithm for provision flow.
 
 ![Configure](../images/sequencemanager/provision.png)
 
+@@@note
+Normally, the system is provisioned once at the beginning of observing, and the Sequence Components are then used for 
+all Sequencers needed in the course of a night. The system can be easily re-provisioned if there is a failure or other issue to minimize downtime.
+@@@
+
 ### Configuring Sequencers for an Observing Mode
+Once the system is provisioned, Sequence Manager can take the configure step.
 Configure is used for starting Sequencers needed for an observing mode. It also checks for any resource conflicts with ongoing observations.
 It is allowed that TMT run more than one concurrent observation as long as they do not conflict. The configure API ensures this is the case.
+If there is a conflict, the configure call will fail.
 
-Configure API, checks for required sequencers and resources in the obsModeConfig file provided at boot up time of Sequence Manager.
+A configuration file mapping observing mode to required Sequencers  (called obsModeConfig) is provided to Sequence Manager when it starts. 
+Configure API, checks for required Sequencers and resources in the obsModeConfig file.
 This config file contains mapping of observing mode to required Sequencers and resources. When configure for a particular observing mode
 command is received by Sequence Manager, it checks the following:
 
-* Mapping for required observing mode exists in configuration file
-* availability of adequate Sequence Components for starting Sequencers
-* no resource conflict should occur with ongoing observations
+1. Existence of a mapping for required observing mode exists in configuration file
+2. Availability of adequate Sequence Components for starting Sequencers
+3. No resource conflict should occur with ongoing observations
+
+If these checks succeed, the Sequencers are configured, the location of the top-level ESW Sequencer is returned to 
+the caller.
 
 ![Configure](../images/sequencemanager/sm3.png)
 
@@ -106,14 +133,25 @@ The following flow chart shows the algorithm for configure flow.
 ![Configure](../images/sequencemanager/configure.png)
 
 ### Shutdown of Sequencers
-Once an observation is complete, cleanup for that observation may involve shutting down all Sequencers of that observing mode.
-Sequence Manager provides shutdown sequencers API variations which allow to shutdown of all Sequencers of an observing mode,
-shutdown of all Sequencers belonging to specific subsystem, shutdown of a particular Sequencer, and shutdown of all running Sequencers.
+Once an observation is complete, and the operator determes that it is necessary to configure for a new observing mode, 
+cleanup for the current observation may involve shutting down all Sequencers of that observing mode.
+Sequence Manager provides shutdown sequencers API variations which allow: 
+
+* shutdown of all Sequencers of an observing mode,
+* shutdown of all Sequencers belonging to specific subsystem,
+* shutdown of a particular Sequencer,
+* shutdown of all running Sequencers.
+
+@@@note
+The various shutdown options are also available to handle possible issues during observation execution.
+@@@
 
 ![ObservationStart](../images/sequencemanager/sm4.png)
 
+This use case explains the most important way Sequence Manager is used.
+
 ### Other APIs
-Apart from APIs explained above, Sequence Manager also provides following APIs:
+Apart from APIs explained above, Sequence Manager also provides following useful APIs:
 
 * getRunningObsModes - gives information about all running observing modes
 * startSequencer - start a Sequencer for the provided subsystem and observing mode
@@ -121,10 +159,13 @@ Apart from APIs explained above, Sequence Manager also provides following APIs:
 * shutdownSequenceComponent - shutdown a Sequence Component with provided prefix
 * shutdownAllSequenceComponents - shutdown all running Sequence Components
 
+We anticipate these capabilities will be useful for future user interfaces and dealing with possible issues during
+observing. 
+
 ## Sequence Manager States
 
-Sequence Manager Actor is implemented as a state machine. It has two states: Idle and Processing. At any point of time,
-Sequence Manager can be in exactly one of these states.
+Sequence Manager Actor is implemented as a state machine with two states: Idle and Processing. At any point of time,
+Sequence Manager must be in exactly one of these states.
 
 The following diagram depicts the state transitions of Sequence Manager:
 

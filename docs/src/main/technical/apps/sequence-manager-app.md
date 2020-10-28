@@ -1,48 +1,46 @@
-# Sequence Manager App
+# Starting Sequence Manager Using sequence-manager
 
-A command line application that facilitates starting Sequence Manager and HTTP server of Sequence Manager.
+`sequence-manager` is a command line application that facilitates starting Sequence Manager 
+and the HTTP server that is part of Sequence Manager using the `coursier` dependency management 
+application. The `coursier` tool is described with full documentation 
+at the [coursier site](https://get-coursier.io).
 
-## Prerequisite
+## Prerequisites for Running sequence-manager App
 
-- Location server should be running.
-- CSW AAS should be running.
+The following steps should be followed to use sequence-manager to start a Sequencer Manager.
 
-## Running sequence manager using Coursier
+## 1. Install `coursier` and the TMT Apps Channel
 
-### 1. Add TMT Apps channel to your local Coursier installation using below command
+The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
+The instructions for doing this are provided @ref:[here](getting-apps.md).
 
-Channel needs to be added to install application using `cs install`
+## 2. Install sequence-manager
 
-For developer machine setup,
-
-```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
-```
-
-For production machine setup,
-
-```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
-```
-
-### 2. Install sequence-manager app
-
-Following command creates an executable file named sequence-manager in the default installation directory.
+The following command creates an executable file named `sequence-manager` in the default installation directory.
 
 ```bash
 cs install sequence-manager:<version | SHA>
 ```
 
-One can specify installation directory like following:
+One can specify installation directory like the following:
 
 ```bash
 cs install \
     --install-dir /tmt/apps \
     sequence-manager:<version | SHA>
 ```
-Note: If you don't provide the version or SHA in above command, `sequence-manager` will be installed with the latest tagged binary of `esw-sm-app`
+@@@note
+If you don't provide the version or SHA in above command, `sequence-manager` will be installed with the latest tagged binary of `esw-sm-app`
+@@@
 
-### 3. Run sequence manager app
+## 3. Start Any Needed CSW Services
+
+* To run sequence-manager, the **CSW Location Service** must be running.
+*  CSW AAS should be running.
+
+Information on starting CSW services is @extref[here](csw:commons/apps)
+
+## 4. Run sequence-manager
 
 Once sequence-manager is installed, one can simply run sequence-manager by executing start command
 
@@ -54,8 +52,7 @@ Start command supports following arguments:
           This argument is used when Sequence Manager is spawned using Agent. For starting standalone sequence manager for testing or on local
           this argument is not needed.
 
-
-This command starts Sequence Manager as well as HTTP server of Sequence Manager.
+This command starts Sequence Manager as well as its HTTP server.
 
 ```bash
 //cd to installation directory
@@ -65,11 +62,11 @@ cd /tmt/apps
 ./sequence-manager start -o obsmode.conf
 ```
 
-@@@notes
-Refer supported arguments section or `./sequence-manager start --help` for starting sequence manager with specific arguments
+@@@note
+Refer to supported arguments section or `./sequence-manager start --help` for starting sequence manager with specific arguments
 @@@
 
-## Setting the log level
+## Setting the Log Level
 
 The default log level for any component is specified in the `application.conf` file of the component.
 Use the java -J-D option to override configuration values at runtime.  For log level, the format is:

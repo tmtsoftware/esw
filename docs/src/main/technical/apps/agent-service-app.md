@@ -2,12 +2,13 @@
 
 This application will start the AgentService's server.
 
-## Protection on the Agent Service endpoints
+@@@ warning
 To access any protected `AgentService` endpoints, `ESW-user` role is required.
+@@@
 
 ## Prerequisite
 
- - Location server should be running.
+ - CSW Location Service should be running.
 
 ## Running Agent Service App using Coursier
 
