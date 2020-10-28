@@ -80,12 +80,15 @@ The core of each Sequencer is a Sequence Component, a reusable framework compone
 used to construct a Sequencer as an OMOA component. Please refer @ref:[Sequencer Component](../technical/sequence-component-tech.md)
 for details about Sequence Component.
 
-All Sequencers use the same component framework. What makes a Sequencer unique is the Script it is loaded with. 
+All Sequencers use the same component framework. What makes a Sequencer unique is the Script with witch it was loaded. 
 A Sequencer is a Sequence Component configured with a specific Script. The Script is written with a specific observing mode 
-(or set of common observing modes) in mind. Which observing modes a Script can support is up to the developer, but the intention is that a Script can be 
+(or set of common observing modes) in mind. Behavior that is common to more than one observing mode can be defined in Scripts that 
+can be shared and "imported" into other scripts (see @ref:[ReusableScripts](../scripts/dsl/constructs/define-script.md#reusable-scripts)).
+
+Which observing modes a Script can support is up to the developer, but the intention is that a Script can be 
 developed independently of other Scripts to refine behavior specific to an observing mode, without affecting any other observing modes.
-Behavior that is common to more than one observing mode can be defined in Scripts that can be shared and "imported" into other scripts 
-(see @ref:[ReusableScripts](../scripts/dsl/constructs/define-script.md#reusable-scripts)).
+In the future TMT operations phase, this will allow new observing modes to be added without necessarily impacting scripts that have been verified.
+It also makes maintenance easier because changes to verified scripts are easy to track and test. 
 
 Since the Script defines the behavior of the Sequencer, one can be written to support a simulation mode or a standalone mode, 
 such that development and testing can be performed with a Sequencer handling real Sequences, but only simulating its actions.
@@ -93,7 +96,7 @@ Scripts can also be created for special purposes such as testing Assemblies or H
 
 ## Defining Observing Modes
 
-Usually, observing modes are associated with instruments or engineering tasks. Observing modes must following a naming convention
+Observing modes are usually associated with instruments or engineering tasks. Observing modes must following the naming convention
 shown below:
 
 ```
@@ -106,9 +109,9 @@ shown below:
 
 The `<system>` indicates the system to which the observing mode applies to.  This is typically the instrument subsystem
 used for the observations, but could be any subsystem or other tag (such as ENG) that identifies the observing mode.
-If a subsystem is used, it should be capitalized to conform with other subsystem uses. 
-The `<modeName>` portion will generally be indicated by a selection in the observation planning tool. There are no restrictions on
-this name, but shorter is better. 
+If a subsystem is used, it should be capitalized to conform with other subsystem uses.
+The `<modeName>` portion will generally also be part of the instrument configuration set in the observation planning tool. 
+There are no restrictions on this name, but shorter is better. Any name can be used for testing. 
 
 ## Registering Sequencers in Location Service
 
