@@ -1,27 +1,29 @@
-# Sequence Component
+# Sequence Component Technical Documentation
 
 ## Introduction
 The Sequence Component is a standalone application that can load scripts and in doing so, become a Sequencer. In the OCS
 *scripting* approach, the Sequence Component is the reusable environment that supports the execution of different scripts.
 Use of the Sequence Component also reduces the time to load a Sequencer Script--similar to a scripting language shell.
 
-Sequence Component will be a continuously running JVM process which will load and unload different script. Sequencer will be started as a part of existing Sequence Component process,
-This results is minimizing boot up time for Sequencer.
+Sequence Component will be a continuously running JVM process which will load and unload different script. 
+When loading a script, the Sequencer will be started as a part of existing Sequence Component process.
+This step minimizes the start-up time for Sequencer to a fraction of a second. 
 
 The Sequence Component application and its arguments are described @ref[here](../sequencersandscripts/sequencer-app.md).
 
 ## Modules
 
 * esw-ocs-api -
-This is cross module, which is compiled into JVM as well as JS code. This consists of `SequenceComponentApi`
-which defines an interface for Sequence Component. This module also consists of core models, actor client, JVM and JS client for
-Sequence Component.
+This module contains the API for Sequence Component. This is cross-compiled module, which is compiled into JVM as well as JS code. 
+This module includes `SequenceComponentApi`, which defines the interface for Sequence Component. This module also 
+consists of core models, actor client, JVM and JS client for Sequence Component.
 
 * esw-ocs-impl -
 This module consists of core implementation of Sequence Component which is `SequenceComponentActor`.
 
 * esw-ocs-app -
-This module consists of wiring as well as cli application to start Sequence Component.
+This module consists of wiring as well as cli application to start Sequence Component. The wiring is the code that
+integrates Sequence Component to the ESW/CSW environment.
 
 ## Implementation Details
 
@@ -43,14 +45,18 @@ The following table describes the registration of a Sequence Component in the Lo
 | ESW | (none) | ESW.ESW_77 |
 | ESW | primary |  ESW.primary |
 
+Note that CSW always capitalizes a subsystem when it is displayed. Arguments can be entered as lowercase.
+
+@@@warning
+In all cases, the subsystem must be the acronyms defined by Systems Engineering and as defined in CSW. If the
+subsystem is not a valid TMT subsystem, an error will occur.
+@@@
 
 @@@note
 If `Name` is not provided while starting Sequence Component, it will be uniquely generated using pattern -`Subsystem`.`Subsystem`_`<Random number 1 to 100>`.
 There exists possibility that, this generated name is already taken by another Sequence Component. To solve this scenario, Sequence
 Component registration involves retry mechanism which then generates another name and starts Sequence Component.
 @@@
-
-Note that CSW always capitalizes a subsystem when it is displayed. Arguments can be entered as lowercase.
 
 The Sequence Component provides framework code to support the loading and unloading of Scripts and a few other
 useful capabilities.

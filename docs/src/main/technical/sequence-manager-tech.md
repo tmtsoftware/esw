@@ -1,4 +1,4 @@
-# Sequence Manager
+# Sequence Manager Technical Documentation
 
 Sequence Manager is a service that is part of the Observatory Control System (OCS) subsystem of ESW.
 Sequence Manager provides functionality that will be used by the operators and users of the future telescope through user
