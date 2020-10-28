@@ -1,4 +1,4 @@
-# Sequence Component Technical Design
+# Sequence Component
 
 ## Introduction
 The Sequence Component is a standalone application that can load scripts and in doing so, become a Sequencer. In the OCS

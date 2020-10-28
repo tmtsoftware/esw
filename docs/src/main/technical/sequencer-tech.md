@@ -1,4 +1,4 @@
-# Sequencer Technical Design
+# Sequencer
 ## Introduction
 
 Sequencer is OMOA component which has responsibility of executing Sequence of Steps. In an observation, Sequencers will form

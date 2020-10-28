@@ -1,4 +1,4 @@
-# ESW Technical Design Documents
+# Technical Design Documents
 
 @@toc { depth=2 }
 
