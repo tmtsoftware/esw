@@ -2,29 +2,23 @@
 
 This application will start the Agent actor.
 
-## Prerequisite
-
- - Location server should be running.
-
 ## Running Agent App using Coursier
 
-### 1. Add TMT Apps channel to your local Coursier installation using below command
+The following steps should be followed to start Agent
 
-Channel needs to be added to install application using `cs install`
+### 1. Install `coursier` and the TMT Apps Channel
 
-For developer machine setup,
-
-```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
+The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
+The instructions for doing this are provided @ref:[here](getting-apps.md).
 ```
 
-For production machine setup,
+### 2. Start Any Needed CSW Services
 
-```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
-```
+* To run agent, the **CSW Location Service** must be running.
 
-### 2. Install agent-app
+Information on starting CSW services is @extref[here](csw:commons/apps)
+
+### 3. Install agent-app
 
 Following command creates an executable file named agent-app in the default installation directory.
 
@@ -41,7 +35,7 @@ cs install \
 ```
 Note: If you don't provide the version or SHA in above command, `agent-app` will be installed with the latest tagged binary of `esw-agent-akka-app`
 
-### 3. Run agent-app
+### 4. Run agent-app
 
 Once agent-app is installed, one can simply run agent-app by executing start command
 

@@ -12,7 +12,15 @@ The following steps should be followed to use gateway-server to start the UI Gat
 The `coursier` application must be installed on your machine and the OCS Apps channel must also be installed.
 The instructions for doing this are provided @ref:[here](../technical/apps/getting-apps.md).
 
-## 2. Install gateway-server
+## 2. Start Any Needed CSW Services
+
+* To run gateway-server, the **CSW Location Service** must be running.
+* Gateway-server requires CSW AAS to be running.
+* Any other CSW Services needed by scripts or browser UIs should also be running.
+
+Information on starting CSW services is @extref[here](csw:commons/apps)
+
+## 3. Install gateway-server
 
 The following command creates an executable file named gateway-server in the default installation directory.
 
@@ -32,14 +40,6 @@ cs install \
 If you don't provide the version or SHA in the above command, `gateway-server` will be installed with the latest tagged binary of `esw-gateway-server`.
 
 @@@
-
-## 3. Start Any Needed CSW Services
-
-* To run gateway-server, the **CSW Location Service** must be running.
-* Gateway-server requires CSW AAS to be running.
-* Any other CSW Services needed by scripts or browser UIs should also be running.
-
-Information on starting CSW services is @extref[here](csw:commons/apps)
 
 ### 4. Run gateway-server
 

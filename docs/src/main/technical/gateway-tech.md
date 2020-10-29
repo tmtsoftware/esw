@@ -1,4 +1,4 @@
-# Gateway Design and Implementation
+# Gateway Technical Documentation
 
 Gateway gives access to all CSW and ESW services (available to user) and components from browser-based user interfaces.
 Gateway also enforces auth on command and sequencer APIs to protect from unauthorised access.

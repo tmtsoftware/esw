@@ -6,29 +6,24 @@ This application will start the AgentService's server.
 To access any protected `AgentService` endpoints, `ESW-user` role is required.
 @@@
 
-## Prerequisite
-
- - CSW Location Service should be running.
 
 ## Running Agent Service App using Coursier
 
-### 1. Add TMT Apps channel to your local Coursier installation using below command
+The following steps should be followed to start Agent Service Application
 
-Channel needs to be added to install application using `cs install`
+### 1. Install `coursier` and the TMT Apps Channel
 
-For developer machine setup,
+The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
+The instructions for doing this are provided @ref:[here](getting-apps.md).
 
-```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
-```
+### 2. Start Any Needed CSW Services
 
-For production machine setup,
+* To run agent service app, the **CSW Location Service** must be running.
+* CSW AAS should be running.
 
-```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
-```
+Information on starting CSW services is @extref[here](csw:commons/apps)
 
-### 2. Install agent-service-app
+### 3. Install agent-service-app
 
 Following command creates an executable file named agent-service-app in the default installation directory.
 
@@ -45,7 +40,7 @@ cs install \
 ```
 Note: If you don't provide the version or SHA in above command, `agent-service-app` will be installed with the latest tagged binary of `esw-agent-service-app`
 
-### 3. Run agent-service-app
+### 4. Run agent-service-app
 
 Once agent-service-app is installed, one can simply run agent-service-app by executing start command
 

@@ -1,8 +1,8 @@
 # Starting Sequence Manager Using sequence-manager
 
-`sequence-manager` is a command line application that facilitates starting Sequence Manager 
-and the HTTP server that is part of Sequence Manager using the `coursier` dependency management 
-application. The `coursier` tool is described with full documentation 
+`sequence-manager` is a command line application that facilitates starting Sequence Manager
+and the HTTP server that is part of Sequence Manager using the `coursier` dependency management
+application. The `coursier` tool is described with full documentation
 at the [coursier site](https://get-coursier.io).
 
 ## Prerequisites for Running sequence-manager App
@@ -14,7 +14,14 @@ The following steps should be followed to use sequence-manager to start a Sequen
 The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
 The instructions for doing this are provided @ref:[here](getting-apps.md).
 
-## 2. Install sequence-manager
+## 2. Start Any Needed CSW Services
+
+* To run sequence-manager, the **CSW Location Service** must be running.
+*  CSW AAS should be running.
+
+Information on starting CSW services is @extref[here](csw:commons/apps)
+
+## 3. Install sequence-manager
 
 The following command creates an executable file named `sequence-manager` in the default installation directory.
 
@@ -32,13 +39,6 @@ cs install \
 @@@note
 If you don't provide the version or SHA in above command, `sequence-manager` will be installed with the latest tagged binary of `esw-sm-app`
 @@@
-
-## 3. Start Any Needed CSW Services
-
-* To run sequence-manager, the **CSW Location Service** must be running.
-*  CSW AAS should be running.
-
-Information on starting CSW services is @extref[here](csw:commons/apps)
 
 ## 4. Run sequence-manager
 
