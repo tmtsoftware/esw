@@ -20,7 +20,7 @@ which defines an interface for Sequencer. This module also consists of core mode
 Sequencer.
 
 * esw-ocs-impl -
-This module consists of the core implementation of Sequencer the actor which is `SequencerBehaviour` (Sequencer Actor), 
+This module consists of the core implementation of Sequencer the actor which is `SequencerBehaviour` (Sequencer Actor),
 Engine and SequencerData.
 
 * esw-ocs-app -
@@ -35,31 +35,32 @@ This module consists of Kotlin counterpart of the Script DSL.
 
 * esw-ocs-handler -
 This handler module is responsible for providing HTTP routes for Sequencer HTTP server. Sequencer provides
-an HTTP and Akka interface. The HTTP routes are defined and implemnted here.
+an HTTP and Akka interface. The HTTP routes are defined and implemented here.
 
 ## Sequencer Interfaces
 
 Sequencer exposes its interface in three ways:
 
 1. Akka interface - Sequencer is registered as an Akka-based component. One can resolve Sequencer and use the Akka client to interact with Sequencer.
-2. HTTP direct interface - Each Sequencer also exposes an HTTP-based interface as an embedded Sequencer 
-Server (direct usage). This access provides routes that allow an authenticated user to directly control the Sequencer.
+2. HTTP direct interface - Each Sequencer also exposes an HTTP-based interface as an embedded Sequencer
+Server (direct and unprotected usage). This access provides routes that allow user to directly control the Sequencer without any auth protection.
+UI applications are supposed to use Gateway interface described below to interact with Sequencer as Gateway provided auth protection layer.
 3. HTTP Gateway interface - It is also possible to interact with Sequencer using the UI Application Gateway (as public interface).
-The Gateway hosts the Sequencer API, which communicates with the Sequencer via the Akka interface. Please 
-refer to the Gateway documentation for @ref[more information](../uisupport/gateway.md).
+Being public interface, this access requires user to be authenticated and authorized. The Gateway hosts the Sequencer API,
+which communicates with the Sequencer via the Akka interface. Please refer to the Gateway documentation for @ref[more information](../uisupport/gateway.md).
 
 ## Implementation Details
 
 Sequencer framework uses Akka Actor as core implementation (Sequencer Actor).
 The following figure explains the architecture of the Sequencer framework. Sequencer is registered with Location Service. The future
 SOSS Planning Tool or ESW.HCMS Script Monitoring Tool will use the Location of the top-level Sequencer returned by Sequence Manager
-to resolve the top-level Sequencer, and will send the Observation's Sequence to top-level Sequencer. 
-Once the Sequence is started, Engine continuously polls for a next step as soon as the previous step is finished with success. 
+to resolve the top-level Sequencer, and will send the Observation's Sequence to top-level Sequencer.
+Once the Sequence is started, Engine continuously polls for a next step as soon as the previous step is finished with success.
 It will execute the step using the appropriate handler written in the Script.
 If any step in Sequence fails, the Sequence is terminated with Error, and an Error is returned to the caller. The
-submission of a Sequence to the Sequencer uses CSW Command Service (i.e. submit, submitAndWait, etc.). 
+submission of a Sequence to the Sequencer uses CSW Command Service (i.e. submit, submitAndWait, etc.).
 
-Engine and Sequencer Actor are core parts of Framework. The framework part is the same for every Sequencer, 
+Engine and Sequencer Actor are core parts of Framework. The framework part is the same for every Sequencer,
 but the Script can vary. The Script defines the behaviour of the Sequencer for each step within a Sequence.
 
 ![Sequencer Architecture](../images/ocs/sequencer.png)
@@ -71,8 +72,8 @@ The following sections explain the core components of Sequencer:
 
 ### Sequencer Lifecycle
 
-The Sequencer lifecycle is implemented as a fairly complicated finite state machine as shown in the figure below. 
-This Section explains the different states and messges accepted in each respective state of Sequencer. 
+The Sequencer lifecycle is implemented as a fairly complicated finite state machine as shown in the figure below.
+This Section explains the different states and messges accepted in each respective state of Sequencer.
 At any given time a Sequencer is in exactly one of these states. The state of the Sequencer is
 tied to whether or not it has received a Sequence and whether or not the Sequence has started executing.
 Sequencer supports a set of commands/messages, and on receiving those commands, it takes an action and transitions to other states.
@@ -118,7 +119,7 @@ effectively destroying the Sequencer.
 Sequencer Scripts are the most important part of the Sequencer architecture. The scripting environment has following core requirements:
 
 **Domain Specific Language** (DSL) constructs for writing Scripts. For example, `par` to execute commands in parallel, `onSetup` like
-constructs where the script writer will define logic to be executed when `Setup` steps are processed. 
+constructs where the script writer will define logic to be executed when `Setup` steps are processed.
 Kotlin has been used to create the DSL for writing a Script. Kotlin has excellent language support for writing an embedded DSL.
 Kotlin also has excellent support for asynchronous processing/tasks that allows a more script-like syntax for the kinds of things
 ESW Scripts need to do.
