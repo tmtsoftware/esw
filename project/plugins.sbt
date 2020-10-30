@@ -12,7 +12,7 @@ addSbtPlugin("com.timushev.sbt"                  % "sbt-rewarn"               % 
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % "3.0.0")
 
 resolvers += Resolver.bintrayRepo("twtmt", "sbt-plugins")
-addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "bd4e9c37e4")
+addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "4d1af6e")
 addSbtPlugin("com.github.tmtsoftware" % "kotlin-plugin" % "2.1.0-M1")
 
 resolvers += Resolver.jcenterRepo

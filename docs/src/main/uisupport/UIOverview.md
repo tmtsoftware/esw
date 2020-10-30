@@ -78,23 +78,23 @@ Service. It supports the OSW AAS authentication approach (@ref:[see here](gatewa
 including Command Service and Event Service.
 
 The UIAG is available in the release of ESW. There is a template project that can be used to create a Front-end UI
-application. See the dedicated documentation section @ref:[here](frontend-template.md) and the @link:[esw-ui-template repo](https://github.com/tmtsoftware/esw-ui-template.g8) { open=new } 
-for more information. 
+application. See the dedicated documentation section @ref:[here](frontend-template.md) and the @link:[esw-ui-template repo]($esw_ui_template.base_url$) { open=new }
+for more information.
 
 ##Back-end UI Applications
 
-The Back-end UI is an application that may need to do more than use CSW services. It may have specialized backend 
-commands that are better-suited to the server-side than the browser-based UI. This may be computationally 
+The Back-end UI is an application that may need to do more than use CSW services. It may have specialized backend
+commands that are better-suited to the server-side than the browser-based UI. This may be computationally
 intensive functions or the use of CSW Database Service with specialized queries as examples.
 
 The Back-end UI uses it's own back-end HTTP-based service to implement application-specific routes. The sophisticated
-UI that needs a back-end server may only use its back-end server, but more likely it will be a hybrid 
-and also use the UI Application Gateway for access to CSW commands and events since 
+UI that needs a back-end server may only use its back-end server, but more likely it will be a hybrid
+and also use the UI Application Gateway for access to CSW commands and events since
 duplicating this support is costly and error-prone. The following figure shows the components of a hybrid Back-end UI application.
 
 ![ESW Gateway](../images/gateway/BackendExample.png)
 
 There are challenges to creating a back-end server. The server must be secure and implement the same AAS model as the
 gateway. The back-end service must register itself with Location Service. To make this easier, there is also a back-end
-service template. See the dedicated documentation section @ref:[here](backend-template.md) and the @link:[esw-backend-template repo](https://github.com/tmtsoftware/esw-backend-template.g8) { open=new } 
+service template. See the dedicated documentation section @ref:[here](backend-template.md) and the @link:[esw-backend-template repo]($esw_backend_template.base_url$) { open=new }
 for more information.
