@@ -1,7 +1,7 @@
 # Creating and Using the UI Backend Template
 
 In this tutorial, you’ll see how to create a Scala/Java project using a [giter8](http://www.foundweekends.org/giter8/) template for ESW ([
-esw-backend-template.g8]($esw_backend_template.base_url$)) which contains sample application make using ESW library.
+esw-backend-template.g8](https://github.com/tmtsoftware/esw-backend-template.g8)) which contains sample application make using ESW library.
 You can use this as a starting point for your own projects.
 
 ## Installation
