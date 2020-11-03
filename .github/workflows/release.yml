@@ -43,8 +43,8 @@ jobs:
 
       - name: Build
         env:
-          ESW_BACKEND_TEMPLATE_VERSION: 0.1.0-M1
-          ESW_UI_TEMPLATE_VERSION: 0.1.0-M1
+          ESW_BACKEND_TEMPLATE_VERSION: "0.1.0-M1"
+          ESW_UI_TEMPLATE_VERSION: "0.1.0-M1"
         run: |
           sbt scalafmtCheck
           sbt clean makeSite
