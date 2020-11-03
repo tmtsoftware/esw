@@ -8,7 +8,10 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-
+    env:
+      CSW_VERSION: "3.0.0-M1"
+      ESW_VERSION: "0.2.0-M1"
+      ESW_BACKEND_TEMPLATE_VERSION: "0.1.0-M1"
     steps:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v7
@@ -42,9 +45,6 @@ jobs:
       - run: npm install -g junit-viewer
 
       - name: Build
-        env:
-          ESW_BACKEND_TEMPLATE_VERSION: "0.1.0-M1"
-          ESW_UI_TEMPLATE_VERSION: "0.1.0-M1"
         run: |
           sbt scalafmtCheck
           sbt clean makeSite
