@@ -28,6 +28,8 @@ Refer RELEASING.md in `csw`
 1. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `README.md`
 1. Exclude projects from `build.sbt` which you do not want to release
 1. Update dependent repo version in `Lib.scala`  
+1. Update `ESW_BACKEND_TEMPLATE_VERSION` and `ESW_UI_TEMPLATE_VERSION` env variable in `Build` step of `release.yml` 
+with new release versions of `esw-backend-template.g8` and `esw-ui-template.g8` respectively
 1. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
 
     **Note:** `PROD=true` environment variable needs to be set before running `release.sh`
