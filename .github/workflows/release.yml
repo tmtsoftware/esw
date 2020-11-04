@@ -14,25 +14,19 @@ jobs:
       ESW_BACKEND_TEMPLATE_VERSION: "0.1.0-M1"
     steps:
       - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v7
+      - uses: laughedelic/coursier-setup@v1
         with:
-          java-version: adopt@1.11
-      - uses: coursier/cache-action@v3
+          jvm: 11
+          apps: sbt sbtn
+      - uses: coursier/cache-action@v5
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "13.x"
+          node-version: "14.x"
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Redis
         run: sudo apt-get install redis-server
-
-      - name: Install CS native
-        run: |
-          curl -fLo cs https://git.io/coursier-cli-linux &&
-          chmod +x cs
-          sudo mv cs /usr/local/bin
-          cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
 
       - name: Install Kotlin
         run: |
@@ -46,8 +40,9 @@ jobs:
 
       - name: Build
         run: |
-          sbt scalafmtCheck
-          sbt clean makeSite
+          sbtn scalafmtCheck
+          sbtn clean
+          sbtn makeSite
           sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Tests
@@ -56,7 +51,7 @@ jobs:
       - name: Coverage Report
         run: |
           sbt -DenableCoverage=true coverageReport
-          sbt coverageAggregate
+          sbtn coverageAggregate
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v1
@@ -75,7 +70,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          ./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
 
       - name: Upload RTM
         if: always()
