@@ -28,4 +28,4 @@ Supported Operating Systems are: CentOS and MacOS
 
 
 ## Create Starter Project
-1. Follow the template [readme.md]($esw_backend_template.base_url$/README.md) for detailed information about project creation.
+1. Follow the template [readme.md](https://github.com/tmtsoftware/esw-backend-template.g8/blob/master/README.md) for detailed information about project creation.
