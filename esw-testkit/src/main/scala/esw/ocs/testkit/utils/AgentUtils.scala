@@ -23,7 +23,7 @@ trait AgentUtils {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
     }
     agentWiring = Some(wiring)
-    AgentApp.start(wiring)
+    AgentApp.start(wiring, startLogging = false)
   }
 
   def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))

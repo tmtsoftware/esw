@@ -27,10 +27,10 @@ object AgentApp extends CommandApp[AgentCliCommand] {
     start(wiring)
   }
 
-  private[esw] def start(wiring: AgentWiring): Unit = {
+  private[esw] def start(wiring: AgentWiring, startLogging: Boolean = true): Unit = {
     import wiring._
     try {
-      actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
+      if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
       LocationServerStatus.requireUpLocally()
       log.debug("starting machine agent", Map("prefix" -> prefix))
       Await.result(lazyAgentRegistration, timeout.duration)

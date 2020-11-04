@@ -58,7 +58,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
     agentClient = AgentClient.make(agentPrefix, locationServiceUtil).rightValue
     // agent service setup
-    agentServiceWiring = AgentServiceApp.start()
+    agentServiceWiring = AgentServiceApp.start(startLogging = false)
     val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
     agentService = AgentServiceClientFactory(httpLocation, () => tokenWithEswUserRole())
   }
