@@ -10,12 +10,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v7
+      - uses: laughedelic/coursier-setup@v1
         with:
-          java-version: adopt@1.11
+          jvm: 11
+      - uses: coursier/cache-action@v5
 
       - name: Paradox Validate Links
-        run: sbt docs/paradoxValidateLinks
+        run: sbtn docs/paradoxValidateLinks
 
       - name: Notify slack
         if: always()

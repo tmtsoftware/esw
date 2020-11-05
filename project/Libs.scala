@@ -9,7 +9,7 @@ object Libs {
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
   val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.0" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.2.2") //Apache License 2.0
+  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.4") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
