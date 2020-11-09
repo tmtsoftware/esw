@@ -24,7 +24,7 @@ class HTTPServiceCorsTest extends EswTestKit {
       }
     }
   }
-  private val hostname                                 = Networks(NetworkType.Public.envKey).hostname
+  private val hostname                                 = Networks(NetworkType.Outside.envKey).hostname
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
 
   override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =

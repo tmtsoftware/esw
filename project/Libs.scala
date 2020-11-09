@@ -26,7 +26,7 @@ object Libs {
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "8901cd8"
+  private val Version = "4825d3d29f "
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version
@@ -69,6 +69,7 @@ object AkkaHttp {
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
+  val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
 
   val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.0"
 }

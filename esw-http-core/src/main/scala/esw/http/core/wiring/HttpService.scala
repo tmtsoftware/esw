@@ -62,7 +62,7 @@ class HttpService(
   }
 
   private def startServer() = {
-    val _host = Networks(NetworkType.Public.envKey).hostname
+    val _host = Networks(NetworkType.Outside.envKey).hostname
     val _port = settings.port
     Http().newServerAt(_host, _port).bind(applicationRoute)
   }
@@ -72,7 +72,7 @@ class HttpService(
       connection = connection,
       port = binding.localAddress.getPort,
       path = "",
-      NetworkType.Public,
+      NetworkType.Outside,
       metadata
     )
 

@@ -76,7 +76,7 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   private lazy val configClient            = ConfigClientFactory.clientApi(actorSystem, locationService)
   private lazy val configUtils             = new ConfigUtils(configClient)
   private lazy val commandRolesConfig      = configUtils.getConfig(commandRoleConfigPath, local)
-  private lazy val commandRoles            = commandRolesConfig.map(CommandRoles.from)
+  private[esw] lazy val commandRoles       = commandRolesConfig.map(CommandRoles.from)
   private[esw] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, locationService)
 
   private[esw] val resolver = new Resolver(locationService)(actorSystem)

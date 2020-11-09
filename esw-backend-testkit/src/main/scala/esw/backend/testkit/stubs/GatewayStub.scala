@@ -6,6 +6,7 @@ import java.nio.file.Paths
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.aas.http.SecurityDirectives
+import csw.backend.auth.MockedAuth
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.models.ComponentId
 import csw.location.api.scaladsl.LocationService
@@ -42,6 +43,8 @@ class GatewayStub(val locationService: LocationService)(implicit val actorSystem
   lazy val _loggingApi: LoggingApi = new LoggerStubImpl()
   lazy val _adminApi: AdminApi     = new AdminStubImpl()
 
+  private lazy val mockedAuth = new MockedAuth
+
   when(_resolver.commandService(any[ComponentId]())).thenReturn(Future.successful(commandService))
   when(_resolver.sequencerCommandService(any[ComponentId]())).thenReturn(Future.successful(sequencerApi))
 
@@ -63,6 +66,8 @@ class GatewayStub(val locationService: LocationService)(implicit val actorSystem
   )(implicit _actorSystem: ActorSystem[SpawnProtocol.Command]): GatewayWiring =
     new GatewayWiring(Some(gatewayPort), true, path) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+      override private[esw] lazy val commandRoles                       = Future.successful(mockedAuth.commandRoles)
+      override private[esw] lazy val securityDirectives                 = mockedAuth._securityDirectives
       override lazy val alarmApi: AlarmApi                              = _alarmApi
       override lazy val adminApi: AdminApi                              = _adminApi
       override lazy val eventApi: EventApi                              = _eventApi

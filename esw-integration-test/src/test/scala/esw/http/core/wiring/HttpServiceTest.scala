@@ -24,7 +24,7 @@ class HttpServiceTest extends EswTestKit {
         complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
       }
     }
-  private val hostname                                 = Networks(NetworkType.Public.envKey).hostname
+  private val hostname                                 = Networks(NetworkType.Outside.envKey).hostname
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
   var actorRuntime: ActorRuntime                       = _
 
@@ -105,7 +105,7 @@ class HttpServiceTest extends EswTestKit {
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
       locationService
-        .register(HttpRegistration(settings.httpConnection, _existingServicePort, "", NetworkType.Public))
+        .register(HttpRegistration(settings.httpConnection, _existingServicePort, "", NetworkType.Outside))
         .futureValue
       locationService.find(settings.httpConnection).futureValue.get.connection shouldBe settings.httpConnection
 
