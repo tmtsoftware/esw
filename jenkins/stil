@@ -24,11 +24,11 @@ pipeline {
         }
 
         stage('Test') {
+
             steps {
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true test:test"
-                sh "sbt -DenableCoverage=true esw-ocs-dsl-kt/test" // fixme: test reporter does not work
-                sh "./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:47b635b289  -- ./target/RTM/testStoryMapping.txt ./tools/RTM/storyRequirementMapping.csv ./target/RTM/testRequirementsMapping.txt"
+                sh "sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
             }
+
             post {
                 always {
                     sh "sbt -DenableCoverage=true coverageReport"
@@ -42,27 +42,29 @@ pipeline {
                             reportFiles          : 'index.html',
                             reportName           : "Scoverage Report"
                     ])
-
-                    publishHTML(target: [
-                            alwaysLinkToLastBuild: false,
-                            keepAll              : true,
-                            reportDir            : './target/RTM/',
-                            reportFiles          : 'index.html',
-                            reportName           : "Test-Story-Requirement mapping"
-                    ])
                 }
             }
         }
 
         stage('Multi-Jvm Test') {
             steps {
-                sh "sbt esw-integration-test/multi-jvm:test"
+              sh "sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
             }
         }
     }
 
     post {
         always {
+            // Generate RTM
+            sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
+            // Upload RTM
+            publishHTML(target: [
+              alwaysLinkToLastBuild: false,
+              keepAll              : true,
+              reportDir            : './target/RTM/',
+              reportFiles          : 'index.html',
+              reportName           : "Test-Story-Requirement mapping"
+            ])
             script {
                 sendNotification(currentBuild.result)
             }
