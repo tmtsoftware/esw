@@ -4,7 +4,7 @@ A Sequencer script processes Sequences by defining "handlers" in the script. Thi
 described below. There are handlers that can be created to process the Setup and Observe commands, which make up the Sequence,
 but there are also handlers for specific reasons including: aborting and stopping a sequence,
 putting the Sequencer in Online and Offline modes, and putting the Sequencer into a Diagnostic mode and back to Operations mode. 
-There is also a global error handler to catch all uncaught exceptions, and a shutdown handler to perform cleanup befores the 
+There is also a global error handler to catch all uncaught exceptions, and a shutdown handler to perform cleanup before the 
 Sequencer shut down and exits.
 Each of these handlers are described below, with a section on @ref:[how to handle exceptions](#error-handlers) after that.
 
@@ -16,7 +16,7 @@ This handler is used to handle a @extref[Setup](csw_javadoc:csw/params/commands/
 The handler takes two parameters:
 
 1. **command name** which is matched against the sequence command sent. If the command name matches, corresponding block provided
-is executed
+is executed.
 2. **block** of code which contains logic to act on the Setup command.
 
 In this `onSetup` example, commands are sent in parallel to each of the WFOS filter wheels. 

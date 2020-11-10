@@ -85,7 +85,7 @@ running on the machines.
 This API allows a future UI to provision Sequence Components per Agent. The provision API call requires a simple 
 configuration which specifies the number of Sequence Components needed to be spawned on each particular Agent.
 
-The following diagram depicts status of TMT ecosystem after provisioning as per a the configuration argument shown on
+The following diagram depicts status of TMT ecosystem after provisioning as per the configuration argument shown on
 the right side of the figure.
 
 ![Provision](../images/sequencemanager/sm2.png)
@@ -133,7 +133,7 @@ The following flow chart shows the algorithm for configure flow.
 ![Configure](../images/sequencemanager/configure.png)
 
 ### Shutdown of Sequencers
-Once an observation is complete, and the operator determes that it is necessary to configure for a new observing mode, 
+Once an observation is complete, and the operator determines that it is necessary to configure for a new observing mode, 
 cleanup for the current observation may involve shutting down all Sequencers of that observing mode.
 Sequence Manager provides shutdown sequencers API variations which allow: 
 
@@ -173,13 +173,13 @@ The following diagram depicts the state transitions of Sequence Manager:
 
 Implementation of these msgs is asynchronous in nature. So handling any other msgs while previous msg processing is incomplete can
 result in an inconsistent system. For example,
-configure Observing_Mode_1 msg is received by Sequence Manager Actor. Let's assume that this requires to start ESW, IRIS and TCS sequencers.
+configure Observing_Mode_1 msg is received by Sequence Manager Actor. Let's assume that this requires starting ESW, IRIS and TCS sequencers.
 Configure flow has checked for resource conflict. No conflict is there so configure goes ahead with processing. During this processing,
-if any other msg like startSequencer for IRIS subsystem and Observing_Mode_2 is recieved then this will result in inconsistent behaviour.
+if any other msg like startSequencer for IRIS subsystem and Observing_Mode_2 is received then this will result in inconsistent behaviour.
 To avoid these cases, certain msgs are accepted only when sequence manager is idle. When any one of idle state msg is received, sequence manager
 goes into processing state where it accepts only common msgs (read state msgs which will not cause any inconsistency). In processing state, actor waits
-for processing complete msg. Once processing complete msg is recieved, actor goes back to idle state and ready to process any of idle state msg. Both idle
-and processing state can handle commom msgs without any state change.
+for processing complete msg. Once processing complete msg is received, actor goes back to idle state and ready to process any of idle state msg. Both idle
+and processing state can handle common msgs without any state change.
 
 ## Running Sequence Manager
 

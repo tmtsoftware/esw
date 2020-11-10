@@ -1,4 +1,4 @@
-# Sequencer Technical Documentatation
+# Sequencer Technical Documentation
 
 Sequencer is OMOA component which has responsibility of executing Sequence of Steps. In an observation, Sequencers will form
 a hierarchy where with a top-level ESW Sequencer sending Sequences to downstream Sequencers and downstream Sequencers sending commands to Assemblies/HCDs.
@@ -73,7 +73,7 @@ The following sections explain the core components of Sequencer:
 ### Sequencer Lifecycle
 
 The Sequencer lifecycle is implemented as a fairly complicated finite state machine as shown in the figure below.
-This Section explains the different states and messges accepted in each respective state of Sequencer.
+This Section explains the different states and messages accepted in each respective state of Sequencer.
 At any given time a Sequencer is in exactly one of these states. The state of the Sequencer is
 tied to whether or not it has received a Sequence and whether or not the Sequence has started executing.
 Sequencer supports a set of commands/messages, and on receiving those commands, it takes an action and transitions to other states.

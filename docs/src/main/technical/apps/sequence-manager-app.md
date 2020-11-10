@@ -47,7 +47,7 @@ Once sequence-manager is installed, one can simply run sequence-manager by execu
 Start command supports following arguments:
 
 - `-o` : Config file path which has mapping of sequencers and resources needed for different observing modes
-- `-l` : optional aregument (true if config is to be read locally or false if from remote server) default value is false
+- `-l` : optional argument (true if config is to be read locally or false if from remote server) default value is false
 - `-a` : optional argument: agentPrefix on which sequence manager will be spawned, ex: ESW.agent1, IRIS.agent2 etc.
           This argument is used when Sequence Manager is spawned using Agent. For starting standalone sequence manager for testing or on local
           this argument is not needed.

@@ -27,7 +27,7 @@ as requiring a more restrictive role. The hierarchy of roles is shown in the fol
 
 ![Role Hierarchy](../images/gateway/role-hierarchy.png)
  
-There are often commands that are more restrictive that should not be accessible to every user. These commands 
+There are often commands which are more restrictive and should not be accessible to every user. These commands 
 need eng or admin role for the most restricted or dangerous commands. 
 Also, these more restrictive eng commands need a fine-grained control mechanism so that they can be
 safely executed by authorized person having specific role at subsystem level. To achieve this we have the
@@ -44,7 +44,7 @@ As per this hierarchy there should be three roles present for each subsystem whi
 Also, there are three special roles. OSW-admin, OSW-eng and OSW-user which are composed of all respective subsystem level roles. 
 
 * E.g. When you assign a user OSW-eng role, keycloak will automatically add roles TCS-eng, APS-eng and so on to that
-user and these roles will automatically add their respective lower level roles TCS-user, APS-user and so on
+user and these roles will automatically add their respective lower level roles TCS-user, APS-user and so on.
  
 #### Examples:
 

@@ -20,7 +20,7 @@ Here is an example:
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer }
 
-and here is one showing the setting of the default timeout:
+Here is one showing the setting of the default timeout:
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer-timeout }
@@ -130,7 +130,7 @@ If this command is sent in any other state apart from these, an `Unhandled` resp
 If the Sequencer is in idle/loaded state, and it receives the `goOffline` command, the @ref:[goOffline handlers](../constructs/handlers.md#online-and-offline-handlers)
 of the receiving Sequencer will be called.
 In case the handlers fail, a `GoOfflineHookFailed` response would be sent, resulting the Sequencer remains in the previous state.
-Otherwise an `Ok` message is sent, and the Sequencer goes to offline state.
+Otherwise, an `Ok` message is sent, and the Sequencer goes to offline state.
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOffline }  

@@ -5,7 +5,7 @@ how the developer wants their Sequencer to work.
 
 ### Handler-Oriented Scripts
 
-A handler-oriented script is specified with command-handlers at the top level scope of the script. There is a
+A handler-oriented script is specified with command-handlers at the top-level scope of the script. There is a
 command-handler associated with every possible Setup or Observe that a received Sequence can contain. The
 developer can use mutable variables in the script to keep track of the state of the Sequencer script.
 
@@ -82,10 +82,10 @@ More information about state machine-oriented scripts is @ref:[here](dsl/constru
 
 ### Mixing the Two Styles
 
-A handler-oriented script can include finite state machines.  The top level script is not modeled as a state machine, but
+A handler-oriented script can include finite state machines.  The top-level script is not modeled as a state machine, but
 the command handlers and script can include one or more state machines and can launch them when a command is received.
 
 A state machine-oriented script can receive commands with handlers as shown in the example above. A state machine-oriented
-script can start/stop/control other finite state machines as it processes the top level state machine.
+script can start/stop/control other finite state machines as it processes the top-level state machine.
 
 <!-- we should include an example of this.  how are the script and FsmScript tags used? -->

@@ -37,7 +37,7 @@ Following example demonstrate writing CPU bound operation,
 In this example `BigInteger.probablePrime(4096, Random())` is CPU bound and takes more than few seconds to finish. 
 
 Kotlin
-:   @@snip [compute-intesive.kt](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/blocking.kt) { #compute-intensive-function }
+:   @@snip [compute-intensive.kt](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/blocking/blocking.kt) { #compute-intensive-function }
 
 Following shows, usage of the above compute heavy function in main sequencer script
 

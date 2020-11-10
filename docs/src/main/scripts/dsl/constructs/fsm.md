@@ -1,7 +1,7 @@
 # Finite State Machines
 
 Scripts have ability to define, include, and run @link:[Finite State Machine (FSM)](https://en.wikipedia.org/wiki/Finite-state_machine). 
-A FSM can transition between defined states and can be made reactive to Events and Commands.
+FSM can transition between defined states and can be made reactive to Events and Commands.
 
 ## Define a FSM
 
@@ -55,7 +55,7 @@ Kotlin
 :   @@snip [Fsm.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition-on-re-evaluation }
 
 In the example above, the FSM is in LOW state. If the temperature is below 20, then there won't be any state transition, 
-and the FSM in remain in the LOW state. A change in temperature after that will re-evaluate the "LOW" state again and if 
+and the FSM remain in the LOW state. A change in temperature after that will re-evaluate the "LOW" state again and if 
 the temperature is greater than or equal to 20, then current state will change to HIGH. In the example `temperature` is 
 an @ref:[event based variable](#event-based-variables) which enables re-evaluation of the current state on changes in temperature value.
 
@@ -187,7 +187,7 @@ Kotlin
 ### CommandFlag
 
 Command Flag acts as bridge that can be used to pass `Parameters` to an FSM from outside (i.e via a Command Handler). 
-A Command Flag can be defined in a scope accessible by a Command Handler and a FSM, and then be bound to the FSM.
+A Command Flag can be defined in a scope accessible by a Command Handler and the FSM, and then be bound to the FSM.
 This causes the FSM to re-evaluate whenever the value of the Command Flag changes, which occurs when the `set` method
 is called in the Command Flag (which can be placed in a Command Handler, see @ref[example below](#example-fsm)).
 

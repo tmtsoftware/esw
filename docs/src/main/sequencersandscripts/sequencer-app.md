@@ -11,7 +11,7 @@ The following steps should be followed to use ocs-app to start a Sequencer or Se
 ## 1. Install `coursier` and the TMT Apps Channel
 
 The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
-The instructions for doing this are provided @ref:[here](../technical/apps/getting-apps.md).
+The instructions for doing this is provided @ref:[here](../technical/apps/getting-apps.md).
 
 ## 2. Install ocs-app
 
@@ -63,10 +63,10 @@ Once ocs-app is installed, one can simply run sequencer or sequence component by
 
 Start command supports following arguments:
 
- * `--port` , `-p` : Optional argument: HTTP server will be bound to this port. If a value is not provided, port will be picked up from configuration
- * `-l`, `--local` : optional aregument (true if config is to be read locally or false if from remote server) default value is false
- * `-c`, `--commandRoleConfigPath` : specifies command role mapping file path which gets fetched from config service or local file system based on --local option
- * `-m`, `--metrics` : optional argument: If true, enable gateway metrics. If not provided, default value is false and metrics will be disabled
+ * `--port`, `-p` : Optional argument: HTTP server will be bound to this port. If a value is not provided, port will be picked up from configuration.
+ * `-l`, `--local` : optional argument (true if config is to be read locally or false if from remote server) default value is false.
+ * `-c`, `--commandRoleConfigPath` : specifies command role mapping file path which gets fetched from config service or local file system based on --local option.
+ * `-m`, `--metrics` : optional argument: If true, enable gateway metrics. If not provided, default value is false and metrics will be disabled.
 
 
 Here are some examples. 
@@ -105,10 +105,10 @@ When starting a Sequencer, ocs-app spawns two things:
 
 Options accepted by this command are described below:
 
- * `-s` : subsystem of the sequence component, for e.g. `tcs`, `iris` etc
- * `-n`, `--name` : optional name for sequence component, for e.g. `primary`, `backup` etc
- * `-i` : optional subsystem of sequencer script, for e.g. `tcs`, `iris` etc. Default value: subsystem provided by `-s` option
- * `-m`, `--mode` : observing mode, for e.g. `darknight`
+ * `-s` : subsystem of the sequence component, for e.g. `tcs`, `iris` etc.
+ * `-n`, `--name` : optional name for sequence component, for e.g. `primary`, `backup` etc.
+ * `-i` : optional subsystem of sequencer script, for e.g. `tcs`, `iris` etc. Default value: subsystem provided by `-s` option.
+ * `-m`, `--mode` : observing mode, for e.g. `darknight`.
 
 The following command examples start both a Sequence Component and Sequencer:
 

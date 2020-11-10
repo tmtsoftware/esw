@@ -28,7 +28,7 @@ enable auth for command and sequencer services.
 
 # API call flow
 
-Let's take example of `GetSequence` command coming from browser to sequencer service via gateway:
+Let's take example of `GetSequence` command coming from browser to sequencer service via a gateway:
 
 1. Since sequencer APIs are protected using auth, the UI app gets a valid token from `AAS` that will enable access to
 sequencer API in gateway.

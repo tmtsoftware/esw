@@ -14,7 +14,7 @@ trait LoggingApi {
    * @param prefix      prefix for the component with `subsystem` and `name`
    * @param level       represents log level to set
    * @param message     the log message
-   * @param metadata    the log metatdata containing supporting info
+   * @param metadata    the log metadata containing supporting info
    * @return            a Future that completes and logs the message
    */
   def log(prefix: Prefix, level: Level, message: String, metadata: Map[String, Any] = Map.empty): Future[Done]

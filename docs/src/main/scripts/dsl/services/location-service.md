@@ -69,7 +69,7 @@ Kotlin
 
 ### @extref[ConnectionType](csw_scaladoc:csw/location/models/ConnectionType)
 
-Filters locations based on provided `ConnectionType`. A DSL is provided to speficy the type, which can be one of:
+Filters locations based on provided `ConnectionType`. A DSL is provided to specify the type, which can be one of:
 `AkkaType`, `HttpType`, `TcpType`.
 
 The following example demonstrates a use case where the script locks all of the Akka Type components i.e. Assemblies and HCD's.

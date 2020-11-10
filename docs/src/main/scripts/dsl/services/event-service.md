@@ -7,7 +7,7 @@ You can refer to the detailed documentation of Event Service provided by CSW @ex
 
 ## Helper Methods
 
-These methods can be used to create Systerm and Observe Events.  Additionally, a System or Observe "Event Variable" can be created
+These methods can be used to create System and Observe Events.  Additionally, a System or Observe "Event Variable" can be created
 that can be tied to the first value of a parameter of an Event, similar to the way local variables are tied to "process variables" in the EPICS State Notation
 Language.
 

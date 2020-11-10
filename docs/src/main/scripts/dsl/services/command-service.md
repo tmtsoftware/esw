@@ -158,7 +158,7 @@ Kotlin
 
 A Sequencer can command an Assembly or HCD to go to the online or offline state. This is a wrapper for putting another Assembly/HCD 
 into Online or Offline mode. When an Assembly/HCD receives this command, its respective handlers are called. The detailed documentation
-of Online/Fffline handlers for Assembly/HCD can be found @extref[here](csw:framework/handling-lifecycle.html#component-online-and-offline)
+of Online/Offline handlers for Assembly/HCD can be found @extref[here](csw:framework/handling-lifecycle.html#component-online-and-offline)
 
 ### goOffline
 
@@ -187,7 +187,7 @@ related to technical data collection.
 ### diagnosticMode
 
 The `diagnosticMode` DSL method puts an Assembly/HCD into Diagnostic data mode based on a hint at the specified `startTime`. `diagnosticMode` can be called from anywhere in script. 
-The hint is specifified by the component. Not all components have diagnostic modes for technical data.  The following example
+The hint is specified by the component. Not all components have diagnostic modes for technical data.  The following example
 shows a Sequencer sending the `diagnosticMode` command to a downstream "Galil Assembly" when it receives a `diagnosticMode` command.
 
 Kotlin

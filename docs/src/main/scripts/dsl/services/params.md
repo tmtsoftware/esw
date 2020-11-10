@@ -45,7 +45,7 @@ Following table lists all the key types, and their corresponding DSL.
 | Coord  (*)          | coordKey                    |
 
 The example below shows usages of the DSL for different types of keys. Some other DSL helpers like `struct`, `choicesOf`, `arrayData`, `matrixData`, etc.
-have also been provided for ease of access. Usage of these helper DSLs is also shown in the example below.
+have also been provided for ease of access. Usage of this helper DSLs is also shown in the example below.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #keys }  
@@ -76,7 +76,7 @@ Kotlin
 
 ### Extracting parameter by keyName and KeyType
 
-Or, you cam use the key name and type:
+Or, you can use the key name and type:
 
 Kotlin
 : @@snip [Params.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-keyName-keyType }  
