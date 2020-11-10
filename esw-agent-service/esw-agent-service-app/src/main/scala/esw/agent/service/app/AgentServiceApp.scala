@@ -1,5 +1,6 @@
 package esw.agent.service.app
 
+// $COVERAGE-OFF$
 import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.core.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
@@ -33,3 +34,5 @@ object AgentServiceApp extends EswCommandApp[AgentServiceAppCommand] {
     }
   }
 }
+
+// $COVERAGE-ON$
