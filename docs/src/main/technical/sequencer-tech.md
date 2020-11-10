@@ -45,8 +45,8 @@ Sequencer exposes its interface in three ways:
 2. HTTP direct interface - Each Sequencer also exposes an HTTP-based interface as an embedded Sequencer
 Server (direct and unprotected usage). This access provides routes that allow user to directly control the Sequencer without any auth protection.
 UI applications are supposed to use Gateway interface described below to interact with Sequencer as Gateway provided auth protection layer.
-3. HTTP Gateway interface - It is also possible to interact with Sequencer using the UI Application Gateway (as public interface).
-Being public interface, this access requires user to be authenticated and authorized. The Gateway hosts the Sequencer API,
+3. HTTP Gateway interface - It is also possible to interact with Sequencer using the UI Application Gateway (as outside network interface).
+Being outside network interface, this access requires user to be authenticated and authorized. The Gateway hosts the Sequencer API,
 which communicates with the Sequencer via the Akka interface. Please refer to the Gateway documentation for @ref[more information](../uisupport/gateway.md).
 
 ## Implementation Details

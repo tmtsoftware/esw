@@ -82,7 +82,7 @@ Content-Type: application/json
     "port" : 8080,
     "path" : "path1",
     "networkType" : {
-      "_type" : "Private"
+      "_type" : "Inside"
     },
     "metadata" : { }
   }
