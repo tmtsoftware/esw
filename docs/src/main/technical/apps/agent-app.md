@@ -10,7 +10,7 @@ The following steps should be followed to start Agent
 
 The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
 The instructions for doing this are provided @ref:[here](getting-apps.md).
-```
+
 
 ### 2. Start Any Needed CSW Services
 
