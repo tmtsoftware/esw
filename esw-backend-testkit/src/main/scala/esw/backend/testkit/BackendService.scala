@@ -29,8 +29,12 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
     }
 
   private def run(services: List[Service], commandRoles: Path, alarmConf: String): Unit = {
-    val servicesWithoutGatewayAndAgent = services.filterNot(x => x == Gateway || x == AgentService || x == AAS)
-    val eswTestKit: EswTestKit         = new EswTestKit(servicesWithoutGatewayAndAgent: _*) {}
+    val servicesWithoutGatewayAndAgent = services.filterNot(x => x == Gateway || x == AgentService)
+    val cswServicesToStart =
+      if (servicesWithoutGatewayAndAgent.contains(Gateway)) servicesWithoutGatewayAndAgent.filterNot(_ == AAS)
+      else servicesWithoutGatewayAndAgent
+
+    val eswTestKit: EswTestKit = new EswTestKit(cswServicesToStart: _*) {}
 
     var gatewayWiring: Option[GatewayStub]                       = None
     var sequenceManagerWiring: Option[SequenceManagerStub]       = None
