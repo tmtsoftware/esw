@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "2121a4f"
+  private val MSocketVersion = "0.2.0-RC1"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
@@ -18,7 +18,7 @@ object Libs {
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.2.0-M1"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.2.0-RC1"
 
   val `ammonite` = "com.lihaoyi" % "ammonite" % "2.2.0" cross CrossVersion.full
 }
@@ -26,7 +26,7 @@ object Libs {
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "7b3a827e1e"
+  private val Version = "3.0.0-RC1"
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version
@@ -67,8 +67,8 @@ object Akka {
 object AkkaHttp {
   private val Version = "10.2.1" //all akka is Apache License 2.0
 
-  val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
-  val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
+  val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
+  val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
   val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
 
   val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.0"
