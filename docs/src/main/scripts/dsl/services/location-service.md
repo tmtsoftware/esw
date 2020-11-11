@@ -9,11 +9,11 @@ This DSL provides the following APIs:
 
 This DSL registers a provided `Registration` with the Location Service and returns a `RegistrationResult`, which contains the `Location` with which a component is registered and a handle for un-registration.
 
-@extref[Registration](csw_scaladoc:csw/location/models/Registration) can be one of:
+@extref[Registration](csw_scaladoc:csw/location/api/models/Registration) can be one of:
 
-1. @extref[AkkaRegistration](csw_scaladoc:csw/location/models/AkkaRegistration)
-1. @extref[HttpRegistration](csw_scaladoc:csw/location/models/HttpRegistration)
-1. @extref[TcpRegistration](csw_scaladoc:csw/location/models/TcpRegistration)
+1. @extref[AkkaRegistration](csw_scaladoc:csw/location/api/models/AkkaRegistration)
+1. @extref[HttpRegistration](csw_scaladoc:csw/location/api/models/HttpRegistration)
+1. @extref[TcpRegistration](csw_scaladoc:csw/location/api/models/TcpRegistration)
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #register }
@@ -22,11 +22,11 @@ Kotlin
 
 This DSL un-registers the provided `Connection` from Location Service
 
-@extref[Connection](csw_scaladoc:csw/location/models/Connection) can be one of:
+@extref[Connection](csw_scaladoc:csw/location/api/models/Connection) can be one of:
 
-1. @extref[AkkaConnection](csw_scaladoc:csw/location/models/Connection$$AkkaConnection)
-1. @extref[HttpConnection](csw_scaladoc:csw/location/models/Connection$$HttpConnection)
-1. @extref[TcpConnection](csw_scaladoc:csw/location/models/Connection$$TcpConnection)
+1. @extref[AkkaConnection](csw_scaladoc:csw/location/api/models/Connection$$AkkaConnection)
+1. @extref[HttpConnection](csw_scaladoc:csw/location/api/models/Connection$$HttpConnection)
+1. @extref[TcpConnection](csw_scaladoc:csw/location/api/models/Connection$$TcpConnection)
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #unregister }
@@ -57,7 +57,7 @@ Kotlin
 
 The following various APIs are provided for listing locations with filtering criteria:
 
-### @extref[ComponentType](csw_scaladoc:csw/location/models/ComponentType)
+### @extref[ComponentType](csw_scaladoc:csw/location/api/models/ComponentType)
 
 Filters locations based on provided `ComponentType`.  A DSL is provided to specify the type, which can be one of:
 `HCD`, `Assembly`, `Sequencer`, `SequenceComponent`, `Container`, `Service`
@@ -67,7 +67,7 @@ The following example demonstrates a use case where the script sends an Offline 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-comp-type }
 
-### @extref[ConnectionType](csw_scaladoc:csw/location/models/ConnectionType)
+### @extref[ConnectionType](csw_scaladoc:csw/location/api/models/ConnectionType)
 
 Filters locations based on provided `ConnectionType`. A DSL is provided to specify the type, which can be one of:
 `AkkaType`, `HttpType`, `TcpType`.
@@ -110,11 +110,11 @@ Kotlin
 
 This DSL allows you to add a callback that is called when the location of the specified connection changes, which is represented by a `TrackingEvent`.
 
-@extref[TrackingEvent](csw_scaladoc:csw/location/models/TrackingEvent) has following two subclasses
+@extref[TrackingEvent](csw_scaladoc:csw/location/api/models/TrackingEvent) has following two subclasses
 
-1. @extref[LocationUpdated](csw_scaladoc:csw/location/models/LocationUpdated): Published when the location is registered with the Location Service
+1. @extref[LocationUpdated](csw_scaladoc:csw/location/api/models/LocationUpdated): Published when the location is registered with the Location Service
 
-1. @extref[LocationRemoved](csw_scaladoc:csw/location/models/LocationRemoved): Published when the location is removed from the Location Service
+1. @extref[LocationRemoved](csw_scaladoc:csw/location/api/models/LocationRemoved): Published when the location is removed from the Location Service
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #on-location-tracking-event }
