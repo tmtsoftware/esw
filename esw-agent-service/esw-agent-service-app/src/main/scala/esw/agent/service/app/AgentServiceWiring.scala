@@ -39,7 +39,7 @@ class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
   lazy val logger: Logger        = loggerFactory.getLogger
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(agentActorSystem)
-  private val securityDirective             = SecurityDirectives(agentActorSystem.settings.config, locationService)
+  private[esw] val securityDirective        = SecurityDirectives(agentActorSystem.settings.config, locationService)
 
   private val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val agentService: AgentServiceApi = new AgentServiceImpl(locationServiceUtil)
