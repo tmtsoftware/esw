@@ -3,7 +3,6 @@ package esw.backend.testkit.stubs
 import java.nio.file.Path
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.backend.auth
 import csw.backend.auth.MockedAuth
 import csw.location.api.models.ComponentId
 import csw.location.api.scaladsl.LocationService
@@ -36,11 +35,12 @@ class AgentServiceStub(val locationService: LocationService)(implicit val actorS
     extends LocationUtils {
   private var agentServiceWiring: Option[AgentServiceWiring] = _
   def spawnMockAgentService(): AgentServiceWiring = {
+    println("hello")
     val wiring: AgentServiceWiring = new AgentServiceWiring() {
       override lazy val agentActorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
       override lazy val agentService: AgentServiceApi                        = new AgentServiceStubImpl()
       private val mockedAuth                                                 = new MockedAuth
-      override private[esw] val securityDirective                            = mockedAuth._securityDirectives
+      override private[esw] lazy val securityDirective                       = mockedAuth._securityDirectives
     }
     agentServiceWiring = Some(wiring)
     wiring.start()

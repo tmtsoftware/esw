@@ -2,6 +2,7 @@ package esw.backend.testkit.stubs
 
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import csw.backend.auth.MockedAuth
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
 import csw.location.api.scaladsl.LocationService
@@ -71,10 +72,13 @@ class SequenceManagerStub(val locationService: LocationService)(implicit val act
   private var seqManagerWiring: Option[SequenceManagerWiring] = _
 
   def spawnMockSm(): SequenceManagerWiring = {
-    val wiring = new SequenceManagerWiring(IOUtils.writeResourceToFile("smObsModeConfig.conf"), true, None) {
-      override lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
-      override lazy val sequenceManager: SequenceManagerApi               = new SequenceManagerStubImpl()
-    }
+    val wiring: SequenceManagerWiring =
+      new SequenceManagerWiring(IOUtils.writeResourceToFile("smObsModeConfig.conf"), true, None) {
+        override lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
+        override lazy val sequenceManager: SequenceManagerApi               = new SequenceManagerStubImpl()
+        private val mockedAuth                                              = new MockedAuth
+        override private[esw] lazy val securityDirectives                   = mockedAuth._securityDirectives
+      }
     seqManagerWiring = Some(wiring)
     wiring.start()
     wiring

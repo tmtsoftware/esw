@@ -101,8 +101,8 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
       AkkaLocation(registration.connection, registration.actorRefURI, registration.metadata)
     )
 
-  private[sm] lazy val securityDirectives = SecurityDirectives(smActorSystem.settings.config, locationService)
-  private lazy val postHandler            = new SequenceManagerRequestHandler(sequenceManager, securityDirectives)
+  private[esw] lazy val securityDirectives = SecurityDirectives(smActorSystem.settings.config, locationService)
+  private lazy val postHandler             = new SequenceManagerRequestHandler(sequenceManager, securityDirectives)
 
   import LabelExtractor.Implicits.default
   import SequenceManagerServiceCodecs._
@@ -144,7 +144,7 @@ private[sm] object SequenceManagerWiring {
       _securityDirectives: SecurityDirectives
   ): SequenceManagerWiring =
     new SequenceManagerWiring(obsModeConfig, isLocal, agentPrefix) {
-      override private[sm] lazy val smActorSystem      = _actorSystem
-      override private[sm] lazy val securityDirectives = _securityDirectives
+      override private[sm] lazy val smActorSystem       = _actorSystem
+      override private[esw] lazy val securityDirectives = _securityDirectives
     }
 }
