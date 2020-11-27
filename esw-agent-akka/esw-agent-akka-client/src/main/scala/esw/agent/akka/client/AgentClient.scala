@@ -9,8 +9,9 @@ import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.CSW
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
@@ -21,6 +22,12 @@ import scala.concurrent.Future
 class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]) {
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefix                      = akkaLocation.prefix
+
+  def spawnEventServer(confPath: String, port: Option[Int], version: Option[String]): Future[SpawnResponse] =
+    (agentRef ? (SpawnRedis(_, Prefix(CSW, "EventServer"), confPath, port, version)))(
+      AgentTimeouts.SpawnComponent,
+      actorSystem.scheduler
+    )
 
   def spawnSequenceComponent(componentName: String, version: Option[String] = None): Future[SpawnResponse] =
     (agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version)))(

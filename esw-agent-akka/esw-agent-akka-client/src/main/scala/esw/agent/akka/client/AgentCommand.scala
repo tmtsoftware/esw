@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
@@ -26,6 +26,23 @@ object AgentCommand {
   }
 
   object SpawnCommand {
+
+    case class SpawnRedis(
+        replyTo: ActorRef[SpawnResponse],
+        prefix: Prefix,
+        confPath: String,
+        port: Option[Int],
+        version: Option[String]
+    ) extends SpawnCommand {
+      override def commandArgs(extraArgs: List[String]): List[String] =
+        port match {
+          case Some(value) => List("--prefix", prefix.toString(), "redis-sentinel", confPath, "--port", value.toString)
+          case None        => List("--prefix", prefix.toString(), "redis-sentinel", confPath)
+        }
+
+      override def connection: Connection = TcpConnection(ComponentId(prefix, Service))
+    }
+
     case class SpawnSequenceComponent(
         replyTo: ActorRef[SpawnResponse],
         agentPrefix: Prefix,
