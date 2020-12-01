@@ -334,6 +334,10 @@ object Dependencies {
     )
   )
 
+  val EswConstants: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(Csw.`csw-prefix`.value)
+  )
+
   val Template = Def.setting(
     Seq(
       Csw.`csw-aas-http`,
