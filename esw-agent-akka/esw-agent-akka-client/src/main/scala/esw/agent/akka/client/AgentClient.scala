@@ -29,6 +29,12 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
       actorSystem.scheduler
     )
 
+  def spawnAlarmServer(confPath: String, port: Option[Int], version: Option[String]): Future[SpawnResponse] =
+    (agentRef ? (SpawnRedis(_, Prefix(CSW, "AlarmServer"), confPath, port, version)))(
+      AgentTimeouts.SpawnComponent,
+      actorSystem.scheduler
+    )
+
   def spawnSequenceComponent(componentName: String, version: Option[String] = None): Future[SpawnResponse] =
     (agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version)))(
       AgentTimeouts.SpawnComponent,
