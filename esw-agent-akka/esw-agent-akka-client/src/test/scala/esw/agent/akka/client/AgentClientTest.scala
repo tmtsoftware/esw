@@ -11,10 +11,11 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
+import esw.constants.AgentConstants
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.concurrent.Future
@@ -113,6 +114,38 @@ class AgentClientTest extends ActorTestSuit {
         case SpawnSequenceManager(replyTo, `configPath`, true, None) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceManager(configPath, isConfigLocal = true).futureValue should ===(spawnResponse)
+      }
+    }
+  }
+
+  "spawnEventServer" should {
+    "send spawnRedis message to agent with the Event Server prefix and return a future with agent response | ESW-368" in {
+      val configPath    = Path.of("redis-sentinal.conf")
+      val spawnResponse = mock[SpawnResponse]
+      val prefix        = AgentConstants.eventPrefix
+      val port = Some(8090)
+      val version = Some("0.1.0-SNAPSHOT")
+
+      withBehavior {
+        case SpawnRedis(replyTo, `prefix`, `configPath`, `port`, `version`) => replyTo ! spawnResponse
+      } check { ac =>
+        ac.spawnEventServer(configPath, port, version).futureValue should ===(spawnResponse)
+      }
+    }
+  }
+
+  "spawnAlarmServer" should {
+    "send spawnRedis message to agent with the Alarm Server prefix and return a future with agent response | ESW-368" in {
+      val configPath    = Path.of("redis-sentinal.conf")
+      val spawnResponse = mock[SpawnResponse]
+      val prefix        = AgentConstants.alarmPrefix
+      val port = Some(8090)
+      val version = Some("0.1.0-SNAPSHOT")
+
+      withBehavior {
+        case SpawnRedis(replyTo, `prefix`, `configPath`, `port`, `version`) => replyTo ! spawnResponse
+      } check { ac =>
+        ac.spawnEventServer(configPath, port, version).futureValue should ===(spawnResponse)
       }
     }
   }

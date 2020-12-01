@@ -22,13 +22,13 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefix                      = akkaLocation.prefix
 
-  def spawnEventServer(confPath: String, port: Option[Int] = None, version: Option[String] = None): Future[SpawnResponse] =
+  def spawnEventServer(confPath: Path, port: Option[Int] = None, version: Option[String] = None): Future[SpawnResponse] =
     (agentRef ? (SpawnRedis(_, AgentConstants.eventPrefix, confPath, port, version)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
 
-  def spawnAlarmServer(confPath: String, port: Option[Int] = None, version: Option[String] = None): Future[SpawnResponse] =
+  def spawnAlarmServer(confPath: Path, port: Option[Int] = None, version: Option[String] = None): Future[SpawnResponse] =
     (agentRef ? (SpawnRedis(_, AgentConstants.alarmPrefix, confPath, port, version)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler

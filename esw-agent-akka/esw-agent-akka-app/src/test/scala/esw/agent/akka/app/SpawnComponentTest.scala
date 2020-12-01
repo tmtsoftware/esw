@@ -6,8 +6,9 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
+import esw.constants.AgentConstants
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
@@ -136,6 +137,44 @@ class SpawnComponentTest extends AgentSetup {
         )
 
       verify(processExecutor).runCommand(expectedCommand, seqManagerPrefix)
+    }
+
+    "reply 'Spawned' and spawn redis using location agent | ESW-368" in {
+      val agentActorRef = spawnAgentActor(name = "test-actor007")
+      val probe         = TestProbe[SpawnResponse]()
+
+      when(locationService.find(argEq(redisConnection))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(redisConnection), any[FiniteDuration])).thenReturn(redisServiceLocationF)
+
+      mockSuccessfulProcess()
+
+      val configPath = Path.of("redis-sentinal.conf")
+      val prefix     = AgentConstants.alarmPrefix
+      val port       = Some(8090)
+      val version    = Some("0.1.0-SNAPSHOT")
+
+      agentActorRef ! SpawnRedis(probe.ref, prefix, configPath, port, version)
+      probe.expectMessage(Spawned)
+
+      val expectedCommand =
+        List(
+          Coursier.cs,
+          "launch",
+          "--channel",
+          Cs.channel,
+          "location-agent",
+          "--",
+          "--prefix",
+          prefix.toString(),
+          "--command",
+          s"redis-sentinal $configPath --port $port",
+          "--port",
+          port.toString,
+          "-a",
+          agentPrefix.toString()
+        )
+
+      verify(processExecutor).runCommand(expectedCommand, agentPrefix)
     }
   }
 }

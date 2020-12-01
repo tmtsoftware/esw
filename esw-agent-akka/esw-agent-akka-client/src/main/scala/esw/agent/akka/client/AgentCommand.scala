@@ -7,7 +7,7 @@ import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, values}
+import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api._
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
@@ -30,7 +30,7 @@ object AgentCommand {
     case class SpawnRedis(
         replyTo: ActorRef[SpawnResponse],
         prefix: Prefix,
-        confPath: String,
+        confPath: Path,
         port: Option[Int],
         version: Option[String]
     ) extends SpawnCommand {

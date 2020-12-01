@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture
 
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
@@ -15,6 +15,7 @@ import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
+import esw.constants.AgentConstants
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
@@ -53,6 +54,12 @@ class AgentSetup extends BaseTestSuite {
   val seqManagerLocationF: Future[Some[AkkaLocation]] = Future.successful(Some(seqManagerLocation))
   val spawnSequenceManager: ActorRef[SpawnResponse] => SpawnSequenceManager =
     SpawnSequenceManager(_, Paths.get("obsmode.conf"), isConfigLocal = true, None)
+
+  private val redisServicePrefix: Prefix               = AgentConstants.eventPrefix
+  private val redisServiceCompId: ComponentId          = ComponentId(redisServicePrefix, Service)
+  val redisConnection: TcpConnection                   = TcpConnection(redisServiceCompId)
+  private val redisServiceLocation: TcpLocation        = TcpLocation(redisConnection, new URI("some"), metadata)
+  val redisServiceLocationF: Future[Some[TcpLocation]] = Future.successful(Some(redisServiceLocation))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
