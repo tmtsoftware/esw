@@ -9,13 +9,12 @@ import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.CSW
 import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
-import esw.constants.AgentTimeouts
+import esw.constants.{AgentConstants, AgentTimeouts}
 
 import scala.concurrent.Future
 
@@ -23,14 +22,14 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefix                      = akkaLocation.prefix
 
-  def spawnEventServer(confPath: String, port: Option[Int], version: Option[String]): Future[SpawnResponse] =
-    (agentRef ? (SpawnRedis(_, Prefix(CSW, "EventServer"), confPath, port, version)))(
+  def spawnEventServer(confPath: String, port: Option[Int] = None, version: Option[String] = None): Future[SpawnResponse] =
+    (agentRef ? (SpawnRedis(_, AgentConstants.eventPrefix, confPath, port, version)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
 
-  def spawnAlarmServer(confPath: String, port: Option[Int], version: Option[String]): Future[SpawnResponse] =
-    (agentRef ? (SpawnRedis(_, Prefix(CSW, "AlarmServer"), confPath, port, version)))(
+  def spawnAlarmServer(confPath: String, port: Option[Int] = None, version: Option[String] = None): Future[SpawnResponse] =
+    (agentRef ? (SpawnRedis(_, AgentConstants.alarmPrefix, confPath, port, version)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )

@@ -50,7 +50,7 @@ lazy val esw = (project in file("."))
   )
   .settings(
     ghreleaseRepoOrg := "tmtsoftware",
-    ghreleaseRepoName := EswKeys.projectName,
+    ghreleaseRepoName := EswKeys.projectName
   )
 
 lazy val `esw-ocs` = project
@@ -339,6 +339,7 @@ lazy val `esw-sm-app` = project
 
 lazy val `esw-constants` = project
   .in(file("esw-constants"))
+  .settings(libraryDependencies ++= Dependencies.EswConstants.value)
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))
