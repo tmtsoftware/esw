@@ -7,7 +7,7 @@ import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.Subsystem.{ESW, values}
 import esw.agent.service.api._
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
@@ -34,11 +34,13 @@ object AgentCommand {
         port: Option[Int],
         version: Option[String]
     ) extends SpawnCommand {
-      override def commandArgs(extraArgs: List[String]): List[String] =
+      override def commandArgs(extraArgs: List[String]): List[String] = {
+        def command(port: Int) =  s"redis-sentinel $confPath --port $port"
         port match {
-          case Some(value) => List("--prefix", prefix.toString(), "redis-sentinel", confPath, "--port", value.toString)
-          case None        => List("--prefix", prefix.toString(), "redis-sentinel", confPath)
+          case Some(value) => List("--prefix", prefix.toString(), "--command", command(value), "--port", value.toString)
+          case None        => List("--prefix", prefix.toString(), "--command", s"redis-sentinel $confPath")
         }
+      }
 
       override def connection: Connection = TcpConnection(ComponentId(prefix, Service))
     }
