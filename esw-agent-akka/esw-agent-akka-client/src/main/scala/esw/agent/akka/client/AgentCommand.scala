@@ -35,10 +35,10 @@ object AgentCommand {
         version: Option[String]
     ) extends SpawnCommand {
       override def commandArgs(extraArgs: List[String]): List[String] = {
-        def command(port: Int) =  s"redis-sentinel $confPath --port $port"
+        def command(port: Int) = s"redis-sentinel $confPath --port $port"
         port match {
-          case Some(value) => List("--prefix", prefix.toString(), "--command", command(value), "--port", value.toString)
-          case None        => List("--prefix", prefix.toString(), "--command", s"redis-sentinel $confPath")
+          case Some(value) => List("--prefix", prefix.toString(), "--command", command(value), "--port", value.toString) ::: extraArgs
+          case None        => List("--prefix", prefix.toString(), "--command", s"redis-sentinel $confPath") ::: extraArgs
         }
       }
 

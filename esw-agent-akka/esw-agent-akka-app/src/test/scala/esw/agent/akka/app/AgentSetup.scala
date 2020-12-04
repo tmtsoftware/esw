@@ -55,7 +55,7 @@ class AgentSetup extends BaseTestSuite {
   val spawnSequenceManager: ActorRef[SpawnResponse] => SpawnSequenceManager =
     SpawnSequenceManager(_, Paths.get("obsmode.conf"), isConfigLocal = true, None)
 
-  private val redisServicePrefix: Prefix               = AgentConstants.eventPrefix
+  val redisServicePrefix: Prefix                       = Prefix(randomSubsystem, randomString(10))
   private val redisServiceCompId: ComponentId          = ComponentId(redisServicePrefix, Service)
   val redisConnection: TcpConnection                   = TcpConnection(redisServiceCompId)
   private val redisServiceLocation: TcpLocation        = TcpLocation(redisConnection, new URI("some"), metadata)
