@@ -6,7 +6,7 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnPostgres, SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
 import esw.constants.AgentConstants
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
@@ -140,7 +140,7 @@ class SpawnComponentTest extends AgentSetup {
     }
 
     "reply 'Spawned' and spawn redis using location agent | ESW-368" in {
-      val agentActorRef = spawnAgentActor(name = "test-actor007")
+      val agentActorRef = spawnAgentActor(name = "test-actor-redis")
       val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.find(argEq(redisConnection))).thenReturn(Future.successful(None))
@@ -148,7 +148,7 @@ class SpawnComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      val configPath = Path.of("redis-sentinal.conf")
+      val configPath = Path.of("redis-sentinel.conf")
       val port       = Some(8090)
       val version    = Some("0.1.0-SNAPSHOT")
 
@@ -171,9 +171,47 @@ class SpawnComponentTest extends AgentSetup {
           port.get.toString,
           "-a",
           agentPrefix.toString()
-      )
+        )
 
       verify(processExecutor).runCommand(expectedCommand, redisServicePrefix)
+    }
+
+    "reply 'Spawned' and spawn postgres using location agent | ESW-368" in {
+      val agentActorRef = spawnAgentActor(name = "test-actor-postgres")
+      val probe         = TestProbe[SpawnResponse]()
+
+      when(locationService.find(argEq(postgresConnection))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(postgresConnection), any[FiniteDuration])).thenReturn(postgresServiceLocationF)
+
+      mockSuccessfulProcess()
+
+      val configPath       = Path.of("pg_hba.conf")
+      val port             = Some(8090)
+      val version          = Some("0.1.0-SNAPSHOT")
+      val dbUnixSocketDirs = "/tmp"
+
+      agentActorRef ! SpawnPostgres(probe.ref, postgresServicePrefix, configPath, port, dbUnixSocketDirs, version)
+      probe.expectMessage(Spawned)
+
+      val expectedCommand =
+        List(
+          Coursier.cs,
+          "launch",
+          "--channel",
+          Cs.channel,
+          "location-agent:0.1.0-SNAPSHOT",
+          "--",
+          "--prefix",
+          postgresServicePrefix.toString(),
+          "--command",
+          s"postgres --hba_file=$configPath --unix_socket_directories=$dbUnixSocketDirs -i -p ${port.get}",
+          "--port",
+          port.get.toString,
+          "-a",
+          agentPrefix.toString()
+        )
+
+      verify(processExecutor).runCommand(expectedCommand, postgresServicePrefix)
     }
   }
 }

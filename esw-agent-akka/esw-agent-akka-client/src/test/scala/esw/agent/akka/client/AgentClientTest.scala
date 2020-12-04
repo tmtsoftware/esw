@@ -11,7 +11,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnPostgres, SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
@@ -120,7 +120,7 @@ class AgentClientTest extends ActorTestSuit {
 
   "spawnEventServer" should {
     "send spawnRedis message to agent with the Event Server prefix and return a future with agent response | ESW-368" in {
-      val configPath    = Path.of("redis-sentinal.conf")
+      val configPath    = Path.of("redis-sentinel.conf")
       val spawnResponse = mock[SpawnResponse]
       val prefix        = AgentConstants.eventPrefix
       val port          = Some(8090)
@@ -136,7 +136,7 @@ class AgentClientTest extends ActorTestSuit {
 
   "spawnAlarmServer" should {
     "send spawnRedis message to agent with the Alarm Server prefix and return a future with agent response | ESW-368" in {
-      val configPath    = Path.of("redis-sentinal.conf")
+      val configPath    = Path.of("redis-sentinel.conf")
       val spawnResponse = mock[SpawnResponse]
       val prefix        = AgentConstants.alarmPrefix
       val port          = Some(8090)
@@ -146,6 +146,23 @@ class AgentClientTest extends ActorTestSuit {
         case SpawnRedis(replyTo, `prefix`, `configPath`, `port`, `version`) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnAlarmServer(configPath, port, version).futureValue should ===(spawnResponse)
+      }
+    }
+  }
+
+  "spawnDatabaseServer" should {
+    "send spawnPostgres message to agent with the Database Server prefix and return a future with agent response | ESW-368" in {
+      val configPath       = Path.of("pg_hba.conf")
+      val spawnResponse    = mock[SpawnResponse]
+      val prefix           = AgentConstants.databasePrefix
+      val dbUnixSocketDirs = "/tmp"
+      val port             = Some(8090)
+      val version          = Some("0.1.0-SNAPSHOT")
+
+      withBehavior {
+        case SpawnPostgres(replyTo, `prefix`, `configPath`, `port`, `dbUnixSocketDirs`, `version`) => replyTo ! spawnResponse
+      } check { ac =>
+        ac.spawnPostgres(configPath, port, dbUnixSocketDirs, version).futureValue should ===(spawnResponse)
       }
     }
   }

@@ -3,7 +3,7 @@ package esw.agent.akka.app.ext
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentCommand.SpawnCommand
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnPostgres, SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 
 object SpawnCommandExt {
 
@@ -18,6 +18,7 @@ object SpawnCommandExt {
           Coursier.ocsApp(version).launch(coursierChannel, args)
         case SpawnSequenceManager(_, _, _, version) => Coursier.smApp(version).launch(coursierChannel, args)
         case SpawnRedis(_, _, _, _, version)        => Coursier.locationAgentApp(version).launch(coursierChannel, args)
+        case SpawnPostgres(_, _, _, _, _, version)  => Coursier.locationAgentApp(version).launch(coursierChannel, args)
       }
     }
   }
