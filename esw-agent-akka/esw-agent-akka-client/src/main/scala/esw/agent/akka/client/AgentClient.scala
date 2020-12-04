@@ -10,7 +10,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnPostgres, SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
@@ -21,6 +21,17 @@ import scala.concurrent.Future
 class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]) {
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefix                      = akkaLocation.prefix
+
+  def spawnPostgres(
+      pgDataConfPath: Path,
+      port: Option[Int] = None,
+      dbUnixSocketDirs: String,
+      version: Option[String] = None
+  ): Future[SpawnResponse] =
+    (agentRef ? (SpawnPostgres(_, AgentConstants.databasePrefix, pgDataConfPath, port, dbUnixSocketDirs, version)))(
+      AgentTimeouts.SpawnComponent,
+      actorSystem.scheduler
+    )
 
   def spawnEventServer(confPath: Path, port: Option[Int] = None, version: Option[String] = None): Future[SpawnResponse] =
     (agentRef ? (SpawnRedis(_, AgentConstants.eventPrefix, confPath, port, version)))(

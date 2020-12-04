@@ -61,6 +61,12 @@ class AgentSetup extends BaseTestSuite {
   private val redisServiceLocation: TcpLocation        = TcpLocation(redisConnection, new URI("some"), metadata)
   val redisServiceLocationF: Future[Some[TcpLocation]] = Future.successful(Some(redisServiceLocation))
 
+  val postgresServicePrefix: Prefix                       = Prefix(randomSubsystem, randomString(10))
+  private val postgresServiceCompId: ComponentId          = ComponentId(postgresServicePrefix, Service)
+  val postgresConnection: TcpConnection                   = TcpConnection(postgresServiceCompId)
+  private val postgresServiceLocation: TcpLocation        = TcpLocation(postgresConnection, new URI("some"), metadata)
+  val postgresServiceLocationF: Future[Some[TcpLocation]] = Future.successful(Some(postgresServiceLocation))
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(locationService, processExecutor, process, logger)

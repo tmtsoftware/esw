@@ -37,9 +37,30 @@ object AgentCommand {
       override def commandArgs(extraArgs: List[String]): List[String] = {
         def command(port: Int) = s"redis-sentinel $confPath --port $port"
         port match {
-          case Some(value) => List("--prefix", prefix.toString(), "--command", command(value), "--port", value.toString) ::: extraArgs
-          case None        => List("--prefix", prefix.toString(), "--command", s"redis-sentinel $confPath") ::: extraArgs
+          case Some(value) =>
+            List("--prefix", prefix.toString(), "--command", command(value), "--port", value.toString) ::: extraArgs
+          case None => List("--prefix", prefix.toString(), "--command", s"redis-sentinel $confPath") ::: extraArgs
         }
+      }
+
+      override def connection: Connection = TcpConnection(ComponentId(prefix, Service))
+    }
+
+    case class SpawnPostgres(
+        replyTo: ActorRef[SpawnResponse],
+        prefix: Prefix,
+        pgDataConfPath: Path,
+        port: Option[Int],
+        dbUnixSocketDirs: String,
+        version: Option[String]
+    ) extends SpawnCommand {
+      override def commandArgs(extraArgs: List[String]): List[String] = {
+        def command = s"postgres --hba_file=$pgDataConfPath --unix_socket_directories=$dbUnixSocketDirs"
+        (port match {
+          case Some(value) =>
+            List("--prefix", prefix.toString(), "--command", command + s" -i -p $value", "--port", value.toString)
+          case None => List("--prefix", prefix.toString(), "--command", command)
+        }) ::: extraArgs
       }
 
       override def connection: Connection = TcpConnection(ComponentId(prefix, Service))
