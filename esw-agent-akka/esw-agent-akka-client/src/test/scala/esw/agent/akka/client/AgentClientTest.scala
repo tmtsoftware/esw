@@ -123,8 +123,8 @@ class AgentClientTest extends ActorTestSuit {
       val configPath    = Path.of("redis-sentinal.conf")
       val spawnResponse = mock[SpawnResponse]
       val prefix        = AgentConstants.eventPrefix
-      val port = Some(8090)
-      val version = Some("0.1.0-SNAPSHOT")
+      val port          = Some(8090)
+      val version       = Some("0.1.0-SNAPSHOT")
 
       withBehavior {
         case SpawnRedis(replyTo, `prefix`, `configPath`, `port`, `version`) => replyTo ! spawnResponse
@@ -139,13 +139,13 @@ class AgentClientTest extends ActorTestSuit {
       val configPath    = Path.of("redis-sentinal.conf")
       val spawnResponse = mock[SpawnResponse]
       val prefix        = AgentConstants.alarmPrefix
-      val port = Some(8090)
-      val version = Some("0.1.0-SNAPSHOT")
+      val port          = Some(8090)
+      val version       = Some("0.1.0-SNAPSHOT")
 
       withBehavior {
         case SpawnRedis(replyTo, `prefix`, `configPath`, `port`, `version`) => replyTo ! spawnResponse
       } check { ac =>
-        ac.spawnEventServer(configPath, port, version).futureValue should ===(spawnResponse)
+        ac.spawnAlarmServer(configPath, port, version).futureValue should ===(spawnResponse)
       }
     }
   }

@@ -149,11 +149,10 @@ class SpawnComponentTest extends AgentSetup {
       mockSuccessfulProcess()
 
       val configPath = Path.of("redis-sentinal.conf")
-      val prefix     = AgentConstants.alarmPrefix
       val port       = Some(8090)
       val version    = Some("0.1.0-SNAPSHOT")
 
-      agentActorRef ! SpawnRedis(probe.ref, prefix, configPath, port, version)
+      agentActorRef ! SpawnRedis(probe.ref, redisServicePrefix, configPath, port, version)
       probe.expectMessage(Spawned)
 
       val expectedCommand =
@@ -162,19 +161,19 @@ class SpawnComponentTest extends AgentSetup {
           "launch",
           "--channel",
           Cs.channel,
-          "location-agent",
+          "location-agent:0.1.0-SNAPSHOT",
           "--",
           "--prefix",
-          prefix.toString(),
+          redisServicePrefix.toString(),
           "--command",
-          s"redis-sentinal $configPath --port $port",
+          s"redis-sentinel $configPath --port ${port.get}",
           "--port",
-          port.toString,
+          port.get.toString,
           "-a",
           agentPrefix.toString()
-        )
+      )
 
-      verify(processExecutor).runCommand(expectedCommand, agentPrefix)
+      verify(processExecutor).runCommand(expectedCommand, redisServicePrefix)
     }
   }
 }
