@@ -27,6 +27,7 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 |-----|-----|-----|-----|
 | 2020-03-19 | v0.1.0 | [esw-0.1.0](https://github.com/tmtsoftware/esw/tree/v0.1.0) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0/esw-apps-0.1.0.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0.zip) |
 
+
 ## Pre-Release History
 
 | Date | Tag | Source | Download |
