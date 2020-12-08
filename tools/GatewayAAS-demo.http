@@ -1,16 +1,41 @@
 
 ####Generate and save token (BearerToken.fromServer in LocationAuthTestWithKeycloak )
-POST http://192.168.43.48:8081/auth/realms/TMT/protocol/openid-connect/token
+POST http://your_mc_ip:8081/auth/realms/TMT/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-client_id=tmt-backend-app&grant_type=password&username=location-admin1&password=location-admin1
+client_id=tmt-frontend-app&grant_type=password&username=config-admin1&password=config-admin1
 
 
 > {% client.global.set("access_token", response.body.access_token); %}
 
 ####
+
+### Register component
+POST http://localhost:7654/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "Register",
+  "registration" : {
+    "_type" : "HttpRegistration",
+    "connection" : {
+      "prefix" : "IRIS.filter.wheel",
+      "componentType" : "HCD",
+      "connectionType" : "http"
+    },
+    "port" : 8080,
+    "path" : "path1",
+    "networkType" : {
+      "_type" : "Inside"
+    },
+    "metadata" : { }
+  }
+}
+
+###
+
 ### validate
-POST http://localhost:8090/post-endpoint
+POST http://your_mc_ip:8090/post-endpoint
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
@@ -21,14 +46,12 @@ Authorization: Bearer {{access_token}}
     "componentType": "hcd"
   },
   "command": {
-    "_type": "Submit",
+    "_type": "Validate",
     "controlCommand": {
-      "_type": "Setup",
+      "_type": "Observe",
       "source": "CSW.ncc.trombone",
       "commandName": "startExposure",
-      "maybeObsId": [
-        "obsId"
-      ],
+      "maybeObsId":"obs001",
       "paramSet": []
     }
   }
@@ -64,28 +87,5 @@ GET http://localhost:9003/api
 Origin: http://localhost:3000
 Content-Type: application/json
 
-
-###
-
-POST http://localhost:7654/post-endpoint
-Content-Type: application/json
-
-{
-  "_type" : "Register",
-  "registration" : {
-    "_type" : "HttpRegistration",
-    "connection" : {
-      "prefix" : "TCS.filter.wheel",
-      "componentType" : "HCD",
-      "connectionType" : "http"
-    },
-    "port" : 8080,
-    "path" : "path1",
-    "networkType" : {
-      "_type" : "Inside"
-    },
-    "metadata" : { }
-  }
-}
 
 ###
