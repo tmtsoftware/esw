@@ -8,7 +8,13 @@ import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.service.api.protocol.AgentServiceRequest.{
+  KillComponent,
+  SpawnAlarmServer,
+  SpawnEventServer,
+  SpawnSequenceComponent,
+  SpawnSequenceManager
+}
 import msocket.api.Transport
 
 import scala.concurrent.Future
@@ -32,4 +38,20 @@ class AgentServiceClient(postClient: Transport[AgentServiceRequest]) extends Age
 
   override def killComponent(componentId: ComponentId): Future[KillResponse] =
     postClient.requestResponse[KillResponse](KillComponent(componentId))
+
+  override def spawnEventServer(
+      agentPrefix: Prefix,
+      sentinelConfPath: Path,
+      port: Option[Int],
+      version: Option[String]
+  ): Future[SpawnResponse] =
+    postClient.requestResponse[SpawnResponse](SpawnEventServer(agentPrefix, sentinelConfPath, port, version))
+
+  override def spawnAlarmServer(
+      agentPrefix: Prefix,
+      sentinelConfPath: Path,
+      port: Option[Int],
+      version: Option[String]
+  ): Future[SpawnResponse] =
+    postClient.requestResponse[SpawnResponse](SpawnAlarmServer(agentPrefix, sentinelConfPath, port, version))
 }

@@ -56,4 +56,20 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil)(implicit actorS
 
   private def getAgentPrefix(location: Location): Either[String, Prefix] =
     location.metadata.getAgentPrefix.toRight(s"$location metadata does not contain agent prefix")
+
+  override def spawnEventServer(
+      agentPrefix: Prefix,
+      sentinelConfPath: Path,
+      port: Option[Int],
+      version: Option[String]
+  ): Future[SpawnResponse] =
+    agentClient(agentPrefix).flatMapRight(_.spawnEventServer(sentinelConfPath, port, version)).mapToAdt(identity, Failed)
+
+  override def spawnAlarmServer(
+      agentPrefix: Prefix,
+      sentinelConfPath: Path,
+      port: Option[Int],
+      version: Option[String]
+  ): Future[SpawnResponse] =
+    agentClient(agentPrefix).flatMapRight(_.spawnAlarmServer(sentinelConfPath, port, version)).mapToAdt(identity, Failed)
 }

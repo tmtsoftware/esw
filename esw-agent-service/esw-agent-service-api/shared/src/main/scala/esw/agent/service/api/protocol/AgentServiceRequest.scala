@@ -15,5 +15,11 @@ object AgentServiceRequest {
   case class SpawnSequenceComponent(agentPrefix: Prefix, componentName: String, version: Option[String])
       extends AgentServiceRequest
 
+  case class SpawnEventServer(agentPrefix: Prefix, sentinelConfPath: Path, port: Option[Int], version: Option[String])
+      extends AgentServiceRequest
+
+  case class SpawnAlarmServer(agentPrefix: Prefix, sentinelConfPath: Path, port: Option[Int], version: Option[String])
+      extends AgentServiceRequest
+
   case class KillComponent(componentId: ComponentId) extends AgentServiceRequest
 }

@@ -179,5 +179,75 @@ class AgentServiceImplTest extends BaseTestSuite {
       }
     }
 
+    "spawnEventServer Api" must {
+
+      val sentinelConfPath = mock[Path]
+
+      "be able to send SpawnEventServer message to given agent | ESW-361" in {
+
+        val spawnRes  = mock[SpawnResponse]
+        val redisPort = Some(9090)
+
+        when(agentClientMock.spawnEventServer(sentinelConfPath, redisPort, version))
+          .thenReturn(Future.successful(spawnRes))
+
+        agentService.spawnEventServer(agentPrefix, sentinelConfPath, redisPort, version).futureValue
+
+        verify(agentClientMock).spawnEventServer(sentinelConfPath, redisPort, version)
+      }
+
+      "give Failed when agent is not present | ESW-361" in {
+        val locationService = mock[LocationServiceUtil]
+
+        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val expectedErrorMsg = "error"
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+
+        val agentService = new AgentServiceImpl(locationService)
+
+        val redisPort = Some(9090)
+        agentService.spawnEventServer(agentPrefix, sentinelConfPath, redisPort, version).futureValue should ===(
+          Failed(expectedErrorMsg)
+        )
+
+        verify(locationService).find(akkaConnection)
+      }
+    }
+
+    "spawnAlarmServer Api" must {
+
+      val sentinelConfPath = mock[Path]
+
+      "be able to send SpawnAlarmServer message to given agent | ESW-361" in {
+
+        val spawnRes  = mock[SpawnResponse]
+        val redisPort = Some(9090)
+
+        when(agentClientMock.spawnAlarmServer(sentinelConfPath, redisPort, version))
+          .thenReturn(Future.successful(spawnRes))
+
+        agentService.spawnAlarmServer(agentPrefix, sentinelConfPath, redisPort, version).futureValue
+
+        verify(agentClientMock).spawnAlarmServer(sentinelConfPath, redisPort, version)
+      }
+
+      "give Failed when agent is not present | ESW-361" in {
+        val locationService = mock[LocationServiceUtil]
+
+        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val expectedErrorMsg = "error"
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+
+        val agentService = new AgentServiceImpl(locationService)
+
+        val redisPort = Some(9090)
+        agentService.spawnAlarmServer(agentPrefix, sentinelConfPath, redisPort, version).futureValue should ===(
+          Failed(expectedErrorMsg)
+        )
+
+        verify(locationService).find(akkaConnection)
+      }
+    }
+
   }
 }
