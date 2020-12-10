@@ -43,6 +43,20 @@ trait AgentServiceApi {
    */
   def spawnSequenceComponent(agentPrefix: Prefix, componentName: String, version: Option[String] = None): Future[SpawnResponse]
 
+  def spawnEventServer(
+      agentPrefix: Prefix,
+      sentinelConfPath: Path,
+      port: Option[Int] = None,
+      version: Option[String] = None
+  ): Future[SpawnResponse]
+
+  def spawnAlarmServer(
+      agentPrefix: Prefix,
+      sentinelConfPath: Path,
+      port: Option[Int] = None,
+      version: Option[String] = None
+  ): Future[SpawnResponse]
+
   /**
    * kill the component of given componentId which was spawned by an agent
    * It will return [[esw.agent.service.api.models.Killed]] if component is killed successfully
@@ -52,4 +66,5 @@ trait AgentServiceApi {
    * @return [[esw.agent.service.api.models.SpawnResponse]] as a Future value
    */
   def killComponent(componentId: ComponentId): Future[KillResponse]
+
 }

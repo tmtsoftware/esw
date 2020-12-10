@@ -28,6 +28,20 @@ class AgentServiceStubImpl extends AgentServiceApi {
       version: Option[String]
   ): Future[SpawnResponse] = Future.successful(Spawned)
 
+  override def spawnEventServer(
+      agentPrefix: Prefix,
+      sentinelConfPath: Path,
+      port: Option[Int],
+      version: Option[String]
+  ): Future[SpawnResponse] = Future.successful(Spawned)
+
+  override def spawnAlarmServer(
+      agentPrefix: Prefix,
+      sentinelConfPath: Path,
+      port: Option[Int],
+      version: Option[String]
+  ): Future[SpawnResponse] = Future.successful(Spawned)
+
   override def killComponent(componentId: ComponentId): Future[KillResponse] = Future.successful(Killed)
 }
 

@@ -6,7 +6,13 @@ import csw.aas.http.SecurityDirectives
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs._
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.service.api.protocol.AgentServiceRequest.{
+  KillComponent,
+  SpawnAlarmServer,
+  SpawnEventServer,
+  SpawnSequenceComponent,
+  SpawnSequenceManager
+}
 import esw.agent.service.app.auth.EswUserRolePolicy
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
@@ -22,6 +28,12 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
 
       case SpawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version) =>
         sPost(complete(spawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal, version)))
+
+      case SpawnEventServer(agentPrefix, sentinelConfPath, port, version) =>
+        sPost(complete(spawnEventServer(agentPrefix, sentinelConfPath, port, version)))
+
+      case SpawnAlarmServer(agentPrefix, sentinelConfPath, port, version) =>
+        sPost(complete(spawnAlarmServer(agentPrefix, sentinelConfPath, port, version)))
 
       case KillComponent(componentId) =>
         sPost(complete(killComponent(componentId)))
