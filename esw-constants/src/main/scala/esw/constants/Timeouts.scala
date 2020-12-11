@@ -25,6 +25,7 @@ object CommonTimeouts {
 
 object AgentTimeouts {
   val SpawnComponent: FiniteDuration = 20.seconds
+  val SpawnAAS : FiniteDuration = 35.seconds
   val KillComponent: FiniteDuration  = 3.seconds
 }
 
