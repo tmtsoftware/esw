@@ -24,5 +24,13 @@ object AgentServiceRequest {
   case class SpawnAAS(agentPrefix: Prefix, migrationFilePath: Path, port: Option[Int], version: Option[String])
       extends AgentServiceRequest
 
+  case class SpawnPostgres(
+      agentPrefix: Prefix,
+      pgDataConfPath: Path,
+      port: Option[Int],
+      dbUnixSocketDirs: String,
+      version: Option[String]
+  ) extends AgentServiceRequest
+
   case class KillComponent(componentId: ComponentId) extends AgentServiceRequest
 }

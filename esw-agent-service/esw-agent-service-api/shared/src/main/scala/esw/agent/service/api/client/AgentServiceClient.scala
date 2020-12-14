@@ -13,6 +13,7 @@ import esw.agent.service.api.protocol.AgentServiceRequest.{
   SpawnAAS,
   SpawnAlarmServer,
   SpawnEventServer,
+  SpawnPostgres,
   SpawnSequenceComponent,
   SpawnSequenceManager
 }
@@ -63,4 +64,13 @@ class AgentServiceClient(postClient: Transport[AgentServiceRequest]) extends Age
       version: Option[String]
   ): Future[SpawnResponse] =
     postClient.requestResponse[SpawnResponse](SpawnAAS(agentPrefix, migrationFilePath, port, version))
+
+  override def spawnPostgres(
+      agentPrefix: Prefix,
+      pgDataConfPath: Path,
+      port: Option[Int],
+      dbUnixSocketDirs: String,
+      version: Option[String]
+  ): Future[SpawnResponse] =
+    postClient.requestResponse[SpawnResponse](SpawnPostgres(agentPrefix, pgDataConfPath, port, dbUnixSocketDirs, version))
 }

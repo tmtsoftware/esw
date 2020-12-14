@@ -183,7 +183,7 @@ class AgentServiceImplTest extends BaseTestSuite {
 
       val sentinelConfPath = mock[Path]
 
-      "be able to send SpawnEventServer message to given agent | ESW-361" in {
+      "be able to send SpawnEventServer message to given agent | ESW-368" in {
 
         val spawnRes  = mock[SpawnResponse]
         val redisPort = Some(9090)
@@ -196,7 +196,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         verify(agentClientMock).spawnEventServer(sentinelConfPath, redisPort, version)
       }
 
-      "give Failed when agent is not present | ESW-361" in {
+      "give Failed when agent is not present | ESW-368" in {
         val locationService = mock[LocationServiceUtil]
 
         val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
@@ -218,7 +218,7 @@ class AgentServiceImplTest extends BaseTestSuite {
 
       val sentinelConfPath = mock[Path]
 
-      "be able to send SpawnAlarmServer message to given agent | ESW-361" in {
+      "be able to send SpawnAlarmServer message to given agent | ESW-368" in {
 
         val spawnRes  = mock[SpawnResponse]
         val redisPort = Some(9090)
@@ -231,7 +231,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         verify(agentClientMock).spawnAlarmServer(sentinelConfPath, redisPort, version)
       }
 
-      "give Failed when agent is not present | ESW-361" in {
+      "give Failed when agent is not present | ESW-368" in {
         val locationService = mock[LocationServiceUtil]
 
         val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
@@ -253,7 +253,7 @@ class AgentServiceImplTest extends BaseTestSuite {
 
       val migrationFilePath = mock[Path]
 
-      "be able to send SpawnAAS message to given agent | ESW-361" in {
+      "be able to send SpawnAAS message to given agent | ESW-368" in {
 
         val spawnRes = mock[SpawnResponse]
         val aasPort  = Some(9090)
@@ -266,7 +266,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         verify(agentClientMock).spawnAAS(migrationFilePath, aasPort, version)
       }
 
-      "give Failed when agent is not present | ESW-361" in {
+      "give Failed when agent is not present | ESW-368" in {
         val locationService = mock[LocationServiceUtil]
 
         val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
@@ -277,6 +277,42 @@ class AgentServiceImplTest extends BaseTestSuite {
 
         val aasPort = Some(9090)
         agentService.spawnAAS(agentPrefix, migrationFilePath, aasPort, version).futureValue should ===(
+          Failed(expectedErrorMsg)
+        )
+
+        verify(locationService).find(akkaConnection)
+      }
+    }
+
+    "spawnPostgres Api" must {
+
+      val pgDataConfPath   = mock[Path]
+      val dbUnixSocketDirs = "/tmp"
+
+      "be able to send SpawnPostgres message to given agent | ESW-368" in {
+
+        val spawnRes     = mock[SpawnResponse]
+        val postgresPort = Some(9090)
+
+        when(agentClientMock.spawnPostgres(pgDataConfPath, postgresPort, dbUnixSocketDirs, version))
+          .thenReturn(Future.successful(spawnRes))
+
+        agentService.spawnPostgres(agentPrefix, pgDataConfPath, postgresPort, dbUnixSocketDirs, version).futureValue
+
+        verify(agentClientMock).spawnPostgres(pgDataConfPath, postgresPort, dbUnixSocketDirs, version)
+      }
+
+      "give Failed when agent is not present | ESW-368" in {
+        val locationService = mock[LocationServiceUtil]
+
+        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val expectedErrorMsg = "error"
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+
+        val agentService = new AgentServiceImpl(locationService)
+
+        val aasPort = Some(9090)
+        agentService.spawnPostgres(agentPrefix, pgDataConfPath, aasPort, dbUnixSocketDirs, version).futureValue should ===(
           Failed(expectedErrorMsg)
         )
 

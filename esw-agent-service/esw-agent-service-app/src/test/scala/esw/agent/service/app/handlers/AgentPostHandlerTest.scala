@@ -18,6 +18,7 @@ import esw.agent.service.api.protocol.AgentServiceRequest.{
   SpawnAAS,
   SpawnAlarmServer,
   SpawnEventServer,
+  SpawnPostgres,
   SpawnSequenceComponent,
   SpawnSequenceManager
 }
@@ -199,6 +200,38 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
         .thenReturn(Future.successful(failedResponse))
 
       post(spawnEventServerRequest) ~> route ~> check {
+        verify(securityDirective).sPost(EswUserRolePolicy())
+        responseAs[SpawnResponse] should ===(failedResponse)
+      }
+    }
+  }
+
+  "SpawnPostgres" must {
+
+    val pgDataConfPath             = Path.of(randomString(5))
+    val postgresPort               = Some(9090)
+    val dbUnixSocketDirs           = "/tmp"
+    val spawnPostgresServerRequest = SpawnPostgres(agentPrefix, pgDataConfPath, postgresPort, dbUnixSocketDirs, None)
+
+    "be able to start a event  service | ESW-368" in {
+
+      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(agentService.spawnPostgres(agentPrefix, pgDataConfPath, postgresPort, dbUnixSocketDirs, None))
+        .thenReturn(Future.successful(Spawned))
+
+      post(spawnPostgresServerRequest) ~> route ~> check {
+        verify(securityDirective).sPost(EswUserRolePolicy())
+        responseAs[SpawnResponse] should ===(Spawned)
+      }
+    }
+
+    "be able to send failure response when agent is not found | ESW-368" in {
+
+      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(agentService.spawnPostgres(agentPrefix, pgDataConfPath, postgresPort, dbUnixSocketDirs, None))
+        .thenReturn(Future.successful(failedResponse))
+
+      post(spawnPostgresServerRequest) ~> route ~> check {
         verify(securityDirective).sPost(EswUserRolePolicy())
         responseAs[SpawnResponse] should ===(failedResponse)
       }
