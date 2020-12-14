@@ -21,5 +21,8 @@ object AgentServiceRequest {
   case class SpawnAlarmServer(agentPrefix: Prefix, sentinelConfPath: Path, port: Option[Int], version: Option[String])
       extends AgentServiceRequest
 
+  case class SpawnAAS(agentPrefix: Prefix, migrationFilePath: Path, port: Option[Int], version: Option[String])
+      extends AgentServiceRequest
+
   case class KillComponent(componentId: ComponentId) extends AgentServiceRequest
 }

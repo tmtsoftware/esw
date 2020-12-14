@@ -57,6 +57,8 @@ trait AgentServiceApi {
       version: Option[String] = None
   ): Future[SpawnResponse]
 
+  def spawnAAS(agentPrefix: Prefix, migrationFilePath: Path, port: Option[Int], version: Option[String]): Future[SpawnResponse]
+
   /**
    * kill the component of given componentId which was spawned by an agent
    * It will return [[esw.agent.service.api.models.Killed]] if component is killed successfully

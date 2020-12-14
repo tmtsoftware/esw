@@ -13,7 +13,14 @@ import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models._
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.service.api.protocol.AgentServiceRequest.{
+  KillComponent,
+  SpawnAAS,
+  SpawnAlarmServer,
+  SpawnEventServer,
+  SpawnSequenceComponent,
+  SpawnSequenceManager
+}
 import esw.agent.service.app.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
@@ -104,6 +111,98 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
       }
     }
 
+  }
+
+  "SpawnAAS" must {
+    val migrationFilePath = Path.of(randomString(5))
+    val aasPort           = Some(9090)
+    val spawnAASRequest   = SpawnAAS(agentPrefix, migrationFilePath, aasPort, None)
+
+    "be able to start a aas service | ESW-368" in {
+
+      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(agentService.spawnAAS(agentPrefix, migrationFilePath, aasPort, None))
+        .thenReturn(Future.successful(Spawned))
+
+      post(spawnAASRequest) ~> route ~> check {
+        verify(securityDirective).sPost(EswUserRolePolicy())
+        responseAs[SpawnResponse] should ===(Spawned)
+      }
+    }
+
+    "be able to send failure response when agent is not found | ESW-368" in {
+
+      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(agentService.spawnAAS(agentPrefix, migrationFilePath, aasPort, None))
+        .thenReturn(Future.successful(failedResponse))
+
+      post(spawnAASRequest) ~> route ~> check {
+        verify(securityDirective).sPost(EswUserRolePolicy())
+        responseAs[SpawnResponse] should ===(failedResponse)
+      }
+    }
+  }
+
+  "SpawnAlarmServer" must {
+
+    val sentinelConfPath        = Path.of(randomString(5))
+    val redisPort               = Some(9090)
+    val spawnAlarmServerRequest = SpawnAlarmServer(agentPrefix, sentinelConfPath, redisPort, None)
+
+    "be able to start a alarm service | ESW-368" in {
+
+      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(agentService.spawnAlarmServer(agentPrefix, sentinelConfPath, redisPort, None))
+        .thenReturn(Future.successful(Spawned))
+
+      post(spawnAlarmServerRequest) ~> route ~> check {
+        verify(securityDirective).sPost(EswUserRolePolicy())
+        responseAs[SpawnResponse] should ===(Spawned)
+      }
+    }
+
+    "be able to send failure response when agent is not found | ESW-368" in {
+
+      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(agentService.spawnAlarmServer(agentPrefix, sentinelConfPath, redisPort, None))
+        .thenReturn(Future.successful(failedResponse))
+
+      post(spawnAlarmServerRequest) ~> route ~> check {
+        verify(securityDirective).sPost(EswUserRolePolicy())
+        responseAs[SpawnResponse] should ===(failedResponse)
+      }
+    }
+  }
+
+  "SpawnEventServer" must {
+
+    val sentinelConfPath        = Path.of(randomString(5))
+    val redisPort               = Some(9090)
+    val spawnEventServerRequest = SpawnEventServer(agentPrefix, sentinelConfPath, redisPort, None)
+
+    "be able to start a event  service | ESW-368" in {
+
+      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(agentService.spawnEventServer(agentPrefix, sentinelConfPath, redisPort, None))
+        .thenReturn(Future.successful(Spawned))
+
+      post(spawnEventServerRequest) ~> route ~> check {
+        verify(securityDirective).sPost(EswUserRolePolicy())
+        responseAs[SpawnResponse] should ===(Spawned)
+      }
+    }
+
+    "be able to send failure response when agent is not found | ESW-368" in {
+
+      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(agentService.spawnEventServer(agentPrefix, sentinelConfPath, redisPort, None))
+        .thenReturn(Future.successful(failedResponse))
+
+      post(spawnEventServerRequest) ~> route ~> check {
+        verify(securityDirective).sPost(EswUserRolePolicy())
+        responseAs[SpawnResponse] should ===(failedResponse)
+      }
+    }
   }
 
   "KillComponent" must {
