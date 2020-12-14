@@ -42,14 +42,22 @@ class AgentServiceStubImpl extends AgentServiceApi {
       version: Option[String]
   ): Future[SpawnResponse] = Future.successful(Spawned)
 
-  override def killComponent(componentId: ComponentId): Future[KillResponse] = Future.successful(Killed)
-
   override def spawnAAS(
       agentPrefix: Prefix,
       migrationFilePath: Path,
       port: Option[Int],
       version: Option[String]
   ): Future[SpawnResponse] = Future.successful(Spawned)
+
+  override def spawnPostgres(
+      agentPrefix: Prefix,
+      pgDataConfPath: Path,
+      port: Option[Int],
+      dbUnixSocketDirs: String,
+      version: Option[String]
+  ): Future[SpawnResponse] = Future.successful(Spawned)
+
+  override def killComponent(componentId: ComponentId): Future[KillResponse] = Future.successful(Killed)
 }
 
 class AgentServiceStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])

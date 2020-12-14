@@ -80,4 +80,15 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil)(implicit actorS
       version: Option[String]
   ): Future[SpawnResponse] =
     agentClient(agentPrefix).flatMapRight(_.spawnAAS(migrationFilePath, port, version)).mapToAdt(identity, Failed)
+
+  override def spawnPostgres(
+      agentPrefix: Prefix,
+      pgDataConfPath: Path,
+      port: Option[Int],
+      dbUnixSocketDirs: String,
+      version: Option[String]
+  ): Future[SpawnResponse] =
+    agentClient(agentPrefix)
+      .flatMapRight(_.spawnPostgres(pgDataConfPath, port, dbUnixSocketDirs, version))
+      .mapToAdt(identity, Failed)
 }

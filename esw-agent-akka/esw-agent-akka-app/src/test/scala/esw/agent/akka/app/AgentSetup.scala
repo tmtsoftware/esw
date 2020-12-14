@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture
 
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
-import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection, TcpConnection}
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
@@ -15,7 +15,6 @@ import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
-import esw.constants.AgentConstants
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
@@ -66,6 +65,12 @@ class AgentSetup extends BaseTestSuite {
   val postgresConnection: TcpConnection                   = TcpConnection(postgresServiceCompId)
   private val postgresServiceLocation: TcpLocation        = TcpLocation(postgresConnection, new URI("some"), metadata)
   val postgresServiceLocationF: Future[Some[TcpLocation]] = Future.successful(Some(postgresServiceLocation))
+
+  val aasServicePrefix: Prefix                           = Prefix(randomSubsystem, randomString(10))
+  private val aasServiceCompIdServiceCompId: ComponentId = ComponentId(aasServicePrefix, Service)
+  val aasConnection: HttpConnection                      = HttpConnection(aasServiceCompIdServiceCompId)
+  private val aasServiceLocation: HttpLocation           = HttpLocation(aasConnection, new URI("some"), metadata)
+  val aasServiceLocationF: Future[Some[HttpLocation]]    = Future.successful(Some(aasServiceLocation))
 
   override def beforeEach(): Unit = {
     super.beforeEach()

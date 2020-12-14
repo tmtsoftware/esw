@@ -6,9 +6,14 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnPostgres, SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{
+  SpawnAAS,
+  SpawnPostgres,
+  SpawnRedis,
+  SpawnSequenceComponent,
+  SpawnSequenceManager
+}
 import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
-import esw.constants.AgentConstants
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
@@ -213,5 +218,47 @@ class SpawnComponentTest extends AgentSetup {
 
       verify(processExecutor).runCommand(expectedCommand, postgresServicePrefix)
     }
+
+    "reply 'Spawned' and spawn AAS using location agent | ESW-368" in {
+      val agentActorRef = spawnAgentActor(name = "test-actor-aas")
+      val probe         = TestProbe[SpawnResponse]()
+
+      when(locationService.find(argEq(aasConnection))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(aasConnection), any[FiniteDuration])).thenReturn(aasServiceLocationF)
+
+      mockSuccessfulProcess()
+
+      val migrationFilePath      = Path.of("tmt-realm-migration.json")
+      val port                   = Some(8090)
+      val version                = Some("0.1.0-SNAPSHOT")
+      val keycloakDir            = System.getProperty("user.home")
+      val keycloakBinaryUnzipped = "keycloak-11.0.3"
+
+      agentActorRef ! SpawnAAS(probe.ref, aasServicePrefix, migrationFilePath, port, version)
+      probe.expectMessage(Spawned)
+
+      val expectedCommand =
+        List(
+          Coursier.cs,
+          "launch",
+          "--channel",
+          Cs.channel,
+          "location-agent:0.1.0-SNAPSHOT",
+          "--",
+          "--prefix",
+          aasServicePrefix.toString(),
+          "--http",
+          "auth",
+          "--command",
+          s"${keycloakDir}/${keycloakBinaryUnzipped}/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=$migrationFilePath -Djboss.http.port=${port.get}",
+          "--port",
+          port.get.toString,
+          "-a",
+          agentPrefix.toString()
+        )
+
+      verify(processExecutor).runCommand(expectedCommand, aasServicePrefix)
+    }
+
   }
 }

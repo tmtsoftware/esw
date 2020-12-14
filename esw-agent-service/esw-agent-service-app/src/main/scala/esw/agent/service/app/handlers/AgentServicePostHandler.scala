@@ -11,6 +11,7 @@ import esw.agent.service.api.protocol.AgentServiceRequest.{
   SpawnAAS,
   SpawnAlarmServer,
   SpawnEventServer,
+  SpawnPostgres,
   SpawnSequenceComponent,
   SpawnSequenceManager
 }
@@ -38,6 +39,9 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
 
       case SpawnAAS(agentPrefix, migrationFilePath, port, version) =>
         sPost(complete(spawnAAS(agentPrefix, migrationFilePath, port, version)))
+
+      case SpawnPostgres(agentPrefix, pgDataConfPath, port, dbUnixSocketDirs, version) =>
+        sPost(complete(spawnPostgres(agentPrefix, pgDataConfPath, port, dbUnixSocketDirs, version)))
 
       case KillComponent(componentId) =>
         sPost(complete(killComponent(componentId)))
