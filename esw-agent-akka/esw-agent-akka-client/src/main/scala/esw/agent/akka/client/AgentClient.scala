@@ -10,7 +10,13 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnAAS, SpawnPostgres, SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{
+  SpawnAAS,
+  SpawnPostgres,
+  SpawnRedis,
+  SpawnSequenceComponent,
+  SpawnSequenceManager
+}
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
@@ -61,8 +67,8 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
       actorSystem.scheduler
     )
 
-  def spawnAAS(migrationFilePath: Path, port: Option[Int], version: Option[String]): Future[SpawnResponse]  = {
-    (agentRef ? (SpawnAAS(_, migrationFilePath, port , version)))(
+  def spawnAAS(migrationFilePath: Path, port: Option[Int], version: Option[String]): Future[SpawnResponse] = {
+    (agentRef ? (SpawnAAS(_, AgentConstants.aasPrefix, migrationFilePath, port, version)))(
       AgentTimeouts.SpawnAAS,
       actorSystem.scheduler
     )

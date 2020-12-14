@@ -8,4 +8,5 @@ object AgentConstants {
   val eventPrefix: Prefix    = Prefix(CSW, "EventServer")
   val alarmPrefix: Prefix    = Prefix(CSW, "AlarmServer")
   val databasePrefix: Prefix = Prefix(CSW, "DatabaseServer")
+  val aasPrefix: Prefix      = Prefix(CSW, "AASServer")
 }

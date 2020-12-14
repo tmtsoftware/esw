@@ -249,5 +249,40 @@ class AgentServiceImplTest extends BaseTestSuite {
       }
     }
 
+    "spawnAAS Api" must {
+
+      val migrationFilePath = mock[Path]
+
+      "be able to send SpawnAAS message to given agent | ESW-361" in {
+
+        val spawnRes = mock[SpawnResponse]
+        val aasPort  = Some(9090)
+
+        when(agentClientMock.spawnAAS(migrationFilePath, aasPort, version))
+          .thenReturn(Future.successful(spawnRes))
+
+        agentService.spawnAAS(agentPrefix, migrationFilePath, aasPort, version).futureValue
+
+        verify(agentClientMock).spawnAAS(migrationFilePath, aasPort, version)
+      }
+
+      "give Failed when agent is not present | ESW-361" in {
+        val locationService = mock[LocationServiceUtil]
+
+        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val expectedErrorMsg = "error"
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+
+        val agentService = new AgentServiceImpl(locationService)
+
+        val aasPort = Some(9090)
+        agentService.spawnAAS(agentPrefix, migrationFilePath, aasPort, version).futureValue should ===(
+          Failed(expectedErrorMsg)
+        )
+
+        verify(locationService).find(akkaConnection)
+      }
+    }
+
   }
 }

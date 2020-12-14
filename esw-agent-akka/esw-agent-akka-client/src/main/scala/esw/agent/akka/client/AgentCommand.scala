@@ -7,7 +7,7 @@ import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection, TcpConnection}
 import csw.location.api.models._
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{CSW, ESW}
+import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api._
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 
@@ -29,31 +29,39 @@ object AgentCommand {
 
     case class SpawnAAS(
         replyTo: ActorRef[SpawnResponse],
-        migrationFilePath : Path,
-        port : Option[Int],
+        prefix: Prefix,
+        migrationFilePath: Path,
+        port: Option[Int],
         version: Option[String]
     ) extends SpawnCommand {
 
-
       override def commandArgs(extraArgs: List[String]): List[String] = {
-        val keycloakDir = System.getProperty("user.home")
+        val keycloakDir            = System.getProperty("user.home")
         val keycloakBinaryUnzipped = "keycloak-11.0.3"
 
-        def commandWithPort(port : Int) : String = command + s" -Djboss.http.port=${port}"
-        def command = s"${keycloakDir}/${keycloakBinaryUnzipped}/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=$migrationFilePath"
-
+        def commandWithPort(port: Int): String = command + s" -Djboss.http.port=${port}"
+        def command =
+          s"${keycloakDir}/${keycloakBinaryUnzipped}/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=$migrationFilePath"
 
         port match {
           case Some(value) =>
-            List("--prefix", prefix.toString(),"--http", "auth", "--command", commandWithPort(value), "--port", value.toString) ::: extraArgs
+            List(
+              "--prefix",
+              prefix.toString(),
+              "--http",
+              "auth",
+              "--command",
+              commandWithPort(value),
+              "--port",
+              value.toString
+            ) ::: extraArgs
           case None =>
-            List("--prefix", prefix.toString(),"--http", "auth", "--command", command) ::: extraArgs
+            List("--prefix", prefix.toString(), "--http", "auth", "--command", command) ::: extraArgs
         }
       }
 
       override def connection: Connection = HttpConnection(ComponentId(prefix, Service))
 
-      override def prefix: Prefix = Prefix(CSW, "AAS")
     }
 
     case class SpawnRedis(

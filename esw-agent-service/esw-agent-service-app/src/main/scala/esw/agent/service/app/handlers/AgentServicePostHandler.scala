@@ -8,6 +8,7 @@ import esw.agent.service.api.codecs.AgentServiceCodecs._
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.{
   KillComponent,
+  SpawnAAS,
   SpawnAlarmServer,
   SpawnEventServer,
   SpawnSequenceComponent,
@@ -34,6 +35,9 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
 
       case SpawnAlarmServer(agentPrefix, sentinelConfPath, port, version) =>
         sPost(complete(spawnAlarmServer(agentPrefix, sentinelConfPath, port, version)))
+
+      case SpawnAAS(agentPrefix, migrationFilePath, port, version) =>
+        sPost(complete(spawnAAS(agentPrefix, migrationFilePath, port, version)))
 
       case KillComponent(componentId) =>
         sPost(complete(killComponent(componentId)))
