@@ -8,8 +8,8 @@ import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata, TcpLocation}
 import csw.params.commands.CommandResponse.Started
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
@@ -22,6 +22,7 @@ import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.{Killed, Spawned}
 import esw.agent.service.app.{AgentServiceApp, AgentServiceWiring}
 import esw.commons.utils.location.LocationServiceUtil
+import esw.constants.AgentConstants
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.server.{GatewaySetup, GatewayWiring}
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
@@ -282,6 +283,75 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       //verify that component is killed
       intercept[RuntimeException](resolveAkkaLocation(smPrefix, Service))
     }
+
+    "spawn and kill Event Server on a given agent | ESW-368" in {
+
+      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf", ".conf")
+      val eventServerComponentID = ComponentId(AgentConstants.eventPrefix, Service)
+      val eventServerConnection  = TcpConnection(eventServerComponentID)
+
+      val spawnResponse = agentService
+        .spawnEventServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("0.1.0-SNAPSHOT"))
+        .futureValue
+      spawnResponse should ===(Spawned)
+
+      // verify registration in location service
+      val eventServerLocation: TcpLocation = locationService.resolve(eventServerConnection, 5.seconds).futureValue.value
+
+      // verify agent prefix and pid metadata is present in Sequence component akka location
+      eventServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+      eventServerLocation.metadata.getPid.isDefined should ===(true)
+
+      agentService.killComponent(eventServerComponentID).futureValue
+
+    }
+
+    "spawn and kill Alarm Server on a given agent | ESW-368" in {
+
+      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf", ".conf")
+      val alarmServerComponentID = ComponentId(AgentConstants.alarmPrefix, Service)
+      val alarmServerConnection  = TcpConnection(alarmServerComponentID)
+
+      val spawnResponse = agentService
+        .spawnAlarmServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("0.1.0-SNAPSHOT"))
+        .futureValue
+      spawnResponse should ===(Spawned)
+
+      // verify registration in location service
+      val alarmServerLocation: TcpLocation = locationService.resolve(alarmServerConnection, 5.seconds).futureValue.value
+
+      // verify agent prefix and pid metadata is present in Sequence component akka location
+      alarmServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+      alarmServerLocation.metadata.getPid.isDefined should ===(true)
+
+      agentService.killComponent(alarmServerComponentID).futureValue
+
+    }
+
+//    "spawn and kill Database Server on a given agent | ESW-368" in {
+//
+//      val pgDataConfPath = ResourceReader.copyToTmp("pg_hba.conf", ".conf")
+//      val dbUnixSocketDirs = "/tmp"
+//      val postgresServerComponentID = ComponentId(AgentConstants.databasePrefix, Service)
+//      val postgresServerConnection = TcpConnection(postgresServerComponentID)
+//
+//      val spawnResponse = agentService
+//        .spawnPostgres(agentPrefix, Path.of(pgDataConfPath.getAbsolutePath), Some(9090), dbUnixSocketDirs, Some("0.1.0-SNAPSHOT"))
+//        .futureValue
+//      spawnResponse should ===(Spawned)
+//
+//
+//      // verify registration in location service
+//      val eventServerLocation : TcpLocation = locationService.resolve(postgresServerConnection, 5.seconds).futureValue.value
+//
+//      // verify agent prefix and pid metadata is present in Sequence component akka location
+//      eventServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+//      eventServerLocation.metadata.getPid.isDefined should ===(true)
+//
+//      agentService.killComponent(postgresServerComponentID).futureValue
+//
+//    }
+
   }
 
   "sequence manager" must {
