@@ -1,4 +1,4 @@
-package esw.agent.service
+package esw.integration
 
 import java.io.{File, PrintWriter}
 
@@ -9,7 +9,7 @@ object ResourceReader {
   def copyToTmp(fileName: String, suffix: String = ".tmp", transform: String => String = identity): File = {
     val source = Source.fromResource(fileName)
     try {
-      val tempFile = File.createTempFile(fileName, suffix)
+      val tempFile = File.createTempFile(fileName.split("\\.")(0), suffix)
       val writer   = new PrintWriter(tempFile)
       try {
         tempFile.deleteOnExit()
