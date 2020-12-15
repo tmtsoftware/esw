@@ -67,8 +67,8 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
       actorSystem.scheduler
     )
 
-  def spawnAAS(migrationFilePath: Path, port: Option[Int], version: Option[String]): Future[SpawnResponse] = {
-    (agentRef ? (SpawnAAS(_, AgentConstants.aasPrefix, migrationFilePath, port, version)))(
+  def spawnAAS(keycloakDir: Path, migrationFilePath: Path, port: Option[Int], version: Option[String]): Future[SpawnResponse] = {
+    (agentRef ? (SpawnAAS(_, AgentConstants.aasPrefix, keycloakDir, migrationFilePath, port, version)))(
       AgentTimeouts.SpawnAAS,
       actorSystem.scheduler
     )

@@ -228,13 +228,12 @@ class SpawnComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      val migrationFilePath      = Path.of("tmt-realm-migration.json")
-      val port                   = Some(8090)
-      val version                = Some("0.1.0-SNAPSHOT")
-      val keycloakDir            = System.getProperty("user.home")
-      val keycloakBinaryUnzipped = "keycloak-11.0.3"
+      val migrationFilePath = Path.of("tmt-realm-migration.json")
+      val port              = Some(8090)
+      val version           = Some("0.1.0-SNAPSHOT")
+      val keycloakDir       = Path.of("keycloak-11.0.3")
 
-      agentActorRef ! SpawnAAS(probe.ref, aasServicePrefix, migrationFilePath, port, version)
+      agentActorRef ! SpawnAAS(probe.ref, aasServicePrefix, keycloakDir, migrationFilePath, port, version)
       probe.expectMessage(Spawned)
 
       val expectedCommand =
@@ -250,7 +249,7 @@ class SpawnComponentTest extends AgentSetup {
           "--http",
           "auth",
           "--command",
-          s"${keycloakDir}/${keycloakBinaryUnzipped}/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=$migrationFilePath -Djboss.http.port=${port.get}",
+          s"$keycloakDir/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=$migrationFilePath -Djboss.http.port=${port.get}",
           "--port",
           port.get.toString,
           "-a",

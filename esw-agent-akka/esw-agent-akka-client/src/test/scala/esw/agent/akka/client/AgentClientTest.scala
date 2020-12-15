@@ -160,14 +160,15 @@ class AgentClientTest extends ActorTestSuit {
     "send spawnAAS message to agent with the AAS server prefix and return a future with agent response | ESW-368" in {
       val migrationFilePath = Path.of("tmt-realm-file.json")
       val spawnResponse     = mock[SpawnResponse]
+      val keycloakDir       = Path.of("~/keycloak-11.0.3")
       val prefix            = AgentConstants.aasPrefix
       val port              = Some(8090)
       val version           = Some("0.1.0-SNAPSHOT")
 
       withBehavior {
-        case SpawnAAS(replyTo, `prefix`, migrationFilePath, `port`, `version`) => replyTo ! spawnResponse
+        case SpawnAAS(replyTo, `prefix`, `keycloakDir`, `migrationFilePath`, `port`, `version`) => replyTo ! spawnResponse
       } check { ac =>
-        ac.spawnAAS(migrationFilePath, port, version).futureValue should ===(spawnResponse)
+        ac.spawnAAS(keycloakDir, migrationFilePath, port, version).futureValue should ===(spawnResponse)
       }
     }
   }

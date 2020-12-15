@@ -59,11 +59,12 @@ class AgentServiceClient(postClient: Transport[AgentServiceRequest]) extends Age
 
   override def spawnAAS(
       agentPrefix: Prefix,
+      keycloakDir: Path,
       migrationFilePath: Path,
       port: Option[Int],
       version: Option[String]
   ): Future[SpawnResponse] =
-    postClient.requestResponse[SpawnResponse](SpawnAAS(agentPrefix, migrationFilePath, port, version))
+    postClient.requestResponse[SpawnResponse](SpawnAAS(agentPrefix, keycloakDir, migrationFilePath, port, version))
 
   override def spawnPostgres(
       agentPrefix: Prefix,

@@ -75,11 +75,12 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil)(implicit actorS
 
   override def spawnAAS(
       agentPrefix: Prefix,
+      keycloakDir: Path,
       migrationFilePath: Path,
       port: Option[Int],
       version: Option[String]
   ): Future[SpawnResponse] =
-    agentClient(agentPrefix).flatMapRight(_.spawnAAS(migrationFilePath, port, version)).mapToAdt(identity, Failed)
+    agentClient(agentPrefix).flatMapRight(_.spawnAAS(keycloakDir, migrationFilePath, port, version)).mapToAdt(identity, Failed)
 
   override def spawnPostgres(
       agentPrefix: Prefix,

@@ -30,18 +30,16 @@ object AgentCommand {
     case class SpawnAAS(
         replyTo: ActorRef[SpawnResponse],
         prefix: Prefix,
+        keycloakDir: Path,
         migrationFilePath: Path,
         port: Option[Int],
         version: Option[String]
     ) extends SpawnCommand {
 
       override def commandArgs(extraArgs: List[String]): List[String] = {
-        val keycloakDir            = System.getProperty("user.home")
-        val keycloakBinaryUnzipped = "keycloak-11.0.3"
-
         def commandWithPort(port: Int): String = command + s" -Djboss.http.port=${port}"
         def command =
-          s"${keycloakDir}/${keycloakBinaryUnzipped}/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=$migrationFilePath"
+          s"$keycloakDir/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=$migrationFilePath"
 
         port match {
           case Some(value) =>

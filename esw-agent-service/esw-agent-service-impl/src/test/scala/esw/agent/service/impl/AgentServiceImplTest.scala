@@ -251,6 +251,7 @@ class AgentServiceImplTest extends BaseTestSuite {
 
     "spawnAAS Api" must {
 
+      val keycloakDirPath   = mock[Path]
       val migrationFilePath = mock[Path]
 
       "be able to send SpawnAAS message to given agent | ESW-368" in {
@@ -258,12 +259,12 @@ class AgentServiceImplTest extends BaseTestSuite {
         val spawnRes = mock[SpawnResponse]
         val aasPort  = Some(9090)
 
-        when(agentClientMock.spawnAAS(migrationFilePath, aasPort, version))
+        when(agentClientMock.spawnAAS(keycloakDirPath, migrationFilePath, aasPort, version))
           .thenReturn(Future.successful(spawnRes))
 
-        agentService.spawnAAS(agentPrefix, migrationFilePath, aasPort, version).futureValue
+        agentService.spawnAAS(agentPrefix, keycloakDirPath, migrationFilePath, aasPort, version).futureValue
 
-        verify(agentClientMock).spawnAAS(migrationFilePath, aasPort, version)
+        verify(agentClientMock).spawnAAS(keycloakDirPath, migrationFilePath, aasPort, version)
       }
 
       "give Failed when agent is not present | ESW-368" in {
@@ -276,7 +277,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val agentService = new AgentServiceImpl(locationService)
 
         val aasPort = Some(9090)
-        agentService.spawnAAS(agentPrefix, migrationFilePath, aasPort, version).futureValue should ===(
+        agentService.spawnAAS(agentPrefix, keycloakDirPath, migrationFilePath, aasPort, version).futureValue should ===(
           Failed(expectedErrorMsg)
         )
 

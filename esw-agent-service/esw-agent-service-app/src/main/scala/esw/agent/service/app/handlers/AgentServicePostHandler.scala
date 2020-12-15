@@ -37,8 +37,8 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
       case SpawnAlarmServer(agentPrefix, sentinelConfPath, port, version) =>
         sPost(complete(spawnAlarmServer(agentPrefix, sentinelConfPath, port, version)))
 
-      case SpawnAAS(agentPrefix, migrationFilePath, port, version) =>
-        sPost(complete(spawnAAS(agentPrefix, migrationFilePath, port, version)))
+      case SpawnAAS(agentPrefix, keycloakDir, migrationFilePath, port, version) =>
+        sPost(complete(spawnAAS(agentPrefix, keycloakDir, migrationFilePath, port, version)))
 
       case SpawnPostgres(agentPrefix, pgDataConfPath, port, dbUnixSocketDirs, version) =>
         sPost(complete(spawnPostgres(agentPrefix, pgDataConfPath, port, dbUnixSocketDirs, version)))

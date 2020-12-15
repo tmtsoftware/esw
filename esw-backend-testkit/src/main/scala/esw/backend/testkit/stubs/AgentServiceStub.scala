@@ -44,6 +44,7 @@ class AgentServiceStubImpl extends AgentServiceApi {
 
   override def spawnAAS(
       agentPrefix: Prefix,
+      keycloakDir:Path,
       migrationFilePath: Path,
       port: Option[Int],
       version: Option[String]
