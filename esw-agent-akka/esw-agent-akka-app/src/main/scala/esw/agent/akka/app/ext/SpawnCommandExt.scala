@@ -19,14 +19,16 @@ object SpawnCommandExt {
     def executableCommandStr(coursierChannel: String, agentPrefix: Prefix): List[String] = {
       lazy val args = command.commandArgs(List("-a", agentPrefix.toString()))
 
-      command match {
+      val a = command match {
         case SpawnSequenceComponent(_, _, _, version) =>
           Coursier.ocsApp(version).launch(coursierChannel, args)
         case SpawnSequenceManager(_, _, _, version) => Coursier.smApp(version).launch(coursierChannel, args)
         case SpawnRedis(_, _, _, _, version)        => Coursier.locationAgentApp(version).launch(coursierChannel, args)
         case SpawnPostgres(_, _, _, _, _, version)  => Coursier.locationAgentApp(version).launch(coursierChannel, args)
-        case SpawnAAS(_, _, _, _, version)          => Coursier.locationAgentApp(version).launch(coursierChannel, args)
+        case SpawnAAS(_, _, _, _, _, version)       => Coursier.locationAgentApp(version).launch(coursierChannel, args)
       }
+      println(a.mkString(" "))
+      a
     }
   }
 
