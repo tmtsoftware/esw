@@ -19,5 +19,15 @@
       "csw-networks.hostname.automatic": "on",
       "csw-logging.appender-config.file.baseLogPath": "/tmp"
     }
+  },
+  "location-agent": {
+    "repositories": ["jitpack", "central"],
+    "dependencies": [
+      "com.github.tmtsoftware.csw:csw-location-agent_2.13:latest.release"
+    ],
+    "properties": {
+      "csw-networks.hostname.automatic": "on",
+      "csw-logging.appender-config.file.baseLogPath": "/tmp"
+    }
   }
 }
