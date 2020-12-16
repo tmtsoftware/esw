@@ -249,42 +249,6 @@ class AgentServiceImplTest extends BaseTestSuite {
       }
     }
 
-    "spawnAAS Api" must {
-
-      val keycloakDirPath   = mock[Path]
-      val migrationFilePath = mock[Path]
-
-      "be able to send SpawnAAS message to given agent | ESW-368" in {
-
-        val spawnRes = mock[SpawnResponse]
-        val aasPort  = Some(9090)
-
-        when(agentClientMock.spawnAAS(keycloakDirPath, migrationFilePath, aasPort, version))
-          .thenReturn(Future.successful(spawnRes))
-
-        agentService.spawnAAS(agentPrefix, keycloakDirPath, migrationFilePath, aasPort, version).futureValue
-
-        verify(agentClientMock).spawnAAS(keycloakDirPath, migrationFilePath, aasPort, version)
-      }
-
-      "give Failed when agent is not present | ESW-368" in {
-        val locationService = mock[LocationServiceUtil]
-
-        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
-        val expectedErrorMsg = "error"
-        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
-
-        val agentService = new AgentServiceImpl(locationService)
-
-        val aasPort = Some(9090)
-        agentService.spawnAAS(agentPrefix, keycloakDirPath, migrationFilePath, aasPort, version).futureValue should ===(
-          Failed(expectedErrorMsg)
-        )
-
-        verify(locationService).find(akkaConnection)
-      }
-    }
-
     "spawnPostgres Api" must {
 
       val pgDataConfPath   = mock[Path]

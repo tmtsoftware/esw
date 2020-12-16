@@ -57,14 +57,6 @@ trait AgentServiceApi {
       version: Option[String] = None
   ): Future[SpawnResponse]
 
-  def spawnAAS(
-      agentPrefix: Prefix,
-      keycloakDir: Path,
-      migrationFilePath: Path,
-      port: Option[Int],
-      version: Option[String]
-  ): Future[SpawnResponse]
-
   def spawnPostgres(
       agentPrefix: Prefix,
       pgDataConfPath: Path,

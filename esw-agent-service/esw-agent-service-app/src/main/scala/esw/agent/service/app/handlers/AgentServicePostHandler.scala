@@ -6,15 +6,7 @@ import csw.aas.http.SecurityDirectives
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs._
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest.{
-  KillComponent,
-  SpawnAAS,
-  SpawnAlarmServer,
-  SpawnEventServer,
-  SpawnPostgres,
-  SpawnSequenceComponent,
-  SpawnSequenceManager
-}
+import esw.agent.service.api.protocol.AgentServiceRequest._
 import esw.agent.service.app.auth.EswUserRolePolicy
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
@@ -36,9 +28,6 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
 
       case SpawnAlarmServer(agentPrefix, sentinelConfPath, port, version) =>
         sPost(complete(spawnAlarmServer(agentPrefix, sentinelConfPath, port, version)))
-
-      case SpawnAAS(agentPrefix, keycloakDir, migrationFilePath, port, version) =>
-        sPost(complete(spawnAAS(agentPrefix, keycloakDir, migrationFilePath, port, version)))
 
       case SpawnPostgres(agentPrefix, pgDataConfPath, port, dbUnixSocketDirs, version) =>
         sPost(complete(spawnPostgres(agentPrefix, pgDataConfPath, port, dbUnixSocketDirs, version)))

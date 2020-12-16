@@ -10,7 +10,6 @@ import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.{
   KillComponent,
-  SpawnAAS,
   SpawnAlarmServer,
   SpawnEventServer,
   SpawnPostgres,
@@ -56,15 +55,6 @@ class AgentServiceClient(postClient: Transport[AgentServiceRequest]) extends Age
       version: Option[String]
   ): Future[SpawnResponse] =
     postClient.requestResponse[SpawnResponse](SpawnAlarmServer(agentPrefix, sentinelConfPath, port, version))
-
-  override def spawnAAS(
-      agentPrefix: Prefix,
-      keycloakDir: Path,
-      migrationFilePath: Path,
-      port: Option[Int],
-      version: Option[String]
-  ): Future[SpawnResponse] =
-    postClient.requestResponse[SpawnResponse](SpawnAAS(agentPrefix, keycloakDir, migrationFilePath, port, version))
 
   override def spawnPostgres(
       agentPrefix: Prefix,

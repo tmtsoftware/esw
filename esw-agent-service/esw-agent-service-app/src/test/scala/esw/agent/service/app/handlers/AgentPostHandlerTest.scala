@@ -106,37 +106,6 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
 
   }
 
-  "SpawnAAS" must {
-    val keycloakDir       = Path.of("~/keycloak-11.0.3")
-    val migrationFilePath = Path.of(randomString(5))
-    val aasPort           = Some(9090)
-    val spawnAASRequest   = SpawnAAS(agentPrefix, keycloakDir, migrationFilePath, aasPort, None)
-
-    "be able to start a aas service | ESW-368" in {
-
-      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
-      when(agentService.spawnAAS(agentPrefix, keycloakDir, migrationFilePath, aasPort, None))
-        .thenReturn(Future.successful(Spawned))
-
-      post(spawnAASRequest) ~> route ~> check {
-        verify(securityDirective).sPost(EswUserRolePolicy())
-        responseAs[SpawnResponse] should ===(Spawned)
-      }
-    }
-
-    "be able to send failure response when agent is not found | ESW-368" in {
-
-      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
-      when(agentService.spawnAAS(agentPrefix, keycloakDir, migrationFilePath, aasPort, None))
-        .thenReturn(Future.successful(failedResponse))
-
-      post(spawnAASRequest) ~> route ~> check {
-        verify(securityDirective).sPost(EswUserRolePolicy())
-        responseAs[SpawnResponse] should ===(failedResponse)
-      }
-    }
-  }
-
   "SpawnAlarmServer" must {
 
     val sentinelConfPath        = Path.of(randomString(5))
