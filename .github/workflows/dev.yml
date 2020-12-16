@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PGDATA: "/usr/local/var/postgres"
 
     steps:
       - uses: actions/checkout@v2
@@ -25,6 +27,11 @@ jobs:
 
       - name: Install Redis
         run: sudo apt-get install redis-server
+
+      - name: Install Postgres
+          run: |
+            sudo apt-get install postgresql
+            postgres --help
 
       - name: Install Kotlin
         run: |
