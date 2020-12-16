@@ -10,13 +10,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{
-  SpawnAAS,
-  SpawnPostgres,
-  SpawnRedis,
-  SpawnSequenceComponent,
-  SpawnSequenceManager
-}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnPostgres, SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
@@ -66,13 +60,6 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
-
-  def spawnAAS(keycloakDir: Path, migrationFilePath: Path, port: Option[Int], version: Option[String]): Future[SpawnResponse] = {
-    (agentRef ? (SpawnAAS(_, AgentConstants.aasPrefix, keycloakDir, migrationFilePath, port, version)))(
-      AgentTimeouts.SpawnAAS,
-      actorSystem.scheduler
-    )
-  }
 
   def killComponent(location: Location): Future[KillResponse] =
     (agentRef ? (KillComponent(_, location)))(AgentTimeouts.KillComponent, actorSystem.scheduler)

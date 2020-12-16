@@ -11,13 +11,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{
-  SpawnAAS,
-  SpawnPostgres,
-  SpawnRedis,
-  SpawnSequenceComponent,
-  SpawnSequenceManager
-}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnPostgres, SpawnRedis, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
@@ -152,23 +146,6 @@ class AgentClientTest extends ActorTestSuit {
         case SpawnRedis(replyTo, `prefix`, `configPath`, `port`, `version`) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnAlarmServer(configPath, port, version).futureValue should ===(spawnResponse)
-      }
-    }
-  }
-
-  "spawnAAS" should {
-    "send spawnAAS message to agent with the AAS server prefix and return a future with agent response | ESW-368" in {
-      val migrationFilePath = Path.of("tmt-realm-file.json")
-      val spawnResponse     = mock[SpawnResponse]
-      val keycloakDir       = Path.of("~/keycloak-11.0.3")
-      val prefix            = AgentConstants.aasPrefix
-      val port              = Some(8090)
-      val version           = Some("0.1.0-SNAPSHOT")
-
-      withBehavior {
-        case SpawnAAS(replyTo, `prefix`, `keycloakDir`, `migrationFilePath`, `port`, `version`) => replyTo ! spawnResponse
-      } check { ac =>
-        ac.spawnAAS(keycloakDir, migrationFilePath, port, version).futureValue should ===(spawnResponse)
       }
     }
   }

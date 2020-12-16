@@ -41,6 +41,7 @@ import msocket.http.HttpError
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
+import scala.util.control.NonFatal
 
 class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with AgentSetup with SequenceManagerSetup {
   var gatewayServerWiring: GatewayWiring               = _
@@ -286,7 +287,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
     "spawn and kill Event Server on a given agent | ESW-368" in {
 
-      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf", ".conf")
+      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf")
       val eventServerComponentID = ComponentId(AgentConstants.eventPrefix, Service)
       val eventServerConnection  = TcpConnection(eventServerComponentID)
 
@@ -308,7 +309,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
     "spawn and kill Alarm Server on a given agent | ESW-368" in {
 
-      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf", ".conf")
+      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf")
       val alarmServerComponentID = ComponentId(AgentConstants.alarmPrefix, Service)
       val alarmServerConnection  = TcpConnection(alarmServerComponentID)
 
@@ -328,30 +329,52 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
     }
 
-//    "spawn and kill Database Server on a given agent | ESW-368" in {
-//
-//      val pgDataConfPath = ResourceReader.copyToTmp("pg_hba.conf", ".conf")
-//      val dbUnixSocketDirs = "/tmp"
-//      val postgresServerComponentID = ComponentId(AgentConstants.databasePrefix, Service)
-//      val postgresServerConnection = TcpConnection(postgresServerComponentID)
-//
-//      val spawnResponse = agentService
-//        .spawnPostgres(agentPrefix, Path.of(pgDataConfPath.getAbsolutePath), Some(9090), dbUnixSocketDirs, Some("0.1.0-SNAPSHOT"))
-//        .futureValue
-//      spawnResponse should ===(Spawned)
-//
-//
-//      // verify registration in location service
-//      val eventServerLocation : TcpLocation = locationService.resolve(postgresServerConnection, 5.seconds).futureValue.value
-//
-//      // verify agent prefix and pid metadata is present in Sequence component akka location
-//      eventServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
-//      eventServerLocation.metadata.getPid.isDefined should ===(true)
-//
-//      agentService.killComponent(postgresServerComponentID).futureValue
-//
-//    }
+    "spawn and kill Database Server on a given agent | ESW-368" in {
 
+//      def setEnv(key: String, value: String) = {
+//        val field = System.getenv().getClass.getDeclaredField("m")
+//        field.setAccessible(true)
+//        val map = field.get(System.getenv()).asInstanceOf[java.util.Map[java.lang.String, java.lang.String]]
+//        map.put(key, value)
+//      }
+//      setEnv("PGDATA", "/usr/local/var/postgres")
+
+      val pgDataConfPath            = ResourceReader.copyToTmp("pg_hba.conf")
+      val dbUnixSocketDirs          = "/tmp"
+      val postgresServerComponentID = ComponentId(AgentConstants.databasePrefix, Service)
+      val postgresServerConnection  = TcpConnection(postgresServerComponentID)
+
+      try {
+        val spawnResponse = agentService
+          .spawnPostgres(
+            agentPrefix,
+            Path.of(pgDataConfPath.getAbsolutePath),
+            Some(8085),
+            dbUnixSocketDirs,
+            Some("0.1.0-SNAPSHOT")
+          )
+          .futureValue
+        spawnResponse should ===(Spawned)
+
+        // verify registration in location service
+        val eventServerLocation: TcpLocation = locationService.resolve(postgresServerConnection, 5.seconds).futureValue.value
+
+        // verify agent prefix and pid metadata is present in Sequence component akka location
+        eventServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+        eventServerLocation.metadata.getPid.isDefined should ===(true)
+
+        agentService.killComponent(postgresServerComponentID).futureValue
+
+      }
+      catch {
+        case NonFatal(e) =>
+          println(
+            "Make sure 'PGDATA' env variable is set where postgres is installed e.g. for mac: /usr/local/var/postgres"
+          )
+          throw e
+      }
+
+    }
   }
 
   "sequence manager" must {

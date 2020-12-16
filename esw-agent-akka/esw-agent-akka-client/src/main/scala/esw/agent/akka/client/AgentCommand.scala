@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection, TcpConnection}
+import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
@@ -26,41 +26,6 @@ object AgentCommand {
   }
 
   object SpawnCommand {
-
-    case class SpawnAAS(
-        replyTo: ActorRef[SpawnResponse],
-        prefix: Prefix,
-        keycloakDir: Path,
-        migrationFilePath: Path,
-        port: Option[Int],
-        version: Option[String]
-    ) extends SpawnCommand {
-
-      override def commandArgs(extraArgs: List[String]): List[String] = {
-        def commandWithPort(port: Int): String = command + s" -Djboss.http.port=${port}"
-        def command =
-          s"$keycloakDir/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=$migrationFilePath"
-
-        port match {
-          case Some(value) =>
-            List(
-              "--prefix",
-              prefix.toString(),
-              "--http",
-              "auth",
-              "--command",
-              commandWithPort(value),
-              "--port",
-              value.toString
-            ) ::: extraArgs
-          case None =>
-            List("--prefix", prefix.toString(), "--http", "auth", "--command", command) ::: extraArgs
-        }
-      }
-
-      override def connection: Connection = HttpConnection(ComponentId(prefix, Service))
-
-    }
 
     case class SpawnRedis(
         replyTo: ActorRef[SpawnResponse],

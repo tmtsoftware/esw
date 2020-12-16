@@ -42,14 +42,6 @@ class AgentServiceStubImpl extends AgentServiceApi {
       version: Option[String]
   ): Future[SpawnResponse] = Future.successful(Spawned)
 
-  override def spawnAAS(
-      agentPrefix: Prefix,
-      keycloakDir: Path,
-      migrationFilePath: Path,
-      port: Option[Int],
-      version: Option[String]
-  ): Future[SpawnResponse] = Future.successful(Spawned)
-
   override def spawnPostgres(
       agentPrefix: Prefix,
       pgDataConfPath: Path,
