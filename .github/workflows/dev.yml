@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-18.04
+    env:
+      PGDATA: "/usr/local/var/postgres"
 
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +26,19 @@ jobs:
       - uses: coursier/cache-action@v5
 
       - name: Install Redis
-        run: sudo apt-get install redis-server
+        run: |
+          wget http://download.redis.io/redis-stable.tar.gz
+          tar xvzf redis-stable.tar.gz
+          cd redis-stable
+          make
+          sudo cp src/redis-sentinel /usr/local/bin/
+
+      - name: Install Postgres
+        run: |
+          sudo apt-get install postgresql-12
+          sudo mv /usr/lib/postgresql/12/bin/postgres /usr/local/bin
+          sudo mkdir /usr/local/var
+          sudo mv /var/lib/postgresql/12/main/ /usr/local/var/postgres
 
       - name: Install Kotlin
         run: |

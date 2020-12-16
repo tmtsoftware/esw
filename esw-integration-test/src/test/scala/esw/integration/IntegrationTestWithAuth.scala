@@ -331,14 +331,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
     "spawn and kill Database Server on a given agent | ESW-368" in {
 
-//      def setEnv(key: String, value: String) = {
-//        val field = System.getenv().getClass.getDeclaredField("m")
-//        field.setAccessible(true)
-//        val map = field.get(System.getenv()).asInstanceOf[java.util.Map[java.lang.String, java.lang.String]]
-//        map.put(key, value)
-//      }
-//      setEnv("PGDATA", "/usr/local/var/postgres")
-
       val pgDataConfPath            = ResourceReader.copyToTmp("pg_hba.conf")
       val dbUnixSocketDirs          = "/tmp"
       val postgresServerComponentID = ComponentId(AgentConstants.databasePrefix, Service)
