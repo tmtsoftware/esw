@@ -26,7 +26,12 @@ jobs:
       - uses: coursier/cache-action@v5
 
       - name: Install Redis
-        run: sudo apt-get install redis-server
+        run: |
+          wget http://download.redis.io/redis-stable.tar.gz
+          tar xvzf redis-stable.tar.gz
+          cd redis-stable
+          make
+          sudo cp src/redis-sentinel /usr/local/bin/
 
       - name: Install Postgres
         run: |
@@ -52,5 +57,39 @@ jobs:
       - name: Tests
         run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
+      - name: Coverage Report
+        run: |
+          sbt -DenableCoverage=true coverageReport
+          sbtn coverageAggregate
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v1
+        with:
+          name: Coverage Report
+          path: target/scala-2.13/scoverage-report
+
       - name: Multi-Jvm Tests
         run: sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test
+
+      - name: Generate RTM
+        if: always()
+        continue-on-error: true
+        run: |
+          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+
+      - name: Upload RTM
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v1
+        with:
+          name: RTM
+          path: target/RTM
+
+      - name: Notify slack
+        if: always()
+        continue-on-error: true
+        uses: kpritam/slack-job-status-action@v1
+        with:
+          job-status: ${{ job.status }}
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          channel: ci-dev
