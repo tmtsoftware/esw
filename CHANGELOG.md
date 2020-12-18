@@ -9,11 +9,22 @@ Here is the repository for ESW: [esw](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
+## [ESW v0.2.0] - 2020-12-18
+
+This is the `Second minor` release of the TMT Executive Software for project stakeholders.
+See [here](https://tmtsoftware.github.io/esw/0.2.0/) for a detailed documentation of this version of the ESW software.
+
 ## [ESW v0.2.0-RC1] - 2020-11-10
+
+This is the first release candidate of second minor release of the TMT Executive Software for project stakeholders.
+See [here](https://tmtsoftware.github.io/esw/0.2.0-RC1/) for a detailed documentation of this version of the ESW software.
 
 - Changed Agent Service Kill API to take `ComponentId` instead of `Connection` of the Component.
 
 ## [ESW v0.2.0-M1] - 2020-09-24
+
+This is the first milestone of second minor release of the TMT Executive Software for project stakeholders.
+See [here](https://tmtsoftware.github.io/esw/0.2.0-M1/) for a detailed documentation of this version of the ESW software.
 
 ## [ESW v0.1.0] - 2020-03-19
 
@@ -22,15 +33,15 @@ See [here](https://tmtsoftware.github.io/esw/0.1.0/) for a detailed documentatio
 
 ## [ESW v0.1.0-RC3] - 2020-03-03
 
-This is the third release of the TMT Executive Software for project stakeholders.
+This is the third release candidate of first minor release of the TMT Executive Software for project stakeholders.
 See [here](https://tmtsoftware.github.io/esw/0.1.0-RC3/) for a detailed documentation of this version of the ESW software.
 
 ## [ESW v0.1.0-RC2] - 2020-02-26
 
-This is the second release of the TMT Executive Software for project stakeholders.
+This is the second release candidate of first minor release of the TMT Executive Software for project stakeholders.
 See [here](https://tmtsoftware.github.io/esw/0.1.0-RC2/) for a detailed documentation of this version of the ESW software.
 
 ## [ESW v0.1.0-RC1] - 2020-02-06
 
-This is the first release of the TMT Executive Software for project stakeholders.
+This is the first release candidate of first minor release of the TMT Executive Software for project stakeholders.
 See [here](https://tmtsoftware.github.io/esw/0.1.0-RC1/) for a detailed documentation of this version of the ESW software.
