@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PGDATA: "/usr/local/var/postgres"
 
     steps:
       - uses: actions/checkout@v2
@@ -28,10 +30,10 @@ jobs:
 
       - name: Install Postgres
         run: |
-          sudo apt-get install postgresql
-          export PATH="$PATH:/usr/lib/postgresql/13/bin/"
-          export PGDATA=/var/lib/postgresql/13/main/
-          postgres --help
+          sudo apt-get install postgresql-12
+          sudo mv /usr/lib/postgresql/12/bin/postgres /usr/local/bin
+          sudo mkdir /usr/local/var
+          sudo mv /var/lib/postgresql/12/main/ /usr/local/var/postgres
 
       - name: Install Kotlin
         run: |
@@ -47,42 +49,5 @@ jobs:
           sbtn makeSite
           sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
-      - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
-
-      - name: Coverage Report
-        run: |
-          sbt -DenableCoverage=true coverageReport
-          sbtn coverageAggregate
-
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v1
-        with:
-          name: Coverage Report
-          path: target/scala-2.13/scoverage-report
-
       - name: Multi-Jvm Tests
         run: sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test
-
-      - name: Generate RTM
-        if: always()
-        continue-on-error: true
-        run: |
-          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
-
-      - name: Upload RTM
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v1
-        with:
-          name: RTM
-          path: target/RTM
-
-      - name: Notify slack
-        if: always()
-        continue-on-error: true
-        uses: kpritam/slack-job-status-action@v1
-        with:
-          job-status: ${{ job.status }}
-          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          channel: ci-dev

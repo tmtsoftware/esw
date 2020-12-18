@@ -285,49 +285,49 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       intercept[RuntimeException](resolveAkkaLocation(smPrefix, Service))
     }
 
-    "spawn and kill Event Server on a given agent | ESW-368" in {
+//    "spawn and kill Event Server on a given agent | ESW-368" in {
+//
+//      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf")
+//      val eventServerComponentID = ComponentId(AgentConstants.eventPrefix, Service)
+//      val eventServerConnection  = TcpConnection(eventServerComponentID)
+//
+//      val spawnResponse = agentService
+//        .spawnEventServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("0.1.0-SNAPSHOT"))
+//        .futureValue
+//      spawnResponse should ===(Spawned)
+//
+//      // verify registration in location service
+//      val eventServerLocation: TcpLocation = locationService.resolve(eventServerConnection, 5.seconds).futureValue.value
+//
+//      // verify agent prefix and pid metadata is present in Sequence component akka location
+//      eventServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+//      eventServerLocation.metadata.getPid.isDefined should ===(true)
+//
+//      agentService.killComponent(eventServerComponentID).futureValue
+//
+//    }
 
-      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf")
-      val eventServerComponentID = ComponentId(AgentConstants.eventPrefix, Service)
-      val eventServerConnection  = TcpConnection(eventServerComponentID)
-
-      val spawnResponse = agentService
-        .spawnEventServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("0.1.0-SNAPSHOT"))
-        .futureValue
-      spawnResponse should ===(Spawned)
-
-      // verify registration in location service
-      val eventServerLocation: TcpLocation = locationService.resolve(eventServerConnection, 5.seconds).futureValue.value
-
-      // verify agent prefix and pid metadata is present in Sequence component akka location
-      eventServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
-      eventServerLocation.metadata.getPid.isDefined should ===(true)
-
-      agentService.killComponent(eventServerComponentID).futureValue
-
-    }
-
-    "spawn and kill Alarm Server on a given agent | ESW-368" in {
-
-      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf")
-      val alarmServerComponentID = ComponentId(AgentConstants.alarmPrefix, Service)
-      val alarmServerConnection  = TcpConnection(alarmServerComponentID)
-
-      val spawnResponse = agentService
-        .spawnAlarmServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("0.1.0-SNAPSHOT"))
-        .futureValue
-      spawnResponse should ===(Spawned)
-
-      // verify registration in location service
-      val alarmServerLocation: TcpLocation = locationService.resolve(alarmServerConnection, 5.seconds).futureValue.value
-
-      // verify agent prefix and pid metadata is present in Sequence component akka location
-      alarmServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
-      alarmServerLocation.metadata.getPid.isDefined should ===(true)
-
-      agentService.killComponent(alarmServerComponentID).futureValue
-
-    }
+//    "spawn and kill Alarm Server on a given agent | ESW-368" in {
+//
+//      val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf")
+//      val alarmServerComponentID = ComponentId(AgentConstants.alarmPrefix, Service)
+//      val alarmServerConnection  = TcpConnection(alarmServerComponentID)
+//
+//      val spawnResponse = agentService
+//        .spawnAlarmServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("0.1.0-SNAPSHOT"))
+//        .futureValue
+//      spawnResponse should ===(Spawned)
+//
+//      // verify registration in location service
+//      val alarmServerLocation: TcpLocation = locationService.resolve(alarmServerConnection, 5.seconds).futureValue.value
+//
+//      // verify agent prefix and pid metadata is present in Sequence component akka location
+//      alarmServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+//      alarmServerLocation.metadata.getPid.isDefined should ===(true)
+//
+//      agentService.killComponent(alarmServerComponentID).futureValue
+//
+//    }
 
     "spawn and kill Database Server on a given agent | ESW-368" in {
 
