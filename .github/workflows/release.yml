@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     env:
       CSW_VERSION: "3.0.0-RC1"
     steps:
@@ -52,7 +52,7 @@ jobs:
           sbtn coverageAggregate
 
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: Coverage Report
           path: target/scala-2.13/scoverage-report
@@ -73,7 +73,7 @@ jobs:
       - name: Upload RTM
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: RTM
           path: target/RTM
