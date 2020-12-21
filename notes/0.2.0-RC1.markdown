@@ -2,7 +2,7 @@
 
 This is the v0.2.0-RC1 of the TMT Executive Software.
 
-See [CHANGELOG.md](CHANGELOG.md) for details of all releases.
+See [CHANGELOG.md](../CHANGELOG.md) for details of all releases.
 
 ### Features
 

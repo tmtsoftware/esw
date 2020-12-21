@@ -14,6 +14,7 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 
 | esw | csw |
 |--------|------|
+| v0.2.0 | v3.0.0 |
 | v0.2.0-RC1 | v3.0.0-RC1 |
 | v0.2.0-M1 | v3.0.0-M1 |
 | v0.1.0 | v2.0.0 |
@@ -23,19 +24,21 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 
 ## Public Release History
 
-| Date | Tag | Source | Download |
-|-----|-----|-----|-----|
-| 2020-03-19 | v0.1.0 | [esw-0.1.0](https://github.com/tmtsoftware/esw/tree/v0.1.0) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0/esw-apps-0.1.0.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0.zip) |
+| Date | Tag | Source | Docs | Assets |
+|-----|-----|-----|-----|-----|
+| 2020-12-18 | v0.2.0 | [esw-0.2.0](https://github.com/tmtsoftware/esw/tree/v0.2.0) | [esw-0.2.0 docs](https://tmtsoftware.github.io/esw/0.2.0/) | [esw-0.2.0 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0) |
+| 2020-03-19 | v0.1.0 | [esw-0.1.0](https://github.com/tmtsoftware/esw/tree/v0.1.0) | [esw-0.1.0 docs](https://tmtsoftware.github.io/esw/0.1.0/) | [esw-0.1.0 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0) |
+
 
 ## Pre-Release History
 
-| Date | Tag | Source | Download |
-|-----|-----|-----|-----|
-| 2020-11-10 | v0.2.0-RC1 | [esw-0.2.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.2.0-RC1) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.2.0-RC1/esw-apps-0.2.0-RC1.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.2.0-RC1.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.2.0-RC1.zip) |
-| 2020-09-24 | v0.2.0-M1 | [esw-0.2.0-M1](https://github.com/tmtsoftware/esw/tree/v0.2.0-M1) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.2.0-M1/esw-apps-0.2.0-M1.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.2.0-M1.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.2.0-M1.zip) |
-| 2020-03-03 | v0.1.0-RC3 | [esw-0.1.0-RC3](https://github.com/tmtsoftware/esw/tree/v0.1.0-RC3) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0-RC3/esw-apps-0.1.0-RC3.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0-RC3.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0-RC3.zip) |
-| 2020-02-26 | v0.1.0-RC2 | [esw-0.1.0-RC2](https://github.com/tmtsoftware/esw/tree/v0.1.0-RC2) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0-RC2/esw-apps-0.1.0-RC2.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0-RC2.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0-RC2.zip) |
-| 2020-02-06 | v0.1.0-RC1 | [esw-0.1.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.1.0-RC1) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0-RC1/esw-apps-0.1.0-RC1.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0-RC1.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0-RC1.zip) |
+| Date | Tag | Source | Docs | Assets |
+|-----|-----|-----|-----|-----|
+| 2020-11-10 | v0.2.0-RC1 | [esw-0.2.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.2.0-RC1) | [esw-0.2.0-RC1 docs](https://tmtsoftware.github.io/esw/0.2.0-RC1/) | [esw-0.2.0-RC1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0-RC1) |
+| 2020-09-24 | v0.2.0-M1 | [esw-0.2.0-M1](https://github.com/tmtsoftware/esw/tree/v0.2.0-M1) | [esw-0.2.0-M1 docs](https://tmtsoftware.github.io/esw/0.2.0-M1/) | [esw-0.2.0-M1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0-M1) |
+| 2020-03-03 | v0.1.0-RC3 | [esw-0.1.0-RC3](https://github.com/tmtsoftware/esw/tree/v0.1.0-RC3) | [esw-0.1.0-RC3 docs](https://tmtsoftware.github.io/esw/0.1.0-RC3/) | [esw-0.1.0-RC3 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC3) |
+| 2020-02-26 | v0.1.0-RC2 | [esw-0.1.0-RC2](https://github.com/tmtsoftware/esw/tree/v0.1.0-RC2) | [esw-0.1.0-RC2 docs](https://tmtsoftware.github.io/esw/0.1.0-RC2/) | [esw-0.1.0-RC2 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC2) |
+| 2020-02-06 | v0.1.0-RC1 | [esw-0.1.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.1.0-RC1) | [esw-0.1.0-RC1 docs](https://tmtsoftware.github.io/esw/0.1.0-RC1/) | [esw-0.1.0-RC1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC1) |
 
 Example code can be found in the [documentation](https://tmtsoftware.github.io/esw/) and in the [examples](examples) subproject.
 

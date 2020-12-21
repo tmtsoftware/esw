@@ -2,7 +2,7 @@
 
 This is the third release v0.1.0-RC3 of the TMT Executive Software.
 
-See [CHANGELOG.md](CHANGELOG.md) for details of all releases.
+See [CHANGELOG.md](../CHANGELOG.md) for details of all releases.
 
 ### Features
 Three main components are delivered as part of ESW:

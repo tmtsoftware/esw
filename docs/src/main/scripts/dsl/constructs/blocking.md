@@ -75,4 +75,4 @@ Kotlin
 
 This means, accessing/updating mutable variables defined in sequencer script is not thread safe from these functions and should be avoided.
 
-You can read more about these patterns of blocking [here](https://medium.com/@elizarov/blocking-threads-suspending-coroutines-d33e11bf4761)
+You can read more about these patterns of blocking [here](https://elizarov.medium.com/blocking-threads-suspending-coroutines-d33e11bf4761)

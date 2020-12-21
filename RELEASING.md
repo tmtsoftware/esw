@@ -27,7 +27,7 @@ Refer RELEASING.md in `csw`
 1. Add changes mention in `CHANGELOG.md` of `esw-contract` in the change section of `README.md` of `esw-contract`
 1. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `README.md`
 1. Exclude projects from `build.sbt` which you do not want to release
-1. Update dependent repo version in `Lib.scala`
+1. Update dependent repo version in `Libs.scala`
 1. Push changes to master
 1. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
 
