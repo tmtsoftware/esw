@@ -343,7 +343,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
             Path.of(pgDataConfPath.getAbsolutePath),
             Some(8085),
             dbUnixSocketDirs,
-            Some("0713742785d")
+            Some("713742785d")
           )
           .futureValue
         spawnResponse should ===(Spawned)
