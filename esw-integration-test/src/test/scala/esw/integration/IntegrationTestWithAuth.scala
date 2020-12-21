@@ -292,7 +292,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eventServerConnection  = TcpConnection(eventServerComponentID)
 
       val spawnResponse = agentService
-        .spawnEventServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("0.1.0-SNAPSHOT"))
+        .spawnEventServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("713742785d"))
         .futureValue
       spawnResponse should ===(Spawned)
 
@@ -314,7 +314,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val alarmServerConnection  = TcpConnection(alarmServerComponentID)
 
       val spawnResponse = agentService
-        .spawnAlarmServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("0.1.0-SNAPSHOT"))
+        .spawnAlarmServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("713742785d"))
         .futureValue
       spawnResponse should ===(Spawned)
 
@@ -331,6 +331,10 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
     "spawn and kill Database Server on a given agent | ESW-368" in {
 
+      println("#######-----####")
+      println(sys.env.get("PGDATA"))
+      println("#######-----####")
+
       val pgDataConfPath            = ResourceReader.copyToTmp("pg_hba.conf")
       val dbUnixSocketDirs          = "/tmp"
       val postgresServerComponentID = ComponentId(AgentConstants.databasePrefix, Service)
@@ -343,7 +347,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
             Path.of(pgDataConfPath.getAbsolutePath),
             Some(8085),
             dbUnixSocketDirs,
-            Some("0.1.0-SNAPSHOT")
+            Some("713742785d")
           )
           .futureValue
         spawnResponse should ===(Spawned)
