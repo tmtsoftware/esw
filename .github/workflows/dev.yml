@@ -15,7 +15,7 @@ jobs:
   build:
     runs-on: ubuntu-18.04
     env:
-      PGDATA: "/usr/local/var/postgres"
+      PGDATA: /tmp/postgres
 
     steps:
       - uses: actions/checkout@v2
@@ -23,7 +23,6 @@ jobs:
         with:
           jvm: 11
           apps: sbt sbtn
-      - uses: coursier/cache-action@v5
 
       - name: Install Redis
         run: |
@@ -32,13 +31,6 @@ jobs:
           cd redis-stable
           make
           sudo cp src/redis-sentinel /usr/local/bin/
-
-      - name: Install Postgres
-        run: |
-          sudo apt-get install postgresql-12
-          sudo mv /usr/lib/postgresql/12/bin/postgres /usr/local/bin
-          sudo mkdir /usr/local/var
-          sudo mv /var/lib/postgresql/12/main/ /usr/local/var/postgres
 
       - name: Install Kotlin
         run: |
@@ -53,9 +45,18 @@ jobs:
           sbtn clean
           sbtn makeSite
           sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
-
+      
+      - name: Install Postgres
+        run: |
+          sudo -i -u postgres
+          echo "/usr/lib/postgresql/13/bin" >> $GITHUB_PATH
+          /usr/lib/postgresql/13/bin/initdb -D /tmp/postgres
+          chmod 0700 /tmp/postgres
+          
       - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: |
+          sudo -i -u postgres
+          sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
