@@ -8,6 +8,11 @@ import scala.concurrent.Future
 
 trait AdminApi {
 
+  def shutdown(componentId: ComponentId): Future[Done]
+  def restart(componentId: ComponentId): Future[Done]
+  def goOffline(componentId: ComponentId): Future[Done]
+  def goOnline(componentId: ComponentId): Future[Done]
+
   /**
    * Fetches the LogMetadata for given component
    *

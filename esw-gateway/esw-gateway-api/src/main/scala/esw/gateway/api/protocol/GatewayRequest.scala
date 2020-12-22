@@ -20,4 +20,8 @@ object GatewayRequest {
   case class Log(prefix: Prefix, level: Level, message: String, metadata: Map[String, Any] = Map.empty) extends GatewayRequest
   case class SetLogLevel(componentId: ComponentId, level: Level)                                        extends GatewayRequest
   case class GetLogMetadata(componentId: ComponentId)                                                   extends GatewayRequest
+  case class GoOffline(componentId: ComponentId)                                                        extends GatewayRequest
+  case class GoOnline(componentId: ComponentId)                                                         extends GatewayRequest
+  case class Shutdown(componentId: ComponentId)                                                         extends GatewayRequest
+  case class Restart(componentId: ComponentId)                                                          extends GatewayRequest
 }

@@ -13,4 +13,12 @@ class AdminStubImpl extends AdminApi {
     Future.successful(LogMetadata(INFO, DEBUG, INFO, ERROR))
 
   override def setLogLevel(componentId: ComponentId, level: Level): Future[Done] = Future.successful(Done)
+
+  override def shutdown(componentId: ComponentId): Future[Done] = Future.successful(Done)
+
+  override def restart(componentId: ComponentId): Future[Done] = Future.successful(Done)
+
+  override def goOffline(componentId: ComponentId): Future[Done] = Future.successful(Done)
+
+  override def goOnline(componentId: ComponentId): Future[Done] = Future.successful(Done)
 }
