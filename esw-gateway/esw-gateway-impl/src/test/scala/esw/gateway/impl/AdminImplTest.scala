@@ -5,7 +5,10 @@ import java.net.URI
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
+import csw.command.client.messages.RunningMessage.Lifecycle
+import csw.command.client.messages.SupervisorContainerCommonMessages.{Restart, Shutdown}
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
+import csw.command.client.models.framework.ToComponentLifecycleMessage.{GoOffline, GoOnline}
 import csw.location.api.models
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
@@ -17,6 +20,7 @@ import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
+import scala.util.Random
 
 class AdminImplTest extends BaseTestSuite {
   lazy val actorTestKit: ActorTestKit      = ActorTestKit()
@@ -73,7 +77,7 @@ class AdminImplTest extends BaseTestSuite {
         Await.result(adminService.getLogMetadata(componentId), 100.millis)
       }
 
-      invalidComponent shouldBe InvalidComponent("Could not find component : ComponentId(AOESW.test_sequencer,Sequencer)")
+      invalidComponent shouldBe InvalidComponent(s"Could not find component : $componentId")
 
     }
   }
@@ -116,8 +120,137 @@ class AdminImplTest extends BaseTestSuite {
         Await.result(adminService.setLogLevel(componentId, Level.FATAL), 100.millis)
       }
 
-      invalidComponent shouldBe InvalidComponent("Could not find component : ComponentId(AOESW.test_component,Sequencer)")
+      invalidComponent shouldBe InvalidComponent(s"Could not find component : $componentId")
     }
 
   }
+
+  "shutdown" must {
+    val rnd            = new Random
+    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
+    val componentId    = ComponentId(Prefix(Subsystem.AOESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+
+    "send Shutdown message to the given component when it is running | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val probe                            = actorTestKit.createTestProbe[Shutdown.type]()
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+        Future.successful(
+          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+        )
+      )
+
+      adminService.shutdown(componentId)
+      probe.expectMessage(500.millis, Shutdown)
+    }
+
+    "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      val invalidComponent = intercept[InvalidComponent] {
+        Await.result(adminService.shutdown(componentId), 100.millis)
+      }
+
+      invalidComponent shouldBe InvalidComponent(s"Could not find component : $componentId")
+    }
+  }
+
+  "restart" must {
+    val rnd            = new Random
+    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
+    val componentId    = ComponentId(Prefix(Subsystem.AOESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+
+    "send Restart message to the given component when it is running | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val probe                            = actorTestKit.createTestProbe[Restart.type]()
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+        Future.successful(
+          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+        )
+      )
+
+      adminService.restart(componentId)
+      probe.expectMessage(500.millis, Restart)
+    }
+
+    "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      val invalidComponent = intercept[InvalidComponent] {
+        Await.result(adminService.restart(componentId), 100.millis)
+      }
+
+      invalidComponent shouldBe InvalidComponent(s"Could not find component : $componentId")
+    }
+  }
+
+  "goOffline" must {
+    val rnd            = new Random
+    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
+    val componentId    = ComponentId(Prefix(Subsystem.AOESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+
+    "send GoOffline message to the given component when it is running | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val probe                            = actorTestKit.createTestProbe[Lifecycle]()
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+        Future.successful(
+          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+        )
+      )
+
+      adminService.goOffline(componentId)
+      probe.expectMessage(500.millis, Lifecycle(GoOffline))
+    }
+
+    "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      val invalidComponent = intercept[InvalidComponent] {
+        Await.result(adminService.goOffline(componentId), 100.millis)
+      }
+
+      invalidComponent shouldBe InvalidComponent(s"Could not find component : $componentId")
+    }
+  }
+
+  "goOnline" must {
+    val rnd            = new Random
+    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
+    val componentId    = ComponentId(Prefix(Subsystem.AOESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+
+    "send GoOffline message to the given component when it is running | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val probe                            = actorTestKit.createTestProbe[Lifecycle]()
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+        Future.successful(
+          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+        )
+      )
+
+      adminService.goOnline(componentId)
+      probe.expectMessage(500.millis, Lifecycle(GoOnline))
+    }
+
+    "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      val invalidComponent = intercept[InvalidComponent] {
+        Await.result(adminService.goOnline(componentId), 100.millis)
+      }
+
+      invalidComponent shouldBe InvalidComponent(s"Could not find component : $componentId")
+    }
+  }
+
 }

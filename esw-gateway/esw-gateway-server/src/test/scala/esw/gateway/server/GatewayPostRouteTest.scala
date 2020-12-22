@@ -37,6 +37,7 @@ import msocket.jvm.metrics.LabelExtractor
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
@@ -357,6 +358,106 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
         .thenReturn(Future.failed(invalidComponentException))
 
       post(SetLogLevel(componentId, Level.FATAL): GatewayRequest) ~> route ~> check {
+        responseAs[GatewayException] shouldEqual invalidComponentException
+      }
+    }
+  }
+
+  "Shutdown" must {
+    val rnd            = new Random
+    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
+    val componentId    = ComponentId(Prefix(Subsystem.ESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+
+    "should call the shutdown api of adminApi with the given componentId | ESW-378" in {
+      when(adminApi.shutdown(componentId)).thenReturn(Future.successful(Done))
+
+      post(Shutdown(componentId): GatewayRequest) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Done] shouldEqual Done
+      }
+    }
+
+    "return generic error when component is not resolved | ESW-378" in {
+      val invalidComponentException = InvalidComponent(componentId.toString)
+
+      when(adminApi.shutdown(componentId)).thenReturn(Future.failed(invalidComponentException))
+
+      post(Shutdown(componentId): GatewayRequest) ~> route ~> check {
+        responseAs[GatewayException] shouldEqual invalidComponentException
+      }
+    }
+  }
+
+  "Restart" must {
+    val rnd            = new Random
+    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
+    val componentId    = ComponentId(Prefix(Subsystem.ESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+
+    "should call the restart api of adminApi with the given componentId | ESW-378" in {
+      when(adminApi.restart(componentId)).thenReturn(Future.successful(Done))
+
+      post(Restart(componentId): GatewayRequest) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Done] shouldEqual Done
+      }
+    }
+
+    "return generic error when component is not resolved | ESW-378" in {
+      val invalidComponentException = InvalidComponent(componentId.toString)
+
+      when(adminApi.restart(componentId)).thenReturn(Future.failed(invalidComponentException))
+
+      post(Restart(componentId): GatewayRequest) ~> route ~> check {
+        responseAs[GatewayException] shouldEqual invalidComponentException
+      }
+    }
+  }
+
+  "GoOnline" must {
+    val rnd            = new Random
+    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
+    val componentId    = ComponentId(Prefix(Subsystem.ESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+
+    "should call the goOnline api of adminApi with the given componentId | ESW-378" in {
+      when(adminApi.goOnline(componentId)).thenReturn(Future.successful(Done))
+
+      post(GoOnline(componentId): GatewayRequest) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Done] shouldEqual Done
+      }
+    }
+
+    "return generic error when component is not resolved | ESW-378" in {
+      val invalidComponentException = InvalidComponent(componentId.toString)
+
+      when(adminApi.goOnline(componentId)).thenReturn(Future.failed(invalidComponentException))
+
+      post(GoOnline(componentId): GatewayRequest) ~> route ~> check {
+        responseAs[GatewayException] shouldEqual invalidComponentException
+      }
+    }
+  }
+
+  "GoOffline" must {
+    val rnd            = new Random
+    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
+    val componentId    = ComponentId(Prefix(Subsystem.ESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+
+    "should call the goOffline api of adminApi with the given componentId | ESW-378" in {
+      when(adminApi.goOffline(componentId)).thenReturn(Future.successful(Done))
+
+      post(GoOffline(componentId): GatewayRequest) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Done] shouldEqual Done
+      }
+    }
+
+    "return generic error when component is not resolved | ESW-378" in {
+      val invalidComponentException = InvalidComponent(componentId.toString)
+
+      when(adminApi.goOffline(componentId)).thenReturn(Future.failed(invalidComponentException))
+
+      post(GoOffline(componentId): GatewayRequest) ~> route ~> check {
         responseAs[GatewayException] shouldEqual invalidComponentException
       }
     }

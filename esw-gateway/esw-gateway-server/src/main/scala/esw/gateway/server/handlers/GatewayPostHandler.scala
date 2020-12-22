@@ -39,6 +39,10 @@ class GatewayPostHandler(
       case Log(prefix, level, message, map)       => complete(loggingApi.log(prefix, level, message, map))
       case SetLogLevel(componentId, logLevel)     => complete(adminApi.setLogLevel(componentId, logLevel))
       case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
+      case Shutdown(componentId)                  => complete(adminApi.shutdown(componentId))
+      case Restart(componentId)                   => complete(adminApi.restart(componentId))
+      case GoOffline(componentId)                 => complete(adminApi.goOffline(componentId))
+      case GoOnline(componentId)                  => complete(adminApi.goOnline(componentId))
     }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceRequest): Route =
