@@ -16,6 +16,7 @@ import csw.prefix.models.Subsystem._
 import csw.testkit.ConfigTestKit
 import esw.agent.akka.AgentSetup
 import esw.agent.akka.app.AgentSettings
+import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
@@ -63,6 +64,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     agentServiceWiring = AgentServiceApp.start(startLogging = false)
     val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
     agentService = AgentServiceClientFactory(httpLocation, () => tokenWithEswUserRole())
+    Coursier.locationAgentApp(Some("713742785d")).fetch("src/test/resources/apps.json")
   }
 
   override def afterAll(): Unit = {
@@ -331,10 +333,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
     "spawn and kill Database Server on a given agent | ESW-368" in {
 
-      println("#######-----####")
-      println(sys.env.get("PGDATA"))
-      println("#######-----####")
-
       val pgDataConfPath            = ResourceReader.copyToTmp("pg_hba.conf")
       val dbUnixSocketDirs          = "/tmp"
       val postgresServerComponentID = ComponentId(AgentConstants.databasePrefix, Service)
@@ -353,11 +351,11 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
         spawnResponse should ===(Spawned)
 
         // verify registration in location service
-        val eventServerLocation: TcpLocation = locationService.resolve(postgresServerConnection, 5.seconds).futureValue.value
+        val postgresServerLocation: TcpLocation = locationService.resolve(postgresServerConnection, 5.seconds).futureValue.value
 
         // verify agent prefix and pid metadata is present in Sequence component akka location
-        eventServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
-        eventServerLocation.metadata.getPid.isDefined should ===(true)
+        postgresServerLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
+        postgresServerLocation.metadata.getPid.isDefined should ===(true)
 
         agentService.killComponent(postgresServerComponentID).futureValue
 
@@ -365,7 +363,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       catch {
         case NonFatal(e) =>
           println(
-            "Make sure 'PGDATA' env variable is set where postgres is installed e.g. for mac: /usr/local/var/postgres"
+            "Make sure 'PGDATA' env variable is set where postgres database is installed e.g. for mac: /usr/local/var/postgres"
           )
           throw e
       }
