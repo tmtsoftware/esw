@@ -50,6 +50,7 @@ object Csw {
   val `csw-prefix`          = dep(Org %%% "csw-prefix" % Version)
   val `csw-testkit`         = Org %% "csw-testkit"         % Version
   val `csw-time-scheduler`  = Org %% "csw-time-scheduler"  % Version
+  val `csw-services`        = Org %% "csw-services"        % Version
 }
 
 object Akka {

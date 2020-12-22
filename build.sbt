@@ -1,6 +1,6 @@
+import Common._
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
-import Common._
 
 inThisBuild(
   CommonSettings
@@ -23,7 +23,8 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-backend-testkit`,
   `esw-shell`,
   `esw-integration-test`,
-  `esw-http-template-wiring`
+  `esw-http-template-wiring`,
+  `esw-services`
 )
 
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
@@ -50,7 +51,7 @@ lazy val esw = (project in file("."))
   )
   .settings(
     ghreleaseRepoOrg := "tmtsoftware",
-    ghreleaseRepoName := EswKeys.projectName,
+    ghreleaseRepoName := EswKeys.projectName
   )
 
 lazy val `esw-ocs` = project
@@ -335,6 +336,16 @@ lazy val `esw-sm-app` = project
     `esw-sm-impl`,
     `esw-http-core`,
     `esw-sm-handler`
+  )
+
+lazy val `esw-services` = project
+  .in(file("esw-services"))
+  .settings(
+    libraryDependencies ++= Dependencies.EswServices.value
+  )
+  .dependsOn(
+    `esw-commons`,
+    `esw-agent-akka-app`
   )
 
 lazy val `esw-constants` = project

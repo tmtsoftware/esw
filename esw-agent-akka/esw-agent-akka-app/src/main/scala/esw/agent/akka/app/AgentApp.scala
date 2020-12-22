@@ -22,12 +22,12 @@ object AgentApp extends CommandApp[AgentCliCommand] {
       case StartCommand(prefix) => start(AgentSettings(Prefix(prefix), ConfigFactory.load()))
     }
 
-  private[esw] def start(agentSettings: AgentSettings): Unit = {
+  private[esw] def start(agentSettings: AgentSettings): AgentWiring = {
     val wiring = new AgentWiring(agentSettings)
     start(wiring)
   }
 
-  private[esw] def start(wiring: AgentWiring, startLogging: Boolean = true): Unit = {
+  private[esw] def start(wiring: AgentWiring, startLogging: Boolean = true): AgentWiring = {
     import wiring._
     try {
       if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
@@ -42,6 +42,7 @@ object AgentApp extends CommandApp[AgentCliCommand] {
         }
 
       log.info("agent started")
+      wiring
     }
     catch {
       case NonFatal(ex) =>
