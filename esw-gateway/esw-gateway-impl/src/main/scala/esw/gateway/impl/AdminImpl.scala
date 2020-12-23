@@ -7,7 +7,7 @@ import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.RunningMessage.Lifecycle
 import csw.command.client.messages.SupervisorContainerCommonMessages.{Restart, Shutdown}
-import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
+import csw.command.client.messages.{ComponentMessage, ContainerMessage, GetComponentLogMetadata, SetComponentLogLevel}
 import csw.command.client.models.framework.ToComponentLifecycleMessage.{GoOffline, GoOnline}
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.models.ComponentType._
@@ -31,45 +31,19 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
       .find(AkkaConnection(componentId))
       .map(_.getOrElse(throw InvalidComponent(s"Could not find component : $componentId")))
 
-  override def shutdown(componentId: ComponentId): Future[Done] = {
+  private def sendMessageToComponent[T <: ComponentMessage with ContainerMessage](componentId: ComponentId, message: T) =
     findComponent(componentId).map(akkaLocation => {
       componentId.componentType match {
-        case Container => akkaLocation.containerRef ! Shutdown
-        case _         => akkaLocation.componentRef ! Shutdown
+        case Container => akkaLocation.containerRef ! message
+        case _         => akkaLocation.componentRef ! message
       }
       Done
     })
-  }
 
-  override def restart(componentId: ComponentId): Future[Done] = {
-    findComponent(componentId).map(akkaLocation => {
-      componentId.componentType match {
-        case Container => akkaLocation.containerRef ! Restart
-        case _         => akkaLocation.componentRef ! Restart
-      }
-      Done
-    })
-  }
-
-  override def goOffline(componentId: ComponentId): Future[Done] = {
-    findComponent(componentId).map(akkaLocation => {
-      componentId.componentType match {
-        case Container => akkaLocation.containerRef ! Lifecycle(GoOffline)
-        case _         => akkaLocation.componentRef ! Lifecycle(GoOffline)
-      }
-      Done
-    })
-  }
-
-  override def goOnline(componentId: ComponentId): Future[Done] = {
-    findComponent(componentId).map(akkaLocation => {
-      componentId.componentType match {
-        case Container => akkaLocation.containerRef ! Lifecycle(GoOnline)
-        case _         => akkaLocation.componentRef ! Lifecycle(GoOnline)
-      }
-      Done
-    })
-  }
+  override def shutdown(componentId: ComponentId): Future[Done]  = sendMessageToComponent(componentId, Shutdown)
+  override def restart(componentId: ComponentId): Future[Done]   = sendMessageToComponent(componentId, Restart)
+  override def goOffline(componentId: ComponentId): Future[Done] = sendMessageToComponent(componentId, Lifecycle(GoOffline))
+  override def goOnline(componentId: ComponentId): Future[Done]  = sendMessageToComponent(componentId, Lifecycle(GoOnline))
 
   override def getLogMetadata(componentId: ComponentId): Future[LogMetadata] = {
     val prefix = componentId.prefix
