@@ -20,7 +20,6 @@ import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
 class AdminImplTest extends BaseTestSuite {
   lazy val actorTestKit: ActorTestKit      = ActorTestKit()
@@ -126,9 +125,8 @@ class AdminImplTest extends BaseTestSuite {
   }
 
   "shutdown" must {
-    val rnd            = new Random
-    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
-    val componentId    = ComponentId(Prefix(Subsystem.AOESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
     "send Shutdown message to the given component when it is running | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
@@ -158,9 +156,8 @@ class AdminImplTest extends BaseTestSuite {
   }
 
   "restart" must {
-    val rnd            = new Random
-    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
-    val componentId    = ComponentId(Prefix(Subsystem.AOESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
     "send Restart message to the given component when it is running | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
@@ -190,9 +187,8 @@ class AdminImplTest extends BaseTestSuite {
   }
 
   "goOffline" must {
-    val rnd            = new Random
-    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
-    val componentId    = ComponentId(Prefix(Subsystem.AOESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
     "send GoOffline message to the given component when it is running | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
@@ -222,9 +218,8 @@ class AdminImplTest extends BaseTestSuite {
   }
 
   "goOnline" must {
-    val rnd            = new Random
-    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
-    val componentId    = ComponentId(Prefix(Subsystem.AOESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
     "send GoOffline message to the given component when it is running | ESW-378" in {
       val locationService: LocationService = mock[LocationService]

@@ -37,7 +37,6 @@ import msocket.jvm.metrics.LabelExtractor
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
@@ -364,9 +363,8 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   }
 
   "Shutdown" must {
-    val rnd            = new Random
-    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
-    val componentId    = ComponentId(Prefix(Subsystem.ESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
     "should call the shutdown api of adminApi with the given componentId | ESW-378" in {
       when(adminApi.shutdown(componentId)).thenReturn(Future.successful(Done))
@@ -389,9 +387,8 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   }
 
   "Restart" must {
-    val rnd            = new Random
-    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
-    val componentId    = ComponentId(Prefix(Subsystem.ESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
     "should call the restart api of adminApi with the given componentId | ESW-378" in {
       when(adminApi.restart(componentId)).thenReturn(Future.successful(Done))
@@ -414,9 +411,8 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   }
 
   "GoOnline" must {
-    val rnd            = new Random
-    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
-    val componentId    = ComponentId(Prefix(Subsystem.ESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
     "should call the goOnline api of adminApi with the given componentId | ESW-378" in {
       when(adminApi.goOnline(componentId)).thenReturn(Future.successful(Done))
@@ -439,9 +435,8 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   }
 
   "GoOffline" must {
-    val rnd            = new Random
-    val componentTypes = Array(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container)
-    val componentId    = ComponentId(Prefix(Subsystem.ESW, "test_component"), componentTypes(rnd.nextInt(componentTypes.length)))
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
     "should call the goOffline api of adminApi with the given componentId | ESW-378" in {
       when(adminApi.goOffline(componentId)).thenReturn(Future.successful(Done))
