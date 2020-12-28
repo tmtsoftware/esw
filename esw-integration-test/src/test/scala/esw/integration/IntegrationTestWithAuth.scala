@@ -64,7 +64,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     agentServiceWiring = AgentServiceApp.start(startLogging = false)
     val httpLocation = resolveHTTPLocation(agentServiceWiring.prefix, ComponentType.Service)
     agentService = AgentServiceClientFactory(httpLocation, () => tokenWithEswUserRole())
-    Coursier.locationAgentApp(Some("713742785d")).fetch("src/test/resources/apps.json")
+    Coursier.locationAgentApp(Some("9a9510bf1e")).fetch("src/test/resources/apps.json")
   }
 
   override def afterAll(): Unit = {
@@ -294,7 +294,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eventServerConnection  = TcpConnection(eventServerComponentID)
 
       val spawnResponse = agentService
-        .spawnEventServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("713742785d"))
+        .spawnEventServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("9a9510bf1e"))
         .futureValue
       spawnResponse should ===(Spawned)
 
@@ -316,7 +316,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val alarmServerConnection  = TcpConnection(alarmServerComponentID)
 
       val spawnResponse = agentService
-        .spawnAlarmServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("713742785d"))
+        .spawnAlarmServer(agentPrefix, Path.of(sentinelConf.getAbsolutePath), Some(9090), Some("9a9510bf1e"))
         .futureValue
       spawnResponse should ===(Spawned)
 
