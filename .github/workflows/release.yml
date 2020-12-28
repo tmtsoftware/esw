@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-18.04
     env:
       CSW_VERSION: "3.0.0-RC1"
+      PGDATA: /tmp/postgres
     steps:
       - uses: actions/checkout@v2
       - uses: laughedelic/coursier-setup@v1
@@ -24,7 +25,12 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Redis
-        run: sudo apt-get install redis-server
+        run: |
+          wget http://download.redis.io/redis-stable.tar.gz
+          tar xvzf redis-stable.tar.gz
+          cd redis-stable
+          make
+          sudo cp src/redis-sentinel /usr/local/bin/
 
       - name: Install Kotlin
         run: |
@@ -36,6 +42,7 @@ jobs:
       - run: npm install -g junit-merge
       - run: npm install -g junit-viewer
 
+
       - name: Build
         run: |
           sbtn scalafmtCheck
@@ -43,8 +50,17 @@ jobs:
           sbtn makeSite
           sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
+      - name: Install Postgres
+        run: |
+          sudo -i -u postgres
+          echo "/usr/lib/postgresql/13/bin" >> $GITHUB_PATH
+          /usr/lib/postgresql/13/bin/initdb -D /tmp/postgres
+          chmod 0700 /tmp/postgres
+
       - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: |
+          sudo -i -u postgres
+          sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
