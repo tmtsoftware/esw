@@ -12,6 +12,7 @@ import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.command.api.messages.CommandServiceRequest.{Oneway, Submit, Validate}
 import csw.command.client.auth.CommandRoles
+import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.api.models.ComponentType.{Assembly, Sequencer}
 import csw.location.api.models.{ComponentId, ComponentType}
@@ -453,6 +454,58 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
       when(adminApi.goOffline(componentId)).thenReturn(Future.failed(invalidComponentException))
 
       post(GoOffline(componentId): GatewayRequest) ~> route ~> check {
+        responseAs[GatewayException] shouldEqual invalidComponentException
+      }
+    }
+  }
+
+  "GetContainerLifecycleState" must {
+    val prefix      = Prefix(randomSubsystem, randomString(10))
+    val componentId = ComponentId(prefix, ComponentType.Container)
+
+    "should call the goOffline api of adminApi with the given componentId | ESW-378" in {
+      val lifecycleState = randomFrom(ContainerLifecycleState.values.toList)
+
+      when(adminApi.getContainerLifecycleState(prefix)).thenReturn(Future.successful(lifecycleState))
+
+      post(GetContainerLifecycleState(prefix): GatewayRequest) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[ContainerLifecycleState] shouldEqual lifecycleState
+      }
+    }
+
+    "return generic error when component is not resolved | ESW-378" in {
+      val invalidComponentException = InvalidComponent(componentId.toString)
+
+      when(adminApi.getContainerLifecycleState(prefix)).thenReturn(Future.failed(invalidComponentException))
+
+      post(GetContainerLifecycleState(prefix): GatewayRequest) ~> route ~> check {
+        responseAs[GatewayException] shouldEqual invalidComponentException
+      }
+    }
+  }
+
+  "GetComponentLifecycleState" must {
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
+
+    "should call the goOffline api of adminApi with the given componentId | ESW-378" in {
+      val lifecycleState = randomFrom(SupervisorLifecycleState.values.toList)
+
+      when(adminApi.getComponentLifecycleState(componentId)).thenReturn(Future.successful(lifecycleState))
+
+      post(GetComponentLifecycleState(componentId): GatewayRequest) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[SupervisorLifecycleState] shouldEqual lifecycleState
+      }
+    }
+
+    "return generic error when component is not resolved | ESW-378" in {
+      val invalidComponentException = InvalidComponent(componentId.toString)
+
+      when(adminApi.getComponentLifecycleState(componentId)).thenReturn(Future.failed(invalidComponentException))
+
+      post(GetComponentLifecycleState(componentId): GatewayRequest) ~> route ~> check {
         responseAs[GatewayException] shouldEqual invalidComponentException
       }
     }

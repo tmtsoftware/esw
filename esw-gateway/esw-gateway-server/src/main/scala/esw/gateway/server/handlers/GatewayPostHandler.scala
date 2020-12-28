@@ -31,18 +31,20 @@ class GatewayPostHandler(
 
   override def handle(request: GatewayRequest): Route =
     request match {
-      case ComponentCommand(componentId, command) => onComponentCommand(componentId, command)
-      case SequencerCommand(componentId, command) => onSequencerCommand(componentId, command)
-      case PublishEvent(event)                    => complete(eventApi.publish(event))
-      case GetEvent(eventKeys)                    => complete(eventApi.get(eventKeys))
-      case SetAlarmSeverity(alarmKey, severity)   => complete(alarmApi.setSeverity(alarmKey, severity))
-      case Log(prefix, level, message, map)       => complete(loggingApi.log(prefix, level, message, map))
-      case SetLogLevel(componentId, logLevel)     => complete(adminApi.setLogLevel(componentId, logLevel))
-      case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
-      case Shutdown(componentId)                  => complete(adminApi.shutdown(componentId))
-      case Restart(componentId)                   => complete(adminApi.restart(componentId))
-      case GoOffline(componentId)                 => complete(adminApi.goOffline(componentId))
-      case GoOnline(componentId)                  => complete(adminApi.goOnline(componentId))
+      case ComponentCommand(componentId, command)  => onComponentCommand(componentId, command)
+      case SequencerCommand(componentId, command)  => onSequencerCommand(componentId, command)
+      case PublishEvent(event)                     => complete(eventApi.publish(event))
+      case GetEvent(eventKeys)                     => complete(eventApi.get(eventKeys))
+      case SetAlarmSeverity(alarmKey, severity)    => complete(alarmApi.setSeverity(alarmKey, severity))
+      case Log(prefix, level, message, map)        => complete(loggingApi.log(prefix, level, message, map))
+      case SetLogLevel(componentId, logLevel)      => complete(adminApi.setLogLevel(componentId, logLevel))
+      case GetLogMetadata(componentId)             => complete(adminApi.getLogMetadata(componentId))
+      case Shutdown(componentId)                   => complete(adminApi.shutdown(componentId))
+      case Restart(componentId)                    => complete(adminApi.restart(componentId))
+      case GoOffline(componentId)                  => complete(adminApi.goOffline(componentId))
+      case GoOnline(componentId)                   => complete(adminApi.goOnline(componentId))
+      case GetContainerLifecycleState(prefix)      => complete(adminApi.getContainerLifecycleState(prefix))
+      case GetComponentLifecycleState(componentId) => complete(adminApi.getComponentLifecycleState(componentId))
     }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceRequest): Route =

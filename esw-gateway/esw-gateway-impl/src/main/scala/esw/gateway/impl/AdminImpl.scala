@@ -5,16 +5,20 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern.{Askable, _}
 import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
+import csw.command.client.messages.ComponentCommonMessage.GetSupervisorLifecycleState
+import csw.command.client.messages.ContainerCommonMessage.GetContainerLifecycleState
 import csw.command.client.messages.RunningMessage.Lifecycle
 import csw.command.client.messages.SupervisorContainerCommonMessages.{Restart, Shutdown}
 import csw.command.client.messages.{ComponentMessage, ContainerMessage, GetComponentLogMetadata, SetComponentLogLevel}
+import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.command.client.models.framework.ToComponentLifecycleMessage.{GoOffline, GoOnline}
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.logging.models.{Level, LogMetadata}
+import csw.prefix.models.Prefix
 import esw.constants.AdminTimeouts
 import esw.gateway.api.AdminApi
 import esw.gateway.api.protocol.InvalidComponent
@@ -44,6 +48,14 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
   override def restart(componentId: ComponentId): Future[Done]   = sendMessageToComponent(componentId, Restart)
   override def goOffline(componentId: ComponentId): Future[Done] = sendMessageToComponent(componentId, Lifecycle(GoOffline))
   override def goOnline(componentId: ComponentId): Future[Done]  = sendMessageToComponent(componentId, Lifecycle(GoOnline))
+
+  override def getComponentLifecycleState(componentId: ComponentId): Future[SupervisorLifecycleState] =
+    findComponent(componentId).flatMap(akkaLocation => akkaLocation.componentRef ? GetSupervisorLifecycleState)
+
+  override def getContainerLifecycleState(prefix: Prefix): Future[ContainerLifecycleState] =
+    findComponent(ComponentId(prefix, ComponentType.Container)).flatMap(akkaLocation =>
+      akkaLocation.containerRef ? GetContainerLifecycleState
+    )
 
   override def getLogMetadata(componentId: ComponentId): Future[LogMetadata] = {
     val prefix = componentId.prefix

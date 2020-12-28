@@ -24,4 +24,6 @@ object GatewayRequest {
   case class GoOnline(componentId: ComponentId)                                                         extends GatewayRequest
   case class Shutdown(componentId: ComponentId)                                                         extends GatewayRequest
   case class Restart(componentId: ComponentId)                                                          extends GatewayRequest
+  case class GetComponentLifecycleState(componentId: ComponentId)                                       extends GatewayRequest
+  case class GetContainerLifecycleState(prefix: Prefix)                                                 extends GatewayRequest
 }
