@@ -5,7 +5,7 @@ import caseapp.RemainingArgs
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import esw.agent.akka.app.BuildInfo
 import esw.commons.cli.EswCommandApp
-import esw.services.Command.Start
+import esw.services.Command._
 
 import scala.util.control.NonFatal
 

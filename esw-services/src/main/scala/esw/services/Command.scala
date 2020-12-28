@@ -1,12 +1,22 @@
 package esw.services
 
+import caseapp.core.Error
+import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, ExtraName, HelpMessage}
+import csw.prefix.models.Prefix
 
 import java.nio.file.Path
+import scala.util.Try
 
 sealed trait Command
 
 object Command {
+
+  implicit val prefixParser: SimpleArgParser[Prefix] =
+    SimpleArgParser.from[Prefix]("prefix") { prefixStr =>
+      Try(Right(Prefix(prefixStr)))
+        .getOrElse(Left(Error.Other(s"Prefix [$prefixStr] is invalid")))
+    }
 
   @CommandName("start")
   final case class Start(
@@ -14,7 +24,7 @@ object Command {
       @HelpMessage(
         "start agent"
       )
-      agentPrefix: Option[String],
+      agentPrefix: Option[Prefix],
       @ExtraName("g")
       @HelpMessage(
         "start gateway with specified command role mapping file path from local"

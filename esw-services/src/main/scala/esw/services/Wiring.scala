@@ -26,16 +26,12 @@ class Wiring(startCmd: Start) {
 
   lazy val serviceList = List(agentApp, gatewayService)
 
-  def start(): Unit = {
-    serviceList.foreach(_.start())
-  }
+  def start(): Unit = serviceList.foreach(_.start())
 
-  def stop(): Unit = {
-    serviceList.foreach(_.stop())
-  }
+  def stop(): Unit = serviceList.foreach(_.stop())
 
-  private def startAgent(maybePrefix: Option[String]): Option[AgentWiring] = {
-    maybePrefix.map(p => AgentApp.start(AgentSettings(Prefix(p), ConfigFactory.load())))
+  private def startAgent(maybePrefix: Option[Prefix]): Option[AgentWiring] = {
+    maybePrefix.map(p => AgentApp.start(AgentSettings(p, ConfigFactory.load())))
   }
 
   private def stopAgent(wiring: AgentWiring): Unit = {
