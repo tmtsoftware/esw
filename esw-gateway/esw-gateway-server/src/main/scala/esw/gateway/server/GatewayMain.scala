@@ -1,10 +1,10 @@
 package esw.gateway.server
 
-import java.nio.file.Path
-
 import caseapp.RemainingArgs
 import esw.commons.cli.EswCommandApp
 import esw.gateway.server.ServerCommand.StartCommand
+
+import java.nio.file.Path
 
 // $COVERAGE-OFF$
 object GatewayMain extends EswCommandApp[ServerCommand] {
@@ -24,14 +24,15 @@ object GatewayMain extends EswCommandApp[ServerCommand] {
       commandRoleConfigPath: Path,
       metricsEnabled: Boolean,
       startLogging: Boolean
-  ): Unit =
+  ): GatewayWiring =
     start(new GatewayWiring(port, local, commandRoleConfigPath, metricsEnabled), startLogging)
 
-  private[esw] def start(gatewayWiring: GatewayWiring, startLogging: Boolean): Unit = {
+  private[esw] def start(gatewayWiring: GatewayWiring, startLogging: Boolean): GatewayWiring = {
     import gatewayWiring._
     if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
 
     httpService.startAndRegisterServer()
+    gatewayWiring
   }
 
 }

@@ -345,7 +345,8 @@ lazy val `esw-services` = project
   )
   .dependsOn(
     `esw-commons`,
-    `esw-agent-akka-app`
+    `esw-agent-akka-app`,
+    `esw-gateway-server`
   )
 
 lazy val `esw-constants` = project
