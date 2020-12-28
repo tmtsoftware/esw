@@ -29,6 +29,11 @@ object Command {
       @HelpMessage(
         "start gateway with specified command role mapping file path from local"
       )
-      commandRoleConfigPath: Option[Path]
+      commandRoleConfigPath: Option[Path],
+      @ExtraName("s")
+      @HelpMessage(
+        "start Sequence Manager with specified obsMode config file path from local"
+      )
+      obsModeConfigPath: Option[Path]
   ) extends Command
 }

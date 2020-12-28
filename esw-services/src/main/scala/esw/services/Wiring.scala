@@ -8,6 +8,7 @@ import csw.prefix.models.Prefix
 import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
 import esw.gateway.server.{GatewayMain, GatewayWiring}
 import esw.services.Command.Start
+import esw.sm.app.{SequenceManagerApp, SequenceManagerWiring}
 
 import java.nio.file.Path
 
@@ -23,8 +24,15 @@ class Wiring(startCmd: Start) {
       () => startGateway(startCmd.commandRoleConfigPath),
       stopGateway
     )
+  lazy val smService: ManagedService[SequenceManagerWiring] =
+    ManagedService(
+      "sequence-manager",
+      startCmd.obsModeConfigPath.nonEmpty,
+      () => startSM(startCmd.obsModeConfigPath),
+      stopSM
+    )
 
-  lazy val serviceList = List(agentApp, gatewayService)
+  lazy val serviceList = List(agentApp, gatewayService, smService)
 
   def start(): Unit = serviceList.foreach(_.start())
 
@@ -44,4 +52,10 @@ class Wiring(startCmd: Start) {
   }
 
   private def stopGateway(wiring: GatewayWiring): Unit = wiring.actorRuntime.shutdown(ActorSystemTerminateReason)
+
+  private def startSM(obsModeConfigPath: Option[Path]): Option[SequenceManagerWiring] = {
+    obsModeConfigPath.map(p => SequenceManagerApp.start(p, isConfigLocal = true, None, startLogging = true))
+  }
+
+  private def stopSM(smWiring: SequenceManagerWiring) = smWiring.shutdown(ActorSystemTerminateReason)
 }
