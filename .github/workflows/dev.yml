@@ -56,7 +56,7 @@ jobs:
       - name: Tests
         run: |
           sudo -i -u postgres
-          run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
+          sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
