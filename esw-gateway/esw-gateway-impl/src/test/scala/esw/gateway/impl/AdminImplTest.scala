@@ -5,10 +5,13 @@ import java.net.URI
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
+import csw.command.client.messages.ComponentCommonMessage.GetSupervisorLifecycleState
+import csw.command.client.messages.ContainerCommonMessage.GetContainerLifecycleState
 import csw.command.client.messages.RunningMessage.Lifecycle
 import csw.command.client.messages.SupervisorContainerCommonMessages.{Restart, Shutdown}
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.command.client.models.framework.ToComponentLifecycleMessage.{GoOffline, GoOnline}
+import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.location.api.models
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
@@ -128,7 +131,7 @@ class AdminImplTest extends BaseTestSuite {
     val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
     val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
-    "send Shutdown message to the given component when it is running | ESW-378" in {
+    "send Shutdown message to the given component | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val probe                            = actorTestKit.createTestProbe[Shutdown.type]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
@@ -159,7 +162,7 @@ class AdminImplTest extends BaseTestSuite {
     val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
     val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
-    "send Restart message to the given component when it is running | ESW-378" in {
+    "send Restart message to the given component | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val probe                            = actorTestKit.createTestProbe[Restart.type]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
@@ -190,7 +193,7 @@ class AdminImplTest extends BaseTestSuite {
     val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
     val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
-    "send GoOffline message to the given component when it is running | ESW-378" in {
+    "send GoOffline message to the given component | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val probe                            = actorTestKit.createTestProbe[Lifecycle]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
@@ -221,7 +224,7 @@ class AdminImplTest extends BaseTestSuite {
     val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD, ComponentType.Container))
     val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
 
-    "send GoOffline message to the given component when it is running | ESW-378" in {
+    "send GoOffline message to the given component | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val probe                            = actorTestKit.createTestProbe[Lifecycle]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
@@ -248,4 +251,75 @@ class AdminImplTest extends BaseTestSuite {
     }
   }
 
+  "getComponentLifecycleState" must {
+    val componentType = randomFrom(List(ComponentType.Assembly, ComponentType.HCD))
+    val componentId   = ComponentId(Prefix(randomSubsystem, randomString(10)), componentType)
+
+    "send GetSupervisorLifecycleState message to the given component | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+      val lifecycleState                   = randomFrom(SupervisorLifecycleState.values.toList)
+
+      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetSupervisorLifecycleState] {
+        case GetSupervisorLifecycleState(replyTo) =>
+          replyTo ! lifecycleState
+          Behaviors.same
+      })
+
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+        Future.successful(
+          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+        )
+      )
+
+      adminService.getComponentLifecycleState(componentId).futureValue shouldBe lifecycleState
+    }
+
+    "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      val invalidComponent = intercept[InvalidComponent] {
+        Await.result(adminService.getComponentLifecycleState(componentId), 100.millis)
+      }
+
+      invalidComponent shouldBe InvalidComponent(s"Could not find component : $componentId")
+    }
+  }
+
+  "getContainerLifecycleState" must {
+    val prefix      = Prefix(randomSubsystem, randomString(10))
+    val componentId = ComponentId(prefix, ComponentType.Container)
+
+    "send GetContainerLifecycleState message to the given component | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+      val lifecycleState                   = randomFrom(ContainerLifecycleState.values.toList)
+
+      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetContainerLifecycleState] {
+        case GetContainerLifecycleState(replyTo) =>
+          replyTo ! lifecycleState
+          Behaviors.same
+      })
+
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+        Future.successful(
+          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+        )
+      )
+
+      adminService.getContainerLifecycleState(prefix).futureValue shouldBe lifecycleState
+    }
+
+    "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
+      val locationService: LocationService = mock[LocationService]
+      val adminService: AdminImpl          = new AdminImpl(locationService)
+      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      val invalidComponent = intercept[InvalidComponent] {
+        Await.result(adminService.getContainerLifecycleState(prefix), 100.millis)
+      }
+
+      invalidComponent shouldBe InvalidComponent(s"Could not find component : $componentId")
+    }
+  }
 }

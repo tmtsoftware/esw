@@ -1,8 +1,12 @@
 package esw.gateway.api
 
 import akka.Done
+import csw.command.client.messages.RunningMessage.Lifecycle
+import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
+import csw.command.client.models.framework.ToComponentLifecycleMessage.GoOnline
 import csw.location.api.models.ComponentId
 import csw.logging.models.{Level, LogMetadata}
+import csw.prefix.models.Prefix
 
 import scala.concurrent.Future
 
@@ -12,6 +16,9 @@ trait AdminApi {
   def restart(componentId: ComponentId): Future[Done]
   def goOffline(componentId: ComponentId): Future[Done]
   def goOnline(componentId: ComponentId): Future[Done]
+
+  def getContainerLifecycleState(prefix: Prefix): Future[ContainerLifecycleState]
+  def getComponentLifecycleState(componentId: ComponentId): Future[SupervisorLifecycleState]
 
   /**
    * Fetches the LogMetadata for given component
