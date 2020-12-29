@@ -20,15 +20,15 @@ class Wiring(startCmd: Start) {
   lazy val gatewayService: ManagedService[GatewayWiring] =
     ManagedService(
       "gateway",
-      startCmd.commandRoleConfigPath.nonEmpty,
-      () => startGateway(startCmd.commandRoleConfigPath),
+      startCmd.commandRoleConfig.nonEmpty,
+      () => startGateway(startCmd.commandRoleConfig),
       stopGateway
     )
   lazy val smService: ManagedService[SequenceManagerWiring] =
     ManagedService(
       "sequence-manager",
-      startCmd.obsModeConfigPath.nonEmpty,
-      () => startSM(startCmd.obsModeConfigPath),
+      startCmd.obsModeConfig.nonEmpty,
+      () => startSM(startCmd.obsModeConfig),
       stopSM
     )
 

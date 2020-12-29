@@ -21,19 +21,22 @@ object Command {
   @CommandName("start")
   final case class Start(
       @ExtraName("a")
+      @ExtraName("agent")
       @HelpMessage(
         "start agent"
       )
       agentPrefix: Option[Prefix],
       @ExtraName("g")
+      @ExtraName("gateway")
       @HelpMessage(
         "start gateway with specified command role mapping file path from local"
       )
-      commandRoleConfigPath: Option[Path],
-      @ExtraName("s")
+      commandRoleConfig: Option[Path],
+      @ExtraName("sm")
+      @ExtraName("sequence-manager")
       @HelpMessage(
         "start Sequence Manager with specified obsMode config file path from local"
       )
-      obsModeConfigPath: Option[Path]
+      obsModeConfig: Option[Path]
   ) extends Command
 }
