@@ -1,9 +1,7 @@
 package esw.gateway.api
 
 import akka.Done
-import csw.command.client.messages.RunningMessage.Lifecycle
 import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
-import csw.command.client.models.framework.ToComponentLifecycleMessage.GoOnline
 import csw.location.api.models.ComponentId
 import csw.logging.models.{Level, LogMetadata}
 import csw.prefix.models.Prefix

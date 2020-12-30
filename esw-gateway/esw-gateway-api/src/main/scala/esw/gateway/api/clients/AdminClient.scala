@@ -9,16 +9,7 @@ import csw.logging.models.{Level, LogMetadata}
 import csw.prefix.models.Prefix
 import esw.gateway.api.AdminApi
 import esw.gateway.api.protocol.GatewayRequest
-import esw.gateway.api.protocol.GatewayRequest.{
-  GetComponentLifecycleState,
-  GetContainerLifecycleState,
-  GetLogMetadata,
-  GoOffline,
-  GoOnline,
-  Restart,
-  SetLogLevel,
-  Shutdown
-}
+import esw.gateway.api.protocol.GatewayRequest._
 import msocket.api.Transport
 import msocket.api.codecs.BasicCodecs
 

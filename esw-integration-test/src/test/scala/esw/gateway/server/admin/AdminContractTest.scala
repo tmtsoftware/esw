@@ -2,6 +2,7 @@ package esw.gateway.server.admin
 
 import java.net.InetAddress
 
+import akka.Done
 import akka.actor.testkit.typed.TestKitSettings
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
@@ -9,10 +10,11 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import com.typesafe.config.ConfigFactory
+import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.CommandMessage.Oneway
 import csw.command.client.messages.ContainerCommonMessage.GetComponents
 import csw.command.client.messages.ContainerMessage
-import csw.command.client.models.framework.{Component, Components, ContainerLifecycleState}
+import csw.command.client.models.framework.{Component, Components, ContainerLifecycleState, SupervisorLifecycleState}
 import csw.location.api.models.ComponentType.{Assembly, HCD}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
@@ -25,7 +27,9 @@ import csw.logging.models.{Level, LogMetadata}
 import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.OnewayResponse
 import csw.params.commands.{CommandName, Setup}
+import csw.params.core.states.{CurrentState, StateName}
 import csw.prefix.models.{Prefix, Subsystem}
+import csw.testkit.FrameworkTestKit
 import esw.gateway.api.clients.AdminClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.InvalidComponent
@@ -71,8 +75,12 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
     containerActorSystem = ActorSystemFactory.remote(SpawnProtocol(), "container-system")
 
     // this will start container on random port and join seed and form a cluster
-    val containerRef = startContainerAndWaitForRunning()
-    extractComponentsFromContainer(containerRef)
+    val containerRef = startContainerAndWaitForRunning("laser_container.conf")(typedSystem)
+    val components   = extractComponentsFromContainer(containerRef)
+
+    laserComponent = components(Prefix("TCS.Laser"))
+    galilComponent = components(Prefix("TCS.Galil"))
+
     adminClient = new AdminClient(gatewayPostClient)
   }
 
@@ -80,24 +88,6 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
     containerActorSystem.terminate()
     Await.result(containerActorSystem.whenTerminated, 5.seconds)
     super.afterAll()
-  }
-
-  def startContainerAndWaitForRunning(): ActorRef[ContainerMessage] = {
-    val config       = ConfigFactory.load("laser_container.conf")
-    val containerRef = spawnContainer(config)
-
-    val containerStateProbe = TestProbe[ContainerLifecycleState]()
-    assertThatContainerIsRunning(containerRef, containerStateProbe, 5.seconds)
-    containerRef
-  }
-
-  def extractComponentsFromContainer(containerRef: ActorRef[ContainerMessage]): Unit = {
-    val probe = TestProbe[Components]()
-    containerRef ! GetComponents(probe.ref)
-    val components = probe.expectMessageType[Components].components
-
-    laserComponent = components.find(x => x.info.prefix.componentName.equals("Laser")).get
-    galilComponent = components.find(x => x.info.prefix.componentName.equals("Galil")).get
   }
 
   override protected def afterEach(): Unit = logBuffer.clear()
@@ -209,5 +199,125 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
       val response = Await.result(Http().singleRequest(request), 5.seconds)
       response.status should ===(StatusCodes.BadRequest)
     }
+
+    "be able to send components into offline and online state | ESW-378" in {
+      val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sample-container-system")
+      // start container
+      startContainerAndWaitForRunning("sample_container.conf")(actorSystem)
+
+      import esw.gateway.server.admin.SampleContainerState._
+
+      //test AdminApi.goOffline Api for container
+      adminClient.goOffline(eswContainerCompId).futureValue should ===(Done)
+
+      adminClient.getContainerLifecycleState(eswContainerPrefix).futureValue should ===(ContainerLifecycleState.Running)
+      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue should ===(SupervisorLifecycleState.RunningOffline)
+      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue should ===(SupervisorLifecycleState.RunningOffline)
+      //**************************************************************************************\\
+
+      //test AdminApi.goOnline Api for container
+      adminClient.goOnline(eswContainerCompId).futureValue should ===(Done)
+
+      adminClient.getContainerLifecycleState(eswContainerPrefix).futureValue should ===(ContainerLifecycleState.Running)
+      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue should ===(SupervisorLifecycleState.Running)
+      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue should ===(SupervisorLifecycleState.Running)
+      //**************************************************************************************\\
+
+      //test AdminApi.goOffline Api for component(HCD or Assembly)
+      adminClient.goOffline(eswAssemblyCompId).futureValue should ===(Done)
+
+      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue should ===(SupervisorLifecycleState.RunningOffline)
+      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue should ===(SupervisorLifecycleState.Running)
+      //**************************************************************************************\\
+
+      //test AdminApi.goOnline Api for component(HCD or Assembly)
+      adminClient.goOnline(eswAssemblyCompId).futureValue should ===(Done)
+
+      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue should ===(SupervisorLifecycleState.Running)
+      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue should ===(SupervisorLifecycleState.Running)
+      //**************************************************************************************\\
+
+      adminClient.shutdown(eswContainerCompId).futureValue should ===(Done)
+
+      eventually {
+        locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue should ===(None)
+      }
+      actorSystem.whenTerminated.futureValue
+    }
+
+    "be able to restart and shutdown the given component | ESW-378" in {
+      val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sample-container-system")
+
+      import esw.gateway.server.admin.SampleContainerState._
+      startContainerAndWaitForRunning("sample_container.conf")(actorSystem)
+
+      val filterAssemblyLocation = locationService.resolve(AkkaConnection(eswAssemblyCompId), 5.seconds).futureValue.get
+      val galilHcdLocation       = locationService.resolve(AkkaConnection(eswGalilHcdCompId), 5.seconds).futureValue.get
+
+      val assemblyCommandService = CommandServiceFactory.make(filterAssemblyLocation)
+      val galilHcdCommandService = CommandServiceFactory.make(galilHcdLocation)
+
+      val assemblyProbe = TestProbe[CurrentState]("assembly-state-probe")
+      val galilHcdProbe = TestProbe[CurrentState]("galil-Hcd-state-probe")
+
+      val assemblyStateNames = Set(StateName("Initializing_Filter_Assembly"), StateName("Shutdown_Filter_Assembly"))
+      val galilStateNames    = Set(StateName("Initializing_Galil"), StateName("Shutdown_Galil"))
+      assemblyCommandService.subscribeCurrentState(assemblyStateNames, assemblyProbe.ref ! _)
+      galilHcdCommandService.subscribeCurrentState(galilStateNames, galilHcdProbe.ref ! _)
+
+      //test AdminApi.restart Api for container
+      adminClient.restart(eswContainerCompId).futureValue should ===(Done)
+
+      galilHcdProbe.expectMessage(galilShutdownCurrentState)
+      assemblyProbe.expectMessage(assemblyShutdownCurrentState)
+      galilHcdProbe.expectMessage(galilInitializeCurrentState)
+      assemblyProbe.expectMessage(assemblyInitializeCurrentState)
+      //**************************************************************************************\\
+
+      //test AdminApi.restart Api for component(HCD or Assembly)
+      adminClient.restart(eswGalilHcdCompId).futureValue should ===(Done)
+
+      galilHcdProbe.expectMessage(galilShutdownCurrentState)
+      galilHcdProbe.expectMessage(galilInitializeCurrentState)
+      assemblyProbe.expectNoMessage()
+      //**************************************************************************************\\
+
+      //test AdminApi.shutdown Api for component(HCD or Assembly)
+      adminClient.shutdown(eswAssemblyCompId).futureValue should ===(Done)
+      assemblyProbe.expectMessage(assemblyShutdownCurrentState)
+      //**************************************************************************************\\
+
+      //test AdminApi.shutdown Api for container
+      adminClient.shutdown(eswContainerCompId).futureValue should ===(Done)
+      galilHcdProbe.expectMessage(galilShutdownCurrentState)
+      assemblyProbe.expectNoMessage()
+
+      eventually {
+        locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue should ===(None)
+      }
+      actorSystem.whenTerminated.futureValue
+    }
   }
+
+  private def startContainerAndWaitForRunning(
+      confName: String
+  )(actorSystem: ActorSystem[SpawnProtocol.Command]): ActorRef[ContainerMessage] = {
+    val config       = ConfigFactory.load(confName)
+    val containerRef = FrameworkTestKit(actorSystem).spawnContainer(config)
+
+    val containerStateProbe = TestProbe[ContainerLifecycleState]()(actorSystem)
+    assertThatContainerIsRunning(containerRef, containerStateProbe, 5.seconds)
+    containerRef
+  }
+
+  private def extractComponentsFromContainer(containerRef: ActorRef[ContainerMessage]): Map[Prefix, Component] = {
+    val probe = TestProbe[Components]()
+    containerRef ! GetComponents(probe.ref)
+    val components = probe.expectMessageType[Components].components
+
+    components.foldLeft(Map.empty[Prefix, Component])((res, comp) => {
+      res.updated(comp.info.prefix, comp)
+    })
+  }
+
 }

@@ -195,6 +195,7 @@ object Dependencies {
       Libs.`msocket-api`.value,
       Csw.`csw-alarm-api`,
       Csw.`csw-command-api`.value,
+      Csw.`csw-command-client`,
       Csw.`csw-logging-models`.value,
       Csw.`csw-event-api`
     )
