@@ -12,9 +12,8 @@ import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import csw.time.core.models.UTCTime
 
-case class StartLogging()
-
-class GalilComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
+class FilterAssemblyComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
+    extends ComponentHandlers(ctx, cswCtx) {
 
   val log: Logger = cswCtx.loggerFactory.getLogger
 
@@ -22,31 +21,21 @@ class GalilComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
 
   override def initialize(): Unit = {
     cswCtx.currentStatePublisher.publish(
-      CurrentState(eswGalilHcdPrefix, StateName("Initializing_Galil"), Set(choiceKey.set(initChoice)))
+      CurrentState(eswAssemblyPrefix, StateName("Initializing_Filter_Assembly"), Set(choiceKey.set(initChoice)))
     )
   }
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ()
 
-  private def startLogging(): Unit = {
-    log.trace("Level is trace")
-    log.debug("Level is debug")
-    log.info("Level is info")
-    log.warn("Level is warn")
-    log.error("Level is error")
-    log.fatal("Level is fatal")
-  }
-
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = Accepted(runId)
 
   override def onSubmit(runId: Id, controlCommand: ControlCommand): SubmitResponse = Completed(runId)
 
-  override def onOneway(runId: Id, controlCommand: ControlCommand): Unit =
-    if (controlCommand.commandName.name == "StartLogging") startLogging()
+  override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = ()
 
   override def onShutdown(): Unit = {
     cswCtx.currentStatePublisher.publish(
-      CurrentState(eswGalilHcdPrefix, StateName("Shutdown_Galil"), Set(choiceKey.set(shutdownChoice)))
+      CurrentState(eswAssemblyPrefix, StateName("Shutdown_Filter_Assembly"), Set(choiceKey.set(shutdownChoice)))
     )
   }
 
