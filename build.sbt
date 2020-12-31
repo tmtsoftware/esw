@@ -340,6 +340,7 @@ lazy val `esw-sm-app` = project
 
 lazy val `esw-services` = project
   .in(file("esw-services"))
+  .enablePlugins(EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.EswServices.value
   )

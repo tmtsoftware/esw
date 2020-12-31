@@ -3,16 +3,18 @@ package esw.services
 import akka.actor.CoordinatedShutdown
 import caseapp.RemainingArgs
 import csw.logging.client.scaladsl.LoggingSystemFactory
-import esw.agent.akka.app.BuildInfo
+import csw.network.utils.Networks
 import esw.commons.cli.EswCommandApp
 import esw.services.Command._
 
 import scala.util.control.NonFatal
 
-object Main extends EswCommandApp[Command] {
+object EswServicesApp extends EswCommandApp[Command] {
   override def appName: String    = getClass.getSimpleName.dropRight(1)
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
+
+  val hostname: String = Networks().hostname
 
   override def run(command: Command, args: RemainingArgs): Unit = {
     command match {
@@ -23,7 +25,7 @@ object Main extends EswCommandApp[Command] {
   def run(command: Start): Unit = {
     val wiring = new Wiring(command)
     try {
-      LoggingSystemFactory.start(appName, appVersion, "hostname", wiring.actorSystem)
+      LoggingSystemFactory.start(appName, appVersion, hostname, wiring.actorSystem)
       wiring.start()
       CoordinatedShutdown(wiring.actorSystem).addJvmShutdownHook(wiring.stop())
     }

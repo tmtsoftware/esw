@@ -23,7 +23,7 @@ object Command {
       @ExtraName("a")
       @ExtraName("agent")
       @HelpMessage(
-        "start agent"
+        "start agent with the provided prefix"
       )
       agentPrefix: Option[Prefix],
       @ExtraName("g")
@@ -37,12 +37,6 @@ object Command {
       @HelpMessage(
         "start Sequence Manager with specified obsMode config file path from local"
       )
-      obsModeConfig: Option[Path],
-      @ExtraName("p")
-      @ExtraName("provision")
-      @HelpMessage(
-        "path of config for provisioning sequence components"
-      )
-      provisionConfig: Option[Path]
+      obsModeConfig: Option[Path]
   ) extends Command
 }
