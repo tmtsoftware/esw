@@ -37,6 +37,12 @@ object Command {
       @HelpMessage(
         "start Sequence Manager with specified obsMode config file path from local"
       )
-      obsModeConfig: Option[Path]
+      obsModeConfig: Option[Path],
+      @ExtraName("p")
+      @ExtraName("provision")
+      @HelpMessage(
+        "path of config for provisioning sequence components"
+      )
+      provisionConfig: Option[Path]
   ) extends Command
 }
