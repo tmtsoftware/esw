@@ -1,6 +1,7 @@
 package esw.ocs.dsl.params
 
 import csw.params.core.generics.KeyType.StringKey
+import csw.params.core.generics.Parameter
 import csw.params.core.models.ObsId
 import csw.params.events.EventName
 import csw.prefix.models.Prefix
@@ -10,48 +11,55 @@ import org.scalatest.prop.TableDrivenPropertyChecks._
 
 class SequencerObserveEventsTest extends BaseTestSuite {
   "SequencerObserveEvents" must {
+    val obsId                         = randomString(10)
+    val exposureId                    = randomString(10)
+    val prefixStr                     = Prefix(randomSubsystem, randomString(5)).toString()
+    val obsIdParam: Parameter[_]      = StringKey.make("obsId").set(obsId)
+    val exposureIdParam: Parameter[_] = StringKey.make("exposureId").set(exposureId)
 
     "create Observe Event with obsId parameters | ESW-81" in {
       Table(
         ("Observe Event", "Event Name", "Prefix"),
-        (PresetStart.make("ESW.test", ObsId("some-id")), PresetStart.entryName, "ESW.test"),
-        (PresetStart.make("ESW.test1", ObsId("some-id")), PresetStart.entryName, "ESW.test1"),
-        (PresetEnd.make("ESW.test", ObsId("some-id")), PresetEnd.entryName, "ESW.test"),
-        (GuidstarAcqStart.make("ESW.test", ObsId("some-id")), GuidstarAcqStart.entryName, "ESW.test"),
-        (GuidstarAcqEnd.make("ESW.test", ObsId("some-id")), GuidstarAcqEnd.entryName, "ESW.test"),
-        (ScitargetAcqStart.make("ESW.test", ObsId("some-id")), ScitargetAcqStart.entryName, "ESW.test"),
-        (ScitargetAcqEnd.make("ESW.test", ObsId("some-id")), ScitargetAcqEnd.entryName, "ESW.test"),
-        (ObservationStart.make("ESW.test", ObsId("some-id")), ObservationStart.entryName, "ESW.test"),
-        (ObservationEnd.make("ESW.test", ObsId("some-id")), ObservationEnd.entryName, "ESW.test"),
-        (ObserveStart.make("ESW.test", ObsId("some-id")), ObserveStart.entryName, "ESW.test"),
-        (ObserveEnd.make("ESW.test", ObsId("some-id")), ObserveEnd.entryName, "ESW.test")
+        (PresetStart.make(prefixStr, ObsId(obsId)), PresetStart.entryName, prefixStr),
+        (PresetStart.make(prefixStr, ObsId(obsId)), PresetStart.entryName, prefixStr),
+        (PresetEnd.make(prefixStr, ObsId(obsId)), PresetEnd.entryName, prefixStr),
+        (GuidstarAcqStart.make(prefixStr, ObsId(obsId)), GuidstarAcqStart.entryName, prefixStr),
+        (GuidstarAcqEnd.make(prefixStr, ObsId(obsId)), GuidstarAcqEnd.entryName, prefixStr),
+        (ScitargetAcqStart.make(prefixStr, ObsId(obsId)), ScitargetAcqStart.entryName, prefixStr),
+        (ScitargetAcqEnd.make(prefixStr, ObsId(obsId)), ScitargetAcqEnd.entryName, prefixStr),
+        (ObservationStart.make(prefixStr, ObsId(obsId)), ObservationStart.entryName, prefixStr),
+        (ObservationEnd.make(prefixStr, ObsId(obsId)), ObservationEnd.entryName, prefixStr),
+        (ObserveStart.make(prefixStr, ObsId(obsId)), ObserveStart.entryName, prefixStr),
+        (ObserveEnd.make(prefixStr, ObsId(obsId)), ObserveEnd.entryName, prefixStr)
       ).forEvery((observeEvent, expectedEventName, expectedPrefixStr) => {
-        observeEvent.eventName shouldBe EventName(expectedEventName)
-        observeEvent.source shouldBe Prefix(expectedPrefixStr)
+        observeEvent.eventName should ===(EventName(expectedEventName))
+        observeEvent.source should ===(Prefix(expectedPrefixStr))
+        observeEvent.paramSet shouldBe Set(obsIdParam)
       })
     }
 
     "create Observe Event with obsId and exposure Id parameters | ESW-81" in {
       Table(
         ("Observe Event", "Event Name", "Prefix"),
-        (ExposureStart.make("ESW.test", ObsId("some-id"), "exposureId1"), ExposureStart.entryName, "ESW.test"),
-        (ExposureEnd.make("ESW.test", ObsId("some-id"), "exposureId1"), ExposureEnd.entryName, "ESW.test"),
-        (readoutEnd.make("ESW.test", ObsId("some-id"), "exposureId1"), readoutEnd.entryName, "ESW.test"),
-        (readoutFailed.make("ESW.test", ObsId("some-id"), "exposureId1"), readoutFailed.entryName, "ESW.test"),
-        (dataWriteStart.make("ESW.test", ObsId("some-id"), "exposureId1"), dataWriteStart.entryName, "ESW.test"),
-        (dataWriteEnd.make("ESW.test", ObsId("some-id"), "exposureId1"), dataWriteEnd.entryName, "ESW.test"),
-        (PrepareStart.make("ESW.test", ObsId("some-id"), "exposureId1"), PrepareStart.entryName, "ESW.test")
+        (ExposureStart.make(prefixStr, ObsId(obsId), exposureId), ExposureStart.entryName, prefixStr),
+        (ExposureEnd.make(prefixStr, ObsId(obsId), exposureId), ExposureEnd.entryName, prefixStr),
+        (readoutEnd.make(prefixStr, ObsId(obsId), exposureId), readoutEnd.entryName, prefixStr),
+        (readoutFailed.make(prefixStr, ObsId(obsId), exposureId), readoutFailed.entryName, prefixStr),
+        (dataWriteStart.make(prefixStr, ObsId(obsId), exposureId), dataWriteStart.entryName, prefixStr),
+        (dataWriteEnd.make(prefixStr, ObsId(obsId), exposureId), dataWriteEnd.entryName, prefixStr),
+        (PrepareStart.make(prefixStr, ObsId(obsId), exposureId), PrepareStart.entryName, prefixStr)
       ).forEvery((observeEvent, expectedEventName, expectedPrefixStr) => {
-        observeEvent.eventName shouldBe EventName(expectedEventName)
-        observeEvent.source shouldBe Prefix(expectedPrefixStr)
+        observeEvent.eventName should ===(EventName(expectedEventName))
+        observeEvent.source should ===(Prefix(expectedPrefixStr))
+        observeEvent.paramSet shouldBe Set(obsIdParam, exposureIdParam)
       })
     }
 
     "create Observe Event with fixed Parameter set | ESW-81" in {
-      val event = DowntimeStart.make("ESW.test", ObsId("some-id"), "bad weather")
-      event.eventName shouldBe EventName(DowntimeStart.entryName)
-      event.source shouldBe Prefix("ESW.test")
-      event.paramSet shouldBe Set(StringKey.make("reason").set("bad weather"))
+      val event = DowntimeStart.make(prefixStr, ObsId(obsId), "bad weather")
+      event.eventName should ===(EventName(DowntimeStart.entryName))
+      event.source should ===(Prefix(prefixStr))
+      event.paramSet shouldBe Set(obsIdParam, StringKey.make("reason").set("bad weather"))
     }
   }
 }

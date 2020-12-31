@@ -1,6 +1,7 @@
 package esw.ocs.dsl.params
 
 import csw.params.core.generics.KeyType.StringKey
+import csw.params.core.generics.Parameter
 import csw.params.core.models.ObsId
 import csw.params.events.{EventName, ObserveEvent}
 import csw.prefix.models.Prefix
@@ -12,12 +13,17 @@ sealed trait SequencerObserveEvent extends EnumEntry
 
 sealed trait ObserveEvents extends SequencerObserveEvent {
   def make(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName))
+    ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName), Set(StringKey.make("obsId").set(obsId.obsId)))
 }
 
 sealed trait ObserveEventsWithExposureId extends SequencerObserveEvent {
-  def make(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
-    ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName))
+  def make(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent = {
+    val paramset: Set[Parameter[_]] = Set(
+      StringKey.make("obsId").set(obsId.obsId),
+      StringKey.make("exposureId").set(exposureId)
+    )
+    ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName), paramset)
+  }
 }
 
 object SequencerObserveEvent extends Enum[SequencerObserveEvent] {
@@ -46,8 +52,9 @@ object SequencerObserveEvent extends Enum[SequencerObserveEvent] {
   case object ObserveResumed extends SequencerObserveEvent
   case object DowntimeStart extends SequencerObserveEvent {
     def make(sourcePrefix: String, obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
+      val obsIdParam          = StringKey.make("obsId").set(obsId.obsId)
       val downtimeReasonParam = StringKey.make("reason").set(reasonForDowntime)
-      ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName), Set(downtimeReasonParam))
+      ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName), Set(obsIdParam, downtimeReasonParam))
     }
   }
 }

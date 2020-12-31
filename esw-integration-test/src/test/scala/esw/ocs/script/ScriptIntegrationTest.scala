@@ -382,8 +382,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       val actualObserveEvent = testProbe.expectMessageType[ObserveEvent]
-      actualObserveEvent.eventName shouldBe eventName
-      actualObserveEvent.source shouldBe Prefix("ESW.test")
+      actualObserveEvent.eventName should ===(eventName)
+      actualObserveEvent.source should ===(Prefix("ESW.test"))
+      actualObserveEvent.paramSet shouldBe Set(StringKey.make("obsId").set("some-id"))
     }
 
   }
