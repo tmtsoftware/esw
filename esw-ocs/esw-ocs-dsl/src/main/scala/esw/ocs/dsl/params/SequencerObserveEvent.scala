@@ -11,12 +11,12 @@ import scala.collection.immutable.IndexedSeq
 sealed trait SequencerObserveEvent extends EnumEntry
 
 sealed trait ObserveEvents extends SequencerObserveEvent {
-  def create(sourcePrefix: String, obsId: ObsId): ObserveEvent =
+  def make(sourcePrefix: String, obsId: ObsId): ObserveEvent =
     ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName))
 }
 
 sealed trait ObserveEventsWithExposureId extends SequencerObserveEvent {
-  def create(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
+  def make(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
     ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName))
 }
 
@@ -45,9 +45,33 @@ object SequencerObserveEvent extends Enum[SequencerObserveEvent] {
   case object ObservePaused  extends SequencerObserveEvent
   case object ObserveResumed extends SequencerObserveEvent
   case object DowntimeStart extends SequencerObserveEvent {
-    def create(sourcePrefix: String, obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
+    def make(sourcePrefix: String, obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
       val downtimeReasonParam = StringKey.make("reason").set(reasonForDowntime)
       ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName), Set(downtimeReasonParam))
     }
   }
+}
+
+// created for consumption from Kotlin
+object ObserveEventFactory {
+  val PresetStart       = SequencerObserveEvent.PresetStart
+  val PresetEnd         = SequencerObserveEvent.PresetEnd
+  val GuidstarAcqStart  = SequencerObserveEvent.GuidstarAcqStart
+  val GuidstarAcqEnd    = SequencerObserveEvent.GuidstarAcqEnd
+  val ScitargetAcqStart = SequencerObserveEvent.ScitargetAcqStart
+  val ScitargetAcqEnd   = SequencerObserveEvent.ScitargetAcqEnd
+  val ObservationStart  = SequencerObserveEvent.ObservationStart
+  val ObservationEnd    = SequencerObserveEvent.ObservationEnd
+  val ObserveStart      = SequencerObserveEvent.ObserveStart
+  val ObserveEnd        = SequencerObserveEvent.ObserveEnd
+  val ExposureStart     = SequencerObserveEvent.ExposureStart
+  val ExposureEnd       = SequencerObserveEvent.ExposureEnd
+  val readoutEnd        = SequencerObserveEvent.readoutEnd
+  val readoutFailed     = SequencerObserveEvent.readoutFailed
+  val dataWriteStart    = SequencerObserveEvent.dataWriteStart
+  val dataWriteEnd      = SequencerObserveEvent.dataWriteEnd
+  val PrepareStart      = SequencerObserveEvent.PrepareStart
+  val ObservePaused     = SequencerObserveEvent.ObservePaused
+  val ObserveResumed    = SequencerObserveEvent.ObserveResumed
+  val DowntimeStart     = SequencerObserveEvent.DowntimeStart
 }
