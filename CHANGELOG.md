@@ -9,6 +9,10 @@ Here is the repository for ESW: [esw](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
+## [Upcoming version]
+
+- Added Shutdown, Restart, GoOnline, GoOffline, GetContainerLifecycleState and GetComponentLifecycleState routes in Gateway.
+
 ## [ESW v0.2.0] - 2020-12-18
 
 This is the `Second minor` release of the TMT Executive Software for project stakeholders.
