@@ -21,21 +21,30 @@ object Command {
   @CommandName("start")
   final case class Start(
       @ExtraName("a")
-      @ExtraName("agent")
       @HelpMessage(
-        "start agent with the provided prefix"
+        "Start agent with default ESW.primary prefix."
+      )
+      agent: Boolean = false,
+      @HelpMessage(
+        "Prefix for agent. If provided, this will be used instead of default."
       )
       agentPrefix: Option[Prefix],
       @ExtraName("g")
-      @ExtraName("gateway")
       @HelpMessage(
-        "start gateway with specified command role mapping file path from local"
+        "Start gateway with default command role config."
+      )
+      gateway: Boolean = false,
+      @HelpMessage(
+        "Command role mapping file path for gateway. If provided, this will be used instead of default."
       )
       commandRoleConfig: Option[Path],
-      @ExtraName("sm")
-      @ExtraName("sequence-manager")
+      @ExtraName("s")
       @HelpMessage(
-        "start Sequence Manager with specified obsMode config file path from local"
+        "Start sequence manager with default obsMode config."
+      )
+      sequenceManager: Boolean = false,
+      @HelpMessage(
+        "ObsMode config file path for gateway. If provided, this will be used instead of default."
       )
       obsModeConfig: Option[Path]
   ) extends Command

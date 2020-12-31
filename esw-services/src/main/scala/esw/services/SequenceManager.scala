@@ -1,16 +1,20 @@
 package esw.services
 
 import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
+import esw.constants.CommonTimeouts
+import esw.services.utils.PathUtils
 import esw.sm.app.{SequenceManagerApp, SequenceManagerWiring}
 
 import java.nio.file.Path
+import scala.concurrent.Await
 
 object SequenceManager {
 
   def service(
       enable: Boolean,
-      obsModeConfigPath: Option[Path]
+      maybeObsModeConfigPath: Option[Path]
   ): ManagedService[SequenceManagerWiring] = {
+    val obsModeConfigPath = maybeObsModeConfigPath.getOrElse(PathUtils.getResourcePath("smObsModeConfig.conf"))
     ManagedService(
       "sequence-manager",
       enable,
@@ -19,12 +23,10 @@ object SequenceManager {
     )
   }
 
-  private def startSM(obsModeConfigPath: Option[Path]): Option[SequenceManagerWiring] =
-    obsModeConfigPath.map(p => {
-      SequenceManagerApp.start(p, isConfigLocal = true, None, startLogging = true)
-    })
+  private def startSM(obsModeConfigPath: Path): SequenceManagerWiring =
+    SequenceManagerApp.start(obsModeConfigPath, isConfigLocal = true, None, startLogging = true)
 
   private def stopSM(smWiring: SequenceManagerWiring): Unit = {
-    smWiring.shutdown(ActorSystemTerminateReason)
+    Await.result(smWiring.shutdown(ActorSystemTerminateReason), CommonTimeouts.Wiring)
   }
 }

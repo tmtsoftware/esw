@@ -7,10 +7,10 @@ import scala.util.control.NonFatal
 case class ManagedService[T](
     serviceName: String,
     enable: Boolean,
-    private val _start: () => Option[T],
+    private val _start: () => T,
     private val _stop: T => Unit
 ) {
-  private var startResult: Option[T] = None
+  private var startResult: T = _
 
   def start(): Unit = {
     if (enable) {
@@ -28,5 +28,5 @@ case class ManagedService[T](
     }
   }
 
-  def stop(): Unit = startResult.foreach(_stop)
+  def stop(): Unit = _stop(startResult)
 }

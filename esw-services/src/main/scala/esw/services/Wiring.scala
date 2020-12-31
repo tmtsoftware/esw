@@ -10,11 +10,11 @@ import esw.sm.app.SequenceManagerWiring
 class Wiring(startCmd: Start) {
   lazy implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol())
 
-  lazy val agentApp: ManagedService[AgentWiring] = Agent.service(startCmd.agentPrefix.nonEmpty, startCmd.agentPrefix)
+  lazy val agentApp: ManagedService[AgentWiring] = Agent.service(startCmd.agent, startCmd.agentPrefix)
   lazy val gatewayService: ManagedService[GatewayWiring] =
-    Gateway.service(startCmd.commandRoleConfig.nonEmpty, startCmd.commandRoleConfig)
+    Gateway.service(startCmd.gateway, startCmd.commandRoleConfig)
   lazy val smService: ManagedService[SequenceManagerWiring] =
-    SequenceManager.service(startCmd.obsModeConfig.nonEmpty, startCmd.obsModeConfig)
+    SequenceManager.service(startCmd.sequenceManager, startCmd.obsModeConfig)
 
   lazy val serviceList = List(agentApp, gatewayService, smService)
 
