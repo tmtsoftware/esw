@@ -19,6 +19,7 @@ object Command {
     }
 
   @CommandName("start")
+  @HelpMessage("starts all the ESW services by default if no other option is provided")
   final case class Start(
       @ExtraName("a")
       @HelpMessage(
@@ -48,4 +49,20 @@ object Command {
       )
       obsModeConfig: Option[Path]
   ) extends Command
+
+  object Start {
+    def apply(
+        agent: Boolean = false,
+        agentPrefix: Option[Prefix] = None,
+        gateway: Boolean = false,
+        commandRoleConfig: Option[Path] = None,
+        sequenceManager: Boolean = false,
+        obsModeConfig: Option[Path] = None
+    ): Start = {
+      if (agent || gateway || sequenceManager)
+        new Start(agent, agentPrefix, gateway, commandRoleConfig, sequenceManager, obsModeConfig)
+      else
+        new Start(agent = true, agentPrefix, gateway = true, commandRoleConfig, sequenceManager = true, obsModeConfig)
+    }
+  }
 }
