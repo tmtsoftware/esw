@@ -267,6 +267,18 @@ object Dependencies {
       Akka.`akka-actor-testkit-typed` % Test
     )
   )
+  val SmSimulationApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-location-api`.value,
+      Csw.`csw-location-client`,
+      Csw.`csw-location-server`,
+      Akka.`akka-actor-typed`,
+      Libs.`case-app`,
+      Libs.scalatest.value            % Test,
+      Libs.`tmt-test-reporter`        % Test,
+      Akka.`akka-actor-testkit-typed` % Test
+    )
+  )
 
   val EswSmApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(

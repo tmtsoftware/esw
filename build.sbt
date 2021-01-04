@@ -23,7 +23,8 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-backend-testkit`,
   `esw-shell`,
   `esw-integration-test`,
-  `esw-http-template-wiring`
+  `esw-http-template-wiring`,
+  `esw-sm-simulation-app`
 )
 
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
@@ -34,7 +35,8 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-agent-service-api`.js,
   `esw-sm-api`.js,
   examples,
-  `esw-shell`
+  `esw-shell`,
+  `esw-sm-simulation-app`
 )
 
 lazy val esw = (project in file("."))
@@ -50,7 +52,7 @@ lazy val esw = (project in file("."))
   )
   .settings(
     ghreleaseRepoOrg := "tmtsoftware",
-    ghreleaseRepoName := EswKeys.projectName,
+    ghreleaseRepoName := EswKeys.projectName
   )
 
 lazy val `esw-ocs` = project
@@ -210,6 +212,7 @@ lazy val `esw-integration-test` = project
     `esw-testkit`,
     `esw-agent-service-app`,
     `esw-shell`,
+    `esw-sm-simulation-app`,
     `esw-test-commons` % Test
   )
   .settings(
@@ -284,6 +287,17 @@ lazy val examples = project
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
   .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
+
+lazy val `esw-sm-simulation-app` = project
+  .in(file("esw-sm-simulation-app"))
+  .enablePlugins(EswBuildInfo, MaybeCoverage)
+  .settings(libraryDependencies ++= Dependencies.SmSimulationApp.value)
+  .dependsOn(
+    `esw-agent-akka-app`,
+    `esw-agent-akka-client`,
+    `esw-sm-app`,
+    `examples`
+  )
 
 lazy val `esw-sm` = project
   .aggregate(
