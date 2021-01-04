@@ -28,5 +28,11 @@ case class ManagedService[T](
     }
   }
 
-  def stop(): Unit = _stop(startResult)
+  def stop(): Unit = {
+    if (enable) {
+      GREEN.println(s"Stopping $serviceName ...")
+      _stop(startResult)
+      GREEN.println(s"Stopped $serviceName")
+    }
+  }
 }
