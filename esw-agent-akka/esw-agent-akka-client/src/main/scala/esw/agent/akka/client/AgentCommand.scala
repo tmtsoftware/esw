@@ -1,7 +1,5 @@
 package esw.agent.akka.client
 
-import java.nio.file.Path
-
 import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
@@ -10,6 +8,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api._
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
+
+import java.nio.file.Path
 
 sealed trait AgentCommand
 sealed trait AgentRemoteCommand extends AgentCommand with AgentAkkaSerializable
@@ -34,13 +34,18 @@ object AgentCommand {
         port: Option[Int],
         version: Option[String]
     ) extends SpawnCommand {
+      private val sentinel       = "redis-sentinel"
+      private def sentinelRunCmd = s"$sentinel $confPath"
+
       override def commandArgs(extraArgs: List[String]): List[String] = {
-        def command(port: Int) = s"redis-sentinel $confPath --port $port"
-        port match {
-          case Some(value) =>
-            List("--prefix", prefix.toString(), "--command", command(value), "--port", value.toString) ::: extraArgs
-          case None => List("--prefix", prefix.toString(), "--command", s"redis-sentinel $confPath") ::: extraArgs
-        }
+        def prefixArgs = List("--prefix", prefix.toString)
+
+        def sentinelArgs =
+          port.fold(List("--command", sentinelRunCmd))(port =>
+            List("--command", s"$sentinelRunCmd --port $port", "--port", port.toString)
+          )
+
+        prefixArgs ++ sentinelArgs ++ extraArgs
       }
 
       override def connection: Connection = TcpConnection(ComponentId(prefix, Service))
@@ -54,13 +59,15 @@ object AgentCommand {
         dbUnixSocketDirs: String,
         version: Option[String]
     ) extends SpawnCommand {
+      private val postgres       = "postgres"
+      private def postgresRunCmd = s"$postgres --hba_file=$pgDataConfPath --unix_socket_directories=$dbUnixSocketDirs"
+
       override def commandArgs(extraArgs: List[String]): List[String] = {
-        def command = s"postgres --hba_file=$pgDataConfPath --unix_socket_directories=$dbUnixSocketDirs"
-        (port match {
-          case Some(value) =>
-            List("--prefix", prefix.toString(), "--command", command + s" -i -p $value", "--port", value.toString)
-          case None => List("--prefix", prefix.toString(), "--command", command)
-        }) ::: extraArgs
+        def prefixArgs = List("--prefix", prefix.toString)
+        def postgresArgs =
+          port.fold(List("--command", postgresRunCmd))(p => List("--command", s"$postgresRunCmd -i -p $p", "--port", p.toString))
+
+        prefixArgs ++ postgresArgs ++ extraArgs
       }
 
       override def connection: Connection = TcpConnection(ComponentId(prefix, Service))

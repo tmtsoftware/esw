@@ -122,7 +122,7 @@ class AgentClientTest extends ActorTestSuit {
     "send spawnRedis message to agent with the Event Server prefix and return a future with agent response | ESW-368" in {
       val configPath    = Path.of("redis-sentinel.conf")
       val spawnResponse = mock[SpawnResponse]
-      val prefix        = AgentConstants.eventPrefix
+      val prefix        = AgentConstants.EventPrefix
       val port          = Some(8090)
       val version       = Some("0.1.0-SNAPSHOT")
 
@@ -138,7 +138,7 @@ class AgentClientTest extends ActorTestSuit {
     "send spawnRedis message to agent with the Alarm Server prefix and return a future with agent response | ESW-368" in {
       val configPath    = Path.of("redis-sentinel.conf")
       val spawnResponse = mock[SpawnResponse]
-      val prefix        = AgentConstants.alarmPrefix
+      val prefix        = AgentConstants.AlarmPrefix
       val port          = Some(8090)
       val version       = Some("0.1.0-SNAPSHOT")
 
@@ -154,7 +154,7 @@ class AgentClientTest extends ActorTestSuit {
     "send spawnPostgres message to agent with the Database Server prefix and return a future with agent response | ESW-368" in {
       val configPath       = Path.of("pg_hba.conf")
       val spawnResponse    = mock[SpawnResponse]
-      val prefix           = AgentConstants.databasePrefix
+      val prefix           = AgentConstants.DatabasePrefix
       val dbUnixSocketDirs = "/tmp"
       val port             = Some(8090)
       val version          = Some("0.1.0-SNAPSHOT")

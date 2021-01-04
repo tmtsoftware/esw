@@ -290,7 +290,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     "spawn and kill Event Server on a given agent | ESW-368" in {
 
       val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf")
-      val eventServerComponentID = ComponentId(AgentConstants.eventPrefix, Service)
+      val eventServerComponentID = ComponentId(AgentConstants.EventPrefix, Service)
       val eventServerConnection  = TcpConnection(eventServerComponentID)
 
       val spawnResponse = agentService
@@ -312,7 +312,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     "spawn and kill Alarm Server on a given agent | ESW-368" in {
 
       val sentinelConf           = ResourceReader.copyToTmp("sentinel.conf")
-      val alarmServerComponentID = ComponentId(AgentConstants.alarmPrefix, Service)
+      val alarmServerComponentID = ComponentId(AgentConstants.AlarmPrefix, Service)
       val alarmServerConnection  = TcpConnection(alarmServerComponentID)
 
       val spawnResponse = agentService
@@ -335,7 +335,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val pgDataConfPath            = ResourceReader.copyToTmp("pg_hba.conf")
       val dbUnixSocketDirs          = "/tmp"
-      val postgresServerComponentID = ComponentId(AgentConstants.databasePrefix, Service)
+      val postgresServerComponentID = ComponentId(AgentConstants.DatabasePrefix, Service)
       val postgresServerConnection  = TcpConnection(postgresServerComponentID)
 
       try {
