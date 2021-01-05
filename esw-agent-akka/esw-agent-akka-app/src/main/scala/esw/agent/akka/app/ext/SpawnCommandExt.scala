@@ -14,11 +14,8 @@ object SpawnCommandExt {
       lazy val args = command.commandArgs(List("-a", agentPrefix.toString()))
 
       command match {
-        case SpawnSequenceComponent(_, _, _, version) =>
-          val a = Coursier.ocsApp(version).launch(coursierChannel, args)
-          println(a.mkString(" "))
-          a
-        case SpawnSequenceManager(_, _, _, version) => Coursier.smApp(version).launch(coursierChannel, args)
+        case SpawnSequenceComponent(_, _, _, version) => Coursier.ocsApp(version).launch(coursierChannel, args)
+        case SpawnSequenceManager(_, _, _, version)   => Coursier.smApp(version).launch(coursierChannel, args)
       }
     }
   }

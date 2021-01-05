@@ -49,8 +49,6 @@ class SequenceComponentBehavior(
       obsMode: ObsMode,
       replyTo: ActorRef[ScriptResponseOrUnhandled]
   ): Behavior[SequenceComponentMsg] = {
-    println("**************---Sequencer---*************")
-    println(subsystem, obsMode)
     val sequencerServer    = sequencerServerFactory.make(subsystem, obsMode, prefix)
     val registrationResult = sequencerServer.start().fold(identity, SequencerLocation)
     replyTo ! registrationResult

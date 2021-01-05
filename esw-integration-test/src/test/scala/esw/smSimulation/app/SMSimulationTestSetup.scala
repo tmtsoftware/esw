@@ -41,6 +41,13 @@ object SMSimulationTestSetup extends EswTestKit {
     SequenceManagerApiFactory.makeHttpClient(smLocation, () => None)
   }
 
+  def getSMClient(
+      prefix: Prefix
+  ): SequenceManagerApi = {
+    val smLocation = resolveHTTPLocation(prefix, Service)
+    SequenceManagerApiFactory.makeHttpClient(smLocation, () => None)
+  }
+
   def unregisterSequenceManager(prefix: Prefix): Done = {
     seqManagerWirings.clear()
     locationService.unregister(AkkaConnection(ComponentId(prefix, Service))).futureValue
