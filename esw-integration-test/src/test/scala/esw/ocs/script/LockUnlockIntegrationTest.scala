@@ -1,13 +1,13 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import com.typesafe.config.ConfigFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.events.EventKey
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
+import esw.gateway.server.testdata.AssemblyBehaviourFactory
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
@@ -17,7 +17,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
+    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory()).futureValue
   }
 
   override def beforeEach(): Unit = {

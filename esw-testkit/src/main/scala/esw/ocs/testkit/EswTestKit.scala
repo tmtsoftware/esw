@@ -3,6 +3,8 @@ package esw.ocs.testkit
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
+import csw.framework.internal.wiring.FrameworkWiring
+import csw.framework.testkit.SpawnComponent
 import csw.location.api.scaladsl.LocationService
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.FrameworkTestKit
@@ -13,6 +15,7 @@ import esw.ocs.testkit.utils._
 abstract class EswTestKit(services: Service*)
     extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)
     with LocationUtils
+    with SpawnComponent
     with SequencerUtils
     with AgentUtils
     with GatewayUtils
@@ -20,6 +23,8 @@ abstract class EswTestKit(services: Service*)
     with AgentServiceUtils {
 
   implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = underlyingFrameworkTestKit.actorSystem
+
+  override lazy val wiring: FrameworkWiring = frameworkTestKit.frameworkWiring
 
   lazy val locationService: LocationService = underlyingFrameworkTestKit.frameworkWiring.locationService
   lazy val eventService: EventService       = underlyingFrameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
