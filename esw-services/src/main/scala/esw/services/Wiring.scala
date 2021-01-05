@@ -15,7 +15,7 @@ class Wiring(startCmd: Start) {
   lazy val gatewayService: ManagedService[GatewayWiring] =
     Gateway.service(startCmd.gateway, startCmd.commandRoleConfig)
   lazy val smService: ManagedService[SequenceManagerWiring] =
-    SequenceManager.service(startCmd.sequenceManager, startCmd.obsModeConfig)
+    SequenceManager.service(startCmd.sequenceManager, startCmd.obsModeConfig, startCmd.agent, startCmd.agentPrefix)
 
   lazy val serviceList = List(agentApp, gatewayService, smService)
 
