@@ -23,11 +23,6 @@ object SMSimulationTestSetup extends EswTestKit {
   private val seqManagerWirings = ArrayBuffer.empty[SequenceManagerWiring]
   val obsModeConfigPath: Path   = Paths.get(ClassLoader.getSystemResource("smSimulationObsModeConfig.conf").toURI)
 
-  def startSequenceComponents(prefixes: Prefix*): Unit =
-    prefixes.foreach { prefix =>
-      seqCompWirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName), None))
-    }
-
   def startSequenceManagerSimulation(
       prefix: Prefix,
       obsModeConfig: Path,
@@ -37,15 +32,14 @@ object SMSimulationTestSetup extends EswTestKit {
     val simulationWiring = new SequenceManagerSimulationWiring(obsModeConfig, isConfigLocal, agentPrefix)
     simulationWiring.startSimulation()
     seqManagerWirings += simulationWiring
-    val smLocation = resolveHTTPLocation(prefix, Service)
-    SequenceManagerApiFactory.makeHttpClient(smLocation, () => None)
+    getSMClient(prefix)
   }
 
   def getSMClient(
       prefix: Prefix
   ): SequenceManagerApi = {
-    val smLocation = resolveHTTPLocation(prefix, Service)
-    SequenceManagerApiFactory.makeHttpClient(smLocation, () => None)
+    val smLocation = resolveAkkaLocation(prefix, Service)
+    SequenceManagerApiFactory.makeAkkaClient(smLocation)
   }
 
   def unregisterSequenceManager(prefix: Prefix): Done = {

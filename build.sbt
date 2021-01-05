@@ -295,7 +295,6 @@ lazy val `esw-sm-simulation-app` = project
   .dependsOn(
     `esw-agent-akka-app`,
     `esw-agent-akka-client`,
-    `esw-sm`,
     `esw-sm-app`,
     `examples`
   )
