@@ -16,6 +16,7 @@ private[ocs] final case class SequencerConfig(
 
 private[ocs] object SequencerConfig {
   def from(config: Config, subsystem: Subsystem, obsMode: ObsMode): SequencerConfig = {
+    println("Sequencer config: " + config.toString)
     val scriptConfig =
       try {
         config.getConfig(s"scripts.${subsystem.name}.${obsMode.name}")

@@ -13,7 +13,12 @@ class SequenceManagerSimulationWiring(obsModeConfigPath: Path, isLocal: Boolean 
 
   // spawn agent
   def spawnAgent(agentPrefix: Prefix): Unit = {
-    val agentSettings = AgentSettings(agentPrefix, ConfigFactory.load())
+    val agentConfig     = ConfigFactory.load()
+    val agentConfigCopy = ConfigFactory.load().getConfig("agent")
+    println("Agent-Config-----")
+    println(agentConfigCopy)
+    val agentSettings = AgentSettings(agentPrefix, agentConfig)
+    println("-------------channel--------- " + agentSettings.coursierChannel)
     AgentApp.start(agentSettings)
   }
 

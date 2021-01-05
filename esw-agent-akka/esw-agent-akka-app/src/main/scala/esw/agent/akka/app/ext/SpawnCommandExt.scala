@@ -15,7 +15,9 @@ object SpawnCommandExt {
 
       command match {
         case SpawnSequenceComponent(_, _, _, version) =>
-          Coursier.ocsApp(version).launch(coursierChannel, args)
+          val a = Coursier.ocsApp(version).launch(coursierChannel, args)
+          println(a.mkString(" "))
+          a
         case SpawnSequenceManager(_, _, _, version) => Coursier.smApp(version).launch(coursierChannel, args)
       }
     }
