@@ -2,7 +2,6 @@ package esw.gateway.server
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.stream.scaladsl.Sink
-import com.typesafe.config.ConfigFactory
 import csw.event.client.EventServiceFactory
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Assembly
@@ -16,6 +15,7 @@ import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.server.testdata.AssemblyBehaviourFactory
 import esw.gateway.server.testdata.SampleAssemblyHandlers._
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
@@ -26,7 +26,7 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
+    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory()).futureValue
   }
 
   "CommandApi" must {

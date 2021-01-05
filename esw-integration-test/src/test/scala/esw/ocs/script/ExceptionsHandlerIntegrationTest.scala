@@ -1,7 +1,6 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
@@ -11,6 +10,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
+import esw.gateway.server.testdata.HcdBehaviourFactory
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.models.ObsMode
@@ -30,7 +30,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneHcd.conf"))
+    spawnHCD(Prefix("esw.testHcd"), new HcdBehaviourFactory()).futureValue
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()
