@@ -5,7 +5,8 @@ import caseapp.RemainingArgs
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 import esw.commons.cli.EswCommandApp
-import esw.services.Command._
+import esw.services.cli.Command
+import esw.services.cli.Command._
 
 import scala.util.control.NonFatal
 

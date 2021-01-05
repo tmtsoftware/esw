@@ -1,4 +1,4 @@
-package esw.services
+package esw.services.internal
 
 import csw.services.utils.ColoredConsole.{GREEN, RED}
 

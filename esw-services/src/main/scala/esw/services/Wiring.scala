@@ -4,7 +4,8 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.client.ActorSystemFactory
 import esw.agent.akka.app.AgentWiring
 import esw.gateway.server.GatewayWiring
-import esw.services.Command.Start
+import esw.services.cli.Command.Start
+import esw.services.internal.ManagedService
 import esw.sm.app.SequenceManagerWiring
 
 class Wiring(startCmd: Start) {

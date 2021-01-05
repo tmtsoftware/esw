@@ -5,6 +5,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
 import esw.constants.CommonTimeouts
+import esw.services.internal.ManagedService
 
 import scala.concurrent.Await
 

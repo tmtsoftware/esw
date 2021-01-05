@@ -1,7 +1,9 @@
 package esw.services
 
 import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
+import csw.services.utils.ColoredConsole.GREEN
 import esw.gateway.server.{GatewayMain, GatewayWiring}
+import esw.services.internal.ManagedService
 
 import java.nio.file.{Files, Path}
 import scala.io.Source
@@ -25,6 +27,7 @@ object Gateway {
         Files.write(tempConfigPath, reader.mkString.getBytes)
       }
       tempConfigPath.toFile.deleteOnExit()
+      GREEN.println("Using default command role config for gateway.")
       tempConfigPath
     })
   }

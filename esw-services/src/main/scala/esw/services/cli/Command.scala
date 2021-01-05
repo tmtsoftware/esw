@@ -1,4 +1,4 @@
-package esw.services
+package esw.services.cli
 
 import caseapp.core.Error
 import caseapp.core.argparser.SimpleArgParser

@@ -1,7 +1,9 @@
 package esw.services
 
 import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
+import csw.services.utils.ColoredConsole.GREEN
 import esw.constants.CommonTimeouts
+import esw.services.internal.ManagedService
 import esw.sm.app.{SequenceManagerApp, SequenceManagerWiring}
 
 import java.nio.file.{Files, Path}
@@ -30,6 +32,7 @@ object SequenceManager {
         Files.write(tempConfigPath, reader.mkString.getBytes)
       }
       tempConfigPath.toFile.deleteOnExit()
+      GREEN.println("Using default obsMode config for sequence manager.")
       tempConfigPath
     })
   }
