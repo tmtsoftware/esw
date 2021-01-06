@@ -38,10 +38,9 @@ object SequenceManagerSimulationApp extends EswCommandApp[SequenceManagerSimulat
       startLogging: Boolean
   ): SequenceManagerSimulationWiring = {
 
-
     lazy val defaultConfPath = ResourceReader.copyToTmp("smSimulationObsMode.conf").getAbsolutePath
 
-    val configPath = obsModeConfigPath.getOrElse(Path.of(defaultConfPath))
+    val configPath       = obsModeConfigPath.getOrElse(Path.of(defaultConfPath))
     val simulationWiring = new SequenceManagerSimulationWiring(configPath, isConfigLocal, agentPrefix)
     import simulationWiring._
 

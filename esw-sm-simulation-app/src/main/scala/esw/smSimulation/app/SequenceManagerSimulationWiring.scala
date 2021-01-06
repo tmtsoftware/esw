@@ -14,11 +14,10 @@ import esw.smSimulation.app.utils.ResourceReader
 class SequenceManagerSimulationWiring(obsModeConfigPath: Path, isLocal: Boolean = true, agentPrefix: Option[Prefix])
     extends SequenceManagerWiring(obsModeConfigPath, isLocal, agentPrefix) {
 
-
-  private lazy val channelConfFile : String = ResourceReader.copyToTmp("apps.json").getAbsolutePath
-  private lazy val agentConfigS = s"""
+  private lazy val channelConfFile: String = ResourceReader.copyToTmp("apps.json").getAbsolutePath
+  private lazy val agentConfigS            = s"""
                         |agent {
-                        |  durationToWaitForComponentRegistration = 9s
+                        |  durationToWaitForComponentRegistration = 35s
                         |  coursier.channel = "file://${channelConfFile}"
                         |}""".stripMargin
 
