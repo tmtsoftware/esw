@@ -12,11 +12,11 @@ import csw.config.client.scaladsl.ConfigClientFactory
 import csw.event.client.EventServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandResponse.{Completed, Error}
-import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models.Id
-import csw.params.events.{EventKey, EventName, SystemEvent}
+import csw.params.events.{EventKey, EventName, ObserveEvent, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, LGSF, NFIRAOS, TCS}
 import csw.testkit.ConfigTestKit
@@ -26,6 +26,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{ObsMode, Step, StepList}
 import esw.ocs.api.protocol._
+import esw.ocs.dsl.params.ObserveEventFactory.ObserveStart
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service._
 
@@ -368,6 +369,22 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val response = ocsSequencer.submitAndWait(sequence).futureValue
       response shouldBe an[Error]
       response.asInstanceOf[Error].message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: boom"
+    }
+
+    "be able to send publish and subscribe to observe event published by Sequencer | ESW-81" in {
+      val command  = Observe(Prefix("esw.test"), CommandName("observe-start"), None)
+      val sequence = Sequence(command)
+
+      val eventName = EventName(ObserveStart.entryName)
+      val eventKey  = EventKey(Prefix("ESW.test"), eventName)
+      val testProbe = createTestProbe(Set(eventKey))
+
+      ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
+
+      val actualObserveEvent = testProbe.expectMessageType[ObserveEvent]
+      actualObserveEvent.eventName should ===(eventName)
+      actualObserveEvent.source should ===(Prefix("ESW.test"))
+      actualObserveEvent.paramSet shouldBe Set(StringKey.make("obsId").set("some-id"))
     }
 
   }

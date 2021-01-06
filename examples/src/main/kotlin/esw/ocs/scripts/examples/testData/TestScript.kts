@@ -3,12 +3,14 @@ package esw.ocs.scripts.examples.testData
 import com.typesafe.config.ConfigFactory
 import csw.alarm.models.Key.AlarmKey
 import csw.params.commands.CommandResponse
+import csw.params.core.models.ObsId
 import csw.params.core.states.StateName
 import csw.params.events.Event
 import csw.prefix.models.Prefix
 import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
+import esw.ocs.dsl.params.ObserveEventFactory.ObserveStart
 import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
 import kotlin.time.milliseconds
@@ -22,6 +24,10 @@ script {
     loadScripts(InitialCommandHandler)
 
     onSetup("command-2") {
+    }
+
+    onObserve("observe-start") {
+        publishEvent(ObserveStart().make("ESW.test", ObsId("some-id")))
     }
 
     onSetup("command-3") {
