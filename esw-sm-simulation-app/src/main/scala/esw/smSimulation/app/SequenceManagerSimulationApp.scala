@@ -9,6 +9,7 @@ import csw.prefix.models.Prefix
 import esw.commons.cli.EswCommandApp
 import esw.constants.CommonTimeouts
 import esw.smSimulation.app.SequenceManagerSimulationCommand._
+import esw.smSimulation.app.utils.ResourceReader
 
 import scala.concurrent.Await
 import scala.util.control.NonFatal
@@ -31,13 +32,17 @@ object SequenceManagerSimulationApp extends EswCommandApp[SequenceManagerSimulat
     }
 
   def start(
-      obsModeConfigPath: Path,
+      obsModeConfigPath: Option[Path],
       isConfigLocal: Boolean,
       agentPrefix: Option[Prefix],
       startLogging: Boolean
   ): SequenceManagerSimulationWiring = {
 
-    val simulationWiring = new SequenceManagerSimulationWiring(obsModeConfigPath, isConfigLocal, agentPrefix)
+
+    lazy val defaultConfPath = ResourceReader.copyToTmp("smSimulationObsMode.conf").getAbsolutePath
+
+    val configPath = obsModeConfigPath.getOrElse(Path.of(defaultConfPath))
+    val simulationWiring = new SequenceManagerSimulationWiring(configPath, isConfigLocal, agentPrefix)
     import simulationWiring._
 
     try {

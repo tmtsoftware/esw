@@ -9,15 +9,25 @@ import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.agent.akka.app.{AgentApp, AgentSettings}
 import esw.commons.utils.location.EswLocationError
 import esw.sm.app.SequenceManagerWiring
+import esw.smSimulation.app.utils.ResourceReader
 
 class SequenceManagerSimulationWiring(obsModeConfigPath: Path, isLocal: Boolean = true, agentPrefix: Option[Prefix])
     extends SequenceManagerWiring(obsModeConfigPath, isLocal, agentPrefix) {
 
+
+  private lazy val channelConfFile : String = ResourceReader.copyToTmp("apps.json").getAbsolutePath
+  private lazy val agentConfigS = s"""
+                        |agent {
+                        |  durationToWaitForComponentRegistration = 9s
+                        |  coursier.channel = "file://${channelConfFile}"
+                        |}""".stripMargin
+
+  private lazy val agentConfig = ConfigFactory.parseString(agentConfigS).withFallback(ConfigFactory.load())
+
   // spawn agent
   def spawnAgent(agentPrefix: Prefix): Unit = {
-    val agentConfig   = ConfigFactory.load()
     val agentSettings = AgentSettings(agentPrefix, agentConfig)
-    println(">>>>>>>>>>>>>>>>>>>>> coursier channel" + agentSettings.coursierChannel)
+    println(">>>>>>>>>>>>>>>>>>>>> coursier channel " + agentSettings.coursierChannel)
     AgentApp.start(agentSettings)
   }
 

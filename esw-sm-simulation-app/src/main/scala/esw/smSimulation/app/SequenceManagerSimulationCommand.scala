@@ -25,7 +25,7 @@ object SequenceManagerSimulationCommand {
       @HelpMessage(
         "Config file path which has mapping of sequencers and resources needed for different observing modes"
       )
-      obsModeConfigPath: Path,
+      obsModeConfigPath: Option[Path],
       @ExtraName("l")
       @HelpMessage(
         "Option argument: true if config is to be read locally or false if from remote server: Default value: false - read config from remote server"
