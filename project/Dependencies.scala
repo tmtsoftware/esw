@@ -305,8 +305,9 @@ object Dependencies {
     Seq(
       Libs.`case-app`,
       Csw.`csw-services`,
-      Libs.scalatest.value % Test,
-      Libs.`mockito-scala` % Test
+      Libs.scalatest.value     % Test,
+      Libs.`mockito-scala`     % Test,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 
