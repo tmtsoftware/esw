@@ -20,17 +20,17 @@ class SequencerObserveEventsTest extends BaseTestSuite {
     "create Observe Event with obsId parameters | ESW-81" in {
       Table(
         ("Observe Event", "Event Name", "Prefix"),
-        (PresetStart.make(prefixStr, ObsId(obsId)), PresetStart.entryName, prefixStr),
-        (PresetStart.make(prefixStr, ObsId(obsId)), PresetStart.entryName, prefixStr),
-        (PresetEnd.make(prefixStr, ObsId(obsId)), PresetEnd.entryName, prefixStr),
-        (GuidstarAcqStart.make(prefixStr, ObsId(obsId)), GuidstarAcqStart.entryName, prefixStr),
-        (GuidstarAcqEnd.make(prefixStr, ObsId(obsId)), GuidstarAcqEnd.entryName, prefixStr),
-        (ScitargetAcqStart.make(prefixStr, ObsId(obsId)), ScitargetAcqStart.entryName, prefixStr),
-        (ScitargetAcqEnd.make(prefixStr, ObsId(obsId)), ScitargetAcqEnd.entryName, prefixStr),
-        (ObservationStart.make(prefixStr, ObsId(obsId)), ObservationStart.entryName, prefixStr),
-        (ObservationEnd.make(prefixStr, ObsId(obsId)), ObservationEnd.entryName, prefixStr),
-        (ObserveStart.make(prefixStr, ObsId(obsId)), ObserveStart.entryName, prefixStr),
-        (ObserveEnd.make(prefixStr, ObsId(obsId)), ObserveEnd.entryName, prefixStr)
+        (PresetStart.make(prefixStr, ObsId(obsId)), "PresetStart", prefixStr),
+        (PresetStart.make(prefixStr, ObsId(obsId)), "PresetStart", prefixStr),
+        (PresetEnd.make(prefixStr, ObsId(obsId)), "PresetEnd", prefixStr),
+        (GuidstarAcqStart.make(prefixStr, ObsId(obsId)), "GuidstarAcqStart", prefixStr),
+        (GuidstarAcqEnd.make(prefixStr, ObsId(obsId)), "GuidstarAcqEnd", prefixStr),
+        (ScitargetAcqStart.make(prefixStr, ObsId(obsId)), "ScitargetAcqStart", prefixStr),
+        (ScitargetAcqEnd.make(prefixStr, ObsId(obsId)), "ScitargetAcqEnd", prefixStr),
+        (ObservationStart.make(prefixStr, ObsId(obsId)), "ObservationStart", prefixStr),
+        (ObservationEnd.make(prefixStr, ObsId(obsId)), "ObservationEnd", prefixStr),
+        (ObserveStart.make(prefixStr, ObsId(obsId)), "ObserveStart", prefixStr),
+        (ObserveEnd.make(prefixStr, ObsId(obsId)), "ObserveEnd", prefixStr)
       ).forEvery((observeEvent, expectedEventName, expectedPrefixStr) => {
         observeEvent.eventName should ===(EventName(expectedEventName))
         observeEvent.source should ===(Prefix(expectedPrefixStr))
@@ -41,13 +41,13 @@ class SequencerObserveEventsTest extends BaseTestSuite {
     "create Observe Event with obsId and exposure Id parameters | ESW-81" in {
       Table(
         ("Observe Event", "Event Name", "Prefix"),
-        (ExposureStart.make(prefixStr, ObsId(obsId), exposureId), ExposureStart.entryName, prefixStr),
-        (ExposureEnd.make(prefixStr, ObsId(obsId), exposureId), ExposureEnd.entryName, prefixStr),
-        (readoutEnd.make(prefixStr, ObsId(obsId), exposureId), readoutEnd.entryName, prefixStr),
-        (readoutFailed.make(prefixStr, ObsId(obsId), exposureId), readoutFailed.entryName, prefixStr),
-        (dataWriteStart.make(prefixStr, ObsId(obsId), exposureId), dataWriteStart.entryName, prefixStr),
-        (dataWriteEnd.make(prefixStr, ObsId(obsId), exposureId), dataWriteEnd.entryName, prefixStr),
-        (PrepareStart.make(prefixStr, ObsId(obsId), exposureId), PrepareStart.entryName, prefixStr)
+        (ExposureStart.make(prefixStr, ObsId(obsId), exposureId), "ExposureStart", prefixStr),
+        (ExposureEnd.make(prefixStr, ObsId(obsId), exposureId), "ExposureEnd", prefixStr),
+        (readoutEnd.make(prefixStr, ObsId(obsId), exposureId), "readoutEnd", prefixStr),
+        (readoutFailed.make(prefixStr, ObsId(obsId), exposureId), "readoutFailed", prefixStr),
+        (dataWriteStart.make(prefixStr, ObsId(obsId), exposureId), "dataWriteStart", prefixStr),
+        (dataWriteEnd.make(prefixStr, ObsId(obsId), exposureId), "dataWriteEnd", prefixStr),
+        (PrepareStart.make(prefixStr, ObsId(obsId), exposureId), "PrepareStart", prefixStr)
       ).forEvery((observeEvent, expectedEventName, expectedPrefixStr) => {
         observeEvent.eventName should ===(EventName(expectedEventName))
         observeEvent.source should ===(Prefix(expectedPrefixStr))
@@ -57,7 +57,7 @@ class SequencerObserveEventsTest extends BaseTestSuite {
 
     "create Observe Event with fixed Parameter set | ESW-81" in {
       val event = DowntimeStart.make(prefixStr, ObsId(obsId), "bad weather")
-      event.eventName should ===(EventName(DowntimeStart.entryName))
+      event.eventName should ===(EventName("DowntimeStart"))
       event.source should ===(Prefix(prefixStr))
       event.paramSet shouldBe Set(obsIdParam, StringKey.make("reason").set("bad weather"))
     }

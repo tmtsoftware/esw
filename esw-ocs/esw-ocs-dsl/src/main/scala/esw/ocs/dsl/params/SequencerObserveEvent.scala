@@ -5,15 +5,14 @@ import csw.params.core.generics.Parameter
 import csw.params.core.models.ObsId
 import csw.params.events.{EventName, ObserveEvent}
 import csw.prefix.models.Prefix
-import enumeratum.{Enum, EnumEntry}
 
-import scala.collection.immutable.IndexedSeq
-
-sealed trait SequencerObserveEvent extends EnumEntry
+sealed trait SequencerObserveEvent {
+  protected def name: String = this.getClass.getSimpleName.dropRight(1)
+}
 
 sealed trait ObserveEvents extends SequencerObserveEvent {
   def make(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName), Set(StringKey.make("obsId").set(obsId.obsId)))
+    ObserveEvent(Prefix(sourcePrefix), EventName(this.name), Set(StringKey.make("obsId").set(obsId.obsId)))
 }
 
 sealed trait ObserveEventsWithExposureId extends SequencerObserveEvent {
@@ -22,12 +21,11 @@ sealed trait ObserveEventsWithExposureId extends SequencerObserveEvent {
       StringKey.make("obsId").set(obsId.obsId),
       StringKey.make("exposureId").set(exposureId)
     )
-    ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName), paramset)
+    ObserveEvent(Prefix(sourcePrefix), EventName(this.name), paramset)
   }
 }
 
-object SequencerObserveEvent extends Enum[SequencerObserveEvent] {
-  override def values: IndexedSeq[SequencerObserveEvent] = findValues
+object SequencerObserveEvent {
 
   case object PresetStart       extends ObserveEvents
   case object PresetEnd         extends ObserveEvents
@@ -54,7 +52,7 @@ object SequencerObserveEvent extends Enum[SequencerObserveEvent] {
     def make(sourcePrefix: String, obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
       val obsIdParam          = StringKey.make("obsId").set(obsId.obsId)
       val downtimeReasonParam = StringKey.make("reason").set(reasonForDowntime)
-      ObserveEvent(Prefix(sourcePrefix), EventName(this.entryName), Set(obsIdParam, downtimeReasonParam))
+      ObserveEvent(Prefix(sourcePrefix), EventName(this.name), Set(obsIdParam, downtimeReasonParam))
     }
   }
 }

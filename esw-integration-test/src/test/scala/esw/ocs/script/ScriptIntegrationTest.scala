@@ -26,7 +26,6 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{ObsMode, Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.dsl.params.ObserveEventFactory.ObserveStart
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service._
 
@@ -375,14 +374,14 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command  = Observe(Prefix("esw.test"), CommandName("observe-start"), None)
       val sequence = Sequence(command)
 
-      val eventName = EventName(ObserveStart.entryName)
-      val eventKey  = EventKey(Prefix("ESW.test"), eventName)
-      val testProbe = createTestProbe(Set(eventKey))
+      val expectedEventName = EventName("ObserveStart")
+      val expectedEventKey  = EventKey(Prefix("ESW.test"), expectedEventName)
+      val testProbe         = createTestProbe(Set(expectedEventKey))
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       val actualObserveEvent = testProbe.expectMessageType[ObserveEvent]
-      actualObserveEvent.eventName should ===(eventName)
+      actualObserveEvent.eventName should ===(expectedEventName)
       actualObserveEvent.source should ===(Prefix("ESW.test"))
       actualObserveEvent.paramSet shouldBe Set(StringKey.make("obsId").set("some-id"))
     }
