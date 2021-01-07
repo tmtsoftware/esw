@@ -26,17 +26,18 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
 
   def run(command: SequenceManagerAppCommand, startLogging: Boolean = true): SequenceManagerWiring =
     command match {
-      case StartCommand(obsModeConfigPath, isConfigLocal, agentPrefix) =>
-        start(obsModeConfigPath, isConfigLocal, agentPrefix, startLogging)
+      case StartCommand(obsModeConfigPath, isConfigLocal, agentPrefix, simulation) =>
+        start(obsModeConfigPath, isConfigLocal, agentPrefix, startLogging, simulation)
     }
 
   def start(
       obsModeConfigPath: Path,
       isConfigLocal: Boolean,
       agentPrefix: Option[Prefix],
-      startLogging: Boolean
+      startLogging: Boolean,
+      simulation: Boolean
   ): SequenceManagerWiring = {
-    val sequenceManagerWiring = new SequenceManagerWiring(obsModeConfigPath, isConfigLocal, agentPrefix)
+    val sequenceManagerWiring = new SequenceManagerWiring(obsModeConfigPath, isConfigLocal, agentPrefix, simulation)
     import sequenceManagerWiring._
 
     try {

@@ -43,7 +43,7 @@ import msocket.jvm.metrics.LabelExtractor
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
-class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPrefix: Option[Prefix]) {
+class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPrefix: Option[Prefix], simulation: Boolean = false) {
   private[sm] lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(smActorSystem)
@@ -62,7 +62,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   private lazy val sequenceComponentAllocator = new SequenceComponentAllocator()
   private lazy val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator)
   private lazy val agentAllocator             = new AgentAllocator()
-  private lazy val agentUtil                  = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator)
+  private lazy val agentUtil                  = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator, simulation)
   private lazy val sequencerUtil              = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
   private lazy val obsModeConfig =
@@ -141,9 +141,10 @@ private[sm] object SequenceManagerWiring {
       isLocal: Boolean,
       agentPrefix: Option[Prefix],
       _actorSystem: ActorSystem[SpawnProtocol.Command],
-      _securityDirectives: SecurityDirectives
+      _securityDirectives: SecurityDirectives,
+      simulation: Boolean = false
   ): SequenceManagerWiring =
-    new SequenceManagerWiring(obsModeConfig, isLocal, agentPrefix) {
+    new SequenceManagerWiring(obsModeConfig, isLocal, agentPrefix, simulation) {
       override private[sm] lazy val smActorSystem       = _actorSystem
       override private[esw] lazy val securityDirectives = _securityDirectives
     }

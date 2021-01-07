@@ -33,6 +33,8 @@ object SequenceManagerAppCommand {
       local: Boolean = false,
       @HelpMessage("optional argument: agentPrefix on which sequence manager will be spawned, ex: ESW.agent1, IRIS.agent2 etc")
       @ExtraName("a")
-      agentPrefix: Option[Prefix]
+      agentPrefix: Option[Prefix],
+      @HelpMessage("simulation mode")
+      simulation: Boolean = false
   ) extends SequenceManagerAppCommand
 }

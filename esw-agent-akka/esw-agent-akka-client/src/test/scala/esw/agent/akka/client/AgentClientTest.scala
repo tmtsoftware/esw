@@ -85,7 +85,7 @@ class AgentClientTest extends ActorTestSuit {
       val componentName = prefix.componentName
       val spawnResponse = mock[SpawnResponse]
       withBehavior {
-        case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None) => replyTo ! spawnResponse
+        case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceComponent(componentName).futureValue should ===(spawnResponse)
       }
@@ -110,7 +110,7 @@ class AgentClientTest extends ActorTestSuit {
       val configPath    = Path.of("obsMode.conf")
       val spawnResponse = mock[SpawnResponse]
       withBehavior {
-        case SpawnSequenceManager(replyTo, `configPath`, true, None) => replyTo ! spawnResponse
+        case SpawnSequenceManager(replyTo, `configPath`, true, None, _) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceManager(configPath, isConfigLocal = true).futureValue should ===(spawnResponse)
       }
