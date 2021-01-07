@@ -7,12 +7,18 @@ import csw.params.events.{EventName, ObserveEvent}
 import csw.prefix.models.Prefix
 
 sealed trait SequencerObserveEvent {
-  protected def name: String = this.getClass.getSimpleName.dropRight(1)
+  protected def eventName: EventName = {
+    val className = this.getClass.getSimpleName
+    EventName(
+      if (className.contains("$")) className.dropRight(1)
+      else className
+    )
+  }
 }
 
 sealed trait ObserveEvents extends SequencerObserveEvent {
   def make(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    ObserveEvent(Prefix(sourcePrefix), EventName(this.name), Set(StringKey.make("obsId").set(obsId.obsId)))
+    ObserveEvent(Prefix(sourcePrefix), this.eventName, Set(StringKey.make("obsId").set(obsId.obsId)))
 }
 
 sealed trait ObserveEventsWithExposureId extends SequencerObserveEvent {
@@ -21,7 +27,7 @@ sealed trait ObserveEventsWithExposureId extends SequencerObserveEvent {
       StringKey.make("obsId").set(obsId.obsId),
       StringKey.make("exposureId").set(exposureId)
     )
-    ObserveEvent(Prefix(sourcePrefix), EventName(this.name), paramset)
+    ObserveEvent(Prefix(sourcePrefix), this.eventName, paramset)
   }
 }
 
@@ -52,7 +58,7 @@ object SequencerObserveEvent {
     def make(sourcePrefix: String, obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
       val obsIdParam          = StringKey.make("obsId").set(obsId.obsId)
       val downtimeReasonParam = StringKey.make("reason").set(reasonForDowntime)
-      ObserveEvent(Prefix(sourcePrefix), EventName(this.name), Set(obsIdParam, downtimeReasonParam))
+      ObserveEvent(Prefix(sourcePrefix), this.eventName, Set(obsIdParam, downtimeReasonParam))
     }
   }
 }
