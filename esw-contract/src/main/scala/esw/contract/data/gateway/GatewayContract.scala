@@ -2,6 +2,7 @@ package esw.contract.data.gateway
 
 import akka.Done
 import csw.alarm.models.AlarmSeverity
+import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.contract.ResourceFetcher
 import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
@@ -12,13 +13,19 @@ import csw.prefix.models.Subsystem
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayRequest.{
   ComponentCommand,
+  GetComponentLifecycleState,
+  GetContainerLifecycleState,
   GetEvent,
   GetLogMetadata,
+  GoOffline,
+  GoOnline,
   Log,
   PublishEvent,
+  Restart,
   SequencerCommand,
   SetAlarmSeverity,
-  SetLogLevel
+  SetLogLevel,
+  Shutdown
 }
 import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
@@ -43,7 +50,9 @@ object GatewayContract extends GatewayCodecs with GatewayData {
       invalidMaxFrequency,
       setAlarmSeverityFailure
     ),
-    ModelType(Level)
+    ModelType(Level),
+    ModelType(ContainerLifecycleState),
+    ModelType(SupervisorLifecycleState)
   )
 
   private val httpRequests = new RequestSet[GatewayRequest] {
@@ -55,6 +64,12 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     requestType(log)
     requestType(setLogLevel)
     requestType(getLogMetadata)
+    requestType(gateWayReqGoOnline)
+    requestType(gateWayReqGoOffline)
+    requestType(shutdown)
+    requestType(restart)
+    requestType(getComponentLifecycleState)
+    requestType(getContainerLifecycleState)
   }
 
   private val websocketRequests = new RequestSet[GatewayStreamRequest] {
@@ -86,7 +101,13 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     Endpoint(name[SetAlarmSeverity], name[Done], List(name[SetAlarmSeverityFailure])),
     Endpoint(name[Log], name[Done]),
     Endpoint(name[SetLogLevel], name[Done]),
-    Endpoint(name[GetLogMetadata], name[LogMetadata])
+    Endpoint(name[GetLogMetadata], name[LogMetadata]),
+    Endpoint(name[Shutdown], name[Done]),
+    Endpoint(name[Restart], name[Done]),
+    Endpoint(name[GoOnline], name[Done]),
+    Endpoint(name[GoOffline], name[Done]),
+    Endpoint(name[GetContainerLifecycleState], name[ContainerLifecycleState]),
+    Endpoint(name[GetComponentLifecycleState], name[SupervisorLifecycleState])
   )
 
   private val webSocketEndpoints: List[Endpoint] = List(
