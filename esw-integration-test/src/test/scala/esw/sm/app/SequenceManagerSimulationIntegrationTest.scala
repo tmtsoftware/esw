@@ -64,10 +64,6 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer) w
       // ESW-146 : Send Sequence to master sequencer. (TestScript5 is loaded in master sequencer)
       SequencerApiFactory.make(location).submitAndWait(sequence).futureValue shouldBe a[Completed]
 
-      // ESW-146 : Verify command handler of the script is called
-      val event = eventSubscriber.get(EventKey(Prefix(ESW, "IRIS_cal"), EventName("event-1"))).futureValue
-      event.isInvalid shouldBe false
-
       sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe a[ShutdownSequencersResponse.Success.type]
     }
   }
