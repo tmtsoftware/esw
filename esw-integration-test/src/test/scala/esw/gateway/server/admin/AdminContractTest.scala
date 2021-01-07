@@ -197,7 +197,7 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
           entity = HttpEntity(ContentTypes.`application/json`, str)
         )
       val response = Await.result(Http().singleRequest(request), 5.seconds)
-      response.status should ===(StatusCodes.BadRequest)
+      response.status shouldBe StatusCodes.BadRequest
     }
 
     "be able to send components into offline and online state | ESW-378" in {
@@ -208,39 +208,39 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
       import esw.gateway.server.admin.SampleContainerState._
 
       //test AdminApi.goOffline Api for container
-      adminClient.goOffline(eswContainerCompId).futureValue should ===(Done)
+      adminClient.goOffline(eswContainerCompId).futureValue shouldBe Done
 
-      adminClient.getContainerLifecycleState(eswContainerPrefix).futureValue should ===(ContainerLifecycleState.Running)
-      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue should ===(SupervisorLifecycleState.RunningOffline)
-      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue should ===(SupervisorLifecycleState.RunningOffline)
+      adminClient.getContainerLifecycleState(eswContainerPrefix).futureValue shouldBe ContainerLifecycleState.Running
+      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue shouldBe SupervisorLifecycleState.RunningOffline
+      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue shouldBe SupervisorLifecycleState.RunningOffline
       //**************************************************************************************\\
 
       //test AdminApi.goOnline Api for container
-      adminClient.goOnline(eswContainerCompId).futureValue should ===(Done)
+      adminClient.goOnline(eswContainerCompId).futureValue shouldBe Done
 
-      adminClient.getContainerLifecycleState(eswContainerPrefix).futureValue should ===(ContainerLifecycleState.Running)
-      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue should ===(SupervisorLifecycleState.Running)
-      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue should ===(SupervisorLifecycleState.Running)
+      adminClient.getContainerLifecycleState(eswContainerPrefix).futureValue shouldBe ContainerLifecycleState.Running
+      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue shouldBe SupervisorLifecycleState.Running
+      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue shouldBe SupervisorLifecycleState.Running
       //**************************************************************************************\\
 
       //test AdminApi.goOffline Api for component(HCD or Assembly)
-      adminClient.goOffline(eswAssemblyCompId).futureValue should ===(Done)
+      adminClient.goOffline(eswAssemblyCompId).futureValue shouldBe Done
 
-      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue should ===(SupervisorLifecycleState.RunningOffline)
-      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue should ===(SupervisorLifecycleState.Running)
+      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue shouldBe SupervisorLifecycleState.RunningOffline
+      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue shouldBe SupervisorLifecycleState.Running
       //**************************************************************************************\\
 
       //test AdminApi.goOnline Api for component(HCD or Assembly)
-      adminClient.goOnline(eswAssemblyCompId).futureValue should ===(Done)
+      adminClient.goOnline(eswAssemblyCompId).futureValue shouldBe Done
 
-      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue should ===(SupervisorLifecycleState.Running)
-      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue should ===(SupervisorLifecycleState.Running)
+      adminClient.getComponentLifecycleState(eswAssemblyCompId).futureValue shouldBe SupervisorLifecycleState.Running
+      adminClient.getComponentLifecycleState(eswGalilHcdCompId).futureValue shouldBe SupervisorLifecycleState.Running
       //**************************************************************************************\\
 
-      adminClient.shutdown(eswContainerCompId).futureValue should ===(Done)
+      adminClient.shutdown(eswContainerCompId).futureValue shouldBe Done
 
       eventually {
-        locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue should ===(None)
+        locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
       }
       actorSystem.whenTerminated.futureValue
     }
@@ -266,34 +266,44 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
       galilHcdCommandService.subscribeCurrentState(galilStateNames, galilHcdProbe.ref ! _)
 
       //test AdminApi.restart Api for container
-      adminClient.restart(eswContainerCompId).futureValue should ===(Done)
+      val restartResForContainer = adminClient.restart(eswContainerCompId)
 
       galilHcdProbe.expectMessage(galilShutdownCurrentState)
       assemblyProbe.expectMessage(assemblyShutdownCurrentState)
       galilHcdProbe.expectMessage(galilInitializeCurrentState)
       assemblyProbe.expectMessage(assemblyInitializeCurrentState)
+
+      restartResForContainer.futureValue shouldBe Done
       //**************************************************************************************\\
 
       //test AdminApi.restart Api for component(HCD or Assembly)
-      adminClient.restart(eswGalilHcdCompId).futureValue should ===(Done)
+      val restartResForHcd = adminClient.restart(eswGalilHcdCompId)
 
       galilHcdProbe.expectMessage(galilShutdownCurrentState)
       galilHcdProbe.expectMessage(galilInitializeCurrentState)
       assemblyProbe.expectNoMessage()
+
+      restartResForHcd.futureValue shouldBe Done
       //**************************************************************************************\\
 
       //test AdminApi.shutdown Api for component(HCD or Assembly)
-      adminClient.shutdown(eswAssemblyCompId).futureValue should ===(Done)
+      val shutdownResForAssembly = adminClient.shutdown(eswAssemblyCompId)
       assemblyProbe.expectMessage(assemblyShutdownCurrentState)
+
+      shutdownResForAssembly.futureValue shouldBe Done
       //**************************************************************************************\\
 
       //test AdminApi.shutdown Api for container
-      adminClient.shutdown(eswContainerCompId).futureValue should ===(Done)
+      val shutdownResForContainer = adminClient.shutdown(eswContainerCompId)
+
       galilHcdProbe.expectMessage(galilShutdownCurrentState)
       assemblyProbe.expectNoMessage()
 
+      shutdownResForContainer.futureValue shouldBe Done
+      //**************************************************************************************\\
+
       eventually {
-        locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue should ===(None)
+        locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
       }
       actorSystem.whenTerminated.futureValue
     }
