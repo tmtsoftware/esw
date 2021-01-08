@@ -45,7 +45,7 @@ object SequenceManager {
   }
 
   private def startSM(obsModeConfigPath: Path, agentPrefix: Option[Prefix]): SequenceManagerWiring =
-    SequenceManagerApp.start(obsModeConfigPath, isConfigLocal = true, agentPrefix, startLogging = true)
+    SequenceManagerApp.start(obsModeConfigPath, isConfigLocal = true, agentPrefix, startLogging = true, simulation = false)
 
   private def stopSM(smWiring: SequenceManagerWiring): Unit =
     Await.result(smWiring.shutdown(ActorSystemTerminateReason), CommonTimeouts.Wiring)

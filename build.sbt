@@ -335,7 +335,8 @@ lazy val `esw-sm-app` = project
   .dependsOn(
     `esw-sm-impl`,
     `esw-http-core`,
-    `esw-sm-handler`
+    `esw-sm-handler`,
+    `esw-agent-akka-app`
   )
 
 lazy val `esw-services` = project

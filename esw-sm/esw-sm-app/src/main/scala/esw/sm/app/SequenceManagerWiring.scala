@@ -9,6 +9,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
+import com.typesafe.config.ConfigFactory
 import csw.aas.http.SecurityDirectives
 import csw.config.api.scaladsl.ConfigClientService
 import csw.config.client.commons.ConfigUtils
@@ -85,7 +86,15 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
     CommonTimeouts.Wiring
   )
 
-  private lazy val config     = smActorSystem.settings.config
+  private lazy val simulationConfigS = s"""
+                                          |auth-config {
+                                          |  realm = TMT
+                                          |  client-id = tmt-backend-app
+                                          |  disabled = true
+                                          |}""".stripMargin
+  private lazy val defaultConfig     = smActorSystem.settings.config
+  private lazy val simulationConfig  = ConfigFactory.parseString(simulationConfigS)
+  private lazy val config            = defaultConfig.withValue("auth-config", simulationConfig.getValue("auth-config"))
   private lazy val connection = AkkaConnection(ComponentId(prefix, ComponentType.Service))
   private lazy val locationMetadata =
     agentPrefix
@@ -101,7 +110,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
       AkkaLocation(registration.connection, registration.actorRefURI, registration.metadata)
     )
 
-  private[esw] lazy val securityDirectives = SecurityDirectives(smActorSystem.settings.config, locationService)
+  private[esw] lazy val securityDirectives = SecurityDirectives(config, locationService)
   private lazy val postHandler             = new SequenceManagerRequestHandler(sequenceManager, securityDirectives)
 
   import LabelExtractor.Implicits.default
