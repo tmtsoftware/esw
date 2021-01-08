@@ -10,13 +10,13 @@ case class ManagedService[T](
     private val _start: () => T,
     private val _stop: T => Unit
 ) {
-  private var startResult: T = _
+  private var startResult: Option[T] = None
 
   def start(): Unit = {
     if (enable) {
       try {
         GREEN.println(s"Starting $serviceName ...")
-        startResult = _start()
+        startResult = Some(_start())
         GREEN.println(s"Successfully started $serviceName.")
       }
       catch {
@@ -29,10 +29,8 @@ case class ManagedService[T](
   }
 
   def stop(): Unit = {
-    if (enable) {
-      GREEN.println(s"Stopping $serviceName ...")
-      _stop(startResult)
-      GREEN.println(s"Stopped $serviceName")
-    }
+    GREEN.println(s"Stopping $serviceName ...")
+    startResult.foreach(_stop)
+    GREEN.println(s"Stopped $serviceName")
   }
 }
