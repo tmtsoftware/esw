@@ -7,7 +7,7 @@ Content-Type: application/json
 }
 
 ### provision call
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
@@ -37,12 +37,12 @@ Content-Type: application/json
 }
 
 ### configure call
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
   "_type" : "Configure",
-  "obsMode" : "IRIS_Calib"
+  "obsMode" : "IRIS_Darknight"
 }
 
 ### list all the entries initially
@@ -54,16 +54,16 @@ Content-Type: application/json
 }
 
 ### configure call with conflicting resources
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
   "_type" : "Configure",
-  "obsMode" : "IRIS_Darknight"
+  "obsMode" : "IRIS_FilterWheel"
 }
 
 ### get running obsmodes
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
@@ -71,7 +71,7 @@ Content-Type: application/json
 }
 
 ### shutdown obsmode sequencers
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
@@ -80,7 +80,7 @@ Content-Type: application/json
 }
 
 ### shutdown all sequencers
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
@@ -88,7 +88,7 @@ Content-Type: application/json
 }
 
 ### shutdown sequence component
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
@@ -97,7 +97,7 @@ Content-Type: application/json
 }
 
 ### shutdown all sequence components
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
@@ -105,7 +105,7 @@ Content-Type: application/json
 }
 
 ### provision invalid call
-POST http://192.168.1.8:53621/post-endpoint
+POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {

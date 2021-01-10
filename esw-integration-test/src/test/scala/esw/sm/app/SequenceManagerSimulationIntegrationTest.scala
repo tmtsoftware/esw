@@ -6,7 +6,6 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{AOESW, ESW, IRIS}
 import csw.testkit.scaladsl.CSWService.EventServer
@@ -29,6 +28,8 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer) w
   private val eswAgentPrefix   = getRandomAgentPrefix(ESW)
   private val aoeswAgentPrefix = getRandomAgentPrefix(AOESW)
   private val irisAgentPrefix  = getRandomAgentPrefix(IRIS)
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(35.seconds, 50.millis)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

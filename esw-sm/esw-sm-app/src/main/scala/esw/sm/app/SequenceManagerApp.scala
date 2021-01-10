@@ -12,6 +12,7 @@ import esw.agent.akka.app.{AgentApp, AgentSettings}
 import esw.commons.cli.EswCommandApp
 import esw.constants.CommonTimeouts
 import esw.sm.app.SequenceManagerAppCommand._
+import esw.sm.app.utils.ResourceReader
 
 import scala.concurrent.Await
 import scala.util.control.NonFatal
@@ -30,8 +31,15 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
 
   def run(command: SequenceManagerAppCommand, startLogging: Boolean = true): SequenceManagerWiring =
     command match {
-      case StartCommand(obsModeConfigPath, isConfigLocal, agentPrefix, simulation) =>
-        start(obsModeConfigPath, isConfigLocal, agentPrefix, startLogging, simulation)
+      case StartCommand(obsModeConfigPath, isConfigLocal, agentPrefix, simulation) => {
+        if (simulation) {
+          lazy val defaultConfPath = ResourceReader.copyToTmp("smSimulationObsMode.conf").getAbsolutePath
+          lazy val configPath      = obsModeConfigPath.getOrElse(Path.of(defaultConfPath))
+          start(configPath, isConfigLocal = true, agentPrefix, startLogging, simulation)
+        }
+        else
+          start(obsModeConfigPath.get, isConfigLocal, agentPrefix, startLogging, simulation)
+      }
     }
 
   def start(
@@ -64,7 +72,16 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
   }
 
   def startSimulation(): Unit = {
-    val agentConfig = ConfigFactory.load()
+    // TODO this can be removed once the ocs-app changes are brought to master
+    lazy val channelConfFile: String = ResourceReader.copyToTmp("apps.json").getAbsolutePath
+    lazy val agentConfigS            = s"""
+                                                  |agent {
+                                                  |  durationToWaitForComponentRegistration = 35s
+                                                  |  coursier.channel = "file://${channelConfFile}"
+                                                  |}""".stripMargin
+
+    lazy val agentConfig = ConfigFactory.parseString(agentConfigS).withFallback(ConfigFactory.load())
+    // TODO upto here
     spawnAgent(Prefix(ESW, "machine1"), agentConfig)
     spawnAgent(Prefix(TCS, "machine1"), agentConfig)
     spawnAgent(Prefix(IRIS, "machine1"), agentConfig)
