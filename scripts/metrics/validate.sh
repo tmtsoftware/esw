@@ -21,7 +21,7 @@ curl -X POST \
       "source": "CSW.ncc.trombone",
       "commandName": "move",
       "maybeObsId": [
-        "obs001"
+        "2020A-P001-O123"
       ],
       "paramSet": []
     }

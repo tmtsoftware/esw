@@ -28,7 +28,7 @@ class SequencerContractTest extends EswTestKit(Gateway, EventServer) with Gatewa
       // gatewayPostClient and gatewayWsClient requires gateway location which is resolved using Location Service in EswTestKit
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
-      val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("obsId"))))
+      val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("2020A-P001-O123"))))
       val componentId = ComponentId(Prefix(s"$subsystem.${obsMode.name}"), ComponentType.Sequencer)
 
       val sequencer = clientFactory.sequencer(componentId)
@@ -45,7 +45,7 @@ class SequencerContractTest extends EswTestKit(Gateway, EventServer) with Gatewa
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val failCmdName = CommandName("fail-command")
-      val sequence    = Sequence(Setup(Prefix("esw.test"), failCmdName, Some(ObsId("obsId"))))
+      val sequence    = Sequence(Setup(Prefix("esw.test"), failCmdName, Some(ObsId("2020A-P001-O123"))))
       val componentId = ComponentId(Prefix(s"$subsystem.${obsMode.name}"), ComponentType.Sequencer)
 
       val sequencer = clientFactory.sequencer(componentId)

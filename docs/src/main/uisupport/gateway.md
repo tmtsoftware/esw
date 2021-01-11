@@ -86,7 +86,7 @@ curl --location --request POST 'http://<host>:<port>/post-endpoint' \
             "source": "CSW.ncc.trombone",
             "commandName": "startExposure",
             "maybeObsId": [
-                "obsId"
+                "2020A-P001-O123"
             ],
             "paramSet": []
         }

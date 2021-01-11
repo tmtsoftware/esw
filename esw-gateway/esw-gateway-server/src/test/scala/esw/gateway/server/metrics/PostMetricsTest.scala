@@ -49,7 +49,7 @@ class PostMetricsTest
   private val prefix    = Prefix("esw.test")
 
   private val defaultRegistry = CollectorRegistry.defaultRegistry
-  private val command         = Setup(prefix, CommandName("c1"), Some(ObsId("obsId")))
+  private val command         = Setup(prefix, CommandName("c1"), Some(ObsId("2020A-P001-O123")))
   private val componentId     = ComponentId(prefix, Assembly)
   private val eventKey        = EventKey(prefix, EventName("event"))
 

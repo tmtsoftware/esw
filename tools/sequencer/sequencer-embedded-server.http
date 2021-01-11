@@ -171,7 +171,7 @@ Content-Type: application/json
         "source": "esw.darknight",
         "commandName": "command-3",
         "maybeObsId": [
-          "obsId1"
+          "2020A-P001-O123"
         ],
         "paramSet": []
       }
@@ -194,7 +194,7 @@ Content-Type: application/json
           "source": "esw.darknight",
           "commandName": "command-2",
           "maybeObsId": [
-            "obsId1"
+            "2020A-P001-O123"
           ],
           "paramSet": []
         }
@@ -218,7 +218,7 @@ Content-Type: application/json
           "source": "esw.darknight",
           "commandName": "command-4",
           "maybeObsId": [
-            "obsId1"
+            "2020A-P001-O123"
           ],
           "paramSet": []
         }
