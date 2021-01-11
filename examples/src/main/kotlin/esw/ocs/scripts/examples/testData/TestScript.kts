@@ -10,7 +10,7 @@ import csw.prefix.models.Prefix
 import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
-import esw.ocs.dsl.params.ObserveEventFactory.ObserveStart
+import esw.ocs.dsl.params.SequencerObserveEvent.observeStart
 import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
 import kotlin.time.milliseconds
@@ -27,7 +27,7 @@ script {
     }
 
     onObserve("observe-start") {
-        publishEvent(ObserveStart().make("ESW.test", ObsId("some-id")))
+        publishEvent(observeStart("ESW.test", ObsId("some-id")))
     }
 
     onSetup("command-3") {
