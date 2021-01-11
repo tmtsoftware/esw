@@ -17,11 +17,10 @@ object EswServicesApp extends EswCommandApp[Command] {
 
   val hostname: String = Networks().hostname
 
-  override def run(command: Command, args: RemainingArgs): Unit = {
+  override def run(command: Command, args: RemainingArgs): Unit =
     command match {
       case s: Start => run(s)
     }
-  }
 
   def run(command: Start): Unit = {
     val wiring = new Wiring(command)
