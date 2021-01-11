@@ -4,11 +4,11 @@ import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import csw.prefix.models.Prefix
+import esw.commons.auth.SubsystemUserRolePolicy
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs._
 import esw.ocs.api.protocol.SequencerRequest
 import esw.ocs.api.protocol.SequencerRequest._
-import esw.ocs.auth.SubsystemUserRolePolicy
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
 class SequencerPostHandler(

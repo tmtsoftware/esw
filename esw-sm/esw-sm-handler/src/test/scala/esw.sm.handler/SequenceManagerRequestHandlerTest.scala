@@ -6,13 +6,13 @@ import csw.aas.http.SecurityDirectives
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.auth.EswUserRolePolicy
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.{AgentStatus, ProvisionConfig}
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
-import esw.sm.auth.EswUserRolePolicy
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}

@@ -7,7 +7,7 @@ import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs._
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.service.app.auth.EswUserRolePolicy
+import esw.commons.auth.EswUserRolePolicy
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
 class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: SecurityDirectives)

@@ -3,11 +3,11 @@ package esw.sm.handler
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
+import esw.commons.auth.EswUserRolePolicy
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs._
 import esw.sm.api.protocol.SequenceManagerRequest
 import esw.sm.api.protocol.SequenceManagerRequest._
-import esw.sm.auth.EswUserRolePolicy
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
 class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securityDirectives: SecurityDirectives)

@@ -1,4 +1,4 @@
-package esw.ocs.auth
+package esw.commons.auth
 
 import csw.aas.http.AuthorizationPolicy.CustomPolicy
 import csw.aas.http.Roles
