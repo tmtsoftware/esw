@@ -50,7 +50,7 @@ lazy val esw = (project in file("."))
   )
   .settings(
     ghreleaseRepoOrg := "tmtsoftware",
-    ghreleaseRepoName := EswKeys.projectName,
+    ghreleaseRepoName := EswKeys.projectName
   )
 
 lazy val `esw-ocs` = project
@@ -88,6 +88,7 @@ lazy val `esw-ocs-handler` = project
   )
   .dependsOn(
     `esw-ocs-api`.jvm,
+    `esw-commons`,
     `esw-test-commons` % Test
   )
 
@@ -186,7 +187,7 @@ lazy val `esw-agent-service-app` = project
   .in(file("esw-agent-service/esw-agent-service-app"))
   .enablePlugins(EswBuildInfo, MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentServiceApp.value)
-  .dependsOn(`esw-agent-service-impl`, `esw-http-core`, `esw-test-commons` % Test)
+  .dependsOn(`esw-agent-service-impl`, `esw-http-core`, `esw-commons`, `esw-test-commons` % Test)
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
@@ -259,6 +260,7 @@ lazy val `esw-gateway-server` = project
     `esw-ocs-handler`,
     `esw-ocs-impl`,
     `esw-http-core`,
+    `esw-commons`,
     `esw-test-commons` % Test
   )
 
@@ -323,7 +325,7 @@ lazy val `esw-sm-handler` = project
   .settings(
     libraryDependencies ++= Dependencies.EswSmHandlers.value
   )
-  .dependsOn(`esw-sm-api`.jvm, `esw-test-commons` % Test)
+  .dependsOn(`esw-sm-api`.jvm, `esw-commons`, `esw-test-commons` % Test)
 
 lazy val `esw-sm-app` = project
   .in(file("esw-sm/esw-sm-app"))

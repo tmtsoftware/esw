@@ -1,10 +1,9 @@
-package esw.agent.service.app.auth
+package esw.commons.auth
 
 import csw.aas.http.AuthorizationPolicy.CustomPolicy
 import csw.aas.http.Roles
 import csw.prefix.models.Subsystem.ESW
 
-//todo: reuse the policy defined in sm
 object EswUserRolePolicy {
   def apply(): CustomPolicy = CustomPolicy(token => Roles(token.realm_access.roles).containsUserRole(ESW))
 }

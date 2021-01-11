@@ -91,7 +91,6 @@ object Dependencies {
   val AgentServiceApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
-      Csw.`csw-aas-http`,
       Libs.`msocket-http`,
       Libs.scalatest.value         % Test,
       Libs.`mockito-scala`         % Test,
@@ -281,7 +280,6 @@ object Dependencies {
 
   val EswSmHandlers: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-aas-http`,
       Libs.`msocket-http`,
       AkkaHttp.`akka-http`,
       AkkaHttp.`akka-http-testkit` % Test,
@@ -291,6 +289,7 @@ object Dependencies {
 
   val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Csw.`csw-aas-http`,
       Csw.`csw-location-api`.value,
       Akka.`akka-stream-typed`        % Provided,
       Libs.`case-app`                 % Provided,
