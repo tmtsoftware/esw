@@ -47,7 +47,7 @@ interface CommandServiceDsl {
     /**
      * Extension method to get optional obsId from command
      */
-    val Command.obsId: String? get() = jMaybeObsId().map { it.obsId() }.nullable()
+    val Command.obsId: String? get() = jMaybeObsId().map { it.toString() }.nullable()
 
-    private fun String?.toOptionalObsId() = Optional.ofNullable(this?.let { ObsId(it) })
+    private fun String?.toOptionalObsId() = Optional.ofNullable(this?.let { ObsId.apply(it) })
 }

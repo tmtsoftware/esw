@@ -18,14 +18,21 @@ trait GatewaySetup extends BaseTestSuite {
   val mockResolver: Resolver                 = mock[Resolver]
   val mockCommandService: CommandService     = mock[CommandService]
   val componentIdCommandService: ComponentId = ComponentId(Prefix("IRIS.filter.wheel"), Assembly)
-  val irisUserLevelCommand: Setup            = Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("obsId")))
-  val irisCommandNotInConf: Setup            = Setup(Prefix("CSW.ncc.trombone"), CommandName("stopExposure"), Some(ObsId("obsId")))
-  val irisEngLevelCommand: Setup             = Setup(Prefix("CSW.ncc.trombone"), CommandName("setVoltage"), Some(ObsId("obsId")))
-  val irisAdminLevelCommand: Setup           = Setup(Prefix("CSW.ncc.trombone"), CommandName("upgradeFirmware"), Some(ObsId("obsId")))
+
+  val irisUserLevelCommand: Setup =
+    Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("2020A-P001-O123")))
+  val irisAdminLevelCommand: Setup =
+    Setup(Prefix("CSW.ncc.trombone"), CommandName("upgradeFirmware"), Some(ObsId("2020A-P001-O123")))
+
+  val irisCommandNotInConf: Setup = Setup(Prefix("CSW.ncc.trombone"), CommandName("stopExposure"), Some(ObsId("2020A-P001-O123")))
+  val irisEngLevelCommand: Setup  = Setup(Prefix("CSW.ncc.trombone"), CommandName("setVoltage"), Some(ObsId("2020A-P001-O123")))
 
   val mockSequencerCommandService: SequencerApi = mock[SequencerApi]
   val componentIdSequencer: ComponentId         = ComponentId(Prefix("IRIS.MoonNight"), ComponentType.Sequencer)
-  val sequence: Sequence                        = Sequence(Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("obsId"))))
+
+  val sequence: Sequence = Sequence(
+    Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("2020A-P001-O123")))
+  )
 
   when(mockResolver.commandService(componentIdCommandService)).thenReturn(Future.successful(mockCommandService))
   when(mockCommandService.submit(irisUserLevelCommand)).thenReturn(Future.successful(Started(Id("4321"))))

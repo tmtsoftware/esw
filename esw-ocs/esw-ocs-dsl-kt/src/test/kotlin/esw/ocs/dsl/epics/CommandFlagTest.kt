@@ -18,7 +18,7 @@ class CommandFlagTest : CommandServiceDsl {
 
     @Test
     fun `set should update commandFlag value | ESW-252`() = runBlocking {
-        val setup = Setup("TCS.test", "command-1", "obsId").madd(intKey("encoder").set(1))
+        val setup = Setup("TCS.test", "command-1", "2020A-P001-O123").madd(intKey("encoder").set(1))
 
         val commandFlag = CommandFlag()
         commandFlag.value() shouldBe Params(setOf())

@@ -39,8 +39,8 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
 
-      val command            = Setup(prefix, CommandName("c1"), Some(ObsId("obsId")))
-      val longRunningCommand = Setup(prefix, CommandName("long-running"), Some(ObsId("obsId")))
+      val command            = Setup(prefix, CommandName("c1"), Some(ObsId("2020A-P001-O123")))
+      val longRunningCommand = Setup(prefix, CommandName("long-running"), Some(ObsId("2020A-P001-O123")))
       val componentId        = ComponentId(prefix, Assembly)
       val stateNames         = Set(StateName("stateName1"), StateName("stateName2"))
       val currentState1      = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
@@ -81,7 +81,7 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
       val eventService  = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
-      val longRunningCommand = Setup(prefix, CommandName("long-running"), Some(ObsId("obsId")))
+      val longRunningCommand = Setup(prefix, CommandName("long-running"), Some(ObsId("2020A-P001-O123")))
       val componentId        = ComponentId(prefix, Assembly)
 
       val commandService = clientFactory.component(componentId)
@@ -103,7 +103,7 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val componentType = Assembly
-      val command       = Setup(prefix, CommandName("c1"), Some(ObsId("obsId")))
+      val command       = Setup(prefix, CommandName("c1"), Some(ObsId("2020A-P001-O123")))
       val componentId   = ComponentId(prefix, componentType)
       val stateNames    = (1 to 10000).toSet[Int].map(x => StateName(s"stateName$x"))
       val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))

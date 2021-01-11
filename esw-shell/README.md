@@ -71,7 +71,7 @@ import csw.prefix.models.Prefix
 import csw.params.core.models.ObsId
 // above imports are available in shell, user does not need to import again
 
-val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("sample-obsId")))
+val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("2020A-P001-O123")))
 ```
 
 ### Creating the sequence to submit to Sequencer
@@ -82,7 +82,7 @@ import csw.prefix.models.Prefix
 import csw.params.core.models.ObsId
 // above imports are available in shell, user does not need to import again
 
-val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("sample-obsId")))
+val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("2020A-P001-O123")))
 val sequence = Sequence(setup)
 ```
 
