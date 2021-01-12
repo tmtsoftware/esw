@@ -72,16 +72,7 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
   }
 
   def startSimulation(): Unit = {
-    // TODO this can be removed once the ocs-app changes are brought to master
-    lazy val channelConfFile: String = ResourceReader.copyToTmp("apps.json").getAbsolutePath
-    lazy val agentConfigS            = s"""
-                                                  |agent {
-                                                  |  durationToWaitForComponentRegistration = 35s
-                                                  |  coursier.channel = "file://${channelConfFile}"
-                                                  |}""".stripMargin
-
-    lazy val agentConfig = ConfigFactory.parseString(agentConfigS).withFallback(ConfigFactory.load())
-    // TODO upto here
+    val agentConfig = ConfigFactory.load()
     spawnAgent(Prefix(ESW, "machine1"), agentConfig)
     spawnAgent(Prefix(TCS, "machine1"), agentConfig)
     spawnAgent(Prefix(IRIS, "machine1"), agentConfig)
