@@ -92,10 +92,11 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
                                           |  client-id = tmt-backend-app
                                           |  disabled = true
                                           |}""".stripMargin
-  private lazy val defaultConfig     = smActorSystem.settings.config
   private lazy val simulationConfig  = ConfigFactory.parseString(simulationConfigS)
-  private lazy val config            = defaultConfig.withValue("auth-config", simulationConfig.getValue("auth-config"))
-  private lazy val connection        = AkkaConnection(ComponentId(prefix, ComponentType.Service))
+  private lazy val defaultConfig     = smActorSystem.settings.config
+  private lazy val config =
+    if (simulation) defaultConfig.withValue("auth-config", simulationConfig.getValue("auth-config")) else defaultConfig
+  private lazy val connection = AkkaConnection(ComponentId(prefix, ComponentType.Service))
   private lazy val locationMetadata =
     agentPrefix
       .map(Metadata().withAgentPrefix(_))
