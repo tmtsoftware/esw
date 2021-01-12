@@ -11,7 +11,8 @@ import org.scalatest.prop.TableDrivenPropertyChecks._
 
 class SequencerObserveEventsTest extends BaseTestSuite {
   "SequencerObserveEvents" must {
-    val obsId                         = randomString(10)
+    val obsIds                        = List("2020A-P001-O123", "2021A-P011-O153", "2038A-P034-O193")
+    val obsId                         = randomFrom(obsIds)
     val exposureId                    = randomString(10)
     val prefixStr                     = Prefix(randomSubsystem, randomString(5)).toString()
     val obsIdParam: Parameter[_]      = StringKey.make("obsId").set(obsId)

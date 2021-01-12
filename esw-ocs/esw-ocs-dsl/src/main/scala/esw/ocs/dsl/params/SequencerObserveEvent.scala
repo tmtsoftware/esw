@@ -8,7 +8,7 @@ import csw.prefix.models.Prefix
 
 object SequencerObserveEvent {
   private def createObserveEvent(sourcePrefix: String, eventName: EventName, obsId: ObsId) =
-    ObserveEvent(Prefix(sourcePrefix), eventName, Set(StringKey.make("obsId").set(obsId.obsId)))
+    ObserveEvent(Prefix(sourcePrefix), eventName, Set(StringKey.make("obsId").set(obsId.toString())))
 
   private def createObserveEventWithExposureId(
       sourcePrefix: String,
@@ -17,7 +17,7 @@ object SequencerObserveEvent {
       exposureId: String
   ): ObserveEvent = {
     val paramset: Set[Parameter[_]] = Set(
-      StringKey.make("obsId").set(obsId.obsId),
+      StringKey.make("obsId").set(obsId.toString()),
       StringKey.make("exposureId").set(exposureId)
     )
     ObserveEvent(Prefix(sourcePrefix), eventName, paramset)
@@ -63,7 +63,7 @@ object SequencerObserveEvent {
   def observeResumed(sourcePrefix: String): ObserveEvent = ObserveEvent(Prefix(sourcePrefix), EventName("ObserveResumed"))
 
   def downtimeStart(sourcePrefix: String, obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
-    val obsIdParam          = StringKey.make("obsId").set(obsId.obsId)
+    val obsIdParam          = StringKey.make("obsId").set(obsId.toString())
     val downtimeReasonParam = StringKey.make("reason").set(reasonForDowntime)
     ObserveEvent(Prefix(sourcePrefix), EventName("DowntimeStart"), Set(obsIdParam, downtimeReasonParam))
   }
