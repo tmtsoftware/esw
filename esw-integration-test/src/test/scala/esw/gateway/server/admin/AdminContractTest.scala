@@ -36,14 +36,14 @@ import esw.gateway.api.protocol.InvalidComponent
 import esw.gateway.server.TestAppender
 import esw.gateway.server.admin.FrameworkAssertions._
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.Gateway
+import esw.ocs.testkit.Service.AAS
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationDouble
 
-class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
+class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
   protected val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   protected val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])
 
@@ -63,10 +63,10 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
   private var laserComponent: Component                                = _
   private var galilComponent: Component                                = _
   private var loggingSystem: LoggingSystem                             = _
-  private var adminClient: AdminClient                                 = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+    spawnGateway(authEnabled = true)
     loggingSystem = LoggingSystemFactory.start("logging", "version", hostName, typedSystem)
     loggingSystem.setAppenders(List(testAppender))
 
@@ -80,8 +80,6 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
 
     laserComponent = components(Prefix("TCS.Laser"))
     galilComponent = components(Prefix("TCS.Galil"))
-
-    adminClient = new AdminClient(gatewayPostClient)
   }
 
   override def afterAll(): Unit = {
@@ -95,6 +93,7 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
   "AdminApi" must {
 
     "get the current component log meta data | ESW-254, CSW-78, CSW-81" in {
+      val adminClient  = new AdminClient(gatewayPostClient)
       val logMetadata1 = adminClient.getLogMetadata(motionControllerConnection.componentId).futureValue
 
       val config     = ConfigFactory.load().getConfig("csw-logging")
@@ -122,6 +121,9 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
     }
 
     "set log level of the component dynamically through http end point | ESW-254, CSW-81, ESW-279" in {
+      val gatewayPostClient = gatewayHTTPClient(tokenWithTcsUserRole)
+      val adminClient       = new AdminClient(gatewayPostClient)
+
       laserComponent.supervisor ! Oneway(Setup(prefix, startLoggingCmd, None), probe.ref)
       Thread.sleep(500)
 
@@ -170,6 +172,7 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
     }
 
     "return appropriate error when component is not resolved for akka connection while getting log metadata | ESW-254, CSW-81, ESW-279, ESW-372" in {
+      val adminClient         = new AdminClient(gatewayPostClient)
       val nonRegisteredCompId = ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)
 
       val serviceError = intercept[InvalidComponent] {
@@ -180,6 +183,8 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
     }
 
     "return appropriate error when component is not resolved for akka connection while setting log level | ESW-254, CSW-81, ESW-279, ESW-372" in {
+      val gatewayPostClient   = gatewayHTTPClient(tokenWithEswUserRole)
+      val adminClient         = new AdminClient(gatewayPostClient)
       val nonRegisteredCompId = ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)
 
       val serviceError = intercept[InvalidComponent] {
@@ -201,6 +206,8 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
     }
 
     "be able to send components into offline and online state | ESW-378" in {
+      val gatewayPostClient                               = gatewayHTTPClient(tokenWithEswUserRole)
+      val adminClient                                     = new AdminClient(gatewayPostClient)
       val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sample-container-system")
       // start container
       startContainerAndWaitForRunning("sample_container.conf")(actorSystem)
@@ -246,6 +253,9 @@ class AdminContractTest extends EswTestKit(Gateway) with GatewayCodecs {
     }
 
     "be able to restart and shutdown the given component | ESW-378" in {
+      val gatewayPostClient = gatewayHTTPClient(tokenWithEswUserRole)
+      val adminClient       = new AdminClient(gatewayPostClient)
+
       val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sample-container-system")
 
       import esw.gateway.server.admin.SampleContainerState._

@@ -7,6 +7,8 @@ import csw.command.api.messages.CommandServiceRequest
 import csw.command.client.auth.CommandRoles
 import csw.command.client.handlers.CommandServiceRequestHandler
 import csw.location.api.models.ComponentId
+import csw.logging.models.Level
+import esw.commons.auth.{EswOrSubsystemUserPolicy, EswUserOrSubsystemEngPolicy}
 import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.GatewayRequest
 import esw.gateway.api.protocol.GatewayRequest._
@@ -37,15 +39,23 @@ class GatewayPostHandler(
       case GetEvent(eventKeys)                     => complete(eventApi.get(eventKeys))
       case SetAlarmSeverity(alarmKey, severity)    => complete(alarmApi.setSeverity(alarmKey, severity))
       case Log(prefix, level, message, map)        => complete(loggingApi.log(prefix, level, message, map))
-      case SetLogLevel(componentId, logLevel)      => complete(adminApi.setLogLevel(componentId, logLevel))
+      case SetLogLevel(componentId, logLevel)      => onSetLogLevel(componentId, logLevel)
       case GetLogMetadata(componentId)             => complete(adminApi.getLogMetadata(componentId))
-      case Shutdown(componentId)                   => complete(adminApi.shutdown(componentId))
-      case Restart(componentId)                    => complete(adminApi.restart(componentId))
-      case GoOffline(componentId)                  => complete(adminApi.goOffline(componentId))
-      case GoOnline(componentId)                   => complete(adminApi.goOnline(componentId))
+      case Shutdown(componentId)                   => sPost(componentId, complete(adminApi.shutdown(componentId)))
+      case Restart(componentId)                    => sPost(componentId, complete(adminApi.restart(componentId)))
+      case GoOffline(componentId)                  => sPost(componentId, complete(adminApi.goOffline(componentId)))
+      case GoOnline(componentId)                   => sPost(componentId, complete(adminApi.goOnline(componentId)))
       case GetContainerLifecycleState(prefix)      => complete(adminApi.getContainerLifecycleState(prefix))
       case GetComponentLifecycleState(componentId) => complete(adminApi.getComponentLifecycleState(componentId))
     }
+
+  private def onSetLogLevel(componentId: ComponentId, logLevel: Level): Route =
+    securityDirectives.sPost(EswOrSubsystemUserPolicy(componentId.prefix.subsystem))(_ =>
+      complete(adminApi.setLogLevel(componentId, logLevel))
+    )
+
+  private def sPost(componentId: ComponentId, route: => Route): Route =
+    securityDirectives.sPost(EswUserOrSubsystemEngPolicy(componentId.prefix.subsystem))(_ => route)
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceRequest): Route =
     onSuccess(resolver.commandService(componentId) zip commandRoles) { (commandService, roles) =>
