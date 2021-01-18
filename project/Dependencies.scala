@@ -103,6 +103,7 @@ object Dependencies {
     Seq(
       Libs.`case-app`,
       Csw.`csw-location-client`,
+      Csw.`csw-config-client`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream`,
       Libs.scalatest.value            % Test,

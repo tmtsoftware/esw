@@ -4,6 +4,8 @@ import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed._
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
+import csw.config.client.commons.ConfigUtils
+import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
@@ -34,10 +36,14 @@ class AgentWiring(agentSettings: AgentSettings) {
 
   import actorRuntime.typedSystem
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
-  lazy val processOutput                    = new ProcessOutput()
-  lazy val processExecutor                  = new ProcessExecutor(processOutput)
-  lazy val processManager                   = new ProcessManager(locationService, processExecutor, agentSettings)
-  lazy val agentActor                       = new AgentActor(processManager)
+
+  private val configClientService = ConfigClientFactory.clientApi(actorSystem, locationService)
+  private val configUtils         = new ConfigUtils(configClientService)
+
+  lazy val processOutput   = new ProcessOutput()
+  lazy val processExecutor = new ProcessExecutor(processOutput)
+  lazy val processManager  = new ProcessManager(locationService, configUtils, processExecutor, agentSettings)
+  lazy val agentActor      = new AgentActor(processManager)
 
   lazy val lazyAgentRegistration: Future[RegistrationResult] =
     locationService.register(AkkaRegistrationFactory.make(agentConnection, agentRef))

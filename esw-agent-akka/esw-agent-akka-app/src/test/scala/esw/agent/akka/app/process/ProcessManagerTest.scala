@@ -4,6 +4,7 @@ import java.net.URI
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import csw.config.client.commons.ConfigUtils
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
@@ -29,6 +30,7 @@ class ProcessManagerTest extends BaseTestSuite {
   private val uri        = new URI("some")
 
   private val processExecutor = mock[ProcessExecutor]
+  private val configUtils     = mock[ConfigUtils]
   private val locationService = mock[LocationService]
   private val agentSetting    = mock[AgentSettings]
 
@@ -45,7 +47,7 @@ class ProcessManagerTest extends BaseTestSuite {
       val location               = AkkaLocation(connection, uri, Metadata.empty)
 
       when(locationService.find(connection)).thenReturn(Future.successful(Some(location)))
-      val manager = new ProcessManager(locationService, processExecutor, agentSetting)
+      val manager = new ProcessManager(locationService, configUtils, processExecutor, agentSetting)
       manager.spawn(spawnSequenceComponent).futureValue should ===(
         Left(s"${connection.componentId} is already registered with location service at $location")
       )
@@ -56,14 +58,14 @@ class ProcessManagerTest extends BaseTestSuite {
   "kill" must {
     "return failed response when location does not contain pid | ESW-367" in {
       val location = AkkaLocation(connection, uri, Metadata.empty)
-      val manager  = new ProcessManager(locationService, processExecutor, agentSetting)
+      val manager  = new ProcessManager(locationService, configUtils, processExecutor, agentSetting)
       manager.kill(location).futureValue should ===(Failed(s"$location metadata does not contain Pid"))
     }
 
     "return failed response when pid does not exist on agent machine | ESW-276, ESW-367" in {
       val pid      = 12345
       val location = AkkaLocation(connection, uri, Metadata().withPid(pid))
-      val manager = new ProcessManager(locationService, processExecutor, agentSetting) {
+      val manager = new ProcessManager(locationService, configUtils, processExecutor, agentSetting) {
         override def processHandle(pid: Long): Option[ProcessHandle] = None
       }
       manager.kill(location).futureValue should ===(Failed(s"Pid:$pid process does not exist"))
@@ -72,7 +74,7 @@ class ProcessManagerTest extends BaseTestSuite {
     "return failed response when creating processHandle from pid throws an exception | ESW-367" in {
       val pid      = 12345
       val location = AkkaLocation(connection, uri, Metadata().withPid(pid))
-      val manager = new ProcessManager(locationService, processExecutor, agentSetting) {
+      val manager = new ProcessManager(locationService, configUtils, processExecutor, agentSetting) {
         override def processHandle(pid: Long): Option[ProcessHandle] = throw new SecurityException("Permission denied")
       }
       manager.kill(location).futureValue should ===(Failed("Permission denied"))
@@ -83,7 +85,7 @@ class ProcessManagerTest extends BaseTestSuite {
       val process  = mock[ProcessHandle]
       val location = AkkaLocation(connection, uri, Metadata().withPid(pid))
 
-      val manager = new ProcessManager(locationService, processExecutor, agentSetting) {
+      val manager = new ProcessManager(locationService, configUtils, processExecutor, agentSetting) {
         override def processHandle(pid: Long): Option[ProcessHandle] = Some(process)
       }
 

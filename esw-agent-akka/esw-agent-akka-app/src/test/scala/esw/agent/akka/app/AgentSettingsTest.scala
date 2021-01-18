@@ -1,5 +1,7 @@
 package esw.agent.akka.app
 
+import java.nio.file.Path
+
 import com.typesafe.config.ConfigFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
@@ -16,12 +18,13 @@ class AgentSettingsTest extends BaseTestSuite {
           |agent {
           |  durationToWaitForComponentRegistration = 15s
           |  coursier.channel = "${Cs.channel}"
+          |  osw.version.confPath = "script/resources/application.conf"
           |}
           |""".stripMargin)
 
       val prefix        = Prefix(ESW, "machine_A1")
       val agentSettings = AgentSettings(prefix, config)
-      agentSettings should ===(AgentSettings(prefix, 15.seconds, Cs.channel))
+      agentSettings should ===(AgentSettings(prefix, 15.seconds, Cs.channel, Path.of("script/resources/application.conf")))
     }
   }
 }

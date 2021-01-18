@@ -2,6 +2,7 @@ package esw.agent.akka.app.process
 
 import akka.Done
 import akka.actor.typed.ActorSystem
+import csw.config.client.commons.ConfigUtils
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
@@ -21,6 +22,7 @@ import scala.util.control.NonFatal
 
 class ProcessManager(
     locationService: LocationService,
+    configUtils: ConfigUtils,
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings
 )(implicit system: ActorSystem[_], log: Logger) {
@@ -72,11 +74,13 @@ class ProcessManager(
 
   //starts a process with the executable string of the given spawn command
   private def startComponent(command: SpawnCommand) =
-    Future.successful(
-      processExecutor
-        .runCommand(command.executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix), command.prefix)
-        .map(_.tap(onProcessExit(_, command.connection)))
-    )
+    command
+      .executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix, configUtils, agentSettings.versionConfPath)
+      .map { cmdStr =>
+        processExecutor
+          .runCommand(cmdStr, command.prefix)
+          .map(_.tap(onProcessExit(_, command.connection)))
+      }
 
   //it checks if the given process is alive
   //if not it tries to unregister the component of the given connection

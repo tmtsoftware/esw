@@ -55,7 +55,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     super.beforeAll()
     gatewayServerWiring = startGateway()
     // agent app setup
-    spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
+    spawnAgent(AgentSettings(agentPrefix, 1.minute, channel, versionConfPath))
     agentClient = AgentClient.make(agentPrefix, locationServiceUtil).rightValue
     // agent service setup
     agentServiceWiring = AgentServiceApp.start(startLogging = false)
@@ -683,7 +683,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       //spawn ESW agent
       val agentPrefix = getRandomAgentPrefix(ESW)
-      spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
+      spawnAgent(AgentSettings(agentPrefix, 1.minute, channel, versionConfPath))
 
       //verify that agent is available
       resolveAkkaLocation(agentPrefix, Machine)
@@ -741,8 +741,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents to provision and verify they are running
-      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel))
-      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel))
+      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel, versionConfPath))
 
       val eswRunningSeqComp = Prefix(ESW, "ESW_10")
       TestSetup.startSequenceComponents(eswRunningSeqComp)
@@ -771,8 +771,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents
-      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel))
-      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel))
+      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel, versionConfPath))
 
       val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
