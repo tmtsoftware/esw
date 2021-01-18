@@ -23,6 +23,16 @@ class SpawnCommandTest extends BaseTestSuite {
       command.commandArgs() should ===(expectedDefaultArgs)
       command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
     }
+
+    "append simulation argument | ESW-174" in {
+      val actorRef      = mock[ActorRef[SpawnResponse]]
+      val agentPrefix   = Prefix(randomSubsystem, randomString(10))
+      val componentName = randomString(10)
+      val command       = SpawnSequenceComponent(actorRef, agentPrefix, componentName, None, simulation = true)
+
+      val expectedDefaultArgs = List("seqcomp", "-s", agentPrefix.subsystem.name, "-n", componentName, "--simulation")
+      command.commandArgs() should ===(expectedDefaultArgs)
+    }
   }
 
   "SpawnSequenceManager's commandArg method" must {
@@ -37,6 +47,14 @@ class SpawnCommandTest extends BaseTestSuite {
 
       command.commandArgs() should ===(expectedDefaultArgs)
       command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
+    }
+
+    "append given simulation argument | ESW-366" in {
+      val command = SpawnSequenceManager(actorRef, obsConfPath, isConfigLocal = false, None, simulation = true)
+
+      val expectedDefaultArgs = List("start", "-o", obsConfPath.toString, "--simulation")
+
+      command.commandArgs() should ===(expectedDefaultArgs)
     }
 
     "append -l if config path is Local" in {

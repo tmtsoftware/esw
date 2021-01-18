@@ -22,8 +22,12 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefix                      = akkaLocation.prefix
 
-  def spawnSequenceComponent(componentName: String, version: Option[String] = None): Future[SpawnResponse] =
-    (agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version)))(
+  def spawnSequenceComponent(
+      componentName: String,
+      version: Option[String] = None,
+      simulation: Boolean = false
+  ): Future[SpawnResponse] =
+    (agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version, simulation)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
@@ -31,9 +35,10 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
   def spawnSequenceManager(
       obsModeConfigPath: Path,
       isConfigLocal: Boolean,
-      version: Option[String] = None
+      version: Option[String] = None,
+      simulation: Boolean = false
   ): Future[SpawnResponse] =
-    (agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version)))(
+    (agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version, simulation)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )

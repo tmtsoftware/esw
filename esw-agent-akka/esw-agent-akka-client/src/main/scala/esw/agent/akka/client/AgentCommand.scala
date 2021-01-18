@@ -30,26 +30,32 @@ object AgentCommand {
         replyTo: ActorRef[SpawnResponse],
         agentPrefix: Prefix,
         componentName: String,
-        version: Option[String]
+        version: Option[String],
+        simulation: Boolean = false
     ) extends SpawnCommand {
       override val prefix: Prefix             = Prefix(agentPrefix.subsystem, componentName)
       override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
+
+      private val sim = if (simulation) List("--simulation") else List.empty
       override def commandArgs(extraArgs: List[String]): List[String] =
-        List("seqcomp", "-s", prefix.subsystem.name, "-n", componentName) ++ extraArgs
+        List("seqcomp", "-s", prefix.subsystem.name, "-n", componentName) ++ extraArgs ++ sim
     }
 
     case class SpawnSequenceManager(
         replyTo: ActorRef[SpawnResponse],
         obsModeConfigPath: Path,
         isConfigLocal: Boolean,
-        version: Option[String]
+        version: Option[String],
+        simulation: Boolean = false
     ) extends SpawnCommand {
       override val prefix: Prefix             = Prefix(ESW, "sequence_manager")
       override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, Service))
       private val command                     = List("start", "-o", obsModeConfigPath.toString)
+      private val sim                         = if (simulation) List("--simulation") else List.empty
+
       override def commandArgs(extraArgs: List[String]): List[String] = {
         val args = if (isConfigLocal) command :+ "-l" else command
-        args ++ extraArgs
+        args ++ extraArgs ++ sim
       }
     }
   }

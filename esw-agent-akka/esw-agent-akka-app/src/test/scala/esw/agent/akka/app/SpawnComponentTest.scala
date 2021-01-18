@@ -48,6 +48,38 @@ class SpawnComponentTest extends AgentSetup {
       verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
     }
 
+    "reply 'Spawned' and spawn sequence component process in simulation mode | ESW-237" in {
+      val agentActorRef = spawnAgentActor(name = "test-actor-random1")
+      val probe         = TestProbe[SpawnResponse]()
+
+      when(locationService.find(argEq(seqCompConn))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
+
+      mockSuccessfulProcess()
+
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = true)
+      probe.expectMessage(Spawned)
+
+      val expectedCommand =
+        List(
+          Coursier.cs,
+          "launch",
+          "--channel",
+          Cs.channel,
+          "ocs-app",
+          "--",
+          "seqcomp",
+          "-s",
+          agentPrefix.subsystem.name,
+          "-n",
+          seqCompName,
+          "-a",
+          agentPrefix.toString(),
+          "--simulation"
+        )
+      verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
+    }
+
     "reply 'Failed' and not spawn new process when call to location service fails" in {
       val agentActorRef = spawnAgentActor(name = "test-actor2")
       val probe         = TestProbe[SpawnResponse]()
@@ -133,6 +165,38 @@ class SpawnComponentTest extends AgentSetup {
           "-l",
           "-a",
           agentPrefix.toString()
+        )
+
+      verify(processExecutor).runCommand(expectedCommand, seqManagerPrefix)
+    }
+
+    "reply 'Spawned' and spawn sequence manager process in simulation mode | ESW-180" in {
+      val agentActorRef = spawnAgentActor(name = "test-actor-random-9")
+      val probe         = TestProbe[SpawnResponse]()
+
+      when(locationService.find(argEq(seqManagerConn))).thenReturn(Future.successful(None))
+      when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration])).thenReturn(seqManagerLocationF)
+
+      mockSuccessfulProcess()
+
+      agentActorRef ! SpawnSequenceManager(probe.ref, Path.of("obsMode.conf"), isConfigLocal = true, None, simulation = true)
+      probe.expectMessage(Spawned)
+
+      val expectedCommand =
+        List(
+          Coursier.cs,
+          "launch",
+          "--channel",
+          Cs.channel,
+          "sequence-manager",
+          "--",
+          "start",
+          "-o",
+          "obsMode.conf",
+          "-l",
+          "-a",
+          agentPrefix.toString(),
+          "--simulation"
         )
 
       verify(processExecutor).runCommand(expectedCommand, seqManagerPrefix)

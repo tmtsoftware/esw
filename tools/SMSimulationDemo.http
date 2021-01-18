@@ -1,0 +1,119 @@
+### list all the entries initially
+POST http://localhost:7654/post-endpoint
+Content-Type: application/json
+
+{
+  "_type": "ListEntries"
+}
+
+### provision call
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "Provision",
+  "config" : {
+    "config" : [ {
+      "agentPrefix" : "ESW.machine1",
+      "countOfSeqComps" : 1
+    },
+      {
+        "agentPrefix" : "TCS.machine1",
+        "countOfSeqComps" : 1
+      },
+      {
+        "agentPrefix" : "IRIS.machine1",
+        "countOfSeqComps" : 1
+      }]
+  }
+}
+
+### list all the entries initially
+POST http://localhost:7654/post-endpoint
+Content-Type: application/json
+
+{
+  "_type": "ListEntries"
+}
+
+### configure call
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "Configure",
+  "obsMode" : "IRIS_Darknight"
+}
+
+### list all the entries initially
+POST http://localhost:7654/post-endpoint
+Content-Type: application/json
+
+{
+  "_type": "ListEntries"
+}
+
+### configure call with conflicting resources
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "Configure",
+  "obsMode" : "IRIS_FilterWheel"
+}
+
+### get running obsmodes
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "GetRunningObsModes"
+}
+
+### shutdown obsmode sequencers
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "ShutdownObsModeSequencers",
+  "obsMode" : "IRIS_Darknight"
+}
+
+### shutdown all sequencers
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "ShutdownAllSequencers"
+}
+
+### shutdown sequence component
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "ShutdownSequenceComponent",
+  "prefix" : "ESW.ESW_1"
+}
+
+### shutdown all sequence components
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "ShutdownAllSequenceComponents"
+}
+
+### provision invalid call
+POST http://192.168.1.8:58476/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "Provision",
+  "config" : {
+    "config" : [ {
+      "agentPrefix" : "ESW.machine2",
+      "countOfSeqComps" : 1
+    }]
+  }
+}

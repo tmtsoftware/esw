@@ -85,9 +85,20 @@ class AgentClientTest extends ActorTestSuit {
       val componentName = prefix.componentName
       val spawnResponse = mock[SpawnResponse]
       withBehavior {
-        case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None) => replyTo ! spawnResponse
+        case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceComponent(componentName).futureValue should ===(spawnResponse)
+      }
+    }
+
+    "send SpawnSequenceComponent message with simulation flag set, to agent and return a future with agent response | ESW-362, ESW-174" in {
+      val prefix        = Prefix(s"esw.$randomString5")
+      val componentName = prefix.componentName
+      val spawnResponse = mock[SpawnResponse]
+      withBehavior {
+        case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) => replyTo ! spawnResponse
+      } check { ac =>
+        ac.spawnSequenceComponent(componentName, None, simulation = true).futureValue should ===(spawnResponse)
       }
     }
   }
@@ -110,9 +121,19 @@ class AgentClientTest extends ActorTestSuit {
       val configPath    = Path.of("obsMode.conf")
       val spawnResponse = mock[SpawnResponse]
       withBehavior {
-        case SpawnSequenceManager(replyTo, `configPath`, true, None) => replyTo ! spawnResponse
+        case SpawnSequenceManager(replyTo, `configPath`, true, None, _) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceManager(configPath, isConfigLocal = true).futureValue should ===(spawnResponse)
+      }
+    }
+
+    "send spawnSequenceManager message with simulation flag set, to agent and return a future with agent response | ESW-180, ESW-362, ESW-174" in {
+      val configPath    = Path.of("obsMode.conf")
+      val spawnResponse = mock[SpawnResponse]
+      withBehavior {
+        case SpawnSequenceManager(replyTo, `configPath`, true, None, _) => replyTo ! spawnResponse
+      } check { ac =>
+        ac.spawnSequenceManager(configPath, isConfigLocal = true, None, simulation = true).futureValue should ===(spawnResponse)
       }
     }
   }

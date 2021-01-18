@@ -21,7 +21,8 @@ import scala.concurrent.Future
 class AgentUtil(
     locationServiceUtil: LocationServiceUtil,
     sequenceComponentUtil: SequenceComponentUtil,
-    agentAllocator: AgentAllocator
+    agentAllocator: AgentAllocator,
+    simulation: Boolean = false
 )(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
@@ -83,7 +84,7 @@ class AgentUtil(
 
   private def spawnSeqComp(agentPrefix: AgentPrefix, agentClient: AgentClient, seqCompPrefix: SeqCompPrefix) =
     agentClient
-      .spawnSequenceComponent(seqCompPrefix.componentName)
+      .spawnSequenceComponent(seqCompPrefix.componentName, simulation = simulation)
       .map {
         case Spawned     => Right(())
         case Failed(msg) => Left(s"Failed to spawn Sequence component: $seqCompPrefix on Machine: $agentPrefix, reason: $msg")

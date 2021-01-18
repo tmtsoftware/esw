@@ -58,10 +58,9 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   }
 
   def sequenceComponentWiring(command: SequencerAppCommand): SequenceComponentWiring = {
-    val sequencerServer: SequencerServerFactory = command match {
-      case Sequencer(_, _, _, _, _, true) => new SimulationSequencerWiring(_, _, _).sequencerServer
-      case _                              => new SequencerWiring(_, _, _).sequencerServer
-    }
+    val sequencerServer: SequencerServerFactory =
+      if (command.simulation) new SimulationSequencerWiring(_, _, _).sequencerServer
+      else new SequencerWiring(_, _, _).sequencerServer
     new SequenceComponentWiring(command.seqCompSubsystem, command.name, command.agentPrefix, sequencerServer)
   }
 

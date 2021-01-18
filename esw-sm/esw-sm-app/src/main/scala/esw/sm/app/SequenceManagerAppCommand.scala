@@ -23,16 +23,18 @@ object SequenceManagerAppCommand {
   final case class StartCommand(
       @ExtraName("o")
       @HelpMessage(
-        "Config file path which has mapping of sequencers and resources needed for different observing modes"
+        "Config file path which has mapping of sequencers and resources needed for different observing modes. This is an Optional argument which need not be provided for simulation mode"
       )
-      obsModeResourcesConfigPath: Path,
+      obsModeResourcesConfigPath: Option[Path],
       @ExtraName("l")
       @HelpMessage(
-        "Option argument: true if config is to be read locally or false if from remote server: Default value: false - read config from remote server"
+        "Option argument: true if config is to be read locally or false if from remote server: Default value: false - read config from remote server, true - read config from local in simulation mode"
       )
       local: Boolean = false,
       @HelpMessage("optional argument: agentPrefix on which sequence manager will be spawned, ex: ESW.agent1, IRIS.agent2 etc")
       @ExtraName("a")
-      agentPrefix: Option[Prefix]
+      agentPrefix: Option[Prefix],
+      @HelpMessage("simulation mode")
+      simulation: Boolean = false
   ) extends SequenceManagerAppCommand
 }

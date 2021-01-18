@@ -12,6 +12,7 @@ sealed trait SequencerAppCommand {
   def seqCompSubsystem: Subsystem
   def name: Option[String]
   def agentPrefix: Option[Prefix]
+  def simulation: Boolean
 }
 
 object SequencerAppCommand {
@@ -43,7 +44,10 @@ object SequencerAppCommand {
       name: Option[String],
       @HelpMessage("optional argument: agentPrefix on which sequence component will be spawned, ex: ESW.agent1, IRIS.agent2 etc")
       @Short("a")
-      agentPrefix: Option[Prefix]
+      agentPrefix: Option[Prefix],
+      @HelpMessage("simulation mode")
+      @Short("simulation")
+      simulation: Boolean = false
   ) extends SequencerAppCommand
 
   final case class Sequencer(
