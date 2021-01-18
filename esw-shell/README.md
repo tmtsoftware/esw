@@ -7,7 +7,7 @@ TMT Executive Software ([ESW](https://github.com/tmtsoftware/esw)).
 
 ## Build Instructions
 
-The build is based on sbt and depends on libraries generated from the 
+The build is based on sbt and depends on libraries generated from the
 [csw](https://github.com/tmtsoftware/csw) and [esw](https://github.com/tmtsoftware/esw) project.
 
 ## Prerequisites for running Components
@@ -71,7 +71,7 @@ import csw.prefix.models.Prefix
 import csw.params.core.models.ObsId
 // above imports are available in shell, user does not need to import again
 
-val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("2020A-P001-O123")))
+val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("2020A-001-123")))
 ```
 
 ### Creating the sequence to submit to Sequencer
@@ -82,7 +82,7 @@ import csw.prefix.models.Prefix
 import csw.params.core.models.ObsId
 // above imports are available in shell, user does not need to import again
 
-val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("2020A-P001-O123")))
+val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("2020A-001-123")))
 val sequence = Sequence(setup)
 ```
 
@@ -134,9 +134,9 @@ val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm
 
 Submit the setup command object created in a previous step using command service for the HCD/Assembly
 
-- `val hcdResponse = hcdComponent.submit(setup).get` 
+- `val hcdResponse = hcdComponent.submit(setup).get`
 - `val assemblyResponse = assemblyComponent.submit(setup).get`
- 
+
 Submit the sequence object created in a previous step using command service for the Sequencer
 
 - `val sequencerResponse = sequencer.submit(sequence).get`

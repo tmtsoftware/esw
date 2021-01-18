@@ -53,7 +53,7 @@ class RichComponentTest {
     private val startTime: UTCTime = UTCTime.now()
 
     private val source = Prefix(ESW, "test")
-    private val setupCommand = Setup(source, CommandName("move"), Optional.of(ObsId.apply("2020A-P001-O123")))
+    private val setupCommand = Setup(source, CommandName("move"), Optional.of(ObsId.apply("2020A-001-123")))
 
     private val leaseDuration: Duration = 10.seconds
     private val jLeaseDuration: java.time.Duration = leaseDuration.toJavaDuration()

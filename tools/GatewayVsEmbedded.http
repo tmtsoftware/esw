@@ -19,7 +19,7 @@ Content-Type: application/json
       "source": "esw.test",
       "commandName": "c1",
       "maybeObsId": [
-        "2020A-P001-O123"
+        "2020A-001-123"
       ],
       "paramSet": []
     }
@@ -42,7 +42,7 @@ Content-Type: application/json
           "source": "esw.test",
           "commandName": "c1",
           "maybeObsId": [
-            "2020A-P001-O123"
+            "2020A-001-123"
           ],
           "paramSet": []
         }
@@ -65,7 +65,7 @@ Content-Type: application/json
           "source": "esw.test",
           "commandName": "command-2",
           "maybeObsId": [
-            "2020A-P001-O123"
+            "2020A-001-123"
           ],
           "paramSet": []
         }

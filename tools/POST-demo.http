@@ -16,7 +16,7 @@ Content-Type: application/json
       "source": "CSW.ncc.trombone",
       "commandName": "move",
       "maybeObsId": [
-        "2020A-P001-O123"
+        "2020A-001-123"
       ],
       "paramSet": []
     }
@@ -40,7 +40,7 @@ Content-Type: application/json
       "source": "CSW.ncc.trombone",
       "commandName": "immediate",
       "maybeObsId": [
-        "2020A-P001-O123"
+        "2020A-001-123"
       ],
       "paramSet": []
     }
@@ -64,7 +64,7 @@ Content-Type: application/json
       "source": "CSW.ncc.trombone",
       "commandName": "long",
       "maybeObsId": [
-        "2020A-P001-O123"
+        "2020A-001-123"
       ],
       "paramSet": []
     }
@@ -88,7 +88,7 @@ Content-Type: application/json
       "source": "CSW.ncc.trombone",
       "commandName": "temp",
       "maybeObsId": [
-        "2020A-P001-O123"
+        "2020A-001-123"
       ],
       "paramSet": []
     }

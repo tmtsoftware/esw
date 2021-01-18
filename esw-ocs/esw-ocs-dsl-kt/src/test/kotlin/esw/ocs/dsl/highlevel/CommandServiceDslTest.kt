@@ -15,8 +15,8 @@ class CommandServiceDslTest : CommandServiceDsl {
 
     @Test
     fun `setup method should construct a Setup command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
-        val actualSetupCommand = Setup("esw.test", "move", "2020A-P001-O123")
-        val expectedSetupCommand = Setup(Prefix(ESW, "test"), CommandName("move"), Optional.of(ObsId.apply("2020A-P001-O123")))
+        val actualSetupCommand = Setup("esw.test", "move", "2020A-001-123")
+        val expectedSetupCommand = Setup(Prefix(ESW, "test"), CommandName("move"), Optional.of(ObsId.apply("2020A-001-123")))
 
         actualSetupCommand.source() shouldBe expectedSetupCommand.source()
         actualSetupCommand.commandName() shouldBe expectedSetupCommand.commandName()
@@ -25,8 +25,8 @@ class CommandServiceDslTest : CommandServiceDsl {
 
     @Test
     fun `observe method should construct a Observe command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
-        val expectedObserveCommand = Observe(Prefix(ESW, "test"), CommandName("move"), Optional.of(ObsId.apply("2020A-P001-O123")))
-        val actualObserveCommand = Observe("esw.test", "move", "2020A-P001-O123")
+        val expectedObserveCommand = Observe(Prefix(ESW, "test"), CommandName("move"), Optional.of(ObsId.apply("2020A-001-123")))
+        val actualObserveCommand = Observe("esw.test", "move", "2020A-001-123")
         actualObserveCommand.source() shouldBe expectedObserveCommand.source()
         actualObserveCommand.commandName() shouldBe expectedObserveCommand.commandName()
         actualObserveCommand.maybeObsId() shouldBe expectedObserveCommand.maybeObsId()

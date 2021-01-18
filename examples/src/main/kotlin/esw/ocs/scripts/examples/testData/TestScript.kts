@@ -27,7 +27,7 @@ script {
     }
 
     onObserve("observe-start") {
-        publishEvent(observeStart("ESW.test", ObsId.apply("2021A-P011-O153")))
+        publishEvent(observeStart("ESW.test", ObsId.apply("2021A-011-153")))
     }
 
     onSetup("command-3") {

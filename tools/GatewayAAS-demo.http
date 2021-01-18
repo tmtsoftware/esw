@@ -51,7 +51,7 @@ Authorization: Bearer {{access_token}}
       "_type": "Observe",
       "source": "CSW.ncc.trombone",
       "commandName": "startExposure",
-      "maybeObsId":"2020A-P001-O123",
+      "maybeObsId":"2020A-001-123",
       "paramSet": []
     }
   }
@@ -75,7 +75,7 @@ Authorization: Bearer {{access_token}}
       "source": "CSW.ncc.trombone",
       "commandName": "startExposure",
       "maybeObsId": [
-        "2020A-P001-O123"
+        "2020A-001-123"
       ],
       "paramSet": []
     }

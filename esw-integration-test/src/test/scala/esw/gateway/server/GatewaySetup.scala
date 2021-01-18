@@ -20,18 +20,18 @@ trait GatewaySetup extends BaseTestSuite {
   val componentIdCommandService: ComponentId = ComponentId(Prefix("IRIS.filter.wheel"), Assembly)
 
   val irisUserLevelCommand: Setup =
-    Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("2020A-P001-O123")))
+    Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("2020A-001-123")))
   val irisAdminLevelCommand: Setup =
-    Setup(Prefix("CSW.ncc.trombone"), CommandName("upgradeFirmware"), Some(ObsId("2020A-P001-O123")))
+    Setup(Prefix("CSW.ncc.trombone"), CommandName("upgradeFirmware"), Some(ObsId("2020A-001-123")))
 
-  val irisCommandNotInConf: Setup = Setup(Prefix("CSW.ncc.trombone"), CommandName("stopExposure"), Some(ObsId("2020A-P001-O123")))
-  val irisEngLevelCommand: Setup  = Setup(Prefix("CSW.ncc.trombone"), CommandName("setVoltage"), Some(ObsId("2020A-P001-O123")))
+  val irisCommandNotInConf: Setup = Setup(Prefix("CSW.ncc.trombone"), CommandName("stopExposure"), Some(ObsId("2020A-001-123")))
+  val irisEngLevelCommand: Setup  = Setup(Prefix("CSW.ncc.trombone"), CommandName("setVoltage"), Some(ObsId("2020A-001-123")))
 
   val mockSequencerCommandService: SequencerApi = mock[SequencerApi]
   val componentIdSequencer: ComponentId         = ComponentId(Prefix("IRIS.MoonNight"), ComponentType.Sequencer)
 
   val sequence: Sequence = Sequence(
-    Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("2020A-P001-O123")))
+    Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("2020A-001-123")))
   )
 
   when(mockResolver.commandService(componentIdCommandService)).thenReturn(Future.successful(mockCommandService))

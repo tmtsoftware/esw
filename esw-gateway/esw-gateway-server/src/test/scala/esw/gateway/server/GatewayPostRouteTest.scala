@@ -64,7 +64,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     "handle submit command and return started command response | ESW-91, ESW-216" in {
       val runId                         = Id("123")
       val componentType                 = Assembly
-      val command                       = Setup(source, CommandName("c1"), Some(ObsId("2020A-P001-O123")))
+      val command                       = Setup(source, CommandName("c1"), Some(ObsId("2020A-001-123")))
       val componentId                   = ComponentId(destination, componentType)
       val submitRequest: GatewayRequest = ComponentCommand(componentId, Submit(command))
 
@@ -79,7 +79,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     "handle validate command and return accepted command response | ESW-91, ESW-216" in {
       val runId                           = Id("123")
       val componentType                   = Assembly
-      val command                         = Setup(source, CommandName("c1"), Some(ObsId("2020A-P001-O123")))
+      val command                         = Setup(source, CommandName("c1"), Some(ObsId("2020A-001-123")))
       val componentId                     = ComponentId(destination, componentType)
       val validateRequest: GatewayRequest = ComponentCommand(componentId, Validate(command))
 
@@ -94,7 +94,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
     "handle oneway command and return accepted command response | ESW-91, ESW-216" in {
       val runId                         = Id("123")
       val componentType                 = Assembly
-      val command                       = Setup(source, CommandName("c1"), Some(ObsId("2020A-P001-O123")))
+      val command                       = Setup(source, CommandName("c1"), Some(ObsId("2020A-001-123")))
       val componentId                   = ComponentId(destination, componentType)
       val onewayRequest: GatewayRequest = ComponentCommand(componentId, Oneway(command))
 
@@ -108,7 +108,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
     "return InvalidComponent response for invalid component id | ESW-91, ESW-216" in {
       val componentType                 = Assembly
-      val command                       = Setup(source, CommandName("c1"), Some(ObsId("2020A-P001-O123")))
+      val command                       = Setup(source, CommandName("c1"), Some(ObsId("2020A-001-123")))
       val componentId                   = ComponentId(destination, componentType)
       val submitRequest: GatewayRequest = ComponentCommand(componentId, Submit(command))
 
@@ -124,7 +124,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
   "SequencerRoutes" must {
     "handle submit command and return started command response | ESW-250" in {
-      val sequence                      = Sequence(Setup(source, CommandName("c1"), Some(ObsId("2020A-P001-O123"))))
+      val sequence                      = Sequence(Setup(source, CommandName("c1"), Some(ObsId("2020A-001-123"))))
       val componentId                   = ComponentId(destination, Sequencer)
       val submitRequest: GatewayRequest = SequencerCommand(componentId, SequencerRequest.Submit(sequence))
       val submitResponse                = Started(Id("123"))
