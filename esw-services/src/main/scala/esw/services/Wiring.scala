@@ -1,6 +1,7 @@
 package esw.services
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import com.typesafe.config.ConfigFactory
 import csw.location.client.ActorSystemFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
@@ -14,7 +15,7 @@ class Wiring(startCmd: Start) {
 
   lazy implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol())
 
-  lazy val agentApp: ManagedService[AgentWiring]         = Agent.service(startCmd.agent, agentPrefix)
+  lazy val agentApp: ManagedService[AgentWiring]         = Agent.service(startCmd.agent, agentPrefix, ConfigFactory.load())
   lazy val gatewayService: ManagedService[GatewayWiring] = Gateway.service(startCmd.gateway, startCmd.commandRoleConfig)
   lazy val smService: ManagedService[SequenceManagerWiring] =
     SequenceManager.service(startCmd.sequenceManager, startCmd.obsModeConfig, agentPrefixForSM, startCmd.simulation)
