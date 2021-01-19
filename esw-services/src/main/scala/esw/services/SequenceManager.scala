@@ -5,8 +5,9 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.services.utils.ColoredConsole.GREEN
 import esw.agent.akka.app.AgentWiring
+import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
-import esw.services.internal.{FileUtils, ManagedService}
+import esw.services.internal.ManagedService
 import esw.sm.app.{SequenceManagerApp, SequenceManagerWiring}
 
 import java.nio.file.Path

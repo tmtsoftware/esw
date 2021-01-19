@@ -1,4 +1,4 @@
-package esw.services.internal
+package esw.commons.utils.files
 
 import java.nio.file.{Files, Path}
 import scala.io.Source

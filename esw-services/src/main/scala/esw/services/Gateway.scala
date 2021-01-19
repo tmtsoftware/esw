@@ -3,9 +3,10 @@ package esw.services
 import akka.Done
 import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
 import csw.services.utils.ColoredConsole.GREEN
+import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
 import esw.gateway.server.{GatewayMain, GatewayWiring}
-import esw.services.internal.{FileUtils, ManagedService}
+import esw.services.internal.ManagedService
 
 import java.nio.file.Path
 import scala.concurrent.Await

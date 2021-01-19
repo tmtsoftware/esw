@@ -5,9 +5,9 @@ import caseapp.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix
 import esw.commons.cli.EswCommandApp
+import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
 import esw.sm.app.SequenceManagerAppCommand._
-import esw.sm.app.utils.ResourceReader
 
 import java.nio.file.Path
 import scala.concurrent.Await
@@ -29,8 +29,8 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
     command match {
       case StartCommand(obsModeConfigPath, isConfigLocal, agentPrefix, simulation) => {
         if (simulation) {
-          lazy val defaultConfPath = ResourceReader.copyToTmp("smSimulationObsMode.conf").getAbsolutePath
-          lazy val configPath      = obsModeConfigPath.getOrElse(Path.of(defaultConfPath))
+          lazy val defaultConfPath = FileUtils.cpyFileToTmpFromResource("smSimulationObsMode.conf")
+          lazy val configPath      = obsModeConfigPath.getOrElse(defaultConfPath)
           start(configPath, isConfigLocal = true, agentPrefix, startLogging, simulation)
         }
         else
