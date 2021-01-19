@@ -3,7 +3,6 @@ package esw.commons.utils.files
 import esw.testcommons.BaseTestSuite
 
 import scala.io.Source
-import scala.util.Using
 
 class FileUtilsTest extends BaseTestSuite {
   "cpyFileToTmpFromResource" must {
