@@ -1,19 +1,15 @@
 package esw.sm.app
 
-import java.nio.file.Path
-
 import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.RemainingArgs
-import com.typesafe.config.{Config, ConfigFactory}
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.agent.akka.app.{AgentApp, AgentSettings}
 import esw.commons.cli.EswCommandApp
 import esw.constants.CommonTimeouts
 import esw.sm.app.SequenceManagerAppCommand._
 import esw.sm.app.utils.ResourceReader
 
+import java.nio.file.Path
 import scala.concurrent.Await
 import scala.util.control.NonFatal
 
@@ -50,7 +46,6 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
       simulation: Boolean
   ): SequenceManagerWiring = {
 
-    if (simulation) startSimulation()
     val sequenceManagerWiring = new SequenceManagerWiring(obsModeConfigPath, isConfigLocal, agentPrefix, simulation)
     import sequenceManagerWiring._
 
@@ -64,18 +59,6 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
         Await.result(actorRuntime.shutdown(UnknownReason), CommonTimeouts.Wiring)
         throw e
     }
-  }
-
-  private def spawnAgent(agentPrefix: Prefix, agentConfig: Config): Unit = {
-    val agentSettings = AgentSettings(agentPrefix, agentConfig)
-    AgentApp.start(agentSettings)
-  }
-
-  def startSimulation(): Unit = {
-    val agentConfig = ConfigFactory.load()
-    spawnAgent(Prefix(ESW, "machine1"), agentConfig)
-    spawnAgent(Prefix(TCS, "machine1"), agentConfig)
-    spawnAgent(Prefix(IRIS, "machine1"), agentConfig)
   }
 }
 // $COVERAGE-ON$

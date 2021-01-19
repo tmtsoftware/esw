@@ -124,6 +124,8 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
 
   def start(): Either[RegistrationError, AkkaLocation] = {
     logger.info(s"Starting Sequence Manager with prefix: $prefix")
+    if (simulation) logger.info("Starting Sequence Manager in simulation mode")
+
     Await.result(httpServerBinding, CommonTimeouts.Wiring)
 
     val loc = Await.result(locationServiceUtil.register(registration), CommonTimeouts.Wiring)

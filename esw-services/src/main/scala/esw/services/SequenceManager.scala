@@ -15,18 +15,15 @@ object SequenceManager {
   def service(
       enable: Boolean,
       maybeObsModeConfigPath: Option[Path],
-      agentRunning: Boolean,
-      agentPrefix: Option[Prefix]
+      agentPrefix: Option[Prefix],
+      simulation: Boolean
   ): ManagedService[SequenceManagerWiring] =
     ManagedService(
       "sequence-manager",
       enable,
-      () => startSM(getConfig(maybeObsModeConfigPath), agentPrefixForSM(agentRunning, agentPrefix)),
+      () => startSM(getConfig(maybeObsModeConfigPath), agentPrefix, simulation),
       stopSM
     )
-
-  private def agentPrefixForSM(agentRunning: Boolean, agentPrefix: Option[Prefix]): Option[Prefix] =
-    if (agentRunning) Some(agentPrefix.getOrElse(Agent.DefaultAgentPrefix)) else None
 
   private def getConfig(maybeObsModeConfigPath: Option[Path]): Path =
     maybeObsModeConfigPath.getOrElse {
@@ -34,8 +31,8 @@ object SequenceManager {
       FileUtils.cpyFileToTmpFromResource("smObsModeConfig.conf")
     }
 
-  private def startSM(obsModeConfigPath: Path, agentPrefix: Option[Prefix]): SequenceManagerWiring =
-    SequenceManagerApp.start(obsModeConfigPath, isConfigLocal = true, agentPrefix, startLogging = true, simulation = false)
+  private def startSM(obsModeConfigPath: Path, agentPrefix: Option[Prefix], simulation: Boolean): SequenceManagerWiring =
+    SequenceManagerApp.start(obsModeConfigPath, isConfigLocal = true, agentPrefix, startLogging = true, simulation)
 
   private def stopSM(smWiring: SequenceManagerWiring): Unit =
     Await.result(smWiring.shutdown(ActorSystemTerminateReason), CommonTimeouts.Wiring)

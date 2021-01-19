@@ -3,7 +3,6 @@ package esw.services
 import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
 import com.typesafe.config.ConfigFactory
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
 import esw.constants.CommonTimeouts
 import esw.services.internal.ManagedService
@@ -11,10 +10,9 @@ import esw.services.internal.ManagedService
 import scala.concurrent.Await
 
 object Agent {
-  def DefaultAgentPrefix: Prefix = Prefix(ESW, "primary")
 
-  def service(enable: Boolean, agentPrefix: Option[Prefix]): ManagedService[AgentWiring] =
-    ManagedService("agent", enable, () => startAgent(agentPrefix.getOrElse(DefaultAgentPrefix)), stopAgent)
+  def service(enable: Boolean, agentPrefix: Prefix): ManagedService[AgentWiring] =
+    ManagedService("agent", enable, () => startAgent(agentPrefix), stopAgent)
 
   private def startAgent(prefix: Prefix): AgentWiring = AgentApp.start(AgentSettings(prefix, ConfigFactory.load()))
 

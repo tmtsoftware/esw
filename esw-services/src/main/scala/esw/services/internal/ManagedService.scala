@@ -29,8 +29,10 @@ case class ManagedService[T](
   }
 
   def stop(): Unit = {
-    GREEN.println(s"Stopping $serviceName ...")
-    startResult.foreach(_stop)
-    GREEN.println(s"Stopped $serviceName")
+    startResult.foreach(w => {
+      GREEN.println(s"Stopping $serviceName ...")
+      _stop(w)
+      GREEN.println(s"Stopped $serviceName")
+    })
   }
 }

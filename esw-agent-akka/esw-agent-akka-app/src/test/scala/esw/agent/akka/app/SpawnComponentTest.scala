@@ -48,7 +48,7 @@ class SpawnComponentTest extends AgentSetup {
       verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
     }
 
-    "reply 'Spawned' and spawn sequence component process in simulation mode | ESW-237" in {
+    "reply 'Spawned' and spawn sequence component process in simulation mode | ESW-174" in {
       val agentActorRef = spawnAgentActor(name = "test-actor-random1")
       val probe         = TestProbe[SpawnResponse]()
 
@@ -170,7 +170,7 @@ class SpawnComponentTest extends AgentSetup {
       verify(processExecutor).runCommand(expectedCommand, seqManagerPrefix)
     }
 
-    "reply 'Spawned' and spawn sequence manager process in simulation mode | ESW-180" in {
+    "reply 'Spawned' and spawn sequence manager process in simulation mode | ESW-174" in {
       val agentActorRef = spawnAgentActor(name = "test-actor-random-9")
       val probe         = TestProbe[SpawnResponse]()
 

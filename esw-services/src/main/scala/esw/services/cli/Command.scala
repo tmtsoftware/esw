@@ -30,7 +30,9 @@ object Command {
       @HelpMessage("Start sequence manager with default obsMode config.")
       sequenceManager: Boolean = false,
       @HelpMessage("ObsMode config file path for gateway. If provided, this will be used instead of default.")
-      obsModeConfig: Option[Path]
+      obsModeConfig: Option[Path],
+      @HelpMessage("Enable simulation mode for sequence manager")
+      simulation: Boolean = false
   ) extends Command
 
   object Start {
@@ -40,12 +42,13 @@ object Command {
         gateway: Boolean = false,
         commandRoleConfig: Option[Path] = None,
         sequenceManager: Boolean = false,
-        obsModeConfig: Option[Path] = None
+        obsModeConfig: Option[Path] = None,
+        simulation: Boolean = false
     ): Start = {
       if (agent || gateway || sequenceManager)
-        new Start(agent, agentPrefix, gateway, commandRoleConfig, sequenceManager, obsModeConfig)
+        new Start(agent, agentPrefix, gateway, commandRoleConfig, sequenceManager, obsModeConfig, simulation)
       else
-        new Start(agent = true, agentPrefix, gateway = true, commandRoleConfig, sequenceManager = true, obsModeConfig)
+        new Start(agent = true, agentPrefix, gateway = true, commandRoleConfig, sequenceManager = true, obsModeConfig, simulation)
     }
   }
 }
