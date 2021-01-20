@@ -1,8 +1,5 @@
 package esw.integration
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
-
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -38,6 +35,8 @@ import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
 
+import java.io.File
+import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
@@ -55,7 +54,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     super.beforeAll()
     gatewayServerWiring = startGateway()
     // agent app setup
-    spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
+    spawnAgent(AgentSettings(agentPrefix, 1.minute, channel, versionConfPath))
     agentClient = AgentClient.make(agentPrefix, locationServiceUtil).rightValue
     // agent service setup
     agentServiceWiring = AgentServiceApp.start(startLogging = false)
@@ -683,7 +682,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       //spawn ESW agent
       val agentPrefix = getRandomAgentPrefix(ESW)
-      spawnAgent(AgentSettings(agentPrefix, 1.minute, channel))
+      spawnAgent(AgentSettings(agentPrefix, 1.minute, channel, versionConfPath))
 
       //verify that agent is available
       resolveAkkaLocation(agentPrefix, Machine)
@@ -735,14 +734,32 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       TestSetup.cleanup()
     }
 
-    "provision should shutdown all running seq comps and start new as given in provision config | ESW-347, ESW-358, ESW-332" in {
+    "provision should shutdown all running seq comps and start new as given in provision config | ESW-347, ESW-358, ESW-332, ESW-360" in {
       locationService.unregisterAll().futureValue
       registerKeycloak()
+
+      val configTestKit = ConfigTestKit()
+
+      // start config server
+      configTestKit.startConfigServer()
+
+      val factory = mock[TokenFactory]
+      when(factory.getToken).thenReturn("validToken")
+      val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
+
+      val configFilePath = Path.of("/tmt/osw/version.conf")
+      val scriptVersionConf: String =
+        """
+          | scripts.version = 0.1.0-SNAPSHOT
+          |""".stripMargin
+      // create obsMode config file on config server
+      adminApi.create(configFilePath, ConfigData.fromString(scriptVersionConf), annex = false, "First commit").futureValue
+
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents to provision and verify they are running
-      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel))
-      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel))
+      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel, versionConfPath))
 
       val eswRunningSeqComp = Prefix(ESW, "ESW_10")
       TestSetup.startSequenceComponents(eswRunningSeqComp)
@@ -761,6 +778,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       //clean up the provisioned sequence components
       sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
+      configTestKit.deleteServerFiles()
+      configTestKit.terminateServer()
       TestSetup.cleanup()
     }
 
@@ -771,8 +790,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents
-      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel))
-      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel))
+      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel, versionConfPath))
 
       val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 

@@ -1,7 +1,10 @@
 package esw.sm.app
 
-import java.nio.file.{Path, Paths}
+import csw.config.api.{ConfigData, TokenFactory}
+import csw.config.api.scaladsl.ConfigService
+import csw.config.client.scaladsl.ConfigClientFactory
 
+import java.nio.file.{Path, Paths}
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
@@ -9,7 +12,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import csw.testkit.scaladsl.CSWService.EventServer
+import csw.testkit.scaladsl.CSWService.{ConfigServer, EventServer}
 import esw.agent.akka.AgentSetup
 import esw.agent.akka.app.AgentSettings
 import esw.ocs.api.actor.client.SequencerApiFactory
@@ -21,7 +24,7 @@ import esw.sm.api.protocol.{ConfigureResponse, ProvisionResponse, ShutdownSequen
 
 import scala.concurrent.duration.DurationInt
 
-class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer) with AgentSetup {
+class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, ConfigServer) with AgentSetup {
 
   private val sequenceManagerPrefix   = Prefix(ESW, "sequence_manager")
   private val obsModeConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smObsModeConfigSimulation.conf").toURI)
@@ -34,9 +37,22 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer) w
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel))
-    spawnAgent(AgentSettings(tcsAgentPrefix, 1.minute, channel))
-    spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel))
+
+    val factory = mock[TokenFactory]
+    when(factory.getToken).thenReturn("validToken")
+    val adminApi: ConfigService = ConfigClientFactory.adminApi(actorSystem, locationService, factory)
+
+    val configFilePath = Path.of("/tmt/osw/version.conf")
+    val scriptVersionConf: String =
+      """
+        | scripts.version = 0.1.0-SNAPSHOT
+        |""".stripMargin
+    // create obsMode config file on config server
+    adminApi.create(configFilePath, ConfigData.fromString(scriptVersionConf), annex = false, "First commit").futureValue
+
+    spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel, configFilePath))
+    spawnAgent(AgentSettings(tcsAgentPrefix, 1.minute, channel, configFilePath))
+    spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel, configFilePath))
   }
 
   override def afterEach(): Unit = {

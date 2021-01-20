@@ -103,6 +103,7 @@ object Dependencies {
     Seq(
       Libs.`case-app`,
       Csw.`csw-location-client`,
+      Csw.`csw-config-client`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream`,
       Libs.scalatest.value            % Test,
@@ -289,6 +290,7 @@ object Dependencies {
 
   val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Csw.`csw-config-client`,
       Csw.`csw-aas-http`,
       Csw.`csw-location-api`.value,
       Akka.`akka-stream-typed`        % Provided,

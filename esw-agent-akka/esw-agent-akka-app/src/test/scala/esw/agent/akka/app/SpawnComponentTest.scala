@@ -35,7 +35,7 @@ class SpawnComponentTest extends AgentSetup {
           "launch",
           "--channel",
           Cs.channel,
-          "ocs-app",
+          s"ocs-app:$sequencerScriptsVersion",
           "--",
           "seqcomp",
           "-s",
@@ -45,6 +45,7 @@ class SpawnComponentTest extends AgentSetup {
           "-a",
           agentPrefix.toString()
         )
+
       verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
     }
 
@@ -66,7 +67,7 @@ class SpawnComponentTest extends AgentSetup {
           "launch",
           "--channel",
           Cs.channel,
-          "ocs-app",
+          s"ocs-app:$sequencerScriptsVersion",
           "--",
           "seqcomp",
           "-s",

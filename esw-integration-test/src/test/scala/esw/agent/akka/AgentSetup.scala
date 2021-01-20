@@ -1,5 +1,7 @@
 package esw.agent.akka
 
+import java.nio.file.Path
+
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
@@ -14,6 +16,7 @@ import scala.concurrent.Future
 trait AgentSetup extends LocationServiceCodecs {
 
   val channel: String                       = "file://" + getClass.getResource("/apps.json").getPath
+  val versionConfPath: Path                 = Path.of("/tmt/configs/osw-version.conf")
   val irisPrefix: Prefix                    = Prefix("esw.iris")
   val irisSeqCompConnection: AkkaConnection = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
   val appVersion                            = "0.1.0-SNAPSHOT"

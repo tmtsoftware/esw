@@ -1,16 +1,21 @@
 package esw.agent.akka.app.ext
 
-import java.nio.file.Paths
-
-import akka.actor.typed.ActorRef
+import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
+import esw.commons.utils.config.ConfigUtilsExt
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
 
+import java.nio.file.{Path, Paths}
+import scala.concurrent.{ExecutionContext, Future}
+
 class SpawnCommandExtTest extends BaseTestSuite {
+  private val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
+  private implicit val ec: ExecutionContext              = system.executionContext
+
   private val replyTo         = mock[ActorRef[SpawnResponse]]
   private val compName        = "dummy"
   private val channel         = "https://github.com/apps.json"
@@ -23,12 +28,19 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val spawnSeqComp            = SpawnSequenceComponent(replyTo, agentPrefix, compName, None)
   private val spawnSeqCompWithVersion = SpawnSequenceComponent(replyTo, agentPrefix, compName, Some(version))
   private val spawnSeqCompSimulation  = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = true)
+
+  private val configUtilsExt: ConfigUtilsExt  = mock[ConfigUtilsExt]
+  private val versionConfPath: Path           = Path.of(randomString(30))
+  private val sequencerScriptsVersion: String = randomString(10)
+
+  when(configUtilsExt.findVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
+
   private val spawnSeqCompCmd =
-    s"cs launch --channel $channel ocs-app -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
+    s"cs launch --channel $channel ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
   private val spawnSeqCompWithVersionCmd =
     s"cs launch --channel $channel ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
   private val spawnSeqCompSimulationCmd =
-    s"cs launch --channel $channel ocs-app -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
+    s"cs launch --channel $channel ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
 
   private val spawnSeqMgr            = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None)
   private val spawnSeqMgrWithVersion = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))
@@ -51,7 +63,17 @@ class SpawnCommandExtTest extends BaseTestSuite {
       ("SpawnSequenceManagerSimulation", spawnSeqMgrSimulation, spawnSeqMgrSimulationCmd)
     ).foreach {
       case (name, spawnCommand, expectedCommandStr) =>
-        name in { spawnCommand.executableCommandStr(channel, agentPrefix) should ===(expectedCommandStr.split(" ").toList) }
+        name in {
+          spawnCommand.executableCommandStr(channel, agentPrefix, configUtilsExt, versionConfPath).futureValue should ===(
+            expectedCommandStr.split(" ").toList
+          )
+        }
     }
+  }
+
+  override protected def afterAll(): Unit = {
+    system.terminate()
+    system.whenTerminated.futureValue
+    super.afterAll()
   }
 }
