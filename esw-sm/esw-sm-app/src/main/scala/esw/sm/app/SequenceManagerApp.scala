@@ -34,7 +34,10 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
           start(configPath, isConfigLocal = true, agentPrefix, startLogging, simulation)
         }
         else
-          start(obsModeConfigPath.get, isConfigLocal, agentPrefix, startLogging, simulation)
+          obsModeConfigPath match {
+            case Some(path) => start(path, isConfigLocal, agentPrefix, startLogging, simulation)
+            case None       => throw new IllegalArgumentException("obsMode config file path must be provided")
+          }
       }
     }
 
