@@ -1,17 +1,15 @@
 package esw.agent.akka.app.ext
 
-import java.nio.file.{Path, Paths}
-
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import com.typesafe.config.Config
-import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
+import esw.commons.utils.config.ConfigUtilsExt
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
 
+import java.nio.file.{Path, Paths}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SpawnCommandExtTest extends BaseTestSuite {
@@ -30,13 +28,11 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val spawnSeqComp            = SpawnSequenceComponent(replyTo, agentPrefix, compName, None)
   private val spawnSeqCompWithVersion = SpawnSequenceComponent(replyTo, agentPrefix, compName, Some(version))
 
-  private val configUtils: ConfigUtils        = mock[ConfigUtils]
+  private val configUtilsExt: ConfigUtilsExt  = mock[ConfigUtilsExt]
   private val versionConfPath: Path           = Path.of(randomString(30))
-  private val config: Config                  = mock[Config]
   private val sequencerScriptsVersion: String = randomString(10)
 
-  when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.successful(config))
-  when(config.getString("scripts.version")).thenReturn(sequencerScriptsVersion)
+  when(configUtilsExt.findVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
 
   private val spawnSeqCompCmd =
     s"cs launch --channel $channel ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
@@ -59,7 +55,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
     ).foreach {
       case (name, spawnCommand, expectedCommandStr) =>
         name in {
-          spawnCommand.executableCommandStr(channel, agentPrefix, configUtils, versionConfPath).futureValue should ===(
+          spawnCommand.executableCommandStr(channel, agentPrefix, configUtilsExt, versionConfPath).futureValue should ===(
             expectedCommandStr.split(" ").toList
           )
         }

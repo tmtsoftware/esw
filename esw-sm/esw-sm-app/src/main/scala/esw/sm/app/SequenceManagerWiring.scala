@@ -1,7 +1,5 @@
 package esw.sm.app
 
-import java.nio.file.Path
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.SpawnProtocol.Spawn
@@ -24,6 +22,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.utils.config.ConfigUtilsExt
 import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
@@ -40,6 +39,7 @@ import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
 import msocket.jvm.metrics.LabelExtractor
 
+import java.nio.file.Path
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
@@ -49,21 +49,25 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   lazy val actorRuntime = new ActorRuntime(smActorSystem)
   import actorRuntime._
   private implicit val timeout: Timeout = CommonTimeouts.Wiring
+  private val prefix                    = Prefix(ESW, "sequence_manager")
 
-  private val prefix = Prefix(ESW, "sequence_manager")
+  private lazy val config                = smActorSystem.settings.config
+  private lazy val versionConfPath: Path = Path.of(config.getString("osw.version.confPath"))
 
   private lazy val locationService: LocationService         = HttpLocationServiceFactory.makeLocalClient(smActorSystem)
   private lazy val configClientService: ConfigClientService = ConfigClientFactory.clientApi(smActorSystem, locationService)
   private lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(smActorSystem)
   private lazy val loggerFactory                            = new LoggerFactory(prefix)
   private lazy val logger: Logger                           = loggerFactory.getLogger
+  private lazy val configUtilsExt                           = new ConfigUtilsExt(configUtils)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   private lazy val sequenceComponentAllocator = new SequenceComponentAllocator()
   private lazy val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator)
   private lazy val agentAllocator             = new AgentAllocator()
-  private lazy val agentUtil                  = new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator)
-  private lazy val sequencerUtil              = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
+  private lazy val agentUtil =
+    new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator, configUtilsExt, versionConfPath)
+  private lazy val sequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
   private lazy val obsModeConfig =
     Await.result(
@@ -85,7 +89,6 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
     CommonTimeouts.Wiring
   )
 
-  private lazy val config     = smActorSystem.settings.config
   private lazy val connection = AkkaConnection(ComponentId(prefix, ComponentType.Service))
   private lazy val locationMetadata =
     agentPrefix

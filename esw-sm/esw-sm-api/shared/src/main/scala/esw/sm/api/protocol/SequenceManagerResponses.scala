@@ -101,6 +101,7 @@ object ProvisionResponse {
   sealed trait Failure                                                        extends SmFailure with ProvisionResponse
   case class CouldNotFindMachines(prefix: Set[Prefix])                        extends Failure
   case class SpawningSequenceComponentsFailed(failureResponses: List[String]) extends Failure
+  case class ProvisionVersionFailure(msg: String)                             extends Failure
 }
 
 sealed trait AgentStatusResponse extends SmResponse

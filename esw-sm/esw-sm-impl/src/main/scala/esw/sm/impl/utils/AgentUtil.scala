@@ -9,19 +9,23 @@ import esw.agent.service.api.models.{Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.extensions.MapExt.MapOps
+import esw.commons.utils.config.{ConfigUtilsExt, ScriptVersionConfException}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ProvisionResponse.SpawningSequenceComponentsFailed
+import esw.sm.api.protocol.ProvisionResponse.{ProvisionVersionFailure, SpawningSequenceComponentsFailed}
 import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse}
 import esw.sm.impl.utils.Types._
 
+import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentUtil(
     locationServiceUtil: LocationServiceUtil,
     sequenceComponentUtil: SequenceComponentUtil,
-    agentAllocator: AgentAllocator
+    agentAllocator: AgentAllocator,
+    configUtilsExt: ConfigUtilsExt,
+    versionConfPath: Path
 )(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
@@ -69,21 +73,37 @@ class AgentUtil(
   private def getSeqCompsStatus(seqComps: List[SeqCompLocation]): Future[List[SequenceComponentStatus]] =
     Future.traverse(seqComps)(sequenceComponentUtil.getSequenceComponentStatus)
 
-  private def provisionOn(agentLocations: List[AgentLocation], provisionConfig: ProvisionConfig) =
+  private def provisionOn(agentLocations: List[AgentLocation], provisionConfig: ProvisionConfig) = {
     Future
       .successful(agentAllocator.allocate(provisionConfig, agentLocations))
-      .flatMapToAdt(spawnCompsByMapping, identity)
+      .flatMapToAdt(spawnSeqCompByVersion, identity)
+  }
 
-  private def spawnCompsByMapping(mapping: List[(AgentLocation, SeqCompPrefix)]): Future[ProvisionResponse] =
+  private def spawnSeqCompByVersion(mapping: List[(AgentLocation, SeqCompPrefix)]) = {
+    configUtilsExt.findVersion(versionConfPath).flatMap(spawnCompsByMapping(mapping, _)).recover {
+      case ScriptVersionConfException(msg) => ProvisionVersionFailure(msg)
+    }
+  }
+
+  private def spawnCompsByMapping(
+      mapping: List[(AgentLocation, SeqCompPrefix)],
+      version: String
+  ): Future[ProvisionResponse] =
     Future
       .traverse(mapping) {
-        case (agentLocation, seqCompPrefix) => spawnSeqComp(agentLocation.prefix, makeAgentClient(agentLocation), seqCompPrefix)
+        case (agentLocation, seqCompPrefix) =>
+          spawnSeqComp(agentLocation.prefix, makeAgentClient(agentLocation), seqCompPrefix, version)
       }
       .map(_.sequence.map(_ => ProvisionResponse.Success).left.map(SpawningSequenceComponentsFailed).merge)
 
-  private def spawnSeqComp(agentPrefix: AgentPrefix, agentClient: AgentClient, seqCompPrefix: SeqCompPrefix) =
+  private def spawnSeqComp(
+      agentPrefix: AgentPrefix,
+      agentClient: AgentClient,
+      seqCompPrefix: SeqCompPrefix,
+      version: String
+  ) =
     agentClient
-      .spawnSequenceComponent(seqCompPrefix.componentName)
+      .spawnSequenceComponent(seqCompPrefix.componentName, Some(version))
       .map {
         case Spawned     => Right(())
         case Failed(msg) => Left(s"Failed to spawn Sequence component: $seqCompPrefix on Machine: $agentPrefix, reason: $msg")

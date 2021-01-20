@@ -1,12 +1,6 @@
 package esw.agent.akka.app
 
-import java.net.URI
-import java.nio.file.{Path, Paths}
-import java.util.concurrent.CompletableFuture
-
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
-import com.typesafe.config.Config
-import csw.config.client.commons.ConfigUtils
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
@@ -17,9 +11,13 @@ import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
+import esw.commons.utils.config.ConfigUtilsExt
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
+import java.net.URI
+import java.nio.file.{Path, Paths}
+import java.util.concurrent.CompletableFuture
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Random
@@ -30,7 +28,7 @@ class AgentSetup extends BaseTestSuite {
   implicit val ec: ExecutionContext                       = system.executionContext
 
   val locationService: LocationService   = mock[LocationService]
-  val configUtils: ConfigUtils           = mock[ConfigUtils]
+  val configUtilsExt: ConfigUtilsExt     = mock[ConfigUtilsExt]
   val processExecutor: ProcessExecutor   = mock[ProcessExecutor]
   val process: Process                   = mock[Process]
   val mockedProcessHandle: ProcessHandle = mock[ProcessHandle]
@@ -58,11 +56,9 @@ class AgentSetup extends BaseTestSuite {
   val spawnSequenceManager: ActorRef[SpawnResponse] => SpawnSequenceManager =
     SpawnSequenceManager(_, Paths.get("obsmode.conf"), isConfigLocal = true, None)
 
-  private val config: Config          = mock[Config]
   val sequencerScriptsVersion: String = randomString(10)
 
-  when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.successful(config))
-  when(config.getString("scripts.version")).thenReturn(sequencerScriptsVersion)
+  when(configUtilsExt.findVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -70,7 +66,7 @@ class AgentSetup extends BaseTestSuite {
   }
 
   def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String = "test-actor"): ActorRef[AgentCommand] = {
-    val processManager: ProcessManager = new ProcessManager(locationService, configUtils, processExecutor, agentSettings) {
+    val processManager: ProcessManager = new ProcessManager(locationService, configUtilsExt, processExecutor, agentSettings) {
       override def processHandle(pid: Long): Option[ProcessHandle] = Some(mockedProcessHandle)
     }
     system.systemActorOf(new AgentActor(processManager).behavior, name)

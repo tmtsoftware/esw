@@ -735,9 +735,26 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       TestSetup.cleanup()
     }
 
-    "provision should shutdown all running seq comps and start new as given in provision config | ESW-347, ESW-358, ESW-332" in {
+    "provision should shutdown all running seq comps and start new as given in provision config | ESW-347, ESW-358, ESW-332, ESW-360" in {
       locationService.unregisterAll().futureValue
       registerKeycloak()
+
+      // start config server
+      configTestKit.startConfigServer()
+
+      val factory = mock[TokenFactory]
+      when(factory.getToken).thenReturn("validToken")
+      val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
+      configTestKit.initSvnRepo()
+
+      val configFilePath = Path.of("/tmt/osw/version.conf")
+      val scriptVersionConf: String =
+        """
+          | scripts.version = 0.1.0-SNAPSHOT
+          |""".stripMargin
+      // create obsMode config file on config server
+      adminApi.create(configFilePath, ConfigData.fromString(scriptVersionConf), annex = false, "First commit").futureValue
+
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents to provision and verify they are running
@@ -761,6 +778,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       //clean up the provisioned sequence components
       sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
+      configTestKit.deleteServerFiles()
+      configTestKit.terminateServer()
       TestSetup.cleanup()
     }
 

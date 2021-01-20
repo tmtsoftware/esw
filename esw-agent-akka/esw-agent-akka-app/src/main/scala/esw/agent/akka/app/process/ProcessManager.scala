@@ -2,7 +2,6 @@ package esw.agent.akka.app.process
 
 import akka.Done
 import akka.actor.typed.ActorSystem
-import csw.config.client.commons.ConfigUtils
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
@@ -12,6 +11,7 @@ import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand
 import esw.agent.service.api.models.{Failed, KillResponse, Killed}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.utils.config.ConfigUtilsExt
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
 
 class ProcessManager(
     locationService: LocationService,
-    configUtils: ConfigUtils,
+    configUtilsExt: ConfigUtilsExt,
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings
 )(implicit system: ActorSystem[_], log: Logger) {
@@ -75,7 +75,7 @@ class ProcessManager(
   //starts a process with the executable string of the given spawn command
   private def startComponent(command: SpawnCommand) =
     command
-      .executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix, configUtils, agentSettings.versionConfPath)
+      .executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix, configUtilsExt, agentSettings.versionConfPath)
       .map { cmdStr =>
         processExecutor
           .runCommand(cmdStr, command.prefix)

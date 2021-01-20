@@ -290,6 +290,7 @@ object Dependencies {
 
   val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Csw.`csw-config-client`,
       Csw.`csw-aas-http`,
       Csw.`csw-location-api`.value,
       Akka.`akka-stream-typed`        % Provided,
