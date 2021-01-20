@@ -399,3 +399,9 @@ lazy val `esw-http-template-wiring` = project
   .settings(
     libraryDependencies ++= Dependencies.Template.value
   )
+
+lazy val `esw-performance-test` = project
+  .dependsOn(
+    `esw-testkit` % Test,
+    `esw-sm-api`.jvm % Test
+  )
