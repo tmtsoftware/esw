@@ -249,6 +249,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       eventually {
         locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
       }
+      actorSystem.terminate()
       actorSystem.whenTerminated.futureValue
     }
 
@@ -315,6 +316,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       eventually {
         locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
       }
+      actorSystem.terminate()
       actorSystem.whenTerminated.futureValue
     }
   }
