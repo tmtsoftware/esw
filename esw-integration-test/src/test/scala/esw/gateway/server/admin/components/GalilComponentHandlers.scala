@@ -9,7 +9,6 @@ import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Accepted, Completed, SubmitResponse, ValidateCommandResponse}
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
-import csw.params.core.states.{CurrentState, StateName}
 import csw.time.core.models.UTCTime
 
 case class StartLogging()
@@ -21,9 +20,7 @@ class GalilComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   import esw.gateway.server.admin.SampleContainerState._
 
   override def initialize(): Unit = {
-    cswCtx.currentStatePublisher.publish(
-      CurrentState(eswGalilHcdPrefix, StateName("Initializing_Galil"), Set(choiceKey.set(initChoice)))
-    )
+    cswCtx.currentStatePublisher.publish(galilInitializeCurrentState)
   }
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ()
@@ -45,9 +42,7 @@ class GalilComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
     if (controlCommand.commandName.name == "StartLogging") startLogging()
 
   override def onShutdown(): Unit = {
-    cswCtx.currentStatePublisher.publish(
-      CurrentState(eswGalilHcdPrefix, StateName("Shutdown_Galil"), Set(choiceKey.set(shutdownChoice)))
-    )
+    cswCtx.currentStatePublisher.publish(galilShutdownCurrentState)
   }
 
   override def onGoOffline(): Unit = ()

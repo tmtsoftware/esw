@@ -27,20 +27,24 @@ object SampleContainerState {
   val eswContainerPrefix: Prefix      = Prefix(Subsystem.Container, "ESW_Container")
   val eswContainerCompId: ComponentId = ComponentId(eswContainerPrefix, ComponentType.Container)
 
+  val shutdownGalilStateName: StateName = StateName("Shutdown_Galil")
   //current state which gets published from shutdown handler of galil HCD
   val galilShutdownCurrentState: CurrentState =
-    CurrentState(eswGalilHcdPrefix, StateName("Shutdown_Galil"), Set(choiceKey.set(shutdownChoice)))
+    CurrentState(eswGalilHcdPrefix, shutdownGalilStateName, Set(choiceKey.set(shutdownChoice)))
 
+  val initializingGalilStateName: StateName = StateName("Initializing_Galil")
   //current state which gets published from initialize handler of galil HCD
   val galilInitializeCurrentState: CurrentState =
-    CurrentState(eswGalilHcdPrefix, StateName("Initializing_Galil"), Set(choiceKey.set(initChoice)))
+    CurrentState(eswGalilHcdPrefix, initializingGalilStateName, Set(choiceKey.set(initChoice)))
 
+  val shutdownFilterAssemblyStateName: StateName = StateName("Shutdown_Filter_Assembly")
   //current state which gets published from shutdown handler of filter Assembly
   val assemblyShutdownCurrentState: CurrentState =
-    CurrentState(eswAssemblyPrefix, StateName("Shutdown_Filter_Assembly"), Set(choiceKey.set(shutdownChoice)))
+    CurrentState(eswAssemblyPrefix, shutdownFilterAssemblyStateName, Set(choiceKey.set(shutdownChoice)))
 
+  val initializingFilterAssemblyStateName: StateName = StateName("Initializing_Filter_Assembly")
   //current state which gets published from initialize handler of filter Assembly
   val assemblyInitializeCurrentState: CurrentState =
-    CurrentState(eswAssemblyPrefix, StateName("Initializing_Filter_Assembly"), Set(choiceKey.set(initChoice)))
+    CurrentState(eswAssemblyPrefix, initializingFilterAssemblyStateName, Set(choiceKey.set(initChoice)))
 
 }

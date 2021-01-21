@@ -27,7 +27,7 @@ import csw.logging.models.{Level, LogMetadata}
 import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.OnewayResponse
 import csw.params.commands.{CommandName, Setup}
-import csw.params.core.states.{CurrentState, StateName}
+import csw.params.core.states.CurrentState
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.FrameworkTestKit
 import esw.gateway.api.clients.AdminClient
@@ -265,14 +265,14 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       val filterAssemblyLocation = locationService.resolve(AkkaConnection(eswAssemblyCompId), 5.seconds).futureValue.get
       val galilHcdLocation       = locationService.resolve(AkkaConnection(eswGalilHcdCompId), 5.seconds).futureValue.get
 
-      val assemblyCommandService = CommandServiceFactory.make(filterAssemblyLocation)
-      val galilHcdCommandService = CommandServiceFactory.make(galilHcdLocation)
+      val assemblyCommandService = CommandServiceFactory.make(filterAssemblyLocation)(actorSystem)
+      val galilHcdCommandService = CommandServiceFactory.make(galilHcdLocation)(actorSystem)
 
-      val assemblyProbe = TestProbe[CurrentState]("assembly-state-probe")
-      val galilHcdProbe = TestProbe[CurrentState]("galil-Hcd-state-probe")
+      val assemblyProbe = TestProbe[CurrentState]("assembly-state-probe")(actorSystem)
+      val galilHcdProbe = TestProbe[CurrentState]("galil-Hcd-state-probe")(actorSystem)
 
-      val assemblyStateNames = Set(StateName("Initializing_Filter_Assembly"), StateName("Shutdown_Filter_Assembly"))
-      val galilStateNames    = Set(StateName("Initializing_Galil"), StateName("Shutdown_Galil"))
+      val assemblyStateNames = Set(initializingFilterAssemblyStateName, shutdownFilterAssemblyStateName)
+      val galilStateNames    = Set(initializingGalilStateName, shutdownGalilStateName)
       assemblyCommandService.subscribeCurrentState(assemblyStateNames, assemblyProbe.ref ! _)
       galilHcdCommandService.subscribeCurrentState(galilStateNames, galilHcdProbe.ref ! _)
 
