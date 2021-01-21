@@ -21,6 +21,7 @@ object Libs {
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.2.0"
 
   val `ammonite` = "com.lihaoyi" % "ammonite" % "2.2.0" cross CrossVersion.full
+  val `hdr-histogram`      = "org.hdrhistogram"         % "HdrHistogram"      % "2.1.12"
 }
 
 object Csw {

@@ -406,3 +406,7 @@ lazy val `esw-performance-test` = project
     `esw-testkit` % Test,
     `esw-sm-api`.jvm % Test
   )
+  .settings(
+    libraryDependencies ++= Dependencies.PerformanceTest.value
+  )
+
