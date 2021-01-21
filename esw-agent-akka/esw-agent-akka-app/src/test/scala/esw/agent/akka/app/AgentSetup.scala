@@ -11,7 +11,7 @@ import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
-import esw.commons.utils.config.ConfigUtilsExt
+import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
@@ -28,7 +28,7 @@ class AgentSetup extends BaseTestSuite {
   implicit val ec: ExecutionContext                       = system.executionContext
 
   val locationService: LocationService   = mock[LocationService]
-  val configUtilsExt: ConfigUtilsExt     = mock[ConfigUtilsExt]
+  val versionManager: VersionManager     = mock[VersionManager]
   val processExecutor: ProcessExecutor   = mock[ProcessExecutor]
   val process: Process                   = mock[Process]
   val mockedProcessHandle: ProcessHandle = mock[ProcessHandle]
@@ -58,7 +58,7 @@ class AgentSetup extends BaseTestSuite {
 
   val sequencerScriptsVersion: String = randomString(10)
 
-  when(configUtilsExt.findVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
+  when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -66,7 +66,7 @@ class AgentSetup extends BaseTestSuite {
   }
 
   def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String = "test-actor"): ActorRef[AgentCommand] = {
-    val processManager: ProcessManager = new ProcessManager(locationService, configUtilsExt, processExecutor, agentSettings) {
+    val processManager: ProcessManager = new ProcessManager(locationService, versionManager, processExecutor, agentSettings) {
       override def processHandle(pid: Long): Option[ProcessHandle] = Some(mockedProcessHandle)
     }
     system.systemActorOf(new AgentActor(processManager).behavior, name)

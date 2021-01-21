@@ -5,7 +5,7 @@ import csw.prefix.models.Prefix
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.SpawnResponse
-import esw.commons.utils.config.ConfigUtilsExt
+import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
 
@@ -29,11 +29,11 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val spawnSeqCompWithVersion = SpawnSequenceComponent(replyTo, agentPrefix, compName, Some(version))
   private val spawnSeqCompSimulation  = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = true)
 
-  private val configUtilsExt: ConfigUtilsExt  = mock[ConfigUtilsExt]
+  private val versionManager: VersionManager  = mock[VersionManager]
   private val versionConfPath: Path           = Path.of(randomString(30))
   private val sequencerScriptsVersion: String = randomString(10)
 
-  when(configUtilsExt.findVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
+  when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
 
   private val spawnSeqCompCmd =
     s"cs launch --channel $channel ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
@@ -64,7 +64,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
     ).foreach {
       case (name, spawnCommand, expectedCommandStr) =>
         name in {
-          spawnCommand.executableCommandStr(channel, agentPrefix, configUtilsExt, versionConfPath).futureValue should ===(
+          spawnCommand.executableCommandStr(channel, agentPrefix, versionManager, versionConfPath).futureValue should ===(
             expectedCommandStr.split(" ").toList
           )
         }

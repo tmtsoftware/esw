@@ -7,9 +7,9 @@ import csw.config.client.commons.ConfigUtils
 import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
 
-class ConfigUtilsExt(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
+class VersionManager(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
   private val scriptVersion = "scripts.version"
-  def findVersion(path: Path): Future[String] =
+  def getScriptVersion(path: Path): Future[String] =
     configUtils
       .getConfig(path, isLocal = false)
       .map(config => config.getString(scriptVersion))

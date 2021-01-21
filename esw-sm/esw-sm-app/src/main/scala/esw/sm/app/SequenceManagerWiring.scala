@@ -23,7 +23,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.commons.utils.config.ConfigUtilsExt
+import esw.commons.utils.config.VersionManager
 import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
@@ -60,14 +60,14 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   private lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(smActorSystem)
   private lazy val loggerFactory                            = new LoggerFactory(prefix)
   private lazy val logger: Logger                           = loggerFactory.getLogger
-  private lazy val configUtilsExt                           = new ConfigUtilsExt(configUtils)
+  private lazy val versionManager                           = new VersionManager(configUtils)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   private lazy val sequenceComponentAllocator = new SequenceComponentAllocator()
   private lazy val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator)
   private lazy val agentAllocator             = new AgentAllocator()
   private lazy val agentUtil =
-    new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator, configUtilsExt, versionConfPath, simulation)
+    new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator, versionManager, versionConfPath, simulation)
   private lazy val sequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
   private lazy val obsModeConfig =

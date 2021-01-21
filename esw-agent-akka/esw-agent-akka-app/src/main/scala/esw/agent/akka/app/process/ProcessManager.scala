@@ -11,7 +11,7 @@ import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand
 import esw.agent.service.api.models.{Failed, KillResponse, Killed}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.utils.config.ConfigUtilsExt
+import esw.commons.utils.config.{VersionManager, ScriptVersionConfException}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
 
 class ProcessManager(
     locationService: LocationService,
-    configUtilsExt: ConfigUtilsExt,
+    versionManager: VersionManager,
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings
 )(implicit system: ActorSystem[_], log: Logger) {
@@ -75,11 +75,14 @@ class ProcessManager(
   //starts a process with the executable string of the given spawn command
   private def startComponent(command: SpawnCommand) =
     command
-      .executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix, configUtilsExt, agentSettings.versionConfPath)
+      .executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix, versionManager, agentSettings.versionConfPath)
       .map { cmdStr =>
         processExecutor
           .runCommand(cmdStr, command.prefix)
           .map(_.tap(onProcessExit(_, command.connection)))
+      }
+      .recover {
+        case ScriptVersionConfException(msg) => Left(msg)
       }
 
   //it checks if the given process is alive

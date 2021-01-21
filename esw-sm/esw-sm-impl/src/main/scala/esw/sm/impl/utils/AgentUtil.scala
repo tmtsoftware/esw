@@ -9,7 +9,7 @@ import esw.agent.service.api.models.{Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.extensions.MapExt.MapOps
-import esw.commons.utils.config.{ConfigUtilsExt, ScriptVersionConfException}
+import esw.commons.utils.config.{VersionManager, ScriptVersionConfException}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -24,7 +24,7 @@ class AgentUtil(
     locationServiceUtil: LocationServiceUtil,
     sequenceComponentUtil: SequenceComponentUtil,
     agentAllocator: AgentAllocator,
-    configUtilsExt: ConfigUtilsExt,
+    versionManager: VersionManager,
     versionConfPath: Path,
     simulation: Boolean = false
 )(implicit actorSystem: ActorSystem[_]) {
@@ -81,7 +81,7 @@ class AgentUtil(
   }
 
   private def spawnSeqCompByVersion(mapping: List[(AgentLocation, SeqCompPrefix)]) = {
-    configUtilsExt.findVersion(versionConfPath).flatMap(spawnCompsByMapping(mapping, _)).recover {
+    versionManager.getScriptVersion(versionConfPath).flatMap(spawnCompsByMapping(mapping, _)).recover {
       case ScriptVersionConfException(msg) => ProvisionVersionFailure(msg)
     }
   }

@@ -17,7 +17,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager, ProcessOutput}
 import esw.agent.akka.client.AgentCommand
-import esw.commons.utils.config.ConfigUtilsExt
+import esw.commons.utils.config.VersionManager
 import esw.constants.CommonTimeouts
 
 import scala.concurrent.{Await, Future}
@@ -40,11 +40,11 @@ class AgentWiring(agentSettings: AgentSettings) {
 
   private lazy val configClientService = ConfigClientFactory.clientApi(actorSystem, locationService)
   private lazy val configUtils         = new ConfigUtils(configClientService)
-  private lazy val configUtilsExt      = new ConfigUtilsExt(configUtils)(typedSystem.executionContext)
+  private lazy val versionManager      = new VersionManager(configUtils)(typedSystem.executionContext)
 
   lazy val processOutput   = new ProcessOutput()
   lazy val processExecutor = new ProcessExecutor(processOutput)
-  lazy val processManager  = new ProcessManager(locationService, configUtilsExt, processExecutor, agentSettings)
+  lazy val processManager  = new ProcessManager(locationService, versionManager, processExecutor, agentSettings)
   lazy val agentActor      = new AgentActor(processManager)
 
   lazy val lazyAgentRegistration: Future[RegistrationResult] =

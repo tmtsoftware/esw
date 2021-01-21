@@ -246,11 +246,12 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
 
       adminClient.shutdown(eswContainerCompId).futureValue shouldBe Done
 
+      actorSystem.terminate()
+      actorSystem.whenTerminated.futureValue
+
       eventually {
         locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
       }
-      actorSystem.terminate()
-      actorSystem.whenTerminated.futureValue
     }
 
     "be able to restart and shutdown the given component | ESW-378" in {
@@ -313,11 +314,12 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       shutdownResForContainer.futureValue shouldBe Done
       //**************************************************************************************\\
 
+      actorSystem.terminate()
+      actorSystem.whenTerminated.futureValue
+
       eventually {
         locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
       }
-      actorSystem.terminate()
-      actorSystem.whenTerminated.futureValue
     }
   }
 

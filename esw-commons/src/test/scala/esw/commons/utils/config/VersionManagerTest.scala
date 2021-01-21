@@ -12,7 +12,7 @@ import java.nio.file.Path
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
-class ConfigUtilsExtTest extends BaseTestSuite {
+class VersionManagerTest extends BaseTestSuite {
   val actorTestKit: ActorTestKit            = ActorTestKit()
   val actorSystem: ActorSystem[_]           = actorTestKit.system
   implicit val ec: ExecutionContextExecutor = actorSystem.executionContext
@@ -23,13 +23,13 @@ class ConfigUtilsExtTest extends BaseTestSuite {
 
     "return version if config is present | ESW-360" in {
       val configUtils    = mock[ConfigUtils]
-      val configUtilsExt = new ConfigUtilsExt(configUtils)
+      val versionManager = new VersionManager(configUtils)
       val config         = mock[Config]
       val version        = randomString(10)
 
       when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.successful(config))
       when(config.getString("scripts.version")).thenReturn(version)
-      configUtilsExt.findVersion(versionConfPath).futureValue should ===(version)
+      versionManager.getScriptVersion(versionConfPath).futureValue should ===(version)
     }
 
     Table(
@@ -41,12 +41,12 @@ class ConfigUtilsExtTest extends BaseTestSuite {
       case (exception, msg) =>
         s"throw ScriptVersionConfException if ${exception.getClass.getSimpleName} | ESW-360" in {
           val configUtils    = mock[ConfigUtils]
-          val configUtilsExt = new ConfigUtilsExt(configUtils)
+          val versionManager = new VersionManager(configUtils)
 
           when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.failed(exception))
 
           val scriptVersionConfException = intercept[ScriptVersionConfException] {
-            Await.result(configUtilsExt.findVersion(versionConfPath), 100.millis)
+            Await.result(versionManager.getScriptVersion(versionConfPath), 100.millis)
           }
           scriptVersionConfException should ===(ScriptVersionConfException(msg))
         }
