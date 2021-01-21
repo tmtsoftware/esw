@@ -1,12 +1,13 @@
 package csw.framework.testkit
 
 import akka.actor.typed.ActorRef
-import csw.command.client.messages.ComponentMessage
+import akka.actor.typed.scaladsl.ActorContext
+import csw.command.client.messages.{ComponentMessage, TopLevelActorMessage}
 import csw.command.client.models.framework.{ComponentInfo, LocationServiceUsage}
 import csw.framework.internal.supervisor.SupervisorBehaviorFactory
 import csw.framework.internal.wiring.{CswFrameworkSystem, FrameworkWiring}
 import csw.framework.models.CswContext
-import csw.framework.scaladsl.ComponentBehaviorFactory
+import csw.framework.scaladsl.{ComponentBehaviorFactory, ComponentHandlers}
 import csw.location.api.models.{ComponentType, Connection}
 import csw.prefix.models.Prefix
 
@@ -27,6 +28,15 @@ trait SpawnComponent {
   ): Future[ActorRef[ComponentMessage]] =
     spawnComponent(prefix, ComponentType.HCD, behaviorFactory, locationServiceUsage, connections, initializeTimeout)
 
+  def spawnHCDWithHandlers(
+      prefix: Prefix,
+      hcdHandlers: TestComponentHandlers,
+      locationServiceUsage: LocationServiceUsage = LocationServiceUsage.RegisterOnly,
+      connections: Set[Connection] = Set.empty,
+      initializeTimeout: FiniteDuration = 10.seconds
+  ): Future[ActorRef[ComponentMessage]] =
+    spawnHCD(prefix, createTestComponentBehaviorFactory(hcdHandlers), locationServiceUsage, connections, initializeTimeout)
+
   def spawnAssembly(
       prefix: Prefix,
       behaviorFactory: ComponentBehaviorFactory,
@@ -35,6 +45,28 @@ trait SpawnComponent {
       initializeTimeout: FiniteDuration = 10.seconds
   ): Future[ActorRef[ComponentMessage]] =
     spawnComponent(prefix, ComponentType.Assembly, behaviorFactory, locationServiceUsage, connections, initializeTimeout)
+
+  def spawnAssemblyWithHandlers(
+      prefix: Prefix,
+      assemblyHandlers: TestComponentHandlers,
+      locationServiceUsage: LocationServiceUsage = LocationServiceUsage.RegisterOnly,
+      connections: Set[Connection] = Set.empty,
+      initializeTimeout: FiniteDuration = 10.seconds
+  ): Future[ActorRef[ComponentMessage]] =
+    spawnAssembly(
+      prefix,
+      createTestComponentBehaviorFactory(assemblyHandlers),
+      locationServiceUsage,
+      connections,
+      initializeTimeout
+    )
+
+  private def createTestComponentBehaviorFactory(testHandlers: TestComponentHandlers): ComponentBehaviorFactory =
+    new ComponentBehaviorFactory() {
+      override protected def handlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext): ComponentHandlers = {
+        new TestComponentHandlersAdapter(ctx, cswCtx, testHandlers)
+      }
+    }
 
   private def spawnComponent(
       prefix: Prefix,
@@ -57,5 +89,4 @@ trait SpawnComponent {
       await(richSystem.spawnTyped(supervisorBehavior, componentInfo.prefix.toString))
     }
   }
-
 }
