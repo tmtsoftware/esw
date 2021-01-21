@@ -3,8 +3,11 @@ package esw.ocs.script
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
-import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
+import csw.framework.models.CswContext
+import csw.framework.testkit.DefaultTestComponentHandlers
+import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, _}
+import csw.params.core.models.Id
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
@@ -30,7 +33,26 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnHCD(Prefix("esw.testHcd"), new HcdBehaviourFactory()).futureValue
+    spawnHCDWithHandlers(
+      Prefix("esw.testHcd"),
+      new DefaultTestComponentHandlers {
+        override def initialize(cswContext: CswContext): Unit = {
+          println("Initializing Component TLA")
+        }
+        override def onSubmit(cswCtx: CswContext, runId: Id, controlCommand: ControlCommand): SubmitResponse = {
+          val event = new SystemEvent(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
+          cswCtx.eventService.defaultPublisher.publish(event)
+
+          controlCommand.commandName.name match {
+            case "long-running" =>
+              println("long-running")
+              cswCtx.commandResponseManager.updateCommand(Completed(runId))
+              Started(runId)
+            case _ => Error(runId, "command-failed")
+          }
+        }
+      }
+    ).futureValue
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()
