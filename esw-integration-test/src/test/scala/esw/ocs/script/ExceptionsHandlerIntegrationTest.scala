@@ -3,7 +3,7 @@ package esw.ocs.script
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
-import csw.framework.testkit.DefaultTestComponentHandlers
+import csw.framework.testkit.DefaultComponentHandlers
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, _}
 import csw.params.core.models.Id
@@ -34,7 +34,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
     spawnHCD(
       Prefix("esw.testHcd"),
       (ctx, cswCtx) =>
-        new DefaultTestComponentHandlers(ctx, cswCtx) {
+        new DefaultComponentHandlers(ctx, cswCtx) {
           override def initialize(): Unit = {
             println("Initializing Component TLA")
           }

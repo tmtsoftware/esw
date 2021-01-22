@@ -9,7 +9,7 @@ import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 
-class DefaultTestComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
+class DefaultComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
     extends ComponentHandlers(ctx, cswCtx) {
 
   /**
