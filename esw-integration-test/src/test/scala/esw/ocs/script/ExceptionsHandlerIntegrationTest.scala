@@ -3,7 +3,6 @@ package esw.ocs.script
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
-import csw.framework.models.CswContext
 import csw.framework.testkit.DefaultTestComponentHandlers
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, _}
@@ -13,7 +12,6 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
-import esw.gateway.server.testdata.HcdBehaviourFactory
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.models.ObsMode
@@ -33,25 +31,26 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnHCDWithHandlers(
+    spawnHCD(
       Prefix("esw.testHcd"),
-      new DefaultTestComponentHandlers {
-        override def initialize(cswContext: CswContext): Unit = {
-          println("Initializing Component TLA")
-        }
-        override def onSubmit(cswCtx: CswContext, runId: Id, controlCommand: ControlCommand): SubmitResponse = {
-          val event = new SystemEvent(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
-          cswCtx.eventService.defaultPublisher.publish(event)
+      (ctx, cswCtx) =>
+        new DefaultTestComponentHandlers(ctx, cswCtx) {
+          override def initialize(): Unit = {
+            println("Initializing Component TLA")
+          }
+          override def onSubmit(runId: Id, controlCommand: ControlCommand): SubmitResponse = {
+            val event = new SystemEvent(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
+            cswCtx.eventService.defaultPublisher.publish(event)
 
-          controlCommand.commandName.name match {
-            case "long-running" =>
-              println("long-running")
-              cswCtx.commandResponseManager.updateCommand(Completed(runId))
-              Started(runId)
-            case _ => Error(runId, "command-failed")
+            controlCommand.commandName.name match {
+              case "long-running" =>
+                println("long-running")
+                cswCtx.commandResponseManager.updateCommand(Completed(runId))
+                Started(runId)
+              case _ => Error(runId, "command-failed")
+            }
           }
         }
-      }
     ).futureValue
   }
 
