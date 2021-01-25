@@ -7,6 +7,8 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
+import csw.logging.api.scaladsl.Logger
+import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
@@ -14,9 +16,8 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
-import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
-import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
+import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus, SequenceManagerState}
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
@@ -33,6 +34,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   private implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystem(SpawnProtocol(), "sequence-manager-system")
+
+  private val loggerFactory: LoggerFactory = new LoggerFactory(Prefix("ESW.sequence_manager"))
+  private implicit val logger: Logger      = loggerFactory.getLogger
 
   private val darkNight                        = ObsMode("DarkNight")
   private val clearSkies                       = ObsMode("ClearSkies")

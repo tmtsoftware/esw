@@ -1,5 +1,7 @@
 package esw.sm.app
 
+import java.nio.file.Path
+
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.SpawnProtocol.Spawn
@@ -40,7 +42,6 @@ import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
 import msocket.jvm.metrics.LabelExtractor
 
-import java.nio.file.Path
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
@@ -59,7 +60,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   private lazy val configClientService: ConfigClientService = ConfigClientFactory.clientApi(smActorSystem, locationService)
   private lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(smActorSystem)
   private lazy val loggerFactory                            = new LoggerFactory(prefix)
-  private lazy val logger: Logger                           = loggerFactory.getLogger
+  private implicit lazy val logger: Logger                  = loggerFactory.getLogger
   private lazy val versionManager                           = new VersionManager(configUtils)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)

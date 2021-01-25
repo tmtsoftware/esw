@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
@@ -32,7 +33,7 @@ class SequenceManagerBehavior(
     agentUtil: AgentUtil,
     sequencerUtil: SequencerUtil,
     sequenceComponentUtil: SequenceComponentUtil
-)(implicit val actorSystem: ActorSystem[_]) {
+)(implicit val actorSystem: ActorSystem[_], implicit val logger: Logger) {
 
   import SequenceManagerBehavior._
   import actorSystem.executionContext
@@ -140,17 +141,21 @@ class SequenceManagerBehavior(
     receive[ProcessingComplete[T]](Processing)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def replyAndGoToIdle[T](self: SelfRef, replyTo: ActorRef[T], msg: T) = {
+    logger.debug(s"Sequence Manager response: $msg")
     replyTo ! msg
     idle(self)
   }
 
   private def receive[T <: SequenceManagerMsg: ClassTag](state: SequenceManagerState)(handler: T => SMBehavior): SMBehavior =
-    Behaviors.receiveMessage {
-      case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
-      case msg: T             => handler(msg)
-      case msg: UnhandleableSequenceManagerMsg =>
-        msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName)
-        Behaviors.same
+    Behaviors.receiveMessage { msg =>
+      logger.debug(s"Sequence Manager in State: $state, received Message: $msg")
+      msg match {
+        case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
+        case msg: T             => handler(msg)
+        case msg: UnhandleableSequenceManagerMsg =>
+          msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName)
+          Behaviors.same
+      }
     }
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
