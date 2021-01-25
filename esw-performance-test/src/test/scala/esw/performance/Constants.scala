@@ -20,8 +20,7 @@ object Constants {
       AgentProvisionConfig(Prefix("ESW.machine1"), 1),
       AgentProvisionConfig(Prefix("IRIS.machine1"), 1),
       AgentProvisionConfig(Prefix("TCS.machine1"), 1),
-      AgentProvisionConfig(Prefix("AOESW.machine1"), 1),
-      AgentProvisionConfig(Prefix("WFOS.machine1"), 1)
+      AgentProvisionConfig(Prefix("AOESW.machine1"), 1)
     )
   )
 }
