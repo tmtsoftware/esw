@@ -37,7 +37,7 @@ object Main extends App {
                        |import esw.sm.api.protocol._
                        |import esw.agent.service.api.models._
                        |import esw.shell.utils._
-                       |import esw.shell.utils.Extensions._
+                       |import esw.commons.extensions.FutureExt._
                        |import esw.shell.utils.Timeouts._
                        |import eswWiring._
                        |import eswWiring.factories._

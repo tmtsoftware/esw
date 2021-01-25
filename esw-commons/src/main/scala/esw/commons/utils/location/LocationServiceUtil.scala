@@ -73,6 +73,15 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
         case akkaLocation: AkkaLocation if withFilter(akkaLocation) => akkaLocation
       })
 
+  def find[L <: Location](connection: TypedConnection[L]): Future[Either[FindLocationError, L]] =
+    locationService
+      .find(connection)
+      .map {
+        case Some(location) => Right(location)
+        case None           => Left(LocationNotFound(s"Could not find location matching connection: $connection"))
+      }
+      .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
+
   def findByComponentNameAndType(
       componentName: String,
       componentType: ComponentType
@@ -89,21 +98,15 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
           )
       }
 
+  def findAkkaLocation(prefix: String, componentType: ComponentType): Future[Either[FindLocationError, AkkaLocation]] =
+    find(AkkaConnection(ComponentId(Prefix(prefix), componentType)))
+
   def resolve[L <: Location](connection: TypedConnection[L], within: FiniteDuration): Future[Either[FindLocationError, L]] =
     locationService
       .resolve(connection, within)
       .map {
         case Some(location) => Right(location)
         case None           => Left(LocationNotFound(s"Could not resolve location matching connection: $connection"))
-      }
-      .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
-
-  def find[L <: Location](connection: TypedConnection[L]): Future[Either[FindLocationError, L]] =
-    locationService
-      .find(connection)
-      .map {
-        case Some(location) => Right(location)
-        case None           => Left(LocationNotFound(s"Could not find location matching connection: $connection"))
       }
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
