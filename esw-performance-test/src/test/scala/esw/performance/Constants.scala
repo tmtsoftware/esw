@@ -15,6 +15,8 @@ object Constants {
   val warmupIterations = 5
   val actualIterations = 10
 
+  val timeout: Int = 60 * 1000
+
   val provisionConfig: ProvisionConfig = ProvisionConfig(
     List(
       AgentProvisionConfig(Prefix("ESW.machine1"), 1),

@@ -18,7 +18,7 @@ import esw.ocs.testkit.utils.LocationUtils
 import esw.performance.Constants._
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerApiFactory
-import esw.sm.api.protocol.ProvisionResponse
+import esw.sm.api.protocol._
 import org.HdrHistogram.Histogram
 
 import scala.concurrent.duration.DurationInt
@@ -92,10 +92,27 @@ class SequenceManagerLatencyTest extends LocationUtils {
   private def scenario(histogram: Histogram): Unit = {
     //-------------------- Configure Obsmode1 -------------------------------
     val configureResponse1 = smClient.configure(obsmode1).futureValue
+
+    configureResponse1 match {
+      case ConfigureResponse.Success(masterSequencerComponentId) =>
+        println(s"Configure $obsmode1 Response --> ConfigureResponse.Success $masterSequencerComponentId")
+      case ConfigureResponse.ConflictingResourcesWithRunningObsMode(runningObsMode) =>
+        println(s"Configure $obsmode1 Response --> ConfigureResponse.ConflictingResourcesWithRunningObsMode $runningObsMode")
+      case ConfigureResponse.FailedToStartSequencers(reasons) =>
+        println(s"Configure $obsmode1 Response --> ConfigureResponse.FailedToStartSequencers $reasons")
+      case StartSequencerResponse.SequenceComponentNotAvailable(subsystems, msg) =>
+        println(s"Configure $obsmode1 Response --> StartSequencerResponse.SequenceComponentNotAvailable $subsystems $msg")
+      case CommonFailure.ConfigurationMissing(obsMode) =>
+        println(s"Configure $obsmode1 Response --> CommonFailure.ConfigurationMissing $obsMode")
+      case CommonFailure.LocationServiceError(msg) =>
+        println(s"Configure $obsmode1 Response --> CommonFailure.LocationServiceError $msg")
+      case Unhandled(state, messageType, msg) => println(s"Configure $obsmode1 Response --> Unhandled $state, $messageType, $msg")
+    }
+
     log.info(s"Configured ObsMode $obsmode1 response $configureResponse1")
     println(s"Configured ObsMode $obsmode1 response $configureResponse1")
 
-    Thread.sleep(60 * 1000)
+    Thread.sleep(Constants.timeout)
 
     if (enableSwitching) {
       switchObsMode(obsmode1, obsmode2, histogram)
@@ -103,15 +120,46 @@ class SequenceManagerLatencyTest extends LocationUtils {
       switchObsMode(obsmode3, obsmode1, histogram)
     }
 
-    smClient.shutdownObsModeSequencers(obsmode1).futureValue
-
+    val shutdownResponse = smClient.shutdownObsModeSequencers(obsmode1).futureValue
+    shutdownResponse match {
+      case ShutdownSequencersResponse.Success =>
+        println(s"Shutdown $obsmode1 Response --> ShutdownSequencersResponse.Success $obsmode1")
+      case CommonFailure.LocationServiceError(msg) =>
+        println(s"Shutdown $obsmode1 Response --> CommonFailure.LocationServiceError $msg")
+      case Unhandled(state, messageType, msg) => println(s"Shutdown $obsmode1 Response --> Unhandled $state, $messageType, $msg")
+    }
   }
 
   private def switchObsMode(prevObsMode: ObsMode, nextObsMode: ObsMode, histogram: Histogram): Unit = {
-    val beforeSwitch = System.currentTimeMillis()
-    smClient.shutdownObsModeSequencers(prevObsMode).futureValue
+    val beforeSwitch     = System.currentTimeMillis()
+    val shutdownResponse = smClient.shutdownObsModeSequencers(prevObsMode).futureValue
+    shutdownResponse match {
+      case ShutdownSequencersResponse.Success =>
+        println(s"Shutdown $prevObsMode Response --> ShutdownSequencersResponse.Success $prevObsMode")
+      case CommonFailure.LocationServiceError(msg) =>
+        println(s"Shutdown $prevObsMode Response --> CommonFailure.LocationServiceError $msg")
+      case Unhandled(state, messageType, msg) =>
+        println(s"Shutdown $prevObsMode Response --> Unhandled $state, $messageType, $messageType")
+    }
+
     val configureResponse = smClient.configure(nextObsMode).futureValue
-    val afterSwitch       = System.currentTimeMillis()
+    configureResponse match {
+      case ConfigureResponse.Success(masterSequencerComponentId) =>
+        println(s"Configure $nextObsMode Response --> ConfigureResponse.Success $masterSequencerComponentId")
+      case ConfigureResponse.ConflictingResourcesWithRunningObsMode(runningObsMode) =>
+        println(s"Configure $nextObsMode Response --> ConfigureResponse.ConflictingResourcesWithRunningObsMode $runningObsMode")
+      case ConfigureResponse.FailedToStartSequencers(reasons) =>
+        println(s"Configure $nextObsMode Response --> ConfigureResponse.FailedToStartSequencers $reasons")
+      case StartSequencerResponse.SequenceComponentNotAvailable(subsystems, msg) =>
+        println(s"Configure $nextObsMode Response --> StartSequencerResponse.SequenceComponentNotAvailable $subsystems $msg")
+      case CommonFailure.ConfigurationMissing(obsMode) =>
+        println(s"Configure $nextObsMode Response --> CommonFailure.ConfigurationMissing $obsMode")
+      case CommonFailure.LocationServiceError(msg) =>
+        println(s"Configure $nextObsMode Response --> CommonFailure.LocationServiceError $msg")
+      case Unhandled(state, messageType, msg) =>
+        println(s"Configure $nextObsMode Response --> Unhandled $state, $messageType, $msg")
+    }
+    val afterSwitch = System.currentTimeMillis()
 
     val latency = afterSwitch - beforeSwitch
     histogram.recordValue(latency)
@@ -120,6 +168,6 @@ class SequenceManagerLatencyTest extends LocationUtils {
     println("Shutdown + configure time: " + latency)
 
     // To simulate observation
-    Thread.sleep(60 * 1000) //todo: async delay
+    Thread.sleep(Constants.timeout) //todo: async delay
   }
 }
