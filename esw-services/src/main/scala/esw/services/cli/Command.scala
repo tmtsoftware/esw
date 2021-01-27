@@ -19,6 +19,8 @@ object Command {
       @ExtraName("a")
       @HelpMessage("Start agent with default ESW.primary prefix.")
       agent: Boolean = false,
+      @HelpMessage("Start agent service.")
+      agentService: Boolean = false,
       @HelpMessage("Prefix for agent. If provided, this will be used instead of default.")
       agentPrefix: Option[Prefix],
       @ExtraName("g")
@@ -38,6 +40,7 @@ object Command {
   object Start {
     def apply(
         agent: Boolean = false,
+        agentService: Boolean = false,
         agentPrefix: Option[Prefix] = None,
         gateway: Boolean = false,
         commandRoleConfig: Option[Path] = None,
@@ -45,10 +48,19 @@ object Command {
         obsModeConfig: Option[Path] = None,
         simulation: Boolean = false
     ): Start = {
-      if (agent || gateway || sequenceManager)
-        new Start(agent, agentPrefix, gateway, commandRoleConfig, sequenceManager, obsModeConfig, simulation)
+      if (agent || agentService || gateway || sequenceManager)
+        new Start(agent, agentService, agentPrefix, gateway, commandRoleConfig, sequenceManager, obsModeConfig, simulation)
       else
-        new Start(agent = true, agentPrefix, gateway = true, commandRoleConfig, sequenceManager = true, obsModeConfig, simulation)
+        new Start(
+          agent = true,
+          agentService = true,
+          agentPrefix,
+          gateway = true,
+          commandRoleConfig,
+          sequenceManager = true,
+          obsModeConfig,
+          simulation
+        )
     }
   }
 }

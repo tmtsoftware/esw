@@ -1,6 +1,7 @@
 package esw.services.apps
 
 import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
+import csw.network.utils.SocketUtils
 import csw.services.utils.ColoredConsole.GREEN
 import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
@@ -28,7 +29,13 @@ object Gateway {
     }
 
   private def startGateway(commandRoleConfigPath: Path): GatewayWiring =
-    GatewayMain.start(None, local = true, commandRoleConfigPath, metricsEnabled = true, startLogging = true)
+    GatewayMain.start(
+      Some(SocketUtils.getFreePort),
+      local = true,
+      commandRoleConfigPath,
+      metricsEnabled = true,
+      startLogging = true
+    )
 
   private def stopGateway(wiring: GatewayWiring): Unit =
     Await.result(wiring.actorRuntime.shutdown(ActorSystemTerminateReason), CommonTimeouts.Wiring)

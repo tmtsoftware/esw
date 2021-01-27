@@ -18,7 +18,7 @@ class Wiring(startCmd: Start) {
   lazy implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol())
 
   private lazy val agentApp: ManagedService[AgentWiring]            = Agent.service(startCmd.agent, agentPrefix, ConfigFactory.load())
-  private lazy val agentService: ManagedService[AgentServiceWiring] = AgentService.service(startCmd.agent)
+  private lazy val agentService: ManagedService[AgentServiceWiring] = AgentService.service(startCmd.agentService)
   private lazy val gatewayService: ManagedService[GatewayWiring]    = Gateway.service(startCmd.gateway, startCmd.commandRoleConfig)
   private lazy val smService: ManagedService[SequenceManagerWiring] =
     SequenceManager.service(startCmd.sequenceManager, startCmd.obsModeConfig, agentPrefixForSM, startCmd.simulation)
