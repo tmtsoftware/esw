@@ -1,4 +1,4 @@
-package esw.services
+package esw.services.apps
 
 import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
 import com.typesafe.config.Config

@@ -343,7 +343,8 @@ object Dependencies {
     Seq(
       Csw.`csw-framework`,
       Libs.`ammonite`,
-      Libs.`embedded-keycloak`
+      Libs.`embedded-keycloak`,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 
