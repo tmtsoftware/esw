@@ -1,6 +1,6 @@
 package esw.performance
 
-import java.io.{File, FileOutputStream, PrintStream}
+import java.io.{File, FileOutputStream, FileWriter, PrintStream}
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.AkkaLocation
@@ -46,11 +46,11 @@ class SequenceManagerLatencyTest extends LocationUtils {
       provisionResponse shouldBe a[ProvisionResponse.Success.type]
 
       (1 to warmupIterations).foreach { iterationNumber =>
-        println(s"Warmup iteration ------> $iterationNumber")
+        println(s"Actual iteration ------> $iterationNumber")
         scenario(warmUpHistogram)
       }
 
-      println("Warmup Latencies------>")
+      log.info("Warmup latencies")
       printResults(warmUpHistogram)
 
       (1 to actualIterations).foreach { iterationNumber =>
@@ -59,7 +59,7 @@ class SequenceManagerLatencyTest extends LocationUtils {
       }
 
       recordResults(histogram)
-      println("Actual Latencies------>")
+      log.info("Actual Latencies")
       printResults(histogram)
 
       actorSystem.terminate()
@@ -74,18 +74,23 @@ class SequenceManagerLatencyTest extends LocationUtils {
 
   private def recordResults(histogram: Histogram): Unit = {
     try {
-      val resultsFile = new File("results.txt")
+      val filename = "results.txt"
+      val resultsFile = new File(filename)
       resultsFile.createNewFile()
-      println(resultsFile.getAbsolutePath)
+      println(s"Histogram results are written to file ${resultsFile.getAbsolutePath}")
       val fout = new FileOutputStream(resultsFile)
-      try histogram.outputPercentileDistribution(new PrintStream(fout), 1.0)
+      try {
+        histogram.outputPercentileDistribution(new PrintStream(fout), 1.0)
+        val fileWriter = new FileWriter(filename)
+        fileWriter.write(s"50%tile: ${histogram.getValueAtPercentile(50)}" +
+          s"90%tile : ${histogram.getValueAtPercentile(90)}" +
+          s"99%tile : ${histogram.getValueAtPercentile(99)}")
+      }
       finally if (fout != null) fout.close()
     }
     catch {
       case e: Exception =>
-        println("Writing histogram results failed with error " + e.getMessage)
         log.error("Writing histogram results failed with error", ex = e)
-
     }
   }
 
@@ -110,7 +115,6 @@ class SequenceManagerLatencyTest extends LocationUtils {
     }
 
     log.info(s"Configured ObsMode $obsmode1 response $configureResponse1")
-    println(s"Configured ObsMode $obsmode1 response $configureResponse1")
 
     Thread.sleep(Constants.timeout)
 
@@ -164,8 +168,7 @@ class SequenceManagerLatencyTest extends LocationUtils {
     val latency = afterSwitch - beforeSwitch
     histogram.recordValue(latency)
     log.info(s"Configured ObsMode $nextObsMode response $configureResponse")
-    println(s"Configured ObsMode $nextObsMode response $configureResponse")
-    println("Shutdown + configure time: " + latency)
+    log.info("latency: " + latency)
 
     // To simulate observation
     Thread.sleep(Constants.timeout) //todo: async delay
