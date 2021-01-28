@@ -114,6 +114,7 @@ class SequenceComponentBehavior(
         case msg: UnhandleableSequenceComponentMsg =>
           msg.replyTo ! Unhandled(state, msg.getClass.getSimpleName)
           Behaviors.same
+        case x => throw new MatchError(x)
       }
     }
 }

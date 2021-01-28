@@ -4,7 +4,6 @@ import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 
 import scala.util.Try
-import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
 class ProcessExecutor(output: ProcessOutput)(implicit log: Logger) {
@@ -22,10 +21,9 @@ class ProcessExecutor(output: ProcessOutput)(implicit log: Logger) {
       output.attachToProcess(process, prefix.toString)
       debug(s"new process spawned", Map("pid" -> process.pid()))
       process
-    }.toEither.left.map {
-      case NonFatal(err) =>
-        error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.toString), ex = err)
-        err.getMessage
+    }.toEither.left.map { err =>
+      error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.toString), ex = err)
+      err.getMessage
     }
 }
 // $COVERAGE-ON$
