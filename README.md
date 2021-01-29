@@ -14,6 +14,7 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 
 | esw | csw |
 |--------|------|
+| v0.2.1 | v3.0.1 |
 | v0.2.0 | v3.0.1 |
 | v0.2.0-RC1 | v3.0.0-RC1 |
 | v0.2.0-M1 | v3.0.0-M1 |
