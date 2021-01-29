@@ -9,6 +9,19 @@ Here is the repository for ESW: [ESW](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
+## [ESW v0.2.1] - 2021-01-29
+
+This is a patch release over v0.2.0 of the TMT Executive Software for project stakeholders.
+See [here](https://tmtsoftware.github.io/esw/0.2.1/) for a detailed documentation of this version of the ESW software.
+
+### Changes
+
+Patch update to resolve latest release on Jitpack
+
+### Documentation
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.2.1/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.2.1/api/scala/index.html
+
 ## [ESW v0.2.0] - 2021-01-29
 
 This is the second minor release of the TMT Executive Software for project stakeholders.

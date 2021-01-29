@@ -26,7 +26,8 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 
 | Date | Tag | Source | Docs | Assets |
 |-----|-----|-----|-----|-----|
-| 2021-01-28 | v0.2.0 | [esw-0.2.0](https://github.com/tmtsoftware/esw/tree/v0.2.0) | [esw-0.2.0 docs](https://tmtsoftware.github.io/esw/0.2.0/) | [esw-0.2.0 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0) |
+| 2021-01-29 | v0.2.1 | [esw-0.2.1](https://github.com/tmtsoftware/esw/tree/v0.2.1) | [esw-0.2.1 docs](https://tmtsoftware.github.io/esw/0.2.1/) | [esw-0.2.1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.2.1) |
+| 2021-01-29 | v0.2.0 | [esw-0.2.0](https://github.com/tmtsoftware/esw/tree/v0.2.0) | [esw-0.2.0 docs](https://tmtsoftware.github.io/esw/0.2.0/) | [esw-0.2.0 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0) |
 | 2020-03-19 | v0.1.0 | [esw-0.1.0](https://github.com/tmtsoftware/esw/tree/v0.1.0) | [esw-0.1.0 docs](https://tmtsoftware.github.io/esw/0.1.0/) | [esw-0.1.0 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0) |
 
 ## Pre-Release History
