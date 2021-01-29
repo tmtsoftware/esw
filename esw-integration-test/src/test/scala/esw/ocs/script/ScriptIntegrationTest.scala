@@ -329,7 +329,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
     "be able to check existence of a config file and fetch config | ESW-123, CSW-81" in {
       val factory = mock[TokenFactory]
-      when(factory.getToken).thenReturn("valid")
+      when(factory.getToken).thenReturn("validToken")
 
       val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
       configTestKit.initSvnRepo()

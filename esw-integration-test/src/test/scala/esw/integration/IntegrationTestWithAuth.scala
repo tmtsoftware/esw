@@ -406,7 +406,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val obsMode = ObsMode("APS_Cal")
       val factory = mock[TokenFactory]
-      when(factory.getToken).thenReturn("valid")
+      when(factory.getToken).thenReturn("validToken")
       val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
       configTestKit.initSvnRepo()
       val configFilePath = Path.of("/tmt/test/smConfig.conf")

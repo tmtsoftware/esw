@@ -9,7 +9,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      CSW_VERSION: "3.0.0-RC1"
+      CSW_VERSION: "3.0.1"
     steps:
       - uses: actions/checkout@v2
       - uses: laughedelic/coursier-setup@v1

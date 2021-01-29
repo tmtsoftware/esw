@@ -1,6 +1,6 @@
 package csw.backend.auth
 
-import csw.aas.http.{Roles, SecurityDirectives}
+import csw.aas.http.{PolicyValidator, Roles, SecurityDirectives}
 import csw.command.client.auth.{CommandKey, CommandRoles}
 import csw.prefix.models.Subsystem
 import msocket.security.AccessControllerFactory
@@ -26,15 +26,15 @@ class MockedAuth extends MockitoSugar {
     case `tokenWithoutRoleStr` => Future.successful(tokenWithoutRole)
     case token                 => Future.failed(new RuntimeException(s"unexpected token $token"))
   }
+  private lazy val policyValidator =
+    new PolicyValidator(new AccessControllerFactory(tokenValidator, true), keycloakDeployment.getRealm)
 
   val commandRoles: CommandRoles = new CommandRoles(Map.empty) {
     override def hasAccess(cmdKey: CommandKey, subsystem: Subsystem, rolesFromToken: Roles): Boolean = {
       rolesFromToken.roles == validRoles
     }
   }
-
-  val _securityDirectives =
-    new SecurityDirectives(new AccessControllerFactory(tokenValidator, true), keycloakDeployment.getRealm)
+  val _securityDirectives = new SecurityDirectives(policyValidator)
 
   private val access: Access          = mock[Access]
   private val validRoles: Set[String] = mock[Set[String]]
