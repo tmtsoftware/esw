@@ -3,14 +3,14 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "f869a87"
+  private val MSocketVersion = "d9a78d83ba"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
   val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.15" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
   val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.4") //Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
+  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"   //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
   val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.8"
@@ -20,14 +20,14 @@ object Libs {
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.2.0"
 
-  val `ammonite` = "com.lihaoyi" % "ammonite" % "2.3.8-32-64308dc3" cross CrossVersion.full
-  val `hdr-histogram`      = "org.hdrhistogram"         % "HdrHistogram"      % "2.1.12"
+  val `ammonite`      = "com.lihaoyi"      % "ammonite"     % "2.3.8-32-64308dc3" cross CrossVersion.full
+  val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
 }
 
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "9be920c"
+  private val Version = "c6ea411340"
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version
