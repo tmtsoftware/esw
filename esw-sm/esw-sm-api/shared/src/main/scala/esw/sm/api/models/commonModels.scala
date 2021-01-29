@@ -1,4 +1,4 @@
-package esw.sm.impl.config
+package esw.sm.api.models
 
 import csw.prefix.models.Subsystem
 import esw.ocs.api.models.ObsMode

@@ -1,14 +1,13 @@
 package esw.sm.impl.utils
 
 import java.net.URI
-
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
+import esw.sm.api.models.Sequencers
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
-import esw.sm.impl.config.Sequencers
 import esw.testcommons.BaseTestSuite
 
 class SequenceComponentAllocatorTest extends BaseTestSuite {

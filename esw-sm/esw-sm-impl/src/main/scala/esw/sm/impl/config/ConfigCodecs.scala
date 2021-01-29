@@ -2,6 +2,7 @@ package esw.sm.impl.config
 
 import csw.prefix.codecs.CommonCodecs
 import esw.ocs.api.codecs.OcsCodecs
+import esw.sm.api.models.{ObsModeConfig, Resource, Resources, SequenceManagerConfig, Sequencers}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec
 

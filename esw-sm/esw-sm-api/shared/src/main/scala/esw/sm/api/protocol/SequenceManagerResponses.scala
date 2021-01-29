@@ -4,7 +4,7 @@ import csw.location.api.models.ComponentId
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models.{AgentStatus, SequenceComponentStatus}
+import esw.sm.api.models.{AgentStatus, Resource, ResourceStatus, SequenceComponentStatus}
 
 sealed trait SmResponse extends SmAkkaSerializable
 
@@ -136,4 +136,18 @@ final case class Unhandled(state: String, messageType: String, msg: String)
 object Unhandled {
   def apply(state: String, messageType: String): Unhandled =
     new Unhandled(state, messageType, s"Sequence Manager can not accept '$messageType' message in '$state'")
+}
+
+sealed trait ResourcesStatusResponse extends SmResponse
+case class ResourceStatusResponse(
+    resource: Resource,
+    status: ResourceStatus = ResourceStatus.Available,
+    obsMode: Option[ObsMode] = None
+)
+
+object ResourcesStatusResponse {
+
+  case class Success(resourcesStatus: List[ResourceStatusResponse]) extends ResourcesStatusResponse
+
+  sealed trait Failure extends SmFailure with ResourcesStatusResponse
 }

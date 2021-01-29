@@ -60,4 +60,7 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
 
   override def getAgentStatus: Future[AgentStatusResponse] =
     (smRef ? GetAllAgentStatus)(SequenceManagerTimeouts.GetAllAgentStatus, actorSystem.scheduler)
+
+  override def getResources: Future[ResourcesStatusResponse] =
+    (smRef ? GetResources)(SequenceManagerTimeouts.GetResources, actorSystem.scheduler)
 }

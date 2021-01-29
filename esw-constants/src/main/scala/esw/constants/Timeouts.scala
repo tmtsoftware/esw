@@ -71,6 +71,9 @@ object SequenceManagerTimeouts {
 
   val GetAllAgentStatus: FiniteDuration = SequenceComponentTimeouts.Status + Processing
   require(GetAllAgentStatus <= 2.seconds, "max timeout violated for GetAllAgentStatus")
+
+  val GetResources: FiniteDuration = SequenceComponentTimeouts.Status
+  require(GetResources <= 2.seconds, "max timeout violated for GetResources")
 }
 
 object AdminTimeouts {

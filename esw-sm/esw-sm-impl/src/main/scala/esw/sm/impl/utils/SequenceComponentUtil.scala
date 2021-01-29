@@ -13,11 +13,10 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
-import esw.sm.api.models.SequenceComponentStatus
+import esw.sm.api.models.{SequenceComponentStatus, Sequencers}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol._
-import esw.sm.impl.config.Sequencers
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
 import esw.sm.impl.utils.Types._
 

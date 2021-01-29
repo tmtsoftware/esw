@@ -65,6 +65,8 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
         List(SequenceComponentStatus(ComponentId(Prefix(ESW, "ESW_45"), SequenceComponent), None))
       )
     )
+
+  override def getResources: Future[ResourcesStatusResponse] = ???
 }
 
 class SequenceManagerStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])

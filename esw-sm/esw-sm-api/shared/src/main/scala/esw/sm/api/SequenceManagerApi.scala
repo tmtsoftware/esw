@@ -96,4 +96,6 @@ trait SequenceManagerApi {
    * @return a future of [[esw.sm.api.protocol.AgentStatusResponse]] which completes with Success or Failure response ADT
    */
   def getAgentStatus: Future[AgentStatusResponse]
+
+  def getResources: Future[ResourcesStatusResponse]
 }

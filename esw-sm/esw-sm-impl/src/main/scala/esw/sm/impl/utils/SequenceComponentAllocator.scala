@@ -3,8 +3,8 @@ package esw.sm.impl.utils
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
+import esw.sm.api.models.Sequencers
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
-import esw.sm.impl.config.Sequencers
 import esw.sm.impl.utils.Types._
 
 class SequenceComponentAllocator() {

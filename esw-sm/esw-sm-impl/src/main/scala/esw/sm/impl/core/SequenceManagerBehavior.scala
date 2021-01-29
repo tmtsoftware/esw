@@ -15,11 +15,10 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
-import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
+import esw.sm.api.models.{ProvisionConfig, SequenceManagerState, _}
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
 import esw.sm.api.protocol._
-import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
@@ -161,6 +160,37 @@ class SequenceManagerBehavior(
       }
     }
 
+  private def getAllAvailableResources: Map[Resource, ResourceStatusResponse] = {
+    var resourceStatus: Map[Resource, ResourceStatusResponse] = Map()
+
+    sequenceManagerConfig.obsModes.keys.foreach(obsMode => {
+      getResources(obsMode).resources.foreach(resource => {
+        // marking all resources as available in this loop
+        resourceStatus += resource -> ResourceStatusResponse(resource)
+      })
+    })
+    resourceStatus
+  }
+
+  private def getAllResources(replyTo: ActorRef[ResourcesStatusResponse]): Unit = {
+    var resourceStatus: Map[Resource, ResourceStatusResponse] = getAllAvailableResources
+
+    getRunningObsModes
+      .flatMap {
+        //TODO : ???
+        case Left(value)  => Future.successful(List.empty)
+        case Right(value) => Future.successful(value.toList)
+      }
+      .map(_.foreach(obsMode => {
+        getResources(obsMode).resources.foreach(resource => {
+          // marking resources which are in use
+          resourceStatus += resource -> ResourceStatusResponse(resource, ResourceStatus.InUse, Some(obsMode))
+        })
+      }))
+      .map(_ => replyTo ! ResourcesStatusResponse.Success(resourceStatus.values.toList))
+
+  }
+
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
       case GetRunningObsModes(replyTo) =>
@@ -177,6 +207,7 @@ class SequenceManagerBehavior(
         currentState.tap(state => logger.info(s"Sequence Manager response Success: Sequence Manager state $state"));
         replyTo ! currentState
       case GetAllAgentStatus(replyTo) => getAllAgentStatus(replyTo)
+      case GetResources(replyTo)      => getAllResources(replyTo)
     }
 
   private def getAllAgentStatus(replyTo: ActorRef[AgentStatusResponse]): Future[Unit] =

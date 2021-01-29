@@ -1,7 +1,5 @@
 package esw.sm.impl.core
 
-import java.net.URI
-
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
@@ -17,16 +15,16 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
-import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus, SequenceManagerState}
+import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus, SequenceManagerState, _}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
-import esw.sm.impl.config._
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks
 
+import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 

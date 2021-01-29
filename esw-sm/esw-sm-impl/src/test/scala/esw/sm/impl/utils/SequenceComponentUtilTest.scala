@@ -1,7 +1,6 @@
 package esw.sm.impl.utils
 
 import java.net.URI
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
@@ -17,11 +16,10 @@ import esw.ocs.api.models.SequenceComponentState.Running
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
-import esw.sm.api.models.SequenceComponentStatus
+import esw.sm.api.models.{SequenceComponentStatus, Sequencers}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
-import esw.sm.impl.config.Sequencers
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}

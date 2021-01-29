@@ -13,11 +13,11 @@ import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
+import esw.sm.api.models.Sequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.FailedToStartSequencers
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
-import esw.sm.impl.config.Sequencers
 import esw.sm.impl.utils.Types.SeqCompLocation
 
 import scala.concurrent.{ExecutionContext, Future}

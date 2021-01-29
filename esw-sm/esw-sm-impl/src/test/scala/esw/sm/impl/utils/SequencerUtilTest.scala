@@ -1,7 +1,6 @@
 package esw.sm.impl.utils
 
 import java.net.URI
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
@@ -16,11 +15,11 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.models.SequenceComponentState.Idle
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
+import esw.sm.api.models.Sequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{RestartSequencerResponse, ShutdownSequencersResponse}
-import esw.sm.impl.config.Sequencers
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationInt
