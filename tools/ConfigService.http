@@ -1,0 +1,35 @@
+# get access token for esw-user
+POST http://localhost:8081/auth/realms/TMT/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=tmt-frontend-app&grant_type=password&username=esw-user&password=esw-user
+
+
+> {% client.global.set("access_token", response.body.access_token); %}
+
+
+############### config Service #############
+#save smObsModeConfig file
+POST http://your-ip:5000/config/smObsModeConfig.conf
+Content-Type: application/octet-stream
+Authorization: Bearer {{access_token}}
+
+{
+  "esw-sm": {
+    "obsModes": {
+      "IRIS_Darknight": {
+        "resources": ["IRIS", "TCS", "NFIRAOS"],
+        "sequencers": ["IRIS", "ESW", "TCS"]
+      },
+      "IRIS_Cal": {
+        "resources": ["IRIS", "NSCU", "NFIRAOS"],
+        "sequencers": ["IRIS", "ESW", "AOESW"]
+      },
+      "WFOS_Cal": {
+        "resources": ["WFOS"],
+        "sequencers": ["WFOS", "ESW"]
+      }
+    }
+  }
+}
+
