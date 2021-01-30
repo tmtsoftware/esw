@@ -18,8 +18,8 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus, SequenceManagerState}
-import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config._

@@ -1,5 +1,8 @@
 package esw.integration
 
+import java.io.File
+import java.nio.file.{Files, Path, Paths}
+
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -27,16 +30,14 @@ import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
-import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
 import esw.sm.api.protocol._
 import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
@@ -639,7 +640,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       response shouldBe a[LoadScriptError]
       val loadScriptError: LoadScriptError = response.asInstanceOf[LoadScriptError]
-      loadScriptError.msg should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
+      loadScriptError.reason should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
       TestSetup.cleanup()
     }
 

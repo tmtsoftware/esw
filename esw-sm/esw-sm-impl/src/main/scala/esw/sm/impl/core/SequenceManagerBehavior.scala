@@ -16,8 +16,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
-import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
-import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
+import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
 import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
@@ -26,6 +25,7 @@ import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
 import scala.reflect.ClassTag
+import scala.util.chaining.scalaUtilChainingOps
 
 class SequenceManagerBehavior(
     sequenceManagerConfig: SequenceManagerConfig,
@@ -141,7 +141,10 @@ class SequenceManagerBehavior(
     receive[ProcessingComplete[T]](Processing)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def replyAndGoToIdle[T](self: SelfRef, replyTo: ActorRef[T], msg: T) = {
-    logger.debug(s"Sequence Manager response: $msg")
+    msg match {
+      case failure: SmFailure => logger.error(s"Sequence Manager response Error: ${failure.getMessage}")
+      case success            => logger.info(s"Sequence Manager response Success: ${success}")
+    }
     replyTo ! msg
     idle(self)
   }
@@ -160,13 +163,33 @@ class SequenceManagerBehavior(
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
-      case GetRunningObsModes(replyTo)      => runningObsModesResponse.foreach(replyTo ! _)
-      case GetSequenceManagerState(replyTo) => replyTo ! currentState
-      case GetAllAgentStatus(replyTo)       => getAllAgentStatus(replyTo)
+      case GetRunningObsModes(replyTo) =>
+        runningObsModesResponse.foreach { response =>
+          response match {
+            case GetRunningObsModesResponse.Success(runningObsModes) =>
+              logger.info(s"Sequence Manager response Success: running observation modes $runningObsModes")
+            case failure: GetRunningObsModesResponse.Failed =>
+              logger.error(s"Sequence Manager response Error: ${failure.getMessage}")
+          }
+          replyTo ! response
+        }
+      case GetSequenceManagerState(replyTo) =>
+        currentState.tap(state => logger.info(s"Sequence Manager response Success: Sequence Manager state $state"));
+        replyTo ! currentState
+      case GetAllAgentStatus(replyTo) => getAllAgentStatus(replyTo)
     }
 
   private def getAllAgentStatus(replyTo: ActorRef[AgentStatusResponse]): Future[Unit] =
-    agentUtil.getAllAgentStatus.map(replyTo ! _)
+    agentUtil.getAllAgentStatus.map { response =>
+      response match {
+        case AgentStatusResponse.Success(agentStatus, seqCompsWithoutAgent) =>
+          logger.info(
+            s"Sequence Manager response Success: Agent Status $agentStatus and Sequence Component without agent $seqCompsWithoutAgent"
+          )
+        case failure: AgentStatusResponse.Failure => logger.error(s"Sequence Manager response Error: ${failure.getMessage}")
+      }
+      replyTo ! response
+    }
 
   private def runningObsModesResponse =
     getRunningObsModes.mapToAdt(

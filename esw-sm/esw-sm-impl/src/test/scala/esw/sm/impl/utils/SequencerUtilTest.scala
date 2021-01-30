@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location, Metadata}
+import csw.location.api.models._
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
@@ -88,9 +88,8 @@ class SequencerUtilTest extends BaseTestSuite {
 
     "return all the errors caused while starting the sequencers  | ESW-178" in {
       // load script error for ESW
-      val loadScriptErrorMsg = "load script error"
-      val loadScriptError    = futureLeft(LoadScriptError(loadScriptErrorMsg))
-      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc)).thenReturn(loadScriptError)
+      val loadScriptError = LoadScriptError("load script error")
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc)).thenReturn(futureLeft(loadScriptError))
       when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
 
@@ -101,7 +100,7 @@ class SequencerUtilTest extends BaseTestSuite {
         )
         .futureValue
 
-      response should ===(FailedToStartSequencers(Set(loadScriptErrorMsg)))
+      response should ===(FailedToStartSequencers(Set(loadScriptError.msg)))
       verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc)
       verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc)
     }
@@ -318,21 +317,23 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return failure when load script fails | ESW-178" in {
-      val sequencers = Sequencers(IRIS, ESW, TCS)
-      val eswError   = "error for esw sequencer"
-      val irisError  = "error for iris sequencer"
+      val sequencers          = Sequencers(IRIS, ESW, TCS)
+      val eswLoadScriptError  = LoadScriptError("error for esw sequencer")
+      val irisLoadScriptError = LoadScriptError("error for iris sequencer")
 
       when(sequenceComponentUtil.allocateSequenceComponents(sequencers))
         .thenReturn(futureRight(List((IRIS, irisPrimarySeqCompLoc), (ESW, eswPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc))))
       when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswPrimarySeqCompLoc))
-        .thenReturn(Future.successful(Left(LoadScriptError(eswError))))
+        .thenReturn(Future.successful(Left(eswLoadScriptError)))
       when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, tcsPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
       when(sequenceComponentUtil.loadScript(IRIS, darkNightObsMode, irisPrimarySeqCompLoc))
-        .thenReturn(Future.successful(Left(LoadScriptError(irisError))))
+        .thenReturn(Future.successful(Left(irisLoadScriptError)))
 
-      sequencerUtil.startSequencers(darkNightObsMode, Sequencers(IRIS, ESW, TCS)).futureValue should ===(
-        FailedToStartSequencers(Set(eswError, irisError))
+      val actualError = sequencerUtil.startSequencers(darkNightObsMode, Sequencers(IRIS, ESW, TCS)).futureValue
+      actualError shouldBe a[FailedToStartSequencers]
+      actualError.asInstanceOf[FailedToStartSequencers].msg should ===(
+        s"Failed to configure: failed to start sequencers Set(${irisLoadScriptError.msg}, ${eswLoadScriptError.msg})"
       )
 
       verify(sequenceComponentUtil).allocateSequenceComponents(sequencers)
