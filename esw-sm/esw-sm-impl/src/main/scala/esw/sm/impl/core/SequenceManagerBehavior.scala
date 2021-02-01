@@ -178,7 +178,7 @@ class SequenceManagerBehavior(
     getRunningObsModes
       .flatMap {
         //TODO : ???
-        case Left(value)  => Future.successful(List.empty)
+        case Left(_)      => Future.successful(List.empty)
         case Right(value) => Future.successful(value.toList)
       }
       .map(_.foreach(obsMode => {

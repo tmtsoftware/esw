@@ -141,5 +141,14 @@ class SequenceManagerImplTest extends ActorTestSuit {
         sm.provision(provisionConfig).futureValue should ===(provisionResponse)
       }
     }
+
+    "getResourceStatus | ESW-467" in {
+      val response = mock[ResourcesStatusResponse]
+      withBehavior {
+        case SequenceManagerMsg.GetResources(replyTo) => replyTo ! response
+      } check { sm =>
+        sm.getResources.futureValue should ===(response)
+      }
+    }
   }
 }

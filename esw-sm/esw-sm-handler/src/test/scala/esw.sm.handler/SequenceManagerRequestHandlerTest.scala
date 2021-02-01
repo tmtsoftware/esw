@@ -189,5 +189,16 @@ class SequenceManagerRequestHandlerTest
         responseAs[AgentStatusResponse] should ===(response)
       }
     }
+
+    "return resource status for resources | ESW-467" in {
+      val response = ResourcesStatusResponse.Success(List.empty[ResourceStatusResponse])
+
+      when(sequenceManagerApi.getResources).thenReturn(Future.successful(response))
+
+      Post("/post-endpoint", GetResources.narrow) ~> route ~> check {
+        verify(sequenceManagerApi).getResources
+        responseAs[ResourcesStatusResponse] should ===(response)
+      }
+    }
   }
 }

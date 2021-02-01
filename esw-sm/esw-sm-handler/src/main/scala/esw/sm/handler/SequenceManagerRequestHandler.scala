@@ -19,6 +19,7 @@ class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securit
     request match {
       case GetRunningObsModes                   => complete(getRunningObsModes)
       case GetAgentStatus                       => complete(getAgentStatus)
+      case GetResources                         => complete(getResources)
       case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
       case Provision(config)                    => sPost(complete(provision(config)))
       case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
@@ -32,6 +33,7 @@ class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securit
 
       case ShutdownSequenceComponent(prefix) => sPost(complete(shutdownSequenceComponent(prefix)))
       case ShutdownAllSequenceComponents     => sPost(complete(shutdownAllSequenceComponents()))
+
     }
 
   def sPost(route: => Route): Route = securityDirectives.sPost(EswUserRolePolicy())(_ => route)

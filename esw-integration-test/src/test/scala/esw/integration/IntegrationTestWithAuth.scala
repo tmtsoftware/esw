@@ -1,8 +1,5 @@
 package esw.integration
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
-
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -38,6 +35,8 @@ import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
 
+import java.io.File
+import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
@@ -640,7 +639,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       response shouldBe a[LoadScriptError]
       val loadScriptError: LoadScriptError = response.asInstanceOf[LoadScriptError]
-      loadScriptError.reason should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
+      loadScriptError.msg should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
       TestSetup.cleanup()
     }
 
