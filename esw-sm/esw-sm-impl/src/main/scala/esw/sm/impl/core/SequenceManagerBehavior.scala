@@ -160,35 +160,38 @@ class SequenceManagerBehavior(
       }
     }
 
-  private def getAllAvailableResources: Map[Resource, ResourceStatusResponse] = {
-    var resourceStatus: Map[Resource, ResourceStatusResponse] = Map()
+  private def getAllResources: List[Resource] = {
+    var resources: Set[Resource] = Set()
 
-    sequenceManagerConfig.obsModes.keys.foreach(obsMode => {
-      getResources(obsMode).resources.foreach(resource => {
-        // marking all resources as available in this loop
-        resourceStatus += resource -> ResourceStatusResponse(resource)
-      })
+    val obsModes = sequenceManagerConfig.obsModes.keys
+
+    obsModes.foreach(obsMode => {
+      resources = resources ++ getResources(obsMode).resources
     })
-    resourceStatus
+    resources.toList
   }
 
-  private def getAllResources(replyTo: ActorRef[ResourcesStatusResponse]): Unit = {
-    var resourceStatus: Map[Resource, ResourceStatusResponse] = getAllAvailableResources
+  private def getResourcesStatus(replyTo: ActorRef[ResourcesStatusResponse]): Unit = {
+    val resources: List[Resource]                              = getAllResources
+    var resourcesStatus: Map[Resource, ResourceStatusResponse] = Map()
 
-    getRunningObsModes
-      .flatMap {
-        //TODO : ???
-        case Left(_)      => Future.successful(List.empty)
-        case Right(value) => Future.successful(value.toList)
-      }
-      .map(_.foreach(obsMode => {
-        getResources(obsMode).resources.foreach(resource => {
-          // marking resources which are in use
-          resourceStatus += resource -> ResourceStatusResponse(resource, ResourceStatus.InUse, Some(obsMode))
+    resources.foreach(resource => {
+      // marking all resources as available in this loop
+      resourcesStatus += resource -> ResourceStatusResponse(resource)
+    })
+
+    getRunningObsModes.mapToAdt(
+      obsModes => {
+        obsModes.foreach(obsMode => {
+          getResources(obsMode).resources.foreach(resource => {
+            // marking resources which are in use
+            resourcesStatus += resource -> ResourceStatusResponse(resource, ResourceStatus.InUse, Some(obsMode))
+          })
         })
-      }))
-      .map(_ => replyTo ! ResourcesStatusResponse.Success(resourceStatus.values.toList))
-
+        replyTo ! ResourcesStatusResponse.Success(resourcesStatus.values.toList)
+      },
+      error => replyTo ! ResourcesStatusResponse.Failed(error.msg)
+    )
   }
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =

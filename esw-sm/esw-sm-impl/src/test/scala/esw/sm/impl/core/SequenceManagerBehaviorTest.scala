@@ -523,6 +523,55 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
+  "Get Resources" must {
+
+    "return all available resources when no obsMode is running | ESW-467 " in {
+      val getResponseProbe = TestProbe[ResourcesStatusResponse]()
+
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
+
+      val expectedResources = ResourcesStatusResponse.Success(
+        List(
+          ResourceStatusResponse(Resource(NSCU), ResourceStatus.Available),
+          ResourceStatusResponse(Resource(TCS), ResourceStatus.Available),
+          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available)
+        )
+      )
+
+      smRef ! GetResources(getResponseProbe.ref)
+      getResponseProbe.expectMessage(expectedResources)
+    }
+
+    "return resources in use when obsMode is configured | ESW-467 " in {
+      val getResponseProbe = TestProbe[ResourcesStatusResponse]()
+      val locations        = List(akkaLocation(ComponentId(Prefix(ESW, darkNight.name), Sequencer)))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(locations)))
+
+      val expectedResources = ResourcesStatusResponse.Success(
+        List(
+          ResourceStatusResponse(Resource(NSCU), ResourceStatus.InUse, Some(darkNight)),
+          ResourceStatusResponse(Resource(TCS), ResourceStatus.InUse, Some(darkNight)),
+          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available)
+        )
+      )
+
+      smRef ! GetResources(getResponseProbe.ref)
+      getResponseProbe.expectMessage(expectedResources)
+    }
+
+    "return Failed if RegistrationListingFailed gives error | ESW-467" in {
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+        .thenReturn(Future.successful(Left(RegistrationListingFailed("error"))))
+
+      val getResponseProbe = TestProbe[ResourcesStatusResponse]()
+
+      smRef ! GetResources(getResponseProbe.ref)
+
+      getResponseProbe.expectMessage(ResourcesStatusResponse.Failed("error"))
+    }
+
+  }
+
   private def assertUnhandled[T >: Unhandled <: SmResponse](
       state: SequenceManagerState,
       msg: ActorRef[T] => UnhandleableSequenceManagerMsg

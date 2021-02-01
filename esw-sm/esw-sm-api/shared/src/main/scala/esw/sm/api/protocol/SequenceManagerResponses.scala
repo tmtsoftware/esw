@@ -149,5 +149,7 @@ object ResourcesStatusResponse {
 
   case class Success(resourcesStatus: List[ResourceStatusResponse]) extends ResourcesStatusResponse
 
-  sealed trait Failure extends SmFailure with ResourcesStatusResponse
+  case class Failed(msg: String) extends SmFailure with ResourcesStatusResponse {
+    override def getMessage: String = msg
+  }
 }
