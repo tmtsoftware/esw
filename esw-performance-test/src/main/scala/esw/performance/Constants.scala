@@ -26,4 +26,7 @@ object Constants {
       AgentProvisionConfig(Prefix("WFOS.machine1"), 1)
     )
   )
+
+  val warmupIterationsOverhead = 100
+  val actualIterationsOverhead = 2000
 }

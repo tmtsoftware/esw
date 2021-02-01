@@ -18,8 +18,7 @@ import esw.ocs.testkit.utils.LocationUtils
 import esw.performance.Constants._
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerApiFactory
-import esw.sm.api.protocol.ConfigureResponse._
-import esw.sm.api.protocol.{ShutdownSequencersResponse, _}
+import esw.sm.api.protocol._
 import org.HdrHistogram.Histogram
 
 import scala.concurrent.duration.DurationInt
@@ -75,7 +74,7 @@ class SequenceManagerLatencyTest extends LocationUtils {
 
   private def recordResults(histogram: Histogram): Unit = {
     try {
-      val filename = "results.txt"
+      val filename    = "results.txt"
       val resultsFile = new File(filename)
       resultsFile.createNewFile()
       println(s"Histogram results are written to file ${resultsFile.getAbsolutePath}")
@@ -83,9 +82,12 @@ class SequenceManagerLatencyTest extends LocationUtils {
       try {
         histogram.outputPercentileDistribution(new PrintStream(fout), 1.0)
         val fileWriter = new FileWriter(filename)
-        fileWriter.write(s"50%tile: ${histogram.getValueAtPercentile(50)}" +
-          s"90%tile : ${histogram.getValueAtPercentile(90)}" +
-          s"99%tile : ${histogram.getValueAtPercentile(99)}")
+        fileWriter.write(
+          s"50%tile: ${histogram.getValueAtPercentile(50)}" +
+            s"90%tile : ${histogram.getValueAtPercentile(90)}" +
+            s"99%tile : ${histogram.getValueAtPercentile(99)}"
+        )
+        fileWriter.write("Hello")
       }
       finally if (fout != null) fout.close()
     }
@@ -100,9 +102,22 @@ class SequenceManagerLatencyTest extends LocationUtils {
     val configureResponse1 = smClient.configure(obsmode1).futureValue
 
     configureResponse1 match {
-      case Success(masterSequencerComponentId) =>
+      case ConfigureResponse.Success(masterSequencerComponentId) =>
         println(s"Configure $obsmode1 Response --> ConfigureResponse.Success $masterSequencerComponentId")
-      case failure: Failure => println(Console.RED + s"${failure.getMessage}")
+      case ConfigureResponse.ConflictingResourcesWithRunningObsMode(runningObsMode) =>
+        println(
+          Console.RED + s"Configure $obsmode1 Response --> ConfigureResponse.ConflictingResourcesWithRunningObsMode $runningObsMode"
+        )
+      case ConfigureResponse.FailedToStartSequencers(reasons) =>
+        println(Console.RED + s"Configure $obsmode1 Response --> ConfigureResponse.FailedToStartSequencers $reasons")
+      case StartSequencerResponse.SequenceComponentNotAvailable(subsystems, msg) =>
+        println(
+          Console.RED + s"Configure $obsmode1 Response --> StartSequencerResponse.SequenceComponentNotAvailable $subsystems $msg"
+        )
+      case CommonFailure.LocationServiceError(msg) =>
+        println(Console.RED + s"Configure $obsmode1 Response --> CommonFailure.LocationServiceError $msg")
+      case Unhandled(state, messageType, msg) =>
+        println(Console.RED + s"Configure $obsmode1 Response --> Unhandled $state, $messageType, $msg")
     }
 
     log.info(s"Configured ObsMode $obsmode1 response $configureResponse1")
@@ -119,7 +134,10 @@ class SequenceManagerLatencyTest extends LocationUtils {
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
         println(s"Shutdown $obsmode1 Response --> ShutdownSequencersResponse.Success $obsmode1")
-      case failure: ShutdownSequencersResponse.Failure => println(Console.RED + s"${failure.getMessage}")
+      case CommonFailure.LocationServiceError(msg) =>
+        println(Console.RED + s"Shutdown $obsmode1 Response --> CommonFailure.LocationServiceError $msg")
+      case Unhandled(state, messageType, msg) =>
+        println(Console.RED + s"Shutdown $obsmode1 Response --> Unhandled $state, $messageType, $msg")
     }
   }
 
@@ -129,14 +147,30 @@ class SequenceManagerLatencyTest extends LocationUtils {
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
         println(s"Shutdown $prevObsMode Response --> ShutdownSequencersResponse.Success $prevObsMode")
-      case failure: ShutdownSequencersResponse.Failure => println(Console.RED + s"${failure.getMessage}")
+      case CommonFailure.LocationServiceError(msg) =>
+        println(Console.RED + s"Shutdown $prevObsMode Response --> CommonFailure.LocationServiceError $msg")
+      case Unhandled(state, messageType, msg) =>
+        println(Console.RED + s"Shutdown $prevObsMode Response --> Unhandled $state, $messageType, $messageType")
     }
 
     val configureResponse = smClient.configure(nextObsMode).futureValue
     configureResponse match {
-      case Success(masterSequencerComponentId) =>
+      case ConfigureResponse.Success(masterSequencerComponentId) =>
         println(s"Configure $nextObsMode Response --> ConfigureResponse.Success $masterSequencerComponentId")
-      case failure: Failure => println(Console.RED + s"${failure.getMessage}")
+      case ConfigureResponse.ConflictingResourcesWithRunningObsMode(runningObsMode) =>
+        println(
+          Console.RED + s"Configure $nextObsMode Response --> ConfigureResponse.ConflictingResourcesWithRunningObsMode $runningObsMode"
+        )
+      case ConfigureResponse.FailedToStartSequencers(reasons) =>
+        println(Console.RED + s"Configure $nextObsMode Response --> ConfigureResponse.FailedToStartSequencers $reasons")
+      case StartSequencerResponse.SequenceComponentNotAvailable(subsystems, msg) =>
+        println(
+          Console.RED + s"Configure $nextObsMode Response --> StartSequencerResponse.SequenceComponentNotAvailable $subsystems $msg"
+        )
+      case CommonFailure.LocationServiceError(msg) =>
+        println(Console.RED + s"Configure $nextObsMode Response --> CommonFailure.LocationServiceError $msg")
+      case Unhandled(state, messageType, msg) =>
+        println(Console.RED + s"Configure $nextObsMode Response --> Unhandled $state, $messageType, $msg")
     }
     val afterSwitch = System.currentTimeMillis()
 

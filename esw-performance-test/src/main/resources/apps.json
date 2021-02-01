@@ -5,7 +5,7 @@
       "central"
     ],
     "dependencies": [
-      "com.github.tmtsoftware.esw:esw-ocs-app_2.13:33af422c44"
+      "com.github.tmtsoftware.esw:esw-performance-test_2.13:0.1.0-SNAPSHOT"
     ],
     "mainClass": "esw.ocs.app.SequencerApp",
     "properties": {

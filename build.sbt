@@ -24,7 +24,8 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-shell`,
   `esw-integration-test`,
   `esw-http-template-wiring`,
-  `esw-services`
+  `esw-services`,
+  `esw-performance-test`
 )
 
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
@@ -404,10 +405,16 @@ lazy val `esw-http-template-wiring` = project
 
 lazy val `esw-performance-test` = project
   .dependsOn(
-    `esw-testkit` % Test,
-    `esw-sm-api`.jvm % Test
+    `esw-testkit`,
+    `esw-sm-api`.jvm ,
+    `esw-gateway-api`.jvm ,
+    `esw-ocs-dsl-kt`,
+    `esw-ocs-app`
   )
+  .enablePlugins(KotlinPlugin)
   .settings(
-    libraryDependencies ++= Dependencies.PerformanceTest.value
+    libraryDependencies ++= Dependencies.PerformanceTest.value,
+    kotlinVersion := "1.4.10",
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
 
