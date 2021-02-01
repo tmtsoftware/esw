@@ -15,7 +15,7 @@ import csw.location.api.models.ComponentType.{Assembly, Sequencer}
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
+import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import esw.gateway.api.EventApi
@@ -158,8 +158,8 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val eventSubscriptionRequest: GatewayStreamRequest = Subscribe(eventKeys, None)
 
-      val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
-      val event2: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key2"))
+      val event1: Event = SystemEvent(Prefix("tcs.test"), EventName("event.key1"))
+      val event2: Event = SystemEvent(Prefix("tcs.test"), EventName("event.key2"))
 
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)
@@ -191,8 +191,8 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val eventSubscriptionRequest: GatewayStreamRequest = Subscribe(eventKeys, Some(10))
 
-      val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
-      val event2: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key2"))
+      val event1: Event = SystemEvent(Prefix("tcs.test"), EventName("event.key1"))
+      val event2: Event = SystemEvent(Prefix("tcs.test"), EventName("event.key2"))
 
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)
@@ -235,7 +235,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
     "return set of events on subscribe events with a given pattern | ESW-93, ESW-216" in {
       val eventSubscriptionRequest: GatewayStreamRequest = SubscribeWithPattern(TCS, None, "*")
 
-      val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
+      val event1: Event = SystemEvent(Prefix("tcs.test"), EventName("event.key1"))
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)
 
@@ -259,7 +259,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
     "return set of events when maxFrequency = 5 | ESW-93, ESW-216" in {
       val eventSubscriptionRequest: GatewayStreamRequest = SubscribeWithPattern(TCS, Some(5), "*")
-      val event1: Event                                  = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
+      val event1: Event                                  = SystemEvent(Prefix("tcs.test"), EventName("event.key1"))
 
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)

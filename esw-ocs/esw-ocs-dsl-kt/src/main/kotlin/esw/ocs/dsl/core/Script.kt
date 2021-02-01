@@ -5,12 +5,14 @@ import akka.actor.typed.SpawnProtocol
 import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
+import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.highlevel.models.ScriptError
 import esw.ocs.dsl.internal.ScriptWiring
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
+import esw.ocs.dsl.params.SequencerObserveEvent
 import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
@@ -31,6 +33,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), logger, strandEc, shutdownTask) }
     override val isOnline: Boolean get() = scriptDsl.isOnline
     override val prefix: String = wiring.scriptContext.prefix().toString()
+    override val sequencerObserveEvent by lazy { SequencerObserveEvent(Prefix.apply(prefix)) }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         error("Exception thrown in script with the message: [${exception.message}], invoking exception handler")

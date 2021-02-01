@@ -2,6 +2,7 @@ package esw.ocs.scripts.examples
 
 import csw.params.events.EventName
 import csw.params.events.ObserveEvent
+import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.models.Prefix
 
 object SharedConstants {
@@ -10,6 +11,6 @@ object SharedConstants {
     }
 
     object events {
-        val getCounter = ObserveEvent(prefixes.counter, EventName("get-counter"))
+        val getCounter = SystemEvent(prefixes.counter, EventName("get-counter"))
     }
 }

@@ -70,7 +70,7 @@ script {
         info("opening the primary shutter to start observation")
 
         val openingStatusKey = stringKey("status").set("open")
-        publishEvent(ObserveEvent("IRIS.primary_shutter", "current-status", openingStatusKey))
+        publishEvent(SystemEvent("IRIS.primary_shutter", "current-status", openingStatusKey))
 
         openPrimaryShutter()
     }
@@ -160,7 +160,7 @@ val startObservationScript = reusableScript {
         info("opening the primary shutter to start observation")
 
         val openingStatusKey = stringKey("status").set("open")
-        publishEvent(ObserveEvent("IRIS.primary_shutter", "current-status", openingStatusKey))
+        publishEvent(SystemEvent("IRIS.primary_shutter", "current-status", openingStatusKey))
 
         openPrimaryShutter()
     }

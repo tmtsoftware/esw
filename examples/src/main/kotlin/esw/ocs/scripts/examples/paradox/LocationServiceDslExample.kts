@@ -15,7 +15,7 @@ import kotlin.time.seconds
 script {
 
     val msgKey = stringKey("ui-event")
-    suspend fun sendUIEvent(msg: String) = publishEvent(ObserveEvent("ESW.ui", "ui-event", msgKey.set(msg)))
+    suspend fun sendUIEvent(msg: String) = publishEvent(SystemEvent("ESW.ui", "ui-event", msgKey.set(msg)))
 
     onSetup("spawn-service") { cmd ->
         val portKey = intKey("port")

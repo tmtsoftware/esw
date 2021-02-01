@@ -13,7 +13,7 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Assembly, Sequencer}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Id
-import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
+import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import esw.gateway.api.codecs.GatewayCodecs
@@ -187,7 +187,7 @@ class WebsocketMetricsTest
     }
 
     def publishEvents(count: Int): Unit = {
-      val event: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
+      val event: Event = SystemEvent(Prefix("tcs.test"), EventName("event.key1"))
       (1 to count).foreach { _ =>
         probe.sendNext(event)
         decodeMessage[Event](wsClient) shouldEqual event

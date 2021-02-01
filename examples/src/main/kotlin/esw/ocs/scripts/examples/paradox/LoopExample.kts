@@ -9,7 +9,7 @@ import kotlin.time.milliseconds
 script {
     //#loopAsync-default-interval
     var stopPublishingTemperature = false
-    val temperatureEvent = ObserveEvent("IRIS.motor", "temperature")
+    val temperatureEvent = SystemEvent("IRIS.motor", "temperature")
     val temperatureKey = longKey("temperature")
 
     fun getCurrentTemp(): Long = TODO()

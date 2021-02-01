@@ -372,18 +372,18 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     }
 
     "be able to send publish and subscribe to observe event published by Sequencer | ESW-81" in {
-      val command  = Observe(Prefix("esw.test"), CommandName("observe-start"), None)
-      val sequence = Sequence(command)
-
+      val command           = Observe(Prefix("esw.test"), CommandName("observe-start"), None)
+      val sequence          = Sequence(command)
+      val expectedPrefix    = Prefix(ocsSubsystem, ocsObsMode.name)
       val expectedEventName = EventName("ObserveStart")
-      val expectedEventKey  = EventKey(Prefix("ESW.test"), expectedEventName)
+      val expectedEventKey  = EventKey(expectedPrefix, expectedEventName)
       val testProbe         = createTestProbe(Set(expectedEventKey))
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       val actualObserveEvent = testProbe.expectMessageType[ObserveEvent]
       actualObserveEvent.eventName should ===(expectedEventName)
-      actualObserveEvent.source should ===(Prefix("ESW.test"))
+      actualObserveEvent.source should ===(expectedPrefix)
       actualObserveEvent.paramSet shouldBe Set(StringKey.make("obsId").set("2021A-011-153"))
     }
 

@@ -2,69 +2,64 @@ package esw.ocs.dsl.params
 
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
-import csw.params.core.models.ObsId
+import csw.params.core.models.{ExposureIdType, ObsId}
 import csw.params.events.{EventName, ObserveEvent}
 import csw.prefix.models.Prefix
 
-object SequencerObserveEvent {
-  private def createObserveEvent(sourcePrefix: String, eventName: EventName, obsId: ObsId) =
-    ObserveEvent(Prefix(sourcePrefix), eventName, Set(StringKey.make("obsId").set(obsId.toString())))
+private[dsl] class SequencerObserveEvent(prefix: Prefix) {
+  private def createObserveEvent(eventName: EventName, obsId: ObsId) =
+    ObserveEvent(prefix, eventName, Set(StringKey.make("obsId").set(obsId.toString())))
 
-  private def createObserveEventWithExposureId(
-      sourcePrefix: String,
-      eventName: EventName,
-      obsId: ObsId,
-      exposureId: String
-  ): ObserveEvent = {
+  private def createObserveEventWithExposureId(eventName: EventName, obsId: ObsId, exposureId: ExposureIdType) = {
     val paramset: Set[Parameter[_]] = Set(
       StringKey.make("obsId").set(obsId.toString()),
-      StringKey.make("exposureId").set(exposureId)
+      StringKey.make("exposureId").set(exposureId.toString)
     )
-    ObserveEvent(Prefix(sourcePrefix), eventName, paramset)
+    ObserveEvent(prefix, eventName, paramset)
   }
 
-  def presetStart(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("PresetStart"), obsId)
-  def presetEnd(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("PresetEnd"), obsId)
-  def guidstarAcqStart(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("GuidstarAcqStart"), obsId)
-  def guidstarAcqEnd(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("GuidstarAcqEnd"), obsId)
-  def scitargetAcqStart(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("ScitargetAcqStart"), obsId)
-  def scitargetAcqEnd(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("ScitargetAcqEnd"), obsId)
-  def observationStart(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("ObservationStart"), obsId)
-  def observationEnd(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("ObservationEnd"), obsId)
-  def observeStart(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("ObserveStart"), obsId)
-  def observeEnd(sourcePrefix: String, obsId: ObsId): ObserveEvent =
-    createObserveEvent(sourcePrefix, EventName("ObserveEnd"), obsId)
+  def presetStart(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("PresetStart"), obsId)
+  def presetEnd(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("PresetEnd"), obsId)
+  def guidstarAcqStart(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("GuidstarAcqStart"), obsId)
+  def guidstarAcqEnd(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("GuidstarAcqEnd"), obsId)
+  def scitargetAcqStart(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("ScitargetAcqStart"), obsId)
+  def scitargetAcqEnd(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("ScitargetAcqEnd"), obsId)
+  def observationStart(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("ObservationStart"), obsId)
+  def observationEnd(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("ObservationEnd"), obsId)
+  def observeStart(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("ObserveStart"), obsId)
+  def observeEnd(obsId: ObsId): ObserveEvent =
+    createObserveEvent(EventName("ObserveEnd"), obsId)
 
-  def exposureStart(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
-    createObserveEventWithExposureId(sourcePrefix, EventName("ExposureStart"), obsId, exposureId)
-  def exposureEnd(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
-    createObserveEventWithExposureId(sourcePrefix, EventName("ExposureEnd"), obsId, exposureId)
-  def readoutEnd(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
-    createObserveEventWithExposureId(sourcePrefix, EventName("ReadoutEnd"), obsId, exposureId)
-  def readoutFailed(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
-    createObserveEventWithExposureId(sourcePrefix, EventName("ReadoutFailed"), obsId, exposureId)
-  def dataWriteStart(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
-    createObserveEventWithExposureId(sourcePrefix, EventName("DataWriteStart"), obsId, exposureId)
-  def dataWriteEnd(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
-    createObserveEventWithExposureId(sourcePrefix, EventName("DataWriteEnd"), obsId, exposureId)
-  def prepareStart(sourcePrefix: String, obsId: ObsId, exposureId: String): ObserveEvent =
-    createObserveEventWithExposureId(sourcePrefix, EventName("PrepareStart"), obsId, exposureId)
+  def exposureStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
+    createObserveEventWithExposureId(EventName("ExposureStart"), obsId, exposureId)
+  def exposureEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
+    createObserveEventWithExposureId(EventName("ExposureEnd"), obsId, exposureId)
+  def readoutEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
+    createObserveEventWithExposureId(EventName("ReadoutEnd"), obsId, exposureId)
+  def readoutFailed(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
+    createObserveEventWithExposureId(EventName("ReadoutFailed"), obsId, exposureId)
+  def dataWriteStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
+    createObserveEventWithExposureId(EventName("DataWriteStart"), obsId, exposureId)
+  def dataWriteEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
+    createObserveEventWithExposureId(EventName("DataWriteEnd"), obsId, exposureId)
+  def prepareStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
+    createObserveEventWithExposureId(EventName("PrepareStart"), obsId, exposureId)
 
-  def observePaused(sourcePrefix: String): ObserveEvent  = ObserveEvent(Prefix(sourcePrefix), EventName("ObservePaused"))
-  def observeResumed(sourcePrefix: String): ObserveEvent = ObserveEvent(Prefix(sourcePrefix), EventName("ObserveResumed"))
+  def observePaused(): ObserveEvent  = ObserveEvent(prefix, EventName("ObservePaused"))
+  def observeResumed(): ObserveEvent = ObserveEvent(prefix, EventName("ObserveResumed"))
 
-  def downtimeStart(sourcePrefix: String, obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
+  def downtimeStart(obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
     val obsIdParam          = StringKey.make("obsId").set(obsId.toString())
     val downtimeReasonParam = StringKey.make("reason").set(reasonForDowntime)
-    ObserveEvent(Prefix(sourcePrefix), EventName("DowntimeStart"), Set(obsIdParam, downtimeReasonParam))
+    ObserveEvent(prefix, EventName("DowntimeStart"), Set(obsIdParam, downtimeReasonParam))
   }
 }

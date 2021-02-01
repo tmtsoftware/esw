@@ -11,6 +11,7 @@ import esw.ocs.dsl.epics.*
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.lowlevel.CswServices
+import esw.ocs.dsl.params.SequencerObserveEvent
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.CommandUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
@@ -25,6 +26,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
         AlarmServiceDsl, TimeServiceDsl, DatabaseServiceDsl, LoopDsl {
     val isOnline: Boolean
     val prefix: String
+    val sequencerObserveEvent: SequencerObserveEvent
 
     fun Assembly(prefix: Prefix, defaultTimeout: Duration = 10.seconds): RichComponent
     fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =

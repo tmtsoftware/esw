@@ -106,7 +106,7 @@ script {
     // #onGlobalError
     // Scenario-1 onObserve handler fails
     onObserve("trigger-filter-wheel") { command ->
-        val triggerStartEvent = ObserveEvent("esw.command", "trigger.start", command(stringKey(name = "triggerTime")))
+        val triggerStartEvent = SystemEvent("esw.command", "trigger.start", command(stringKey(name = "triggerTime")))
         // publishEvent fails with EventServerNotAvailable which fails onObserve handler
         // onGlobalError handler is called
         // Sequence is terminated with failure.
@@ -127,13 +127,13 @@ script {
         // publishEvent fails with EventServerNotAvailable
         // onDiagnosticMode handler fails
         // onGlobalError is called. Sequence execution continues.
-        publishEvent(ObserveEvent("esw.diagnostic.mode", hint))
+        publishEvent(SystemEvent("esw.diagnostic.mode", hint))
     }
 
     onGlobalError { error ->
         val errorReason = stringKey("reason").set(error.reason)
-        val observationEndEvent = ObserveEvent("esw.observation.end", "error", errorReason)
-        publishEvent(observationEndEvent)
+        val errorEvent = SystemEvent("esw.observation.end", "error", errorReason)
+        publishEvent(errorEvent)
     }
     // #onGlobalError
 
