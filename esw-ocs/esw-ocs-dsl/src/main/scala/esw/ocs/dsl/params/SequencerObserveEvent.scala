@@ -19,47 +19,47 @@ private[dsl] class SequencerObserveEvent(prefix: Prefix) {
   }
 
   def presetStart(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("PresetStart"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.PresetStart), obsId)
   def presetEnd(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("PresetEnd"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.PresetEnd), obsId)
   def guidstarAcqStart(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("GuidstarAcqStart"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.GuidstarAcqStart), obsId)
   def guidstarAcqEnd(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("GuidstarAcqEnd"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.GuidstarAcqEnd), obsId)
   def scitargetAcqStart(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("ScitargetAcqStart"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.ScitargetAcqStart), obsId)
   def scitargetAcqEnd(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("ScitargetAcqEnd"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.ScitargetAcqEnd), obsId)
   def observationStart(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("ObservationStart"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.ObservationStart), obsId)
   def observationEnd(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("ObservationEnd"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.ObservationEnd), obsId)
   def observeStart(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("ObserveStart"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.ObserveStart), obsId)
   def observeEnd(obsId: ObsId): ObserveEvent =
-    createObserveEvent(EventName("ObserveEnd"), obsId)
+    createObserveEvent(EventName(SequencerObserveEventName.ObserveEnd), obsId)
 
   def exposureStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
-    createObserveEventWithExposureId(EventName("ExposureStart"), obsId, exposureId)
+    createObserveEventWithExposureId(EventName(SequencerObserveEventName.ExposureStart), obsId, exposureId)
   def exposureEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
-    createObserveEventWithExposureId(EventName("ExposureEnd"), obsId, exposureId)
+    createObserveEventWithExposureId(EventName(SequencerObserveEventName.ExposureEnd), obsId, exposureId)
   def readoutEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
-    createObserveEventWithExposureId(EventName("ReadoutEnd"), obsId, exposureId)
+    createObserveEventWithExposureId(EventName(SequencerObserveEventName.ReadoutEnd), obsId, exposureId)
   def readoutFailed(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
-    createObserveEventWithExposureId(EventName("ReadoutFailed"), obsId, exposureId)
+    createObserveEventWithExposureId(EventName(SequencerObserveEventName.ReadoutFailed), obsId, exposureId)
   def dataWriteStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
-    createObserveEventWithExposureId(EventName("DataWriteStart"), obsId, exposureId)
+    createObserveEventWithExposureId(EventName(SequencerObserveEventName.DataWriteStart), obsId, exposureId)
   def dataWriteEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
-    createObserveEventWithExposureId(EventName("DataWriteEnd"), obsId, exposureId)
+    createObserveEventWithExposureId(EventName(SequencerObserveEventName.DataWriteEnd), obsId, exposureId)
   def prepareStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent =
-    createObserveEventWithExposureId(EventName("PrepareStart"), obsId, exposureId)
+    createObserveEventWithExposureId(EventName(SequencerObserveEventName.PrepareStart), obsId, exposureId)
 
-  def observePaused(): ObserveEvent  = ObserveEvent(prefix, EventName("ObservePaused"))
-  def observeResumed(): ObserveEvent = ObserveEvent(prefix, EventName("ObserveResumed"))
+  def observePaused(): ObserveEvent  = ObserveEvent(prefix, EventName(SequencerObserveEventName.ObservePaused))
+  def observeResumed(): ObserveEvent = ObserveEvent(prefix, EventName(SequencerObserveEventName.ObserveResumed))
 
   def downtimeStart(obsId: ObsId, reasonForDowntime: String): ObserveEvent = {
     val obsIdParam          = StringKey.make("obsId").set(obsId.toString())
     val downtimeReasonParam = StringKey.make("reason").set(reasonForDowntime)
-    ObserveEvent(prefix, EventName("DowntimeStart"), Set(obsIdParam, downtimeReasonParam))
+    ObserveEvent(prefix, EventName(SequencerObserveEventName.DowntimeStart), Set(obsIdParam, downtimeReasonParam))
   }
 }
