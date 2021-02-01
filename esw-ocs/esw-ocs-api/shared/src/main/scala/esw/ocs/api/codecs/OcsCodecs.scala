@@ -2,7 +2,7 @@ package esw.ocs.api.codecs
 
 import csw.location.api.codec.LocationCodecs
 import csw.params.core.formats.ParamCodecs
-import esw.ocs.api.models.{ObsMode, Step, StepList, StepStatus}
+import esw.ocs.api.models._
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, OkOrUnhandled, ScriptResponseOrUnhandled}
 import esw.ocs.api.protocol._
 import io.bullet.borer.Codec
@@ -21,7 +21,9 @@ trait OcsCodecsBase extends ParamCodecs with LocationCodecs with BasicCodecs {
   implicit lazy val stepStatusCodec: Codec[StepStatus] = deriveAllCodecs
 
   //ObsMode Codecs
-  implicit lazy val obsModeCodec: Codec[ObsMode] = deriveCodec
+  implicit lazy val obsModeCodec: Codec[ObsMode]                = deriveCodec
+  implicit lazy val obsModeWithStatus: Codec[ObsModeWithStatus] = deriveCodec
+  implicit lazy val obsModeStatus: Codec[ObsModeStatus]         = deriveAllCodecs
 
   //EswSequencerResponse Codecs
   lazy val responseCodecValue: Codec[EswSequencerResponse] = deriveAllCodecs

@@ -11,7 +11,8 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Running}
+import esw.ocs.api.models.{ObsMode, ObsModeStatus, ObsModeWithStatus}
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
@@ -201,6 +202,7 @@ class SequenceManagerBehavior(
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
+      case GetObsModesWithStatus(replyTo) => getAllObsModsWithStatus.map(replyTo ! _)
       case GetRunningObsModes(replyTo) =>
         runningObsModesResponse.foreach { response =>
           response match {
@@ -235,6 +237,26 @@ class SequenceManagerBehavior(
       obsModes => GetRunningObsModesResponse.Success(obsModes),
       error => GetRunningObsModesResponse.Failed(error.msg)
     )
+
+  private def getAllObsModsWithStatus: Future[ObsModesWithStatusResponse] = {
+    def getObsModeStatus(obsMode: ObsMode, runningObsModes: Set[ObsMode]): ObsModeStatus = {
+      if (checkConflicts(sequenceManagerConfig.resources(obsMode).get, runningObsModes)) NonConfigurable
+      else Configurable
+    }
+
+    getRunningObsModes.mapToAdt(
+      runningObsModes => {
+        val runningObsModesWithStatus        = runningObsModes.map(ObsModeWithStatus(_, Running))
+        val nonRunningObsModes: Set[ObsMode] = sequenceManagerConfig.obsModes.keys.toSet.diff(runningObsModes)
+        val nonRunningObsModeWithStatus =
+          nonRunningObsModes.map(obsMode => ObsModeWithStatus(obsMode, getObsModeStatus(obsMode, runningObsModes)))
+        val value = runningObsModesWithStatus.union(nonRunningObsModeWithStatus)
+        println(value)
+        ObsModesWithStatusResponse.Success(value)
+      },
+      error => CommonFailure.LocationServiceError(error.msg)
+    )
+  }
 
   // get the component name of all the top level sequencers i.e. ESW sequencers
   private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[ObsMode]]] =
