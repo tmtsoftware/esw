@@ -12,17 +12,18 @@ object Constants {
 
   val enableSwitching = false
 
-  val warmupIterations = 5
-  val actualIterations = 10
+  val warmupIterations = 3
+  val actualIterations = 20
 
-  val timeout: Int = 60 * 1000
+  val timeout: Int = 20 * 1000
 
   val provisionConfig: ProvisionConfig = ProvisionConfig(
     List(
       AgentProvisionConfig(Prefix("ESW.machine1"), 1),
       AgentProvisionConfig(Prefix("IRIS.machine1"), 1),
       AgentProvisionConfig(Prefix("TCS.machine1"), 1),
-      AgentProvisionConfig(Prefix("AOESW.machine1"), 1)
+      AgentProvisionConfig(Prefix("AOESW.machine1"), 1),
+      AgentProvisionConfig(Prefix("WFOS.machine1"), 1)
     )
   )
 }
