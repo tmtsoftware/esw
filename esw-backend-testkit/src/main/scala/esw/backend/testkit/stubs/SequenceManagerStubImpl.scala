@@ -6,20 +6,21 @@ import csw.backend.auth.MockedAuth
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
 import csw.location.api.scaladsl.LocationService
-import csw.prefix.models.Subsystem.{ESW, IRIS}
+import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.backend.testkit.utils.IOUtils
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
-import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
-import esw.sm.api.protocol._
+import esw.sm.api.models._
+import esw.sm.api.protocol.{ResourceStatusResponse, _}
 import esw.sm.app.SequenceManagerWiring
 
 import scala.concurrent.Future
 
 class SequenceManagerStubImpl extends SequenceManagerApi {
 
+  private val obsMode = ObsMode("darknight")
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] = {
     val componentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
     Future.successful(ConfigureResponse.Success(componentId))
@@ -27,8 +28,9 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
 
   override def provision(config: ProvisionConfig): Future[ProvisionResponse] = Future.successful(ProvisionResponse.Success)
 
-  override def getRunningObsModes: Future[GetRunningObsModesResponse] =
-    Future.successful(GetRunningObsModesResponse.Success(Set(ObsMode("darknight"))))
+  override def getRunningObsModes: Future[GetRunningObsModesResponse] = {
+    Future.successful(GetRunningObsModesResponse.Success(Set(obsMode)))
+  }
 
   override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     Future.successful(StartSequencerResponse.Started(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
@@ -66,7 +68,16 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
       )
     )
 
-  override def getResources: Future[ResourcesStatusResponse] = ???
+  override def getResources: Future[ResourcesStatusResponse] =
+    Future.successful(
+      ResourcesStatusResponse.Success(
+        List(
+          ResourceStatusResponse(Resource(ESW), ResourceStatus.InUse, Some(obsMode)),
+          ResourceStatusResponse(Resource(IRIS), ResourceStatus.InUse, Some(obsMode)),
+          ResourceStatusResponse(Resource(TCS))
+        )
+      )
+    )
 }
 
 class SequenceManagerStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
