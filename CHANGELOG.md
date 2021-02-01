@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 ## [Upcoming version]
 
 - Added Shutdown, Restart, GoOnline, GoOffline, GetContainerLifecycleState and GetComponentLifecycleState routes in Gateway.
+- Added GetResources Api in the SequenceManager
 
 ## [ESW v0.2.0] - 2020-12-18
 

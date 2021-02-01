@@ -97,5 +97,10 @@ trait SequenceManagerApi {
    */
   def getAgentStatus: Future[AgentStatusResponse]
 
+  /**
+   * Gives information of all resources which are being used by obsMode in given sequence manager config file
+   * each resource will have its status [[esw.sm.api.models.ResourceStatus]] and obsMode if it is in use
+   * @return a future of [[esw.sm.api.protocol.ResourcesStatusResponse]] which completes with Success or Failure response ADT
+   */
   def getResources: Future[ResourcesStatusResponse]
 }

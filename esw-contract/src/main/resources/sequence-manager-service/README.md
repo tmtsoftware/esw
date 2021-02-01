@@ -11,6 +11,7 @@ The url - `http://{{host}}:{{port}}/post-endpoint` can be used to access sequenc
 Following JSON payloads can be "post"ed to the above URL:
 * GetRunningObsModes
 * GetAgentStatus
+* GetResources
 * Configure
 * Provision
 * StartSequencer
@@ -21,6 +22,7 @@ Following JSON payloads can be "post"ed to the above URL:
 * ShutdownAllSequencers
 * ShutdownSequenceComponent
 * ShutdownAllSequenceComponents
+
 
 _Note:_
 
