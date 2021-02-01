@@ -210,7 +210,7 @@ class SequenceManagerBehavior(
         currentState.tap(state => logger.info(s"Sequence Manager response Success: Sequence Manager state $state"));
         replyTo ! currentState
       case GetAllAgentStatus(replyTo) => getAllAgentStatus(replyTo)
-      case GetResources(replyTo)      => getAllResources(replyTo)
+      case GetResources(replyTo)      => getResourcesStatus(replyTo)
     }
 
   private def getAllAgentStatus(replyTo: ActorRef[AgentStatusResponse]): Future[Unit] =

@@ -1,20 +1,20 @@
 package esw.contract.data.sequencemanager
 
-import java.net.URI
-
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.{AgentProvisionConfig, AgentStatus, ProvisionConfig, SequenceComponentStatus}
+import esw.sm.api.models._
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ConfigureResponse._
+import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, FailedToStartSequencers, _}
 import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, SpawningSequenceComponentsFailed, Success}
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol.StartSequencerResponse._
 import esw.sm.api.protocol._
+
+import java.net.URI
 
 trait SequenceManagerData {
   private val agentPrefix               = Prefix(ESW, "agent")
@@ -67,4 +67,13 @@ trait SequenceManagerData {
   val locationServiceError: LocationServiceError                   = LocationServiceError("location service error")
   val sequenceComponentNotAvailable: SequenceComponentNotAvailable = SequenceComponentNotAvailable(List(ESW))
   val unhandled: Unhandled                                         = Unhandled("state", "messageType")
+
+  val getResourcesStatus: SequenceManagerRequest.GetResources.type = GetResources
+  val irisResource: Resource                                       = Resource(IRIS)
+  val tcsResource: Resource                                        = Resource(TCS)
+  val resourcesStatusSuccess: ResourcesStatusResponse.Success =
+    ResourcesStatusResponse.Success(
+      List(ResourceStatusResponse(irisResource), ResourceStatusResponse(tcsResource, ResourceStatus.InUse, Some(obsMode)))
+    )
+  val resourcesStatusFailed: ResourcesStatusResponse.Failed = ResourcesStatusResponse.Failed("error")
 }

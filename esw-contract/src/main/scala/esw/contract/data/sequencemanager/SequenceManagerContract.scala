@@ -5,6 +5,7 @@ import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
 import csw.prefix.models.Subsystem
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
+import esw.sm.api.models.{Resource, ResourceStatus}
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 
@@ -38,7 +39,10 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     ModelType(sequencerPrefix),
     ModelType(obsMode),
     ModelType(Subsystem),
-    ModelType(provisionConfig)
+    ModelType(provisionConfig),
+    ModelType[ResourcesStatusResponse](resourcesStatusSuccess, resourcesStatusFailed),
+    ModelType[Resource](irisResource, tcsResource),
+    ModelType[ResourceStatus](ResourceStatus.InUse, ResourceStatus.Available)
   )
 
   private val httpRequests = new RequestSet[SequenceManagerRequest] {
@@ -54,6 +58,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     requestType(shutdownSequenceComponent)
     requestType(shutdownAllSequenceComponents)
     requestType(getAgentStatus)
+    requestType(getResourcesStatus)
   }
 
   private val httpEndpoints: List[Endpoint] = List(
@@ -68,7 +73,8 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     Endpoint(objectName(ShutdownAllSequencers), name[ShutdownSequencersResponse]),
     Endpoint(name[ShutdownSequenceComponent], name[ShutdownSequenceComponentResponse]),
     Endpoint(objectName(ShutdownAllSequenceComponents), name[ShutdownSequenceComponentResponse]),
-    Endpoint(objectName(GetAgentStatus), name[AgentStatusResponse])
+    Endpoint(objectName(GetAgentStatus), name[AgentStatusResponse]),
+    Endpoint(objectName(GetResources), name[ResourcesStatusResponse])
   )
 
   private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("sequence-manager-service/README.md"))
