@@ -9,8 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.backend.testkit.utils.IOUtils
-import esw.ocs.api.models.ObsModeStatus.{Configurable, Running}
-import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
+import esw.ocs.api.models.{ObsMode}
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models._
