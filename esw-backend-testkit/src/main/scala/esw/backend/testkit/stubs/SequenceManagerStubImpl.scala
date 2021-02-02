@@ -80,15 +80,7 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
       )
     )
 
-  override def getObsModesWithStatus: Future[ObsModesWithStatusResponse] =
-    Future.successful(
-      ObsModesWithStatusResponse.Success(
-        Set(
-          ObsModeWithStatus(ObsMode("darknight"), Running),
-          ObsModeWithStatus(ObsMode("IRIS_clearsky"), Configurable)
-        )
-      )
-    )
+  override def getObsModesWithStatus: Future[ObsModesWithStatusResponse] = ???
 }
 
 class SequenceManagerStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])

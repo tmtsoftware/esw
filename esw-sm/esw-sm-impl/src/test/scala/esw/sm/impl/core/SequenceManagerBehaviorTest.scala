@@ -559,9 +559,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
           ObsModeWithStatus(irisMCAO, Configurable)
         )
       )
-      obsModesWithStatusResponseProbe.expectMessage(
-        expectedMessage
-      )
+      obsModesWithStatusResponseProbe.expectMessage(expectedMessage)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
 
     }
@@ -578,7 +576,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         List(
           ResourceStatusResponse(Resource(NSCU), ResourceStatus.Available),
           ResourceStatusResponse(Resource(TCS), ResourceStatus.Available),
-          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available)
+          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available),
+          ResourceStatusResponse(Resource(WFOS), ResourceStatus.Available)
         )
       )
 
@@ -595,7 +594,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         List(
           ResourceStatusResponse(Resource(NSCU), ResourceStatus.InUse, Some(darkNight)),
           ResourceStatusResponse(Resource(TCS), ResourceStatus.InUse, Some(darkNight)),
-          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available)
+          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available),
+          ResourceStatusResponse(Resource(WFOS), ResourceStatus.Available)
         )
       )
 

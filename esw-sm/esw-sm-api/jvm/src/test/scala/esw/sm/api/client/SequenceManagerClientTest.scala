@@ -34,6 +34,18 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       client.getRunningObsModes.futureValue shouldBe getRunningObsModesResponse
     }
 
+    "return observation modes with status for getObsModesWithStatus request | ESW-466" in {
+      val obsModesWithStatusResponse = mock[ObsModesWithStatusResponse]
+      when(
+        postClient.requestResponse[ObsModesWithStatusResponse](argsEq(GetObsModesWithStatus))(
+          any[Decoder[ObsModesWithStatusResponse]](),
+          any[Encoder[ObsModesWithStatusResponse]]()
+        )
+      ).thenReturn(Future.successful(obsModesWithStatusResponse))
+
+      client.getObsModesWithStatus.futureValue shouldBe obsModesWithStatusResponse
+    }
+
     "return provision response for provision request | ESW-347, ESW-362" in {
       val provisionResponse = mock[ProvisionResponse]
       val provisionConfig   = ProvisionConfig(Prefix(ESW, "primary") -> 1)

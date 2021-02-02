@@ -82,7 +82,7 @@ class SequenceManagerBehavior(
       // get obsMode config for requested observation mode from sequence manager config
       sequenceManagerConfig.obsModeConfig(requestedObsMode) match {
         // check for resource conflict between requested obsMode and currently running obsMode
-        case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
+        case Some(ObsModeConfig(resources, _)) if isNonConfigurable(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
           await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
@@ -91,7 +91,7 @@ class SequenceManagerBehavior(
     }
 
   // ignoring failure of getResources as config should never be absent for running obsModes
-  private def checkConflicts(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
+  private def isNonConfigurable(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
@@ -202,7 +202,6 @@ class SequenceManagerBehavior(
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
-      case GetObsModesWithStatus(replyTo) => getAllObsModsWithStatus.map(replyTo ! _)
       case GetRunningObsModes(replyTo) =>
         runningObsModesResponse.foreach { response =>
           response match {
@@ -216,8 +215,9 @@ class SequenceManagerBehavior(
       case GetSequenceManagerState(replyTo) =>
         currentState.tap(state => logger.info(s"Sequence Manager response Success: Sequence Manager state $state"));
         replyTo ! currentState
-      case GetAllAgentStatus(replyTo) => getAllAgentStatus(replyTo)
-      case GetResources(replyTo)      => getResourcesStatus(replyTo)
+      case GetAllAgentStatus(replyTo)     => getAllAgentStatus(replyTo)
+      case GetResources(replyTo)          => getResourcesStatus(replyTo)
+      case GetObsModesWithStatus(replyTo) => getObsModesWithStatus.foreach(replyTo ! _)
     }
 
   private def getAllAgentStatus(replyTo: ActorRef[AgentStatusResponse]): Future[Unit] =
@@ -238,21 +238,19 @@ class SequenceManagerBehavior(
       error => GetRunningObsModesResponse.Failed(error.msg)
     )
 
-  private def getAllObsModsWithStatus: Future[ObsModesWithStatusResponse] = {
+  private def getObsModesWithStatus: Future[ObsModesWithStatusResponse] = {
     def getObsModeStatus(obsMode: ObsMode, runningObsModes: Set[ObsMode]): ObsModeStatus = {
-      if (checkConflicts(sequenceManagerConfig.resources(obsMode).get, runningObsModes)) NonConfigurable
+      if (runningObsModes.contains(obsMode)) Running
+      else if (isNonConfigurable(sequenceManagerConfig.resources(obsMode).get, runningObsModes)) NonConfigurable
       else Configurable
     }
 
     getRunningObsModes.mapToAdt(
       runningObsModes => {
-        val runningObsModesWithStatus        = runningObsModes.map(ObsModeWithStatus(_, Running))
-        val nonRunningObsModes: Set[ObsMode] = sequenceManagerConfig.obsModes.keys.toSet.diff(runningObsModes)
-        val nonRunningObsModeWithStatus =
-          nonRunningObsModes.map(obsMode => ObsModeWithStatus(obsMode, getObsModeStatus(obsMode, runningObsModes)))
-        val value = runningObsModesWithStatus.union(nonRunningObsModeWithStatus)
-        println(value)
-        ObsModesWithStatusResponse.Success(value)
+        val obsModes           = sequenceManagerConfig.obsModes.keys.toSet
+        val obsModesWithStatus = obsModes.map(obsMode => ObsModeWithStatus(obsMode, getObsModeStatus(obsMode, runningObsModes)))
+
+        ObsModesWithStatusResponse.Success(obsModesWithStatus)
       },
       error => CommonFailure.LocationServiceError(error.msg)
     )

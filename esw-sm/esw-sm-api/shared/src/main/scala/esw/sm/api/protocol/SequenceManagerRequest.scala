@@ -10,7 +10,7 @@ object SequenceManagerRequest {
   case class Configure(obsMode: ObsMode)        extends SequenceManagerRequest
   case class Provision(config: ProvisionConfig) extends SequenceManagerRequest
   case object GetRunningObsModes                extends SequenceManagerRequest
-  case object GetObsModesWithStatus              extends SequenceManagerRequest
+  case object GetObsModesWithStatus             extends SequenceManagerRequest
 
   case class StartSequencer(subsystem: Subsystem, obsMode: ObsMode)   extends SequenceManagerRequest
   case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode) extends SequenceManagerRequest

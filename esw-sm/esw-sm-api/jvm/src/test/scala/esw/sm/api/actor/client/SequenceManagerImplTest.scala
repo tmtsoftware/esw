@@ -104,6 +104,15 @@ class SequenceManagerImplTest extends ActorTestSuit {
       }
     }
 
+    "getObsModesWithStatus | ESW-466" in {
+      val obsModesWithStatusResponse = mock[ObsModesWithStatusResponse]
+      withBehavior {
+        case SequenceManagerMsg.GetObsModesWithStatus(replyTo) => replyTo ! obsModesWithStatusResponse
+      } check { sm =>
+        sm.getObsModesWithStatus.futureValue should ===(obsModesWithStatusResponse)
+      }
+    }
+
     "shutdownSequenceComponent | ESW-338, ESW-362" in {
       val shutdownSequenceComponentResponse = mock[ShutdownSequenceComponentResponse]
       val seqCompPrefix                     = Prefix(randomSubsystem, randomString5)

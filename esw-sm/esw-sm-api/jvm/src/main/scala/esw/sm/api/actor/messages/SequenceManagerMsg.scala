@@ -40,11 +40,11 @@ object SequenceManagerMsg {
       extends SequenceManagerIdleMsg
   case class ShutdownAllSequenceComponents(replyTo: ActorRef[ShutdownSequenceComponentResponse]) extends SequenceManagerIdleMsg
 
-  case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
+  case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse])    extends CommonMessage
   case class GetObsModesWithStatus(replyTo: ActorRef[ObsModesWithStatusResponse]) extends CommonMessage
-  case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
-  case class GetAllAgentStatus(replyTo: ActorRef[AgentStatusResponse])         extends CommonMessage
-  case class GetResources(replyTo: ActorRef[ResourcesStatusResponse])          extends CommonMessage
+  case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])     extends CommonMessage
+  case class GetAllAgentStatus(replyTo: ActorRef[AgentStatusResponse])            extends CommonMessage
+  case class GetResources(replyTo: ActorRef[ResourcesStatusResponse])             extends CommonMessage
 
   private[sm] case class ProcessingComplete[T <: SmResponse](res: T) extends SequenceManagerMsg
 }
