@@ -102,7 +102,7 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
       warmUpHistogram: Histogram,
       eswSequencerClient: SequencerApi,
       sequence: Sequence,
-      resultsFile : String
+      resultsFile: String
   ) = {
     (1 to warmupIterationsOverhead).foreach { iterationNumber =>
       println(s"Warmup iteration ------> $iterationNumber")
@@ -127,7 +127,7 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     val eswSequencerLocation = resolveAkkaLocation(Prefix(ESW, "perfTest"), Sequencer)
     val eswSequencerClient   = SequencerApiFactory.make(eswSequencerLocation)
     val sequence             = Sequence(Setup(Prefix("ESW.perf.test"), CommandName("command-1"), None))
-    val resultsFile = "results_scenario_jvm_only.txt"
+    val resultsFile          = "results_scenario_jvm_only.txt"
 
     scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence, resultsFile)
   }
@@ -145,7 +145,7 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     val clientFactory      = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
     val eswSequencerClient = clientFactory.sequencer(ComponentId(Prefix(ESW, "perfTest"), Sequencer))
     val sequence           = Sequence(Setup(Prefix("ESW.perf.test"), CommandName("command-1"), None))
-    val resultsFile = "results_scenario_with_gateway.txt"
+    val resultsFile        = "results_scenario_with_gateway.txt"
 
     scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence, resultsFile)
   }
@@ -157,7 +157,7 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     val eswSequencerHttpLocation = resolveHTTPLocation(Prefix(ESW, "perfTest"), Sequencer)
     val eswSequencerClient       = SequencerApiFactory.make(eswSequencerHttpLocation)
     val sequence                 = Sequence(Setup(Prefix("ESW.perf.test"), CommandName("command-1"), None))
-    val resultsFile = "results_scenario_with_http_client.txt"
+    val resultsFile              = "results_scenario_with_http_client.txt"
     scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence, resultsFile)
   }
 
