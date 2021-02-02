@@ -101,7 +101,8 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
       histogram: Histogram,
       warmUpHistogram: Histogram,
       eswSequencerClient: SequencerApi,
-      sequence: Sequence
+      sequence: Sequence,
+      resultsFile : String
   ) = {
     (1 to warmupIterationsOverhead).foreach { iterationNumber =>
       println(s"Warmup iteration ------> $iterationNumber")
@@ -113,7 +114,6 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
       testScenario(eswSequencerClient, sequence, histogram)
     }
 
-    val resultsFile = "results_scenario_jvm_only.txt"
     recordResults(histogram, resultsFile)
     log.info("Actual Latencies")
     printResults(histogram)
@@ -127,8 +127,9 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     val eswSequencerLocation = resolveAkkaLocation(Prefix(ESW, "perfTest"), Sequencer)
     val eswSequencerClient   = SequencerApiFactory.make(eswSequencerLocation)
     val sequence             = Sequence(Setup(Prefix("ESW.perf.test"), CommandName("command-1"), None))
+    val resultsFile = "results_scenario_jvm_only.txt"
 
-    scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence)
+    scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence, resultsFile)
   }
 
   def perfTestWithGatewayScenario(): Unit = {
@@ -144,8 +145,9 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     val clientFactory      = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
     val eswSequencerClient = clientFactory.sequencer(ComponentId(Prefix(ESW, "perfTest"), Sequencer))
     val sequence           = Sequence(Setup(Prefix("ESW.perf.test"), CommandName("command-1"), None))
+    val resultsFile = "results_scenario_with_gateway.txt"
 
-    scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence)
+    scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence, resultsFile)
   }
 
   def perfTestWithEmbeddedHttpScenario(): Unit = {
@@ -155,7 +157,8 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     val eswSequencerHttpLocation = resolveHTTPLocation(Prefix(ESW, "perfTest"), Sequencer)
     val eswSequencerClient       = SequencerApiFactory.make(eswSequencerHttpLocation)
     val sequence                 = Sequence(Setup(Prefix("ESW.perf.test"), CommandName("command-1"), None))
-    scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence)
+    val resultsFile = "results_scenario_with_http_client.txt"
+    scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence, resultsFile)
   }
 
 }
