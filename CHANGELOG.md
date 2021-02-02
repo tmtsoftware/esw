@@ -70,5 +70,5 @@ Three main components are delivered as part of ESW:
 ### Supporting Releases
 
 <a name="0-1-0-1"></a>1: [ESW v0.1.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC1) - 2020-02-06<br>
-<a name="0-1-0-2"></a>1: [ESW v0.1.0-RC2](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC2) - 2020-02-26<br>
-<a name="0-1-0-3"></a>1: [ESW v0.1.0-RC3](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC3) - 2020-03-03<br>
+<a name="0-1-0-2"></a>2: [ESW v0.1.0-RC2](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC2) - 2020-02-26<br>
+<a name="0-1-0-3"></a>3: [ESW v0.1.0-RC3](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC3) - 2020-03-03<br>
