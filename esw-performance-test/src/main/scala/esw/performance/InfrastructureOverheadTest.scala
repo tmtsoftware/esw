@@ -1,7 +1,5 @@
 package esw.performance
 
-import java.io.{File, FileOutputStream, PrintStream}
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
@@ -20,11 +18,12 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.testkit.utils.{GatewayUtils, KeycloakUtils}
 import esw.performance.Constants.{actualIterationsOverhead, warmupIterationsOverhead}
+import esw.performance.utils.PerfUtils.{printResults, recordResults}
 import org.HdrHistogram.Histogram
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.tmt.embedded_keycloak.utils.BearerToken
 
-class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
+object InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
 
   override def locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
   override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] =
@@ -52,34 +51,6 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     histogram.recordValue(latency)
     println(s"Latency Overhead: $latency")
 
-  }
-
-  private def recordResults(histogram: Histogram, filename: String): Unit = {
-    try {
-      val resultsFile = new File(filename)
-      resultsFile.createNewFile()
-      println(s"Histogram results are written to file ${resultsFile.getAbsolutePath}")
-      val fout = new FileOutputStream(resultsFile)
-      try {
-        val printStream = new PrintStream(fout)
-        histogram.outputPercentileDistribution(printStream, 1.0)
-        printStream.println()
-        printStream.println(s"50%tile: ${histogram.getValueAtPercentile(50)}")
-        printStream.println(s"90%tile : ${histogram.getValueAtPercentile(90)}")
-        printStream.println(s"99%tile : ${histogram.getValueAtPercentile(99)}")
-      }
-      finally if (fout != null) fout.close()
-    }
-    catch {
-      case e: Exception =>
-        log.error("Writing histogram results failed with error", ex = e)
-    }
-  }
-
-  private def printResults(histogram: Histogram): Unit = {
-    println("50 %tile: " + histogram.getValueAtPercentile(50))
-    println("90 %tile: " + histogram.getValueAtPercentile(90))
-    println("99 %tile: " + histogram.getValueAtPercentile(99))
   }
 
   override def getToken(tokenUserName: String, tokenPassword: String, client: String): () => Some[String] = { () =>
@@ -139,8 +110,7 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     lazy val perfRoleEswUserEng                         = "esw-user"
     lazy val perfUser1Password                          = "esw-user"
     lazy val tokenWithEswUserRole: () => Option[String] = getToken(perfRoleEswUserEng, perfUser1Password)
-    println(Console.BLUE + s"${tokenWithEswUserRole().getOrElse("Error no Token!!!!!!!!")}")
-    val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithEswUserRole)
+    val gatewayPostClientWithAuth                       = gatewayHTTPClient(tokenWithEswUserRole)
 
     val clientFactory      = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
     val eswSequencerClient = clientFactory.sequencer(ComponentId(Prefix(ESW, "perfTest"), Sequencer))
@@ -161,11 +131,9 @@ class InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     scenarioRepetition(histogram, warmUpHistogram, eswSequencerClient, sequence, resultsFile)
   }
 
-}
-
-object InfraOverheadPerfTest extends App {
-  val perfObject = new InfrastructureOverheadTest
-  perfObject.perfTestJvmOnlyScenario()
-  perfObject.perfTestWithGatewayScenario()
-  perfObject.perfTestWithEmbeddedHttpScenario()
+  def main(args: Array[String]): Unit = {
+    perfTestJvmOnlyScenario()
+    perfTestJvmOnlyScenario()
+    perfTestWithEmbeddedHttpScenario()
+  }
 }
