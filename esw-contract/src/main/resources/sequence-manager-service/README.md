@@ -10,6 +10,7 @@ The url - `http://{{host}}:{{port}}/post-endpoint` can be used to access sequenc
 
 Following JSON payloads can be "post"ed to the above URL:
 * GetRunningObsModes
+* GetObsModesWithStatus
 * GetAgentStatus
 * GetResources
 * Configure

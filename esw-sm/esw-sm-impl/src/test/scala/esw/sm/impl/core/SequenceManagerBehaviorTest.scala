@@ -11,7 +11,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Running}
+import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
@@ -38,13 +39,16 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   private val darkNight                        = ObsMode("DarkNight")
   private val clearSkies                       = ObsMode("ClearSkies")
+  private val irisMCAO                         = ObsMode("IRIS-MCAO")
   private val randomObsMode                    = ObsMode("RandomObsMode")
   private val darkNightSequencers: Sequencers  = Sequencers(ESW, TCS)
   private val clearSkiesSequencers: Sequencers = Sequencers(ESW)
+  private val irisMCAOSequencers: Sequencers   = Sequencers(ESW, WFOS)
   private val config = SequenceManagerConfig(
     Map(
       darkNight  -> ObsModeConfig(Resources(Resource(NSCU), Resource(TCS)), darkNightSequencers),
-      clearSkies -> ObsModeConfig(Resources(Resource(TCS), Resource(IRIS)), clearSkiesSequencers)
+      clearSkies -> ObsModeConfig(Resources(Resource(TCS), Resource(IRIS)), clearSkiesSequencers),
+      irisMCAO   -> ObsModeConfig(Resources(Resource(WFOS)), irisMCAOSequencers)
     )
   )
 
@@ -523,6 +527,44 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
+  "GetObsModesWithStatus" must {
+    "return LocationServiceError if location service fails to return running observation mode | ESW-466" in {
+      val errorMessage = "Sequencer not found"
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+        .thenReturn(Future.successful(Left(RegistrationListingFailed(errorMessage))))
+
+      val probe = TestProbe[ObsModesWithStatusResponse]()
+
+      smRef ! GetObsModesWithStatus(probe.ref)
+
+      probe.expectMessage(LocationServiceError(errorMessage))
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+    }
+
+    "return set of Observation modes with their respective statuses | ESW-466" in {
+      val akkaLocation = AkkaLocation(
+        AkkaConnection(ComponentId(Prefix(ESW, clearSkies.name), Sequencer)),
+        new URI("uri"),
+        Metadata.empty
+      )
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
+
+      val obsModesWithStatusResponseProbe = TestProbe[ObsModesWithStatusResponse]()
+      smRef ! GetObsModesWithStatus(obsModesWithStatusResponseProbe.ref)
+
+      val expectedMessage = ObsModesWithStatusResponse.Success(
+        Set(
+          ObsModeWithStatus(clearSkies, Running),
+          ObsModeWithStatus(darkNight, NonConfigurable),
+          ObsModeWithStatus(irisMCAO, Configurable)
+        )
+      )
+      obsModesWithStatusResponseProbe.expectMessage(expectedMessage)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+
+    }
+  }
+
   "Get Resources" must {
 
     "return all available resources when no obsMode is running | ESW-467 " in {
@@ -534,7 +576,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         List(
           ResourceStatusResponse(Resource(NSCU), ResourceStatus.Available),
           ResourceStatusResponse(Resource(TCS), ResourceStatus.Available),
-          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available)
+          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available),
+          ResourceStatusResponse(Resource(WFOS), ResourceStatus.Available)
         )
       )
 
@@ -551,7 +594,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         List(
           ResourceStatusResponse(Resource(NSCU), ResourceStatus.InUse, Some(darkNight)),
           ResourceStatusResponse(Resource(TCS), ResourceStatus.InUse, Some(darkNight)),
-          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available)
+          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available),
+          ResourceStatusResponse(Resource(WFOS), ResourceStatus.Available)
         )
       )
 

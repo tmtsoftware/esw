@@ -9,11 +9,11 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.backend.testkit.utils.IOUtils
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode}
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models._
-import esw.sm.api.protocol.{ResourceStatusResponse, _}
+import esw.sm.api.protocol._
 import esw.sm.app.SequenceManagerWiring
 
 import scala.concurrent.Future
@@ -78,6 +78,8 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
         )
       )
     )
+
+  override def getObsModesWithStatus: Future[ObsModesWithStatusResponse] = ???
 }
 
 class SequenceManagerStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])

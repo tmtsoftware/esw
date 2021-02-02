@@ -11,7 +11,8 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Running}
+import esw.ocs.api.models.{ObsMode, ObsModeStatus, ObsModeWithStatus}
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
@@ -81,7 +82,7 @@ class SequenceManagerBehavior(
       // get obsMode config for requested observation mode from sequence manager config
       sequenceManagerConfig.obsModeConfig(requestedObsMode) match {
         // check for resource conflict between requested obsMode and currently running obsMode
-        case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
+        case Some(ObsModeConfig(resources, _)) if isNonConfigurable(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
           await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
@@ -90,7 +91,7 @@ class SequenceManagerBehavior(
     }
 
   // ignoring failure of getResources as config should never be absent for running obsModes
-  private def checkConflicts(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
+  private def isNonConfigurable(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
@@ -214,8 +215,9 @@ class SequenceManagerBehavior(
       case GetSequenceManagerState(replyTo) =>
         currentState.tap(state => logger.info(s"Sequence Manager response Success: Sequence Manager state $state"));
         replyTo ! currentState
-      case GetAllAgentStatus(replyTo) => getAllAgentStatus(replyTo)
-      case GetResources(replyTo)      => getResourcesStatus(replyTo)
+      case GetAllAgentStatus(replyTo)     => getAllAgentStatus(replyTo)
+      case GetResources(replyTo)          => getResourcesStatus(replyTo)
+      case GetObsModesWithStatus(replyTo) => getObsModesWithStatus.foreach(replyTo ! _)
     }
 
   private def getAllAgentStatus(replyTo: ActorRef[AgentStatusResponse]): Future[Unit] =
@@ -235,6 +237,24 @@ class SequenceManagerBehavior(
       obsModes => GetRunningObsModesResponse.Success(obsModes),
       error => GetRunningObsModesResponse.Failed(error.msg)
     )
+
+  private def getObsModesWithStatus: Future[ObsModesWithStatusResponse] = {
+    def getObsModeStatus(obsMode: ObsMode, runningObsModes: Set[ObsMode]): ObsModeStatus = {
+      if (runningObsModes.contains(obsMode)) Running
+      else if (isNonConfigurable(sequenceManagerConfig.resources(obsMode).get, runningObsModes)) NonConfigurable
+      else Configurable
+    }
+
+    getRunningObsModes.mapToAdt(
+      runningObsModes => {
+        val obsModes           = sequenceManagerConfig.obsModes.keys.toSet
+        val obsModesWithStatus = obsModes.map(obsMode => ObsModeWithStatus(obsMode, getObsModeStatus(obsMode, runningObsModes)))
+
+        ObsModesWithStatusResponse.Success(obsModesWithStatus)
+      },
+      error => CommonFailure.LocationServiceError(error.msg)
+    )
+  }
 
   // get the component name of all the top level sequencers i.e. ESW sequencers
   private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[ObsMode]]] =

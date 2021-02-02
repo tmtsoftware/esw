@@ -7,7 +7,8 @@ import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.auth.EswUserRolePolicy
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.ObsModeStatus.Configurable
+import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.{AgentStatus, ProvisionConfig}
@@ -83,6 +84,17 @@ class SequenceManagerRequestHandlerTest
       Post("/post-endpoint", GetRunningObsModes.narrow) ~> route ~> check {
         verify(sequenceManagerApi).getRunningObsModes
         responseAs[GetRunningObsModesResponse] should ===(GetRunningObsModesResponse.Success(obsModes))
+      }
+    }
+
+    "return observation modes with status for getObsModesWithStatus request | ESW-466" in {
+      val obsModesWithStatus = ObsModesWithStatusResponse.Success(Set(ObsModeWithStatus(obsMode, Configurable)))
+      when(sequenceManagerApi.getObsModesWithStatus)
+        .thenReturn(Future.successful(obsModesWithStatus))
+
+      Post("/post-endpoint", GetObsModesWithStatus.narrow) ~> route ~> check {
+        verify(sequenceManagerApi).getObsModesWithStatus
+        responseAs[ObsModesWithStatusResponse] should ===(obsModesWithStatus)
       }
     }
 
