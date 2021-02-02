@@ -639,7 +639,9 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       response shouldBe a[LoadScriptError]
       val loadScriptError: LoadScriptError = response.asInstanceOf[LoadScriptError]
-      loadScriptError.msg should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
+      loadScriptError.msg should ===(
+        "Failed to load sequencer script: Script configuration missing for [ESW] with [invalid_obs_mode]"
+      )
       TestSetup.cleanup()
     }
 

@@ -188,9 +188,13 @@ class SequenceManagerBehavior(
             resourcesStatus += resource -> ResourceStatusResponse(resource, ResourceStatus.InUse, Some(obsMode))
           })
         })
+        logger.info(s"Sequence Manager response Success: ${resourcesStatus.values.toList}")
         replyTo ! ResourcesStatusResponse.Success(resourcesStatus.values.toList)
       },
-      error => replyTo ! ResourcesStatusResponse.Failed(error.msg)
+      error => {
+        logger.error(s"Sequence Manager response Failure: ${error.getMessage}")
+        replyTo ! ResourcesStatusResponse.Failed(error.getMessage)
+      }
     )
   }
 
