@@ -367,7 +367,8 @@ object Dependencies {
 
   val PerformanceTest = Def.setting(
     Seq(
-      Libs.`hdr-histogram`
+      Libs.`hdr-histogram`,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 }
