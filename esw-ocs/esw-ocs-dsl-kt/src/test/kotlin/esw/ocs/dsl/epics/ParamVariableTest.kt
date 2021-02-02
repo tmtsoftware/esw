@@ -70,15 +70,15 @@ class ParamVariableTest {
             val paramVariable = ParamVariable.make(initialValue, intKey, eventKey, cswHighLevelDsl)
 
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }
-            val eventSlot: CapturingSlot<Event> = slot()
-            coVerify { cswHighLevelDsl.publishEvent(capture(eventSlot)) }
-            eventSlot.captured.paramType().get(intKey).get().first shouldBe initialValue
+            val eventList: MutableList<Event> = mutableListOf<Event>()
+            coVerify { cswHighLevelDsl.publishEvent(capture(eventList)) }
+            eventList.first().paramType().get(intKey).get().first shouldBe initialValue
 
             val newValue = 100
             paramVariable.setParam(newValue)
 
-            coVerify { cswHighLevelDsl.publishEvent(capture(eventSlot)) }
-            eventSlot.captured.paramType().get(intKey).get().first shouldBe newValue // assert on the event which is being published
+            coVerify { cswHighLevelDsl.publishEvent(capture(eventList)) }
+            eventList.last().paramType().get(intKey).get().first shouldBe newValue
         }
     }
 
