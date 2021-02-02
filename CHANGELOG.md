@@ -5,49 +5,70 @@ developed during the ESW design phase with changes to make the code and public A
 more robust and resilient and to improve its usability and performance for use at the
 TMT Observatory.
 
-Here is the repository for ESW: [esw](https://github.com/tmtsoftware/esw).
+Here is the repository for ESW: [ESW](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
-## [Upcoming version]
+## [ESW v0.2.1] - 2021-01-29
 
-- Added Shutdown, Restart, GoOnline, GoOffline, GetContainerLifecycleState and GetComponentLifecycleState routes in Gateway.
-- Added GetResources Api in the SequenceManager
-## TODO: we have to remove apps.json added specifically for simulation mode of SM from esw-services module before releasing new version.
+This is a patch release over v0.2.0 of the TMT Executive Software for project stakeholders.
+See [here](https://tmtsoftware.github.io/esw/0.2.1/) for a detailed documentation of this version of the ESW software.
 
-## [ESW v0.2.0] - 2020-12-18
+### Changes
 
-This is the `Second minor` release of the TMT Executive Software for project stakeholders.
+Patch update to resolve latest release on Jitpack
+
+### Documentation
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.2.1/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.2.1/api/scala/index.html
+
+## [ESW v0.2.0] - 2021-01-29
+
+This is the second minor release of the TMT Executive Software for project stakeholders.
 See [here](https://tmtsoftware.github.io/esw/0.2.0/) for a detailed documentation of this version of the ESW software.
 
-## [ESW v0.2.0-RC1] - 2020-11-10
+### Changes
+Main components are delivered as part of ESW <sup>[1](#0-2-0-1)</sup>:
+- Sequence Manager
+- Agent
+- Agent Service
+- CSW shell merged into ESW
 
-This is the first release candidate of second minor release of the TMT Executive Software for project stakeholders.
-See [here](https://tmtsoftware.github.io/esw/0.2.0-RC1/) for a detailed documentation of this version of the ESW software.
+Changed Agent Service Kill API to take `ComponentId` instead of `Connection` of the Component.<sup>[2](#0-2-0-2)</sup>
 
-- Changed Agent Service Kill API to take `ComponentId` instead of `Connection` of the Component.
+### Version Upgrades
+- Scala version upgrade to 2.13.3
+- SBT version upgrade to 1.4.2
+- Borer version upgrade to 1.6.2
+- Akka version upgrade 2.6.10
+- Akka-http version upgrade 10.2.1
 
-## [ESW v0.2.0-M1] - 2020-09-24
+### Documentation
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.2.0/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.2.0/api/scala/index.html
 
-This is the first milestone of second minor release of the TMT Executive Software for project stakeholders.
-See [here](https://tmtsoftware.github.io/esw/0.2.0-M1/) for a detailed documentation of this version of the ESW software.
+### Supporting Releases
+
+<a name="0-2-0-1"></a>1: [ESW v0.2.0-M1](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0-M1) - 2020-09-24<br>
+<a name="0-2-0-2"></a>2: [ESW v0.2.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0-RC1) - 2020-11-10<br>
 
 ## [ESW v0.1.0] - 2020-03-19
 
-This is the `First minor` release of the TMT Executive Software for project stakeholders.
+This is the first minor release of the TMT Executive Software for project stakeholders.
 See [here](https://tmtsoftware.github.io/esw/0.1.0/) for a detailed documentation of this version of the ESW software.
 
-## [ESW v0.1.0-RC3] - 2020-03-03
+### Changes
+Three main components are delivered as part of ESW:
+* Sequencer
+* Sequence Component
+* ESW Gateway
 
-This is the third release candidate of first minor release of the TMT Executive Software for project stakeholders.
-See [here](https://tmtsoftware.github.io/esw/0.1.0-RC3/) for a detailed documentation of this version of the ESW software.
+### Documentation
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.1.0/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.1.0/api/scala/index.html
 
-## [ESW v0.1.0-RC2] - 2020-02-26
+### Supporting Releases
 
-This is the second release candidate of first minor release of the TMT Executive Software for project stakeholders.
-See [here](https://tmtsoftware.github.io/esw/0.1.0-RC2/) for a detailed documentation of this version of the ESW software.
-
-## [ESW v0.1.0-RC1] - 2020-02-06
-
-This is the first release candidate of first minor release of the TMT Executive Software for project stakeholders.
-See [here](https://tmtsoftware.github.io/esw/0.1.0-RC1/) for a detailed documentation of this version of the ESW software.
+<a name="0-1-0-1"></a>1: [ESW v0.1.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC1) - 2020-02-06<br>
+<a name="0-1-0-2"></a>2: [ESW v0.1.0-RC2](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC2) - 2020-02-26<br>
+<a name="0-1-0-3"></a>3: [ESW v0.1.0-RC3](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC3) - 2020-03-03<br>

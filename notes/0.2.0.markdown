@@ -2,14 +2,7 @@
 
 This is the v0.2.0 of the TMT Executive Software.
 
-See [CHANGELOG.md](../CHANGELOG.md) for details of all releases.
-
-### Features
-Main components are delivered as part of ESW:
-* Sequence Manager
-* Agent
-* Agent Service
-* CSW shell merged into ESW
+See [CHANGELOG.md](CHANGELOG.md) for details of all releases.
 
 ### Documentation
 
