@@ -157,6 +157,7 @@ class SequenceManagerBehavior(
         case msg: UnhandleableSequenceManagerMsg =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName)
           Behaviors.same
+        case x => throw new MatchError(x)
       }
     }
 

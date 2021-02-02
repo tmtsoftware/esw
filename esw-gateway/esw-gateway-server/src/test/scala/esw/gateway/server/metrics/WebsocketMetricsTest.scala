@@ -65,7 +65,7 @@ class WebsocketMetricsTest
     registry.getSampleValue("websocket_active_request_total", labelNames.toArray, values.toArray)
 
   private def getCounterValue(values: List[String]): Double =
-    registry.getSampleValue("websocket_total_messages_per_connection", labelNames.toArray, values.toArray)
+    registry.getSampleValue("websocket_messages_per_connection_total", labelNames.toArray, values.toArray)
 
   private val labelNames = List(
     "msg",

@@ -30,6 +30,7 @@ object Common {
       organization := "com.github.tmtsoftware.esw",
       organizationName := "TMT Org",
       dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
+      dependencyOverrides += Libs.`slf4j-api`,
       scalaVersion := EswKeys.scalaVersion,
       scmInfo := Some(ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")),
       // ======== sbt-docs Settings =========

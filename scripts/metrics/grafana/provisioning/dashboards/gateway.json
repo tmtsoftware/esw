@@ -586,7 +586,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (app_name, hostname) (rate(websocket_total_messages_per_connection{msg=\"Subscribe\"}[1m]))",
+          "expr": "sum by (app_name, hostname) (rate(websocket_messages_per_connection_total{msg=\"Subscribe\"}[1m]))",
           "legendFormat": "",
           "refId": "A"
         }

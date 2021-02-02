@@ -46,6 +46,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       .mapError {
         case e: RegistrationFailed        => EswLocationError.RegistrationFailed(e.msg)
         case e: OtherLocationIsRegistered => EswLocationError.OtherLocationIsRegistered(e.msg)
+        case x                            => throw new MatchError(x)
       }
 
   def list(componentId: ComponentId): Future[List[Location]] = {

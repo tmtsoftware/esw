@@ -3,31 +3,33 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "0.2.0"
+  private val MSocketVersion = "d9a78d83ba"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
-  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.0" // MIT License
+  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.15" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
   val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.4") //Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
+  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"   //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
-  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.6"
-  val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
+  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.8"
+  val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.4"
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.2.0"
 
-  val `ammonite` = "com.lihaoyi" % "ammonite" % "2.2.0" cross CrossVersion.full
-  val `hdr-histogram`      = "org.hdrhistogram"         % "HdrHistogram"      % "2.1.12"
+  val `ammonite`      = "com.lihaoyi"      % "ammonite"     % "2.3.8-32-64308dc3" cross CrossVersion.full
+  val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
+  val `slf4j-api` = "org.slf4j" % "slf4j-api" % "1.7.30"
+
 }
 
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "380917c24e"
+  private val Version = "2ce0a752bd"
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version
@@ -55,7 +57,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.10"
+  private val Version     = "2.6.11"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
@@ -67,17 +69,17 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.2.1" //all akka is Apache License 2.0
+  private val Version = "10.2.3" //all akka is Apache License 2.0
 
   val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
   val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
   val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
 
-  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.0"
+  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.1"
 }
 
 object Borer {
-  private val Version = "1.6.2"
+  private val Version = "1.6.3"
   private val Org     = "io.bullet"
 
   val `borer-core`        = dep(Org %%% "borer-core" % Version)
@@ -86,8 +88,8 @@ object Borer {
 }
 
 object Kotlin {
-  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"         % "1.4.10"
-  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8"    % "1.4.0"
-  val kotlintest        = "io.kotest"             % "kotest-assertions-core-jvm" % "4.3.1"
-  val mockk             = "io.mockk"              % "mockk"                      % "1.10.2"
+  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"         % "1.4.21"
+  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8"    % "1.4.2"
+  val kotlintest        = "io.kotest"             % "kotest-assertions-core-jvm" % "4.3.2"
+  val mockk             = "io.mockk"              % "mockk"                      % "1.10.5"
 }
