@@ -49,7 +49,7 @@ class SpawnCommandTest extends BaseTestSuite {
       command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
     }
 
-    "append given simulation argument | ESW-366" in {
+    "append given simulation argument | ESW-366, ESW-174" in {
       val command = SpawnSequenceManager(actorRef, obsConfPath, isConfigLocal = false, None, simulation = true)
 
       val expectedDefaultArgs = List("start", "-o", obsConfPath.toString, "--simulation")

@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 - Added Shutdown, Restart, GoOnline, GoOffline, GetContainerLifecycleState and GetComponentLifecycleState routes in Gateway.
 - Added GetResources Api in the SequenceManager
+## TODO: we have to remove apps.json added specifically for simulation mode of SM from esw-services module before releasing new version.
 
 ## [ESW v0.2.0] - 2020-12-18
 
