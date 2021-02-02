@@ -22,12 +22,14 @@ object Libs {
 
   val `ammonite`      = "com.lihaoyi"      % "ammonite"     % "2.3.8-32-64308dc3" cross CrossVersion.full
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
+  val `slf4j-api` = "org.slf4j" % "slf4j-api" % "1.7.30"
+
 }
 
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "c6ea411340"
+  private val Version = "2ce0a752bd"
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version

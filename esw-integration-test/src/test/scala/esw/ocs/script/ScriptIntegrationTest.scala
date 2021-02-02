@@ -376,7 +376,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command           = Observe(Prefix("esw.test"), CommandName("observe-start"), None)
       val sequence          = Sequence(command)
       val expectedPrefix    = Prefix(ocsSubsystem, ocsObsMode.name)
-      val expectedEventName = EventName(SequencerObserveEventName.ObservationStart)
+      val expectedEventName = EventName(SequencerObserveEventName.ObserveStart)
       val expectedEventKey  = EventKey(expectedPrefix, expectedEventName)
       val testProbe         = createTestProbe(Set(expectedEventKey))
 
