@@ -54,7 +54,7 @@ class Factories(val locationUtils: LocationServiceUtil, configService: ConfigSer
     new AgentClient(
       locationUtils.findAkkaLocation(agentPrefix, Machine).map(_.throwLeft).await()
     )
-  def sequenceManager(): SequenceManagerApi = new SequenceManager(locationUtils, configService).service()
+  def sequenceManager(): SequenceManagerApi = new SequenceManager(locationUtils, configService).service
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse =
     new SequenceManager(locationUtils, configService).provision(config, sequencerScriptsVersion)
 }

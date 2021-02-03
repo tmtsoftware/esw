@@ -27,11 +27,11 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configService: Con
   private lazy val SequencerScriptVersionConfigPath: String = config.getString("osw.version.confPath")
   private val SequenceManagerPrefix                         = "ESW.sequence_manager"
 
-  def service(): SequenceManagerApi =
+  def service: SequenceManagerApi =
     new SequenceManagerImpl(locationUtils.findAkkaLocation(SequenceManagerPrefix, Service).map(_.throwLeft).await())
 
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse = {
-    val sm = service()
+    val sm = service
     saveSeqScriptsVersion(sequencerScriptsVersion)
     sm.provision(config).await(SequenceManagerTimeouts.Provision)
   }
@@ -48,7 +48,7 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configService: Con
         .update(
           versionConfigPath,
           ConfigData.fromString(seqScriptsVersion),
-          "Add sequencer scripts version for test"
+          "Update sequencer scripts version for test setup"
         )
         .await()
     }
@@ -59,7 +59,7 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configService: Con
             versionConfigPath,
             ConfigData.fromString(seqScriptsVersion),
             annex = false,
-            "update sequencer scripts version for test"
+            "Add sequencer scripts version for test setup"
           )
           .await()
     }

@@ -1,6 +1,6 @@
 # esw-shell
 
-This project contains an interactive shell and allows its users to gain access to all the major csw services via CLI
+This project contains an interactive shell and allows its users to gain access to all the major CSW and ESW services via CLI
 which then can be used to communicate with a HCD (Hardware Control Daemon) and an Assembly using
 TMT Common Software ([CSW](https://github.com/tmtsoftware/csw)) APIs and with a Sequencer using
 TMT Executive Software ([ESW](https://github.com/tmtsoftware/esw)).
@@ -14,13 +14,12 @@ The build is based on sbt and depends on libraries generated from the
 
 The CSW services need to be running before starting the components.
 This is done by starting the `csw-services.sh` script, which is installed as part of the csw build.
-If you are not building csw from the sources, you can get the script as follows:
+If you are not building csw from the sources, you can run `csw-services` as follows:
 
-- Download csw-apps zip from https://github.com/tmtsoftware/csw/releases.
-- Unzip the downloaded zip.
-- Go to the bin directory where you will find `csw-services.sh` script.
-- Run `./csw_services.sh --help` to get more information.
-- Run `./csw_services.sh start` to start the location service and config server.
+- Install `coursier` using steps described [here](https://tmtsoftware.github.io/csw/apps/csinstallation.html) and add TMT channel.
+- Run `cs install csw-services:<CSW version | SHA>`. This will create an executable file named `csw-services` in the default installation directory.
+- Run `csw-services --help` to get more information.
+- Run `csw-services start -c` to start the location service and config server.
 
 ## Running the esw-shell using sbt
 
@@ -43,6 +42,16 @@ cs launch esw-shell:<version | SHA>
 ```
 
 ## Usage of Command Service to interact with HCDs, Assemblies and Sequencers
+
+### Spawning simulated HCD/Assembly
+
+`esw-shell` can be used to spawn simulated HCD/Assembly which uses the handlers specified in 
+`esw-shell/src/main/scala/esw/shell/component/SimulatedComponentHandlers.scala`
+
+```bash
+spawnSimulatedHCD("ESW.testHCD") // "ESW.testHCD" is the HCD prefix
+spawnSimulatedAssembly("ESW.testAssembly") // "ESW.testAssembly" is the assembly prefix
+```
 
 ### Finding the required component
 
@@ -88,7 +97,7 @@ val sequence = Sequence(setup)
 
 Other than command service handles, following pre-defined handles or factories are available in shell to interact with different services:
 
-- For Sequence Manager, use pre-imported `sequenceManager` handle
+- For Sequence Manager, use pre-imported `sequenceManager()` handle
 - For Agent, create new handle using `agentClient("iris.machine_1")`
 - For AdminApi, use pre-imported `adminApi` handle
 - For EventService, use pre-imported `eventService` handle
@@ -143,11 +152,6 @@ Submit the sequence object created in a previous step using command service for 
 
 ### Submitting the commands to service
 
-To Sequence Manager
-
-- `val configureResponse = sequenceManager.configure(ObsMode("darknight")).get`
-- `val shutdownSequencerResponse = sequenceManager.shutdownSequencer(ESW, ObsMode("darknight")).get`
-
 To Agent
 
 - `val agent = agentClient("iris.machine_1")`
@@ -164,3 +168,32 @@ To EventService
 To AlarmService
 
 - `val response = alarmService.setSeverity(alarmKey, AlarmSeverity.Major).get`
+
+## Interacting with Sequence Manager
+
+Handler to running sequence manager can be obtained using:
+
+```bash
+val sm = sequenceManager()
+```
+
+All sequence manager APIs can be called upon the handle. For example:
+
+```bash
+val configureResponse = sequenceManager.configure(ObsMode("darknight")).get
+val shutdownSequencerResponse = sequenceManager.shutdownSequencer(ESW, ObsMode("darknight")).get
+val resources = sm.getResources.get
+```
+
+### Provisioning sequence components
+
+In order to provision sequence components that use some custom version of sequencer scripts, we have
+provided special method in `esw-shell`:
+
+```bash
+provision(ProvisionConfig((Prefix(ESW, "primary") -> 3)), <sequencer scripts version | SHA>)
+```
+
+This is useful in case new scripts are to be tested out in dev environment. Sequencer scripts version for
+these new scripts can be provided in this method. It will take care of updating this version in the config 
+service before setting up the sequence components.
