@@ -26,7 +26,8 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
-import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
+import esw.sm.api.models.ResourceStatus.{Available, InUse}
+import esw.sm.api.models.{AgentStatus, ProvisionConfig, Resource, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
@@ -822,6 +823,34 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val actualResponse = sequenceManager.getAgentStatus.futureValue.asInstanceOf[AgentStatusResponse.Success]
       actualResponse.agentStatus.toSet should ===(expectedStatus)
       actualResponse.seqCompsWithoutAgent should ===(List.empty)
+
+      sequenceManager.shutdownAllSequenceComponents().futureValue
+      TestSetup.cleanup()
+    }
+
+    "getResources should return status all resources | ESW-467" in {
+      locationService.unregisterAll().futureValue
+      registerKeycloak()
+      val eswSeqCompPrefix   = Prefix(ESW, "primary")
+      val irisSeqCompPrefix  = Prefix(IRIS, "primary")
+      val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
+
+      TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
+
+      val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
+
+      sequenceManager.configure(IRIS_CAL).futureValue
+
+      val expectedStatus = List(
+        ResourceStatusResponse(Resource(IRIS), InUse, Some(IRIS_CAL)),
+        ResourceStatusResponse(Resource(NSCU), InUse, Some(IRIS_CAL)),
+        ResourceStatusResponse(Resource(WFOS), Available, None),
+        ResourceStatusResponse(Resource(TCS), Available, None),
+        ResourceStatusResponse(Resource(NFIRAOS), InUse, Some(IRIS_CAL))
+      )
+
+      val actualResponse = sequenceManager.getResources.futureValue.asInstanceOf[ResourcesStatusResponse.Success]
+      actualResponse.resourcesStatus should ===(expectedStatus)
 
       sequenceManager.shutdownAllSequenceComponents().futureValue
       TestSetup.cleanup()

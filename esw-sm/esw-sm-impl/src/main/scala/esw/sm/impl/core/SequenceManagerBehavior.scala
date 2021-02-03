@@ -162,19 +162,13 @@ class SequenceManagerBehavior(
       }
     }
 
-  private def getAllResources: List[Resource] = {
-    var resources: Set[Resource] = Set()
-
+  private def getAllResources: Set[Resource] = {
     val obsModes = sequenceManagerConfig.obsModes.keys
-
-    obsModes.foreach(obsMode => {
-      resources = resources ++ getResources(obsMode).resources
-    })
-    resources.toList
+    obsModes.flatMap(obsMode => getResources(obsMode).resources).toSet
   }
 
-  private def getResourcesStatus(replyTo: ActorRef[ResourcesStatusResponse]): Unit = {
-    val resources: List[Resource]                              = getAllResources
+  private def getResourcesStatus(replyTo: ActorRef[ResourcesStatusResponse]): Future[Unit] = {
+    val resources: Set[Resource]                               = getAllResources
     var resourcesStatus: Map[Resource, ResourceStatusResponse] = Map()
 
     resources.foreach(resource => {
@@ -232,7 +226,7 @@ class SequenceManagerBehavior(
       replyTo ! response
     }
 
-  private def runningObsModesResponse =
+  private def runningObsModesResponse: Future[GetRunningObsModesResponse] =
     getRunningObsModes.mapToAdt(
       obsModes => GetRunningObsModesResponse.Success(obsModes),
       error => GetRunningObsModesResponse.Failed(error.msg)
