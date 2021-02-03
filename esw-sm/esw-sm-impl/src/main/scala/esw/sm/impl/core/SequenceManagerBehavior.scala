@@ -245,9 +245,14 @@ class SequenceManagerBehavior(
         val obsModesWithStatus =
           obsModes.map(obsMode => ObsModeWithStatus(obsMode, getObsModeStatus(obsMode, configuredObsModes)))
 
-        ObsModesWithStatusResponse.Success(obsModesWithStatus)
+        val response = ObsModesWithStatusResponse.Success(obsModesWithStatus)
+        logger.info(s"Sequence Manager response Success: ${response}")
+        response
       },
-      error => CommonFailure.LocationServiceError(error.msg)
+      error => {
+        logger.error(s"Sequence Manager response Error: ${error.getMessage}")
+        CommonFailure.LocationServiceError(error.msg)
+      }
     )
   }
 
