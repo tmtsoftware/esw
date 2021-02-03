@@ -11,7 +11,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Running}
+import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Configured}
 import esw.ocs.api.models.{ObsMode, ObsModeStatus, ObsModeWithStatus}
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
@@ -233,16 +233,17 @@ class SequenceManagerBehavior(
     )
 
   private def getObsModesWithStatus: Future[ObsModesWithStatusResponse] = {
-    def getObsModeStatus(obsMode: ObsMode, runningObsModes: Set[ObsMode]): ObsModeStatus = {
-      if (runningObsModes.contains(obsMode)) Running
-      else if (isNonConfigurable(sequenceManagerConfig.resources(obsMode).get, runningObsModes)) NonConfigurable
+    def getObsModeStatus(obsMode: ObsMode, configuredObsModes: Set[ObsMode]): ObsModeStatus = {
+      if (configuredObsModes.contains(obsMode)) Configured
+      else if (isNonConfigurable(sequenceManagerConfig.resources(obsMode).get, configuredObsModes)) NonConfigurable
       else Configurable
     }
 
     getRunningObsModes.mapToAdt(
-      runningObsModes => {
-        val obsModes           = sequenceManagerConfig.obsModes.keys.toSet
-        val obsModesWithStatus = obsModes.map(obsMode => ObsModeWithStatus(obsMode, getObsModeStatus(obsMode, runningObsModes)))
+      configuredObsModes => {
+        val obsModes = sequenceManagerConfig.obsModes.keys.toSet
+        val obsModesWithStatus =
+          obsModes.map(obsMode => ObsModeWithStatus(obsMode, getObsModeStatus(obsMode, configuredObsModes)))
 
         ObsModesWithStatusResponse.Success(obsModesWithStatus)
       },

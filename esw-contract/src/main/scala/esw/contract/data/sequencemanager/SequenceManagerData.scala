@@ -5,7 +5,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Running}
+import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Configured}
 import esw.ocs.api.models.{ObsModeWithStatus, ObsMode}
 import esw.sm.api.models._
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -58,11 +58,11 @@ trait SequenceManagerData {
   val provisionSuccess: ProvisionResponse.Success.type              = Success
   val getRunningObsModesSuccess: GetRunningObsModesResponse.Success = GetRunningObsModesResponse.Success(Set(obsMode))
   val getRunningObsModesFailed: GetRunningObsModesResponse.Failed   = GetRunningObsModesResponse.Failed("failed")
-  val runningObsMode: ObsModeWithStatus                             = ObsModeWithStatus(ObsMode("DarkNight_1"), Running)
+  val configuredObsMode: ObsModeWithStatus                          = ObsModeWithStatus(ObsMode("DarkNight_1"), Configured)
   val configurableObsMode: ObsModeWithStatus                        = ObsModeWithStatus(ObsMode("DarkNight_2"), Configurable)
   val nonConfigurableObsMode: ObsModeWithStatus                     = ObsModeWithStatus(ObsMode("DarkNight_3"), NonConfigurable)
   val obsModesWithStatusSuccess: ObsModesWithStatusResponse.Success = ObsModesWithStatusResponse.Success(
-    Set(runningObsMode, configurableObsMode, nonConfigurableObsMode)
+    Set(configuredObsMode, configurableObsMode, nonConfigurableObsMode)
   )
   val alreadyRunning: AlreadyRunning                                                   = AlreadyRunning(sequencerComponentId)
   val started: Started                                                                 = Started(sequencerComponentId)

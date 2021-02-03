@@ -11,7 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Running}
+import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Configured}
 import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
@@ -554,7 +554,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedMessage = ObsModesWithStatusResponse.Success(
         Set(
-          ObsModeWithStatus(clearSkies, Running),
+          ObsModeWithStatus(clearSkies, Configured),
           ObsModeWithStatus(darkNight, NonConfigurable),
           ObsModeWithStatus(irisMCAO, Configurable)
         )

@@ -25,7 +25,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     ),
     ModelType[ProvisionResponse](provisionSuccess, couldNotFindMachines, spawningSequenceComponentsFailed, unhandled),
     ModelType[GetRunningObsModesResponse](getRunningObsModesSuccess, getRunningObsModesFailed),
-    ModelType[ObsModeWithStatus](runningObsMode, configurableObsMode, nonConfigurableObsMode),
+    ModelType[ObsModeWithStatus](configuredObsMode, configurableObsMode, nonConfigurableObsMode),
     ModelType[ObsModesWithStatusResponse](obsModesWithStatusSuccess, locationServiceError),
     ModelType[StartSequencerResponse](
       alreadyRunning,
