@@ -17,7 +17,6 @@ class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securit
   import sequenceManager._
   override def handle(request: SequenceManagerRequest): Route =
     request match {
-      case GetRunningObsModes                   => complete(getRunningObsModes)
       case GetObsModesWithStatus                => complete(getObsModesWithStatus)
       case GetAgentStatus                       => complete(getAgentStatus)
       case GetResources                         => complete(getResources)

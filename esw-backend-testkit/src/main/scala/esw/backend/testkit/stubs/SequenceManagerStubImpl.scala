@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.backend.testkit.utils.IOUtils
-import esw.ocs.api.models.{ObsMode}
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models._
@@ -27,10 +27,6 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
   }
 
   override def provision(config: ProvisionConfig): Future[ProvisionResponse] = Future.successful(ProvisionResponse.Success)
-
-  override def getRunningObsModes: Future[GetRunningObsModesResponse] = {
-    Future.successful(GetRunningObsModesResponse.Success(Set(obsMode)))
-  }
 
   override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     Future.successful(StartSequencerResponse.Started(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))

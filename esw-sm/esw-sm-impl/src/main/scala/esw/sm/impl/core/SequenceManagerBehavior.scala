@@ -11,7 +11,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Configured}
+import esw.ocs.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.ocs.api.models.{ObsMode, ObsModeStatus, ObsModeWithStatus}
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
@@ -196,16 +196,6 @@ class SequenceManagerBehavior(
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
-      case GetRunningObsModes(replyTo) =>
-        runningObsModesResponse.foreach { response =>
-          response match {
-            case GetRunningObsModesResponse.Success(runningObsModes) =>
-              logger.info(s"Sequence Manager response Success: running observation modes $runningObsModes")
-            case failure: GetRunningObsModesResponse.Failed =>
-              logger.error(s"Sequence Manager response Error: ${failure.getMessage}")
-          }
-          replyTo ! response
-        }
       case GetSequenceManagerState(replyTo) =>
         currentState.tap(state => logger.info(s"Sequence Manager response Success: Sequence Manager state $state"));
         replyTo ! currentState
@@ -225,12 +215,6 @@ class SequenceManagerBehavior(
       }
       replyTo ! response
     }
-
-  private def runningObsModesResponse: Future[GetRunningObsModesResponse] =
-    getRunningObsModes.mapToAdt(
-      obsModes => GetRunningObsModesResponse.Success(obsModes),
-      error => GetRunningObsModesResponse.Failed(error.msg)
-    )
 
   private def getObsModesWithStatus: Future[ObsModesWithStatusResponse] = {
     def getObsModeStatus(obsMode: ObsMode, configuredObsModes: Set[ObsMode]): ObsModeStatus = {

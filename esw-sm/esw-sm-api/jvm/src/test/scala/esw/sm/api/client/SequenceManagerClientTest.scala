@@ -5,7 +5,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol.SequenceManagerRequest.{GetRunningObsModes, _}
+import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
@@ -22,17 +22,6 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
   val client                                        = new SequenceManagerClient(postClient)
 
   "SequenceManagerClient" must {
-    "return running observation modes for getRunningObsModes request | ESW-362" in {
-      val getRunningObsModesResponse = mock[GetRunningObsModesResponse]
-      when(
-        postClient.requestResponse[GetRunningObsModesResponse](argsEq(GetRunningObsModes))(
-          any[Decoder[GetRunningObsModesResponse]](),
-          any[Encoder[GetRunningObsModesResponse]]()
-        )
-      ).thenReturn(Future.successful(getRunningObsModesResponse))
-
-      client.getRunningObsModes.futureValue shouldBe getRunningObsModesResponse
-    }
 
     "return observation modes with status for getObsModesWithStatus request | ESW-466" in {
       val obsModesWithStatusResponse = mock[ObsModesWithStatusResponse]

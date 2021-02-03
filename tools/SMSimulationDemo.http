@@ -67,7 +67,7 @@ POST http://192.168.1.8:58476/post-endpoint
 Content-Type: application/json
 
 {
-  "_type" : "GetRunningObsModes"
+  "_type" : "GetObsModesWithStatus"
 }
 
 ### shutdown obsmode sequencers

@@ -24,7 +24,6 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       unhandled
     ),
     ModelType[ProvisionResponse](provisionSuccess, couldNotFindMachines, spawningSequenceComponentsFailed, unhandled),
-    ModelType[GetRunningObsModesResponse](getRunningObsModesSuccess, getRunningObsModesFailed),
     ModelType[ObsModeWithStatus](configuredObsMode, configurableObsMode, nonConfigurableObsMode),
     ModelType[ObsModesWithStatusResponse](obsModesWithStatusSuccess, locationServiceError),
     ModelType[StartSequencerResponse](
@@ -51,7 +50,6 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
   private val httpRequests = new RequestSet[SequenceManagerRequest] {
     requestType(configure)
     requestType(provision)
-    requestType(getRunningObsModes)
     requestType(getObsModesWithStatus)
     requestType(startSequencer)
     requestType(restartSequencer)
@@ -68,7 +66,6 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
   private val httpEndpoints: List[Endpoint] = List(
     Endpoint(name[Configure], name[ConfigureResponse]),
     Endpoint(name[Provision], name[ProvisionResponse]),
-    Endpoint(objectName(GetRunningObsModes), name[GetRunningObsModesResponse]),
     Endpoint(objectName(GetObsModesWithStatus), name[ObsModesWithStatusResponse]),
     Endpoint(name[StartSequencer], name[StartSequencerResponse]),
     Endpoint(name[RestartSequencer], name[RestartSequencerResponse]),

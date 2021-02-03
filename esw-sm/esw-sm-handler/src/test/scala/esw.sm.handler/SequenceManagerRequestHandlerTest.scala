@@ -77,16 +77,6 @@ class SequenceManagerRequestHandlerTest
       }
     }
 
-    "return running observation modes for getRunningObsModes request | ESW-171, ESW-332" in {
-      val obsModes = Set(obsMode)
-      when(sequenceManagerApi.getRunningObsModes).thenReturn(Future.successful(GetRunningObsModesResponse.Success(obsModes)))
-
-      Post("/post-endpoint", GetRunningObsModes.narrow) ~> route ~> check {
-        verify(sequenceManagerApi).getRunningObsModes
-        responseAs[GetRunningObsModesResponse] should ===(GetRunningObsModesResponse.Success(obsModes))
-      }
-    }
-
     "return observation modes with status for getObsModesWithStatus request | ESW-466" in {
       val obsModesWithStatus = ObsModesWithStatusResponse.Success(Set(ObsModeWithStatus(obsMode, Configurable)))
       when(sequenceManagerApi.getObsModesWithStatus)

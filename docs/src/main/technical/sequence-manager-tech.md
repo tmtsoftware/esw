@@ -153,7 +153,6 @@ This use case explains the most important way Sequence Manager is used.
 ### Other APIs
 Apart from APIs explained above, Sequence Manager also provides following useful APIs:
 
-* getRunningObsModes - gives information about all running observing modes
 * startSequencer - start a Sequencer for the provided subsystem and observing mode
 * restartSequencer - re-start a Sequencer for provided subsystem and observing mode
 * shutdownSequenceComponent - shutdown a Sequence Component with provided prefix

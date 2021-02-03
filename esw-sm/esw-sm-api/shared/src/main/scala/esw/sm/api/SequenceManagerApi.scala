@@ -27,13 +27,6 @@ trait SequenceManagerApi {
   def provision(config: ProvisionConfig): Future[ProvisionResponse]
 
   /**
-   * Returns all running observing modes
-   * @return a future of [[esw.sm.api.protocol.GetRunningObsModesResponse]] which completes with Success or Failure response ADT.
-   *         Success response gives information of all running observing modes.
-   */
-  def getRunningObsModes: Future[GetRunningObsModesResponse]
-
-  /**
    * Returns all observing modes with their status
    *
    * @return a future of [[esw.sm.api.protocol.ObsModesWithStatusResponse]] which completes with Success or Failure response ADT.

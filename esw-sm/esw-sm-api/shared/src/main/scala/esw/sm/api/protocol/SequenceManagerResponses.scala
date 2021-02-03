@@ -30,15 +30,6 @@ object ConfigureResponse {
   }
 }
 
-sealed trait GetRunningObsModesResponse extends SmResponse
-
-object GetRunningObsModesResponse {
-  case class Success(runningObsModes: Set[ObsMode]) extends GetRunningObsModesResponse
-  case class Failed(reason: String) extends SmFailure with GetRunningObsModesResponse {
-    override def msg: String = s"Failed to GetRunningObsModesResponse: $reason"
-  }
-}
-
 sealed trait ObsModesWithStatusResponse extends SmResponse
 
 object ObsModesWithStatusResponse {

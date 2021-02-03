@@ -5,8 +5,8 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Configured}
-import esw.ocs.api.models.{ObsModeWithStatus, ObsMode}
+import esw.ocs.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
+import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
 import esw.sm.api.models._
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, FailedToStartSequencers, _}
@@ -34,7 +34,6 @@ trait SequenceManagerData {
 
   val configure: Configure                                              = Configure(obsMode)
   val provision: Provision                                              = Provision(provisionConfig)
-  val getRunningObsModes: GetRunningObsModes.type                       = GetRunningObsModes
   val getObsModesWithStatus: GetObsModesWithStatus.type                 = GetObsModesWithStatus
   val startSequencer: StartSequencer                                    = StartSequencer(ESW, obsMode)
   val restartSequencer: RestartSequencer                                = RestartSequencer(ESW, obsMode)
@@ -55,12 +54,10 @@ trait SequenceManagerData {
   val spawningSequenceComponentsFailed: SpawningSequenceComponentsFailed = SpawningSequenceComponentsFailed(
     List("failed sequence component")
   )
-  val provisionSuccess: ProvisionResponse.Success.type              = Success
-  val getRunningObsModesSuccess: GetRunningObsModesResponse.Success = GetRunningObsModesResponse.Success(Set(obsMode))
-  val getRunningObsModesFailed: GetRunningObsModesResponse.Failed   = GetRunningObsModesResponse.Failed("failed")
-  val configuredObsMode: ObsModeWithStatus                          = ObsModeWithStatus(ObsMode("DarkNight_1"), Configured)
-  val configurableObsMode: ObsModeWithStatus                        = ObsModeWithStatus(ObsMode("DarkNight_2"), Configurable)
-  val nonConfigurableObsMode: ObsModeWithStatus                     = ObsModeWithStatus(ObsMode("DarkNight_3"), NonConfigurable)
+  val provisionSuccess: ProvisionResponse.Success.type = Success
+  val configuredObsMode: ObsModeWithStatus             = ObsModeWithStatus(ObsMode("DarkNight_1"), Configured)
+  val configurableObsMode: ObsModeWithStatus           = ObsModeWithStatus(ObsMode("DarkNight_2"), Configurable)
+  val nonConfigurableObsMode: ObsModeWithStatus        = ObsModeWithStatus(ObsMode("DarkNight_3"), NonConfigurable)
   val obsModesWithStatusSuccess: ObsModesWithStatusResponse.Success = ObsModesWithStatusResponse.Success(
     Set(configuredObsMode, configurableObsMode, nonConfigurableObsMode)
   )

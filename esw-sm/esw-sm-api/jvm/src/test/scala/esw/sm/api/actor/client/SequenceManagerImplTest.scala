@@ -95,15 +95,6 @@ class SequenceManagerImplTest extends ActorTestSuit {
       }
     }
 
-    "getRunningObsModes | ESW-362" in {
-      val getRunningObsModesResponse = mock[GetRunningObsModesResponse]
-      withBehavior {
-        case SequenceManagerMsg.GetRunningObsModes(replyTo) => replyTo ! getRunningObsModesResponse
-      } check { sm =>
-        sm.getRunningObsModes.futureValue should ===(getRunningObsModesResponse)
-      }
-    }
-
     "getObsModesWithStatus | ESW-466" in {
       val obsModesWithStatusResponse = mock[ObsModesWithStatusResponse]
       withBehavior {
