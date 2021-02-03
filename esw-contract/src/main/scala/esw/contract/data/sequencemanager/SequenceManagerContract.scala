@@ -4,6 +4,7 @@ import csw.contract.ResourceFetcher
 import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
 import csw.prefix.models.Subsystem
+import esw.ocs.api.models.ObsModeWithStatus
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.{Resource, ResourceStatus}
 import esw.sm.api.protocol.SequenceManagerRequest._
@@ -24,6 +25,8 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     ),
     ModelType[ProvisionResponse](provisionSuccess, couldNotFindMachines, spawningSequenceComponentsFailed, unhandled),
     ModelType[GetRunningObsModesResponse](getRunningObsModesSuccess, getRunningObsModesFailed),
+    ModelType[ObsModeWithStatus](runningObsMode, configurableObsMode, nonConfigurableObsMode),
+    ModelType[ObsModesWithStatusResponse](obsModesWithStatusSuccess, locationServiceError),
     ModelType[StartSequencerResponse](
       alreadyRunning,
       started,
@@ -49,6 +52,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     requestType(configure)
     requestType(provision)
     requestType(getRunningObsModes)
+    requestType(getObsModesWithStatus)
     requestType(startSequencer)
     requestType(restartSequencer)
     requestType(shutdownSequencer)
@@ -65,6 +69,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     Endpoint(name[Configure], name[ConfigureResponse]),
     Endpoint(name[Provision], name[ProvisionResponse]),
     Endpoint(objectName(GetRunningObsModes), name[GetRunningObsModesResponse]),
+    Endpoint(objectName(GetObsModesWithStatus), name[ObsModesWithStatusResponse]),
     Endpoint(name[StartSequencer], name[StartSequencerResponse]),
     Endpoint(name[RestartSequencer], name[RestartSequencerResponse]),
     Endpoint(name[ShutdownSequencer], name[ShutdownSequencersResponse]),

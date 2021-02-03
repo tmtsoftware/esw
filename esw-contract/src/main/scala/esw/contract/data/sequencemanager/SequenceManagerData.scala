@@ -5,12 +5,13 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Running}
+import esw.ocs.api.models.{ObsModeWithStatus, ObsMode}
 import esw.sm.api.models._
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, FailedToStartSequencers, _}
 import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, SpawningSequenceComponentsFailed, Success}
-import esw.sm.api.protocol.SequenceManagerRequest._
+import esw.sm.api.protocol.SequenceManagerRequest.{GetObsModesWithStatus, _}
 import esw.sm.api.protocol.StartSequencerResponse._
 import esw.sm.api.protocol._
 
@@ -34,6 +35,7 @@ trait SequenceManagerData {
   val configure: Configure                                              = Configure(obsMode)
   val provision: Provision                                              = Provision(provisionConfig)
   val getRunningObsModes: GetRunningObsModes.type                       = GetRunningObsModes
+  val getObsModesWithStatus: GetObsModesWithStatus.type                 = GetObsModesWithStatus
   val startSequencer: StartSequencer                                    = StartSequencer(ESW, obsMode)
   val restartSequencer: RestartSequencer                                = RestartSequencer(ESW, obsMode)
   val shutdownSequencer: ShutdownSequencer                              = ShutdownSequencer(ESW, obsMode)
@@ -53,9 +55,15 @@ trait SequenceManagerData {
   val spawningSequenceComponentsFailed: SpawningSequenceComponentsFailed = SpawningSequenceComponentsFailed(
     List("failed sequence component")
   )
-  val provisionSuccess: ProvisionResponse.Success.type                                 = Success
-  val getRunningObsModesSuccess: GetRunningObsModesResponse.Success                    = GetRunningObsModesResponse.Success(Set(obsMode))
-  val getRunningObsModesFailed: GetRunningObsModesResponse.Failed                      = GetRunningObsModesResponse.Failed("failed")
+  val provisionSuccess: ProvisionResponse.Success.type              = Success
+  val getRunningObsModesSuccess: GetRunningObsModesResponse.Success = GetRunningObsModesResponse.Success(Set(obsMode))
+  val getRunningObsModesFailed: GetRunningObsModesResponse.Failed   = GetRunningObsModesResponse.Failed("failed")
+  val runningObsMode: ObsModeWithStatus                             = ObsModeWithStatus(ObsMode("DarkNight_1"), Running)
+  val configurableObsMode: ObsModeWithStatus                        = ObsModeWithStatus(ObsMode("DarkNight_2"), Configurable)
+  val nonConfigurableObsMode: ObsModeWithStatus                     = ObsModeWithStatus(ObsMode("DarkNight_3"), NonConfigurable)
+  val obsModesWithStatusSuccess: ObsModesWithStatusResponse.Success = ObsModesWithStatusResponse.Success(
+    Set(runningObsMode, configurableObsMode, nonConfigurableObsMode)
+  )
   val alreadyRunning: AlreadyRunning                                                   = AlreadyRunning(sequencerComponentId)
   val started: Started                                                                 = Started(sequencerComponentId)
   val restartSequencerSuccess: RestartSequencerResponse.Success                        = RestartSequencerResponse.Success(sequencerComponentId)
