@@ -1,8 +1,5 @@
 package esw.ocs.script
 
-import java.time.Duration
-import java.util.concurrent.CompletionStage
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.Config
 import csw.alarm.api.javadsl.IAlarmService
@@ -18,6 +15,8 @@ import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, Scrip
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.testkit.utils.BaseTestSuite
 
+import java.time.Duration
+import java.util.concurrent.CompletionStage
 import scala.concurrent.duration.DurationInt
 import scala.jdk.DurationConverters.ScalaDurationOps
 
@@ -29,7 +28,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val iEventService           = mock[IEventService]
   private val iAlarmService           = mock[IAlarmService]
   private val sequencerClientFactory  = mock[(Subsystem, ObsMode) => CompletionStage[SequencerApi]]
-  private val prefix                  = mock[Prefix]
+  private val prefix                  = Prefix("ESW.filter.wheel")
   private val config                  = mock[Config]
   private val heartbeatInterval       = Duration.ofSeconds(3)
 
