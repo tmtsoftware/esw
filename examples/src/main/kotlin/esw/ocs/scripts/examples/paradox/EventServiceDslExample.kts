@@ -2,6 +2,7 @@
 
 package esw.ocs.scripts.examples.paradox
 
+import csw.params.core.models.ObsId
 import csw.params.events.Event
 import csw.params.events.EventKey
 import csw.params.events.ObserveEvent
@@ -27,7 +28,7 @@ script {
         //#system-event
 
         //#observe-event
-        val observeEvent: ObserveEvent = ObserveEvent("ESW.IRIS_darkNight", "observationStarted")
+        val observeEvent: ObserveEvent = sequencerObserveEvent.observationStart(ObsId.apply("2020A-001-123"))
         //#observe-event
 
         //#publish

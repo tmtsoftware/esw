@@ -20,7 +20,7 @@ Kotlin
 
 ### ObserveEvent
 
-Helper DSL to create an `ObserveEvent` from the provided `prefix`, `event name` and `parameters` (optional).
+Helper DSL to create an `ObserveEvent` using factory provided to create various sequencer observe events.
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-event }

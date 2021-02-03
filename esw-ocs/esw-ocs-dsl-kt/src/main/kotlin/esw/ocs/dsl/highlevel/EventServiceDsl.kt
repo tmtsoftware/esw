@@ -51,16 +51,6 @@ interface EventServiceDsl {
     fun SystemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
             SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
-    /**
-     * Method to create an instance of [[csw.params.events.ObserveEvent]]
-     *
-     * @param sourcePrefix of the component which publishes this event
-     * @param eventName represents the name of the event
-     * @param parameters to be added to the event
-     * @return an instance of [[csw.params.events.ObserveEvent]]
-     */
-    fun ObserveEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
-            ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     /**
      * Publishes the given `event`. Throws [[csw.event.api.exceptions.EventServerNotAvailable]] when event server is not available or

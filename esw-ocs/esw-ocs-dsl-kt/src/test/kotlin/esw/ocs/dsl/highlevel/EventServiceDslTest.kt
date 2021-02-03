@@ -40,21 +40,6 @@ class EventServiceDslTest : EventServiceDsl {
         )
     }
 
-    @Test
-    fun `observeEvent should return a ObserveEvent created with given parameters | ESW-120`() {
-        val eventName = "observeEvent1"
-        val eventPrefix = "TCS.filter.wheel"
-        val actualEvent = ObserveEvent(eventPrefix, eventName)
-
-        // Verify that event with provided prefix and eventName is created.
-        actualEvent shouldBe ObserveEvent(
-                actualEvent.eventId(),
-                Prefix(eventPrefix),
-                EventName(eventName),
-                actualEvent.eventTime(),
-                actualEvent.paramSet()
-        )
-    }
 
     @Test
     fun `publish should delegate to publisher#publish | ESW-120`() = runBlocking {
