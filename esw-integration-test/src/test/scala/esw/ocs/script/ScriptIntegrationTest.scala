@@ -1,7 +1,5 @@
 package esw.ocs.script
 
-import java.nio.file.Path
-
 import com.typesafe.config.ConfigFactory
 import csw.alarm.client.AlarmServiceFactory
 import csw.alarm.models.AlarmSeverity
@@ -27,10 +25,11 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{ObsMode, Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.dsl.params.SequencerObserveEventName
+import esw.ocs.dsl.params.SequencerObserveEventNames
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service._
 
+import java.nio.file.Path
 import scala.concurrent.Future
 
 class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigServer) {
@@ -376,7 +375,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command           = Observe(Prefix("esw.test"), CommandName("observe-start"), None)
       val sequence          = Sequence(command)
       val expectedPrefix    = Prefix(ocsSubsystem, ocsObsMode.name)
-      val expectedEventName = EventName(SequencerObserveEventName.ObserveStart)
+      val expectedEventName = SequencerObserveEventNames.ObserveStart
       val expectedEventKey  = EventKey(expectedPrefix, expectedEventName)
       val testProbe         = createTestProbe(Set(expectedEventKey))
 
