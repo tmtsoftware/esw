@@ -212,7 +212,7 @@ Simulation mode for SM is mainly for testing the functionality/scenarios of apps
 
 ### Running Sequence Manager in simulation mode
 
-For running Sequence Manager, please refer @ref:[this](./apps/sequence-manager-app.md/).
+For running Sequence Manager, please refer @ref:[this](./apps/sequence-manager-app.md).
 
 
 
