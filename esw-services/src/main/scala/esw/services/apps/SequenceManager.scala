@@ -1,7 +1,7 @@
 package esw.services.apps
 
 import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
-import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
+import com.typesafe.config.{Config, ConfigFactory}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.services.utils.ColoredConsole.GREEN
@@ -16,10 +16,7 @@ import scala.concurrent.Await
 
 object SequenceManager {
 
-  private val channel: String = s"file://${FileUtils.cpyFileToTmpFromResource("app.json").toString}"
-  private val agentConfig: Config = ConfigFactory
-    .load()
-    .withValue("agent.coursier.channel", ConfigValueFactory.fromAnyRef(channel))
+  private val agentConfig: Config                    = ConfigFactory.load()
   private val eswAgent: ManagedService[AgentWiring]  = Agent.service(enable = true, Prefix(ESW, "machine1"), agentConfig)
   private val tcsAgent: ManagedService[AgentWiring]  = Agent.service(enable = true, Prefix(TCS, "machine1"), agentConfig)
   private val irisAgent: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(IRIS, "machine1"), agentConfig)
