@@ -86,7 +86,6 @@ object InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     // taking location of esw-sequencer
     val eswSequencerLocation = resolveAkkaLocation(Prefix(ESW, "perfTest"), Sequencer)
     val eswSequencerClient   = SequencerApiFactory.make(eswSequencerLocation)
-    val sequence             = Sequence(Setup(Prefix("ESW.perf.test"), CommandName("command-1"), None))
     val resultsFile          = "results_scenario_jvm_only.txt"
 
     scenarioRepetition(eswSequencerClient, resultsFile)

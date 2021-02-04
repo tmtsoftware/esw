@@ -14,22 +14,19 @@ object PerfUtils {
     println("99 %tile: " + histogram.getValueAtPercentile(99))
   }
 
-  def recordResults(histogram: Histogram, filename: String): Unit = {
-    try {
+  def recordResults(histogram: Histogram, filename: String): Unit =
+    Try {
       val resultsFile = new File(filename)
       resultsFile.createNewFile()
       println(s"Histogram results are written to file ${resultsFile.getAbsolutePath}")
 
       Using.resource(new FileOutputStream(resultsFile)) { fos =>
-        Try {
-          val printStream = new PrintStream(fos)
-          histogram.outputPercentileDistribution(printStream, 1.0)
-          printStream.println()
-          printStream.println(s"50%tile: ${histogram.getValueAtPercentile(50)}")
-          printStream.println(s"90%tile : ${histogram.getValueAtPercentile(90)}")
-          printStream.println(s"99%tile : ${histogram.getValueAtPercentile(99)}")
-        }.recover(e => log.error("Writing histogram results failed with error", ex = e))
+        val printStream = new PrintStream(fos)
+        histogram.outputPercentileDistribution(printStream, 1.0)
+        printStream.println()
+        printStream.println(s"50%tile: ${histogram.getValueAtPercentile(50)}")
+        printStream.println(s"90%tile : ${histogram.getValueAtPercentile(90)}")
+        printStream.println(s"99%tile : ${histogram.getValueAtPercentile(99)}")
       }
-    }
-  }
+    }.recover(e => log.error("Writing histogram results failed with error", ex = e))
 }
