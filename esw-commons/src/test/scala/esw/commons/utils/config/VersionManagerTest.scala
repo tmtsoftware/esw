@@ -17,6 +17,7 @@ class VersionManagerTest extends BaseTestSuite {
   val actorSystem: ActorSystem[_]           = actorTestKit.system
   implicit val ec: ExecutionContextExecutor = actorSystem.executionContext
 
+  private val runtimeErrorStr = randomString(20)
   "findVersion" must {
     val errorMsg        = randomString(10)
     val versionConfPath = Path.of(randomString(10))
@@ -36,7 +37,8 @@ class VersionManagerTest extends BaseTestSuite {
       ("exception", "expectedMsg"),
       (FileNotFound(errorMsg), errorMsg),
       (new ConfigException.Missing(versionConfPath.toString), "scripts.version is not present"),
-      (new ConfigException.WrongType(mock[ConfigOrigin], versionConfPath.toString), "value of scripts.version is not string")
+      (new ConfigException.WrongType(mock[ConfigOrigin], versionConfPath.toString), "value of scripts.version is not string"),
+      (new RuntimeException(runtimeErrorStr), runtimeErrorStr)
     ).foreach {
       case (exception, msg) =>
         s"throw ScriptVersionConfException if ${exception.getClass.getSimpleName} | ESW-360" in {

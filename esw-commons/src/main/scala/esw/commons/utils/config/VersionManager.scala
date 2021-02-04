@@ -17,5 +17,6 @@ class VersionManager(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
         case FileNotFound(msg)            => throw ScriptVersionConfException(msg)
         case _: ConfigException.Missing   => throw ScriptVersionConfException(s"$scriptVersion is not present")
         case _: ConfigException.WrongType => throw ScriptVersionConfException(s"value of $scriptVersion is not string")
+        case ex                           => throw ScriptVersionConfException(ex.getMessage)
       }
 }
