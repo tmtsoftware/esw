@@ -2,7 +2,10 @@ package esw.ocs.dsl.highlevel
 
 import csw.location.api.models.ComponentType
 import csw.params.core.generics.Key
+import csw.params.core.models.ExposureIdType
+import csw.params.core.models.ObsId
 import csw.params.events.EventKey
+import csw.params.events.ObserveEvent
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
 import esw.commons.utils.location.LocationServiceUtil
@@ -27,6 +30,30 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
     val isOnline: Boolean
     val prefix: String
     val sequencerObserveEvent: SequencerObserveEvent
+
+    fun presetStart(obsId: ObsId): ObserveEvent       = sequencerObserveEvent.presetStart(obsId)
+    fun presetEnd(obsId: ObsId): ObserveEvent         = sequencerObserveEvent.presetEnd(obsId)
+    fun guidstarAcqStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.guidstarAcqStart(obsId)
+    fun guidstarAcqEnd(obsId: ObsId): ObserveEvent    = sequencerObserveEvent.guidstarAcqEnd(obsId)
+    fun scitargetAcqStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.scitargetAcqStart(obsId)
+    fun scitargetAcqEnd(obsId: ObsId): ObserveEvent   = sequencerObserveEvent.scitargetAcqEnd(obsId)
+    fun observationStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.observationStart(obsId)
+    fun observationEnd(obsId: ObsId): ObserveEvent    = sequencerObserveEvent.observationEnd(obsId)
+    fun observeStart(obsId: ObsId): ObserveEvent      = sequencerObserveEvent.observeStart(obsId)
+    fun observeEnd(obsId: ObsId): ObserveEvent        = sequencerObserveEvent.observeEnd(obsId)
+
+    fun exposureStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.exposureStart(obsId, exposureId)
+    fun exposureEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.exposureEnd(obsId, exposureId)
+    fun readoutEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.readoutEnd(obsId, exposureId)
+    fun readoutFailed(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.readoutFailed(obsId, exposureId)
+    fun dataWriteStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.dataWriteStart(obsId, exposureId)
+    fun dataWriteEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.dataWriteEnd(obsId, exposureId)
+    fun prepareStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.prepareStart(obsId, exposureId)
+
+    fun observePaused(): ObserveEvent  = sequencerObserveEvent.observePaused()
+    fun observeResumed(): ObserveEvent = sequencerObserveEvent.observeResumed()
+
+    fun downtimeStart(obsId: ObsId, reasonForDowntime: String): ObserveEvent = sequencerObserveEvent.downtimeStart(obsId, reasonForDowntime)
 
     fun Assembly(prefix: Prefix, defaultTimeout: Duration = 10.seconds): RichComponent
     fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =

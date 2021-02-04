@@ -26,7 +26,7 @@ script {
     }
 
     onObserve("observe-start") {
-        publishEvent(sequencerObserveEvent.observeStart(ObsId.apply("2021A-011-153")))
+        publishEvent(observeStart(ObsId.apply("2021A-011-153")))
     }
 
     onSetup("command-3") {
