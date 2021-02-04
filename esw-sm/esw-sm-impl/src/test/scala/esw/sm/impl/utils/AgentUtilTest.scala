@@ -9,7 +9,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
-import esw.commons.utils.config.{VersionManager, ScriptVersionConfException}
+import esw.commons.utils.config.{VersionManager, FetchingScriptVersionFailed}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
@@ -200,7 +200,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.failed(ScriptVersionConfException(errorMsg)))
+      when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.failed(FetchingScriptVersionFailed(errorMsg)))
 
       agentUtil.provision(provisionConfig).futureValue should ===(ProvisionVersionFailure(errorMsg))
     }
