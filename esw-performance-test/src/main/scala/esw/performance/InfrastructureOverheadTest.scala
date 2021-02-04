@@ -9,7 +9,6 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.client.utils.LocationServerStatus
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.{SubmitResponse, isNegative}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
@@ -23,7 +22,6 @@ import esw.performance.utils.PerfUtils.{printResults, recordResults}
 import esw.performance.utils.Timing
 import org.HdrHistogram.Histogram
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
-import org.tmt.embedded_keycloak.utils.BearerToken
 
 object InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
 
@@ -31,6 +29,8 @@ object InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
   override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "perf-overhead-test")
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(120.seconds, 50.millis)
+
+  override lazy val keycloakPort: Int = 8081
 
   LocationServerStatus.requireUpLocally()
 
@@ -45,22 +45,6 @@ object InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     printSubmitResponse(submitResponse)
     histogram.recordValue(latency)
     println(s"Latency Overhead: $latency")
-  }
-
-  // todo: does this have to be overridden?
-  override def getToken(tokenUserName: String, tokenPassword: String, client: String): () => Some[String] = { () =>
-    Some(
-      BearerToken
-        .fromServer(
-          host = Networks().hostname,
-          port = 8081,
-          username = tokenUserName,
-          password = tokenPassword,
-          realm = "TMT",
-          client = client
-        )
-        .token
-    )
   }
 
   private def scenarioRepetition(eswSequencerClient: SequencerApi, resultsFile: String): Unit = {

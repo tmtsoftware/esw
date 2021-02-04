@@ -1,9 +1,10 @@
 package esw.performance.utils
 
+import java.io.{File, FileOutputStream, PrintStream}
+
 import esw.performance.InfrastructureOverheadTest.log
 import org.HdrHistogram.Histogram
 
-import java.io.{File, FileOutputStream, PrintStream}
 import scala.util.{Try, Using}
 
 object PerfUtils {

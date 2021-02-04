@@ -11,7 +11,7 @@ script {
     val irisSequencer = Sequencer(IRIS, ObsMode("perfTest"), 5.minutes)
     println("Iris sequencer resolved successfully !!!!")
 
-    onSetup("command-1") {
+    onSetup("command-1") { comm ->
         val setupCommand = Setup("ESW.perf.test", "command-2")
         val sequence = sequenceOf(setupCommand)
         irisSequencer.submitAndWait(sequence, 60.seconds)

@@ -11,9 +11,9 @@ script {
     println("test assembly resolved successfully !!!!")
 
     onSetup("command-2") { command ->
-        val command3 = Setup(command.source().toString(), "command-3")
+        val command = Setup(command.source().toString(), "command-3")
         println("Submitted to test assembly")
-        val submitResponse = testAssembly.submitAndWait(command3, 60.seconds)
+        val submitResponse = testAssembly.submitAndWait(command, 60.seconds)
         println("Submit response: $submitResponse")
     }
 }
