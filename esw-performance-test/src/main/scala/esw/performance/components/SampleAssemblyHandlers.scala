@@ -14,21 +14,19 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 
+import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContextExecutor}
 
 class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
   import cswCtx._
-  implicit val ec: ExecutionContextExecutor = ctx.executionContext
-  private val log                           = loggerFactory.getLogger
+  private val log = loggerFactory.getLogger
 
-  private var connection: AkkaConnection = _
+  private val connection: AkkaConnection = AkkaConnection(ComponentId(Prefix("CSW.sampleHcd"), ComponentType.HCD))
   private var akkaLocation: AkkaLocation = _
 
   override def initialize(): Unit = {
     log.info("Initializing sampleAssembly...")
-    connection = AkkaConnection(ComponentId(Prefix("CSW.sampleHcd"), ComponentType.HCD))
     akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
   }
 

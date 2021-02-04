@@ -1,9 +1,10 @@
 package esw.performance.utils
 
-import java.io.{File, FileOutputStream, PrintStream}
-
 import esw.performance.InfrastructureOverheadTest.log
 import org.HdrHistogram.Histogram
+
+import java.io.{File, FileOutputStream, PrintStream}
+import scala.util.{Try, Using}
 
 object PerfUtils {
 
@@ -18,20 +19,17 @@ object PerfUtils {
       val resultsFile = new File(filename)
       resultsFile.createNewFile()
       println(s"Histogram results are written to file ${resultsFile.getAbsolutePath}")
-      val fileOutputStream = new FileOutputStream(resultsFile)
-      try {
-        val printStream = new PrintStream(fileOutputStream)
-        histogram.outputPercentileDistribution(printStream, 1.0)
-        printStream.println()
-        printStream.println(s"50%tile: ${histogram.getValueAtPercentile(50)}")
-        printStream.println(s"90%tile : ${histogram.getValueAtPercentile(90)}")
-        printStream.println(s"99%tile : ${histogram.getValueAtPercentile(99)}")
+
+      Using.resource(new FileOutputStream(resultsFile)) { fos =>
+        Try {
+          val printStream = new PrintStream(fos)
+          histogram.outputPercentileDistribution(printStream, 1.0)
+          printStream.println()
+          printStream.println(s"50%tile: ${histogram.getValueAtPercentile(50)}")
+          printStream.println(s"90%tile : ${histogram.getValueAtPercentile(90)}")
+          printStream.println(s"99%tile : ${histogram.getValueAtPercentile(99)}")
+        }.recover(e => log.error("Writing histogram results failed with error", ex = e))
       }
-      finally if (fileOutputStream != null) fileOutputStream.close()
-    }
-    catch {
-      case e: Exception =>
-        log.error("Writing histogram results failed with error", ex = e)
     }
   }
 }

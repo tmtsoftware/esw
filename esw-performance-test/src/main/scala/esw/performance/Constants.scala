@@ -6,9 +6,9 @@ import esw.sm.api.models.{AgentProvisionConfig, ProvisionConfig}
 
 object Constants {
 
-  val obsmode1: ObsMode = ObsMode("obsMode1")
-  val obsmode2: ObsMode = ObsMode("obsMode2")
-  val obsmode3: ObsMode = ObsMode("obsMode3")
+  val obsMode1: ObsMode = ObsMode("obsMode1")
+  val obsMode2: ObsMode = ObsMode("obsMode2")
+  val obsMode3: ObsMode = ObsMode("obsMode3")
 
   val enableSwitching = false
 

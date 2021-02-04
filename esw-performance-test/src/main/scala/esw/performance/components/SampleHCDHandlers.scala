@@ -10,13 +10,10 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 
-import scala.concurrent.ExecutionContextExecutor
-
 class SampleHCDHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
   import cswCtx._
-  implicit val ec: ExecutionContextExecutor = ctx.executionContext
-  private val log                           = loggerFactory.getLogger
+  private val log = loggerFactory.getLogger
 
   override def initialize(): Unit = {
     log.info("Initializing sampleHcd...")
