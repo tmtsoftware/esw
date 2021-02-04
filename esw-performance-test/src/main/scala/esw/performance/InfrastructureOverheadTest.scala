@@ -133,7 +133,7 @@ object InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
 
   def main(args: Array[String]): Unit = {
     perfTestJvmOnlyScenario()
-    perfTestJvmOnlyScenario()
+    perfTestWithGatewayScenario()
     perfTestWithEmbeddedHttpScenario()
   }
 }
