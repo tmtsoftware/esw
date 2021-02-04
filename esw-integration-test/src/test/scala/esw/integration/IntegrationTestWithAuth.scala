@@ -22,7 +22,8 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.server.{GatewaySetup, GatewayWiring}
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
+import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
@@ -851,6 +852,34 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val actualResponse = sequenceManager.getResources.futureValue.asInstanceOf[ResourcesStatusResponse.Success]
       actualResponse.resourcesStatus should ===(expectedStatus)
+
+      sequenceManager.shutdownAllSequenceComponents().futureValue
+      TestSetup.cleanup()
+    }
+
+    "getObsModesWithStatus should return all ObsModes with their status | ESW-466" in {
+      locationService.unregisterAll().futureValue
+      registerKeycloak()
+      val eswSeqCompPrefix   = Prefix(ESW, "primary")
+      val irisSeqCompPrefix  = Prefix(IRIS, "primary")
+      val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
+
+      TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
+
+      val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
+
+      sequenceManager.configure(IRIS_CAL).futureValue
+
+      val expectedMessage = ObsModesWithStatusResponse.Success(
+        Set(
+          ObsModeWithStatus(IRIS_CAL, Configured),
+          ObsModeWithStatus(WFOS_CAL, Configurable),
+          ObsModeWithStatus(IRIS_DARKNIGHT, NonConfigurable)
+        )
+      )
+
+      val actualResponse = sequenceManager.getObsModesWithStatus.futureValue.asInstanceOf[ObsModesWithStatusResponse.Success]
+      actualResponse should ===(expectedMessage)
 
       sequenceManager.shutdownAllSequenceComponents().futureValue
       TestSetup.cleanup()
