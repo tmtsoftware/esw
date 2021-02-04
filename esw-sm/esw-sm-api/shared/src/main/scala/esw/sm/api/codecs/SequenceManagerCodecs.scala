@@ -3,7 +3,7 @@ package esw.sm.api.codecs
 import csw.location.api.codec.LocationCodecs
 import esw.ocs.api.codecs.OcsCodecs
 import esw.sm.api.models.{AgentProvisionConfig, AgentStatus, ProvisionConfig, SequenceComponentStatus, _}
-import esw.sm.api.protocol.{ObsModesWithStatusResponse, _}
+import esw.sm.api.protocol.{ObsModesDetailsResponse, _}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.CompactMapBasedCodecs
 import io.bullet.borer.derivation.MapBasedCodecs.{deriveAllCodecs, deriveCodec}
@@ -16,7 +16,10 @@ trait SequenceManagerCodecs extends LocationCodecs with BasicCodecs with OcsCode
   implicit lazy val provisionConfigCodec: Codec[ProvisionConfig]           = deriveCodec
 
   implicit lazy val configureResponseCodec: Codec[ConfigureResponse]                                 = deriveAllCodecs
-  implicit lazy val getObsModesWithStatusResponseCodec: Codec[ObsModesWithStatusResponse]            = deriveAllCodecs
+  implicit lazy val resourcesCodec: Codec[Resources]                                                 = CompactMapBasedCodecs.deriveCodec
+  implicit lazy val obsModeStatusCodec: Codec[ObsModeStatus]                                         = deriveAllCodecs
+  implicit lazy val getObsModeDetailsCodec: Codec[ObsModeDetails]                                    = deriveCodec
+  implicit lazy val getObsModesDetailsResponseCodec: Codec[ObsModesDetailsResponse]                  = deriveAllCodecs
   implicit lazy val startSequencerResponseCodec: Codec[StartSequencerResponse]                       = deriveAllCodecs
   implicit lazy val shutdownSequenceComponentResponseCodec: Codec[ShutdownSequenceComponentResponse] = deriveAllCodecs
   implicit lazy val shutdownSequencersResponseCodec: Codec[ShutdownSequencersResponse]               = deriveAllCodecs

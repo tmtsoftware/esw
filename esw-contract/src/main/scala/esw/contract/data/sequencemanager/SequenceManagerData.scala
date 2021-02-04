@@ -4,14 +4,15 @@ import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequen
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.ocs.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
-import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
+import csw.prefix.models.Subsystem.{ESW, IRIS, TCS, WFOS}
+import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
+import esw.ocs.api.models.ObsMode
+import esw.sm.api.models
 import esw.sm.api.models._
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, FailedToStartSequencers, _}
 import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, SpawningSequenceComponentsFailed, Success}
-import esw.sm.api.protocol.SequenceManagerRequest.{GetObsModesWithStatus, _}
+import esw.sm.api.protocol.SequenceManagerRequest.{GetObsModesDetails, _}
 import esw.sm.api.protocol.StartSequencerResponse._
 import esw.sm.api.protocol._
 
@@ -22,6 +23,10 @@ trait SequenceManagerData {
   private val seqCompPrefix             = Prefix(ESW, "seq_comp")
   val sequencerPrefix: Prefix           = Prefix(ESW, "DarkNight")
   val obsMode: ObsMode                  = ObsMode("DarkNight")
+  val irisResource: Resource            = Resource(IRIS)
+  val tcsResource: Resource             = Resource(TCS)
+  val eswResource: Resource             = Resource(ESW)
+  val wfosResource: Resource            = Resource(WFOS)
   val sequencerComponentId: ComponentId = ComponentId(sequencerPrefix, Sequencer)
   val agentComponentId: ComponentId     = ComponentId(agentPrefix, Machine)
   val seqCompComponentId: ComponentId   = ComponentId(seqCompPrefix, SequenceComponent)
@@ -34,7 +39,7 @@ trait SequenceManagerData {
 
   val configure: Configure                                              = Configure(obsMode)
   val provision: Provision                                              = Provision(provisionConfig)
-  val getObsModesWithStatus: GetObsModesWithStatus.type                 = GetObsModesWithStatus
+  val getObsModesDetails: GetObsModesDetails.type                       = GetObsModesDetails
   val startSequencer: StartSequencer                                    = StartSequencer(ESW, obsMode)
   val restartSequencer: RestartSequencer                                = RestartSequencer(ESW, obsMode)
   val shutdownSequencer: ShutdownSequencer                              = ShutdownSequencer(ESW, obsMode)
@@ -55,10 +60,13 @@ trait SequenceManagerData {
     List("failed sequence component")
   )
   val provisionSuccess: ProvisionResponse.Success.type = Success
-  val configuredObsMode: ObsModeWithStatus             = ObsModeWithStatus(ObsMode("DarkNight_1"), Configured)
-  val configurableObsMode: ObsModeWithStatus           = ObsModeWithStatus(ObsMode("DarkNight_2"), Configurable)
-  val nonConfigurableObsMode: ObsModeWithStatus        = ObsModeWithStatus(ObsMode("DarkNight_3"), NonConfigurable)
-  val obsModesWithStatusSuccess: ObsModesWithStatusResponse.Success = ObsModesWithStatusResponse.Success(
+  val configuredObsMode: ObsModeDetails =
+    models.ObsModeDetails(ObsMode("DarkNight_1"), Configured, Resources(eswResource, tcsResource))
+  val configurableObsMode: ObsModeDetails =
+    models.ObsModeDetails(ObsMode("DarkNight_2"), Configurable, Resources(eswResource, irisResource))
+  val nonConfigurableObsMode: ObsModeDetails =
+    models.ObsModeDetails(ObsMode("DarkNight_3"), NonConfigurable, Resources(eswResource, irisResource, wfosResource))
+  val ObsModesDetailsSuccess: ObsModesDetailsResponse.Success = ObsModesDetailsResponse.Success(
     Set(configuredObsMode, configurableObsMode, nonConfigurableObsMode)
   )
   val alreadyRunning: AlreadyRunning                                                   = AlreadyRunning(sequencerComponentId)
@@ -74,8 +82,7 @@ trait SequenceManagerData {
   val unhandled: Unhandled                                         = Unhandled("state", "messageType")
 
   val getResourcesStatus: SequenceManagerRequest.GetResources.type = GetResources
-  val irisResource: Resource                                       = Resource(IRIS)
-  val tcsResource: Resource                                        = Resource(TCS)
+
   val resourcesStatusSuccess: ResourcesStatusResponse.Success =
     ResourcesStatusResponse.Success(
       List(ResourceStatusResponse(irisResource), ResourceStatusResponse(tcsResource, ResourceStatus.InUse, Some(obsMode)))

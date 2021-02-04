@@ -29,10 +29,10 @@ trait SequenceManagerApi {
   /**
    * Returns all observing modes with their status
    *
-   * @return a future of [[esw.sm.api.protocol.ObsModesWithStatusResponse]] which completes with Success or Failure response ADT.
+   * @return a future of [[esw.sm.api.protocol.ObsModesDetailsResponse]] which completes with Success or Failure response ADT.
    *         Success response gives information of all observing modes with their status.
    */
-  def getObsModesWithStatus: Future[ObsModesWithStatusResponse]
+  def getObsModesDetails: Future[ObsModesDetailsResponse]
 
   /**
    * Starts sequencer of provided Subsystem and Observing mode.

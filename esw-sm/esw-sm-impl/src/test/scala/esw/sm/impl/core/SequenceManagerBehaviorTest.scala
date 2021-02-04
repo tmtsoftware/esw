@@ -11,8 +11,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsModeStatus.{Configurable, NonConfigurable, Configured}
-import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
+import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
@@ -44,11 +44,15 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   private val darkNightSequencers: Sequencers  = Sequencers(ESW, TCS)
   private val clearSkiesSequencers: Sequencers = Sequencers(ESW)
   private val irisMCAOSequencers: Sequencers   = Sequencers(ESW, WFOS)
+  private val nscuResource: Resource           = Resource(NSCU)
+  private val tcsResource: Resource            = Resource(TCS)
+  private val irisResource: Resource           = Resource(IRIS)
+  private val wfosResource: Resource           = Resource(WFOS)
   private val config = SequenceManagerConfig(
     Map(
-      darkNight  -> ObsModeConfig(Resources(Resource(NSCU), Resource(TCS)), darkNightSequencers),
-      clearSkies -> ObsModeConfig(Resources(Resource(TCS), Resource(IRIS)), clearSkiesSequencers),
-      irisMCAO   -> ObsModeConfig(Resources(Resource(WFOS)), irisMCAOSequencers)
+      darkNight  -> ObsModeConfig(Resources(nscuResource, tcsResource), darkNightSequencers),
+      clearSkies -> ObsModeConfig(Resources(tcsResource, irisResource), clearSkiesSequencers),
+      irisMCAO   -> ObsModeConfig(Resources(wfosResource), irisMCAOSequencers)
     )
   )
 
@@ -527,15 +531,15 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "GetObsModesWithStatus" must {
+  "GetObsModesDetails" must {
     "return LocationServiceError if location service fails to return running observation mode | ESW-466" in {
       val errorMessage = "Sequencer not found"
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Left(RegistrationListingFailed(errorMessage))))
 
-      val probe = TestProbe[ObsModesWithStatusResponse]()
+      val probe = TestProbe[ObsModesDetailsResponse]()
 
-      smRef ! GetObsModesWithStatus(probe.ref)
+      smRef ! GetObsModesDetails(probe.ref)
 
       probe.expectMessage(LocationServiceError(errorMessage))
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
@@ -549,17 +553,17 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       )
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
 
-      val obsModesWithStatusResponseProbe = TestProbe[ObsModesWithStatusResponse]()
-      smRef ! GetObsModesWithStatus(obsModesWithStatusResponseProbe.ref)
+      val obsModesDetailsResponseProbe = TestProbe[ObsModesDetailsResponse]()
+      smRef ! GetObsModesDetails(obsModesDetailsResponseProbe.ref)
 
-      val expectedMessage = ObsModesWithStatusResponse.Success(
+      val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
-          ObsModeWithStatus(clearSkies, Configured),
-          ObsModeWithStatus(darkNight, NonConfigurable),
-          ObsModeWithStatus(irisMCAO, Configurable)
+          ObsModeDetails(clearSkies, Configured, Resources(tcsResource, irisResource)),
+          ObsModeDetails(darkNight, NonConfigurable, Resources(nscuResource, tcsResource)),
+          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource))
         )
       )
-      obsModesWithStatusResponseProbe.expectMessage(expectedMessage)
+      obsModesDetailsResponseProbe.expectMessage(expectedMessage)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
 
     }
@@ -574,10 +578,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedResources = ResourcesStatusResponse.Success(
         List(
-          ResourceStatusResponse(Resource(NSCU), ResourceStatus.Available),
-          ResourceStatusResponse(Resource(TCS), ResourceStatus.Available),
-          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available),
-          ResourceStatusResponse(Resource(WFOS), ResourceStatus.Available)
+          ResourceStatusResponse(nscuResource, ResourceStatus.Available),
+          ResourceStatusResponse(tcsResource, ResourceStatus.Available),
+          ResourceStatusResponse(irisResource, ResourceStatus.Available),
+          ResourceStatusResponse(wfosResource, ResourceStatus.Available)
         )
       )
 
@@ -592,10 +596,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedResources = ResourcesStatusResponse.Success(
         List(
-          ResourceStatusResponse(Resource(NSCU), ResourceStatus.InUse, Some(darkNight)),
-          ResourceStatusResponse(Resource(TCS), ResourceStatus.InUse, Some(darkNight)),
-          ResourceStatusResponse(Resource(IRIS), ResourceStatus.Available),
-          ResourceStatusResponse(Resource(WFOS), ResourceStatus.Available)
+          ResourceStatusResponse(nscuResource, ResourceStatus.InUse, Some(darkNight)),
+          ResourceStatusResponse(tcsResource, ResourceStatus.InUse, Some(darkNight)),
+          ResourceStatusResponse(irisResource, ResourceStatus.Available),
+          ResourceStatusResponse(wfosResource, ResourceStatus.Available)
         )
       )
 

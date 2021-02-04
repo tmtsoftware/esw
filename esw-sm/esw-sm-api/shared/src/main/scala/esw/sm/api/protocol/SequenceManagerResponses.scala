@@ -2,9 +2,9 @@ package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models.{AgentStatus, Resource, ResourceStatus, SequenceComponentStatus}
+import esw.sm.api.models.{AgentStatus, ObsModeDetails, Resource, ResourceStatus, SequenceComponentStatus}
 
 sealed trait SmResponse extends SmAkkaSerializable
 
@@ -30,12 +30,12 @@ object ConfigureResponse {
   }
 }
 
-sealed trait ObsModesWithStatusResponse extends SmResponse
+sealed trait ObsModesDetailsResponse extends SmResponse
 
-object ObsModesWithStatusResponse {
-  case class Success(obsModeWithStatus: Set[ObsModeWithStatus]) extends ObsModesWithStatusResponse
+object ObsModesDetailsResponse {
+  case class Success(obsModes: Set[ObsModeDetails]) extends ObsModesDetailsResponse
 
-  sealed trait Failure extends SmFailure with ObsModesWithStatusResponse
+  sealed trait Failure extends SmFailure with ObsModesDetailsResponse
 
 }
 sealed trait StartSequencerResponse extends SmResponse
@@ -93,7 +93,7 @@ object CommonFailure {
       with ShutdownSequenceComponentResponse.Failure
       with ProvisionResponse.Failure
       with AgentStatusResponse.Failure
-      with ObsModesWithStatusResponse.Failure {
+      with ObsModesDetailsResponse.Failure {
     override def msg: String = s"Failed with location service error: $reason"
   }
 }

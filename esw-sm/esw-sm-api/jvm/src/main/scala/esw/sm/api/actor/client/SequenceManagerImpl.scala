@@ -25,8 +25,8 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def provision(config: ProvisionConfig): Future[ProvisionResponse] =
     (smRef ? (Provision(config, _)))(SequenceManagerTimeouts.Provision, actorSystem.scheduler)
 
-  override def getObsModesWithStatus: Future[ObsModesWithStatusResponse] =
-    (smRef ? GetObsModesWithStatus)(SequenceManagerTimeouts.GetAllRunningObsMode, actorSystem.scheduler)
+  override def getObsModesDetails: Future[ObsModesDetailsResponse] =
+    (smRef ? GetObsModesDetails)(SequenceManagerTimeouts.GetAllRunningObsMode, actorSystem.scheduler)
 
   override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, obsMode, x) })(

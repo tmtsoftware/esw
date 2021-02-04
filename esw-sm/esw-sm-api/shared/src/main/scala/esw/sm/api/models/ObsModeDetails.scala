@@ -1,6 +1,8 @@
-package esw.ocs.api.models
+package esw.sm.api.models
 
-case class ObsModeWithStatus(obsMode: ObsMode, status: ObsModeStatus)
+import esw.ocs.api.models.ObsMode
+
+case class ObsModeDetails(obsMode: ObsMode, status: ObsModeStatus, resources: Resources)
 
 sealed trait ObsModeStatus
 

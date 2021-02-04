@@ -4,9 +4,8 @@ import csw.contract.ResourceFetcher
 import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
 import csw.prefix.models.Subsystem
-import esw.ocs.api.models.ObsModeWithStatus
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
-import esw.sm.api.models.{Resource, ResourceStatus}
+import esw.sm.api.models.{ObsModeDetails, Resource, ResourceStatus}
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 
@@ -24,8 +23,8 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       unhandled
     ),
     ModelType[ProvisionResponse](provisionSuccess, couldNotFindMachines, spawningSequenceComponentsFailed, unhandled),
-    ModelType[ObsModeWithStatus](configuredObsMode, configurableObsMode, nonConfigurableObsMode),
-    ModelType[ObsModesWithStatusResponse](obsModesWithStatusSuccess, locationServiceError),
+    ModelType[ObsModeDetails](configuredObsMode, configurableObsMode, nonConfigurableObsMode),
+    ModelType[ObsModesDetailsResponse](ObsModesDetailsSuccess, locationServiceError),
     ModelType[StartSequencerResponse](
       alreadyRunning,
       started,
@@ -50,7 +49,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
   private val httpRequests = new RequestSet[SequenceManagerRequest] {
     requestType(configure)
     requestType(provision)
-    requestType(getObsModesWithStatus)
+    requestType(getObsModesDetails)
     requestType(startSequencer)
     requestType(restartSequencer)
     requestType(shutdownSequencer)
@@ -66,7 +65,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
   private val httpEndpoints: List[Endpoint] = List(
     Endpoint(name[Configure], name[ConfigureResponse]),
     Endpoint(name[Provision], name[ProvisionResponse]),
-    Endpoint(objectName(GetObsModesWithStatus), name[ObsModesWithStatusResponse]),
+    Endpoint(objectName(GetObsModesDetails), name[ObsModesDetailsResponse]),
     Endpoint(name[StartSequencer], name[StartSequencerResponse]),
     Endpoint(name[RestartSequencer], name[RestartSequencerResponse]),
     Endpoint(name[ShutdownSequencer], name[ShutdownSequencersResponse]),

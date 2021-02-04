@@ -7,11 +7,11 @@ import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.auth.EswUserRolePolicy
-import esw.ocs.api.models.ObsModeStatus.Configurable
-import esw.ocs.api.models.{ObsMode, ObsModeWithStatus}
+import esw.sm.api.models.ObsModeStatus.Configurable
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
-import esw.sm.api.models.{AgentStatus, ProvisionConfig}
+import esw.sm.api.models.{AgentStatus, ObsModeDetails, ProvisionConfig, Resources}
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
@@ -77,14 +77,15 @@ class SequenceManagerRequestHandlerTest
       }
     }
 
-    "return observation modes with status for getObsModesWithStatus request | ESW-466" in {
-      val obsModesWithStatus = ObsModesWithStatusResponse.Success(Set(ObsModeWithStatus(obsMode, Configurable)))
-      when(sequenceManagerApi.getObsModesWithStatus)
-        .thenReturn(Future.successful(obsModesWithStatus))
+    "return observation modes with status for getObsModesDetails request | ESW-466" in {
+      val expectedObsModesDetailsResponse =
+        ObsModesDetailsResponse.Success(Set(ObsModeDetails(obsMode, Configurable, Resources())))
+      when(sequenceManagerApi.getObsModesDetails)
+        .thenReturn(Future.successful(expectedObsModesDetailsResponse))
 
-      Post("/post-endpoint", GetObsModesWithStatus.narrow) ~> route ~> check {
-        verify(sequenceManagerApi).getObsModesWithStatus
-        responseAs[ObsModesWithStatusResponse] should ===(obsModesWithStatus)
+      Post("/post-endpoint", GetObsModesDetails.narrow) ~> route ~> check {
+        verify(sequenceManagerApi).getObsModesDetails
+        responseAs[ObsModesDetailsResponse] should ===(expectedObsModesDetailsResponse)
       }
     }
 

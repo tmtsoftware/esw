@@ -21,8 +21,8 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerRequest])
   override def provision(config: ProvisionConfig): Future[ProvisionResponse] =
     postClient.requestResponse[ProvisionResponse](Provision(config))
 
-  override def getObsModesWithStatus: Future[ObsModesWithStatusResponse] =
-    postClient.requestResponse[ObsModesWithStatusResponse](GetObsModesWithStatus)
+  override def getObsModesDetails: Future[ObsModesDetailsResponse] =
+    postClient.requestResponse[ObsModesDetailsResponse](GetObsModesDetails)
 
   override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     postClient.requestResponse[StartSequencerResponse](StartSequencer(subsystem, obsMode))

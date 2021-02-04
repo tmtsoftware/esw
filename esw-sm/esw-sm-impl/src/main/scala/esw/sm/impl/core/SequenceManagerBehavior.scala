@@ -11,8 +11,8 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
-import esw.ocs.api.models.{ObsMode, ObsModeStatus, ObsModeWithStatus}
+import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
@@ -199,9 +199,9 @@ class SequenceManagerBehavior(
       case GetSequenceManagerState(replyTo) =>
         currentState.tap(state => logger.info(s"Sequence Manager response Success: Sequence Manager state $state"));
         replyTo ! currentState
-      case GetAllAgentStatus(replyTo)     => getAllAgentStatus(replyTo)
-      case GetResources(replyTo)          => getResourcesStatus(replyTo)
-      case GetObsModesWithStatus(replyTo) => getObsModesWithStatus.foreach(replyTo ! _)
+      case GetAllAgentStatus(replyTo)  => getAllAgentStatus(replyTo)
+      case GetResources(replyTo)       => getResourcesStatus(replyTo)
+      case GetObsModesDetails(replyTo) => getObsModesDetails.foreach(replyTo ! _)
     }
 
   private def getAllAgentStatus(replyTo: ActorRef[AgentStatusResponse]): Future[Unit] =
@@ -216,7 +216,7 @@ class SequenceManagerBehavior(
       replyTo ! response
     }
 
-  private def getObsModesWithStatus: Future[ObsModesWithStatusResponse] = {
+  private def getObsModesDetails: Future[ObsModesDetailsResponse] = {
     def getObsModeStatus(obsMode: ObsMode, configuredObsModes: Set[ObsMode]): ObsModeStatus = {
       if (configuredObsModes.contains(obsMode)) Configured
       else if (isNonConfigurable(sequenceManagerConfig.resources(obsMode).get, configuredObsModes)) NonConfigurable
@@ -226,10 +226,16 @@ class SequenceManagerBehavior(
     getRunningObsModes.mapToAdt(
       configuredObsModes => {
         val obsModes = sequenceManagerConfig.obsModes.keys.toSet
-        val obsModesWithStatus =
-          obsModes.map(obsMode => ObsModeWithStatus(obsMode, getObsModeStatus(obsMode, configuredObsModes)))
+        val obsModesDetails =
+          obsModes.map(obsMode =>
+            ObsModeDetails(
+              obsMode,
+              getObsModeStatus(obsMode, configuredObsModes),
+              sequenceManagerConfig.resources(obsMode).get
+            )
+          )
 
-        val response = ObsModesWithStatusResponse.Success(obsModesWithStatus)
+        val response = ObsModesDetailsResponse.Success(obsModesDetails)
         logger.info(s"Sequence Manager response Success: ${response}")
         response
       },
