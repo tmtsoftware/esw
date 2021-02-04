@@ -84,3 +84,47 @@ cd /tmt/apps
 // run sequence manager
 ./sequence-manager -J-Dcsw-logging.component-log-levels.ESW.sequence_manager=TRACE start -o obsmode.conf
 ```
+
+# Starting Sequence Manager in simulation mode
+
+## Prerequisites for Running sequence-manager App in simulation mode
+
+## 1. Install `coursier` and the TMT Apps channel
+
+The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
+The instructions for doing this are provided @ref:[here](getting-apps.md).
+
+## 2. Start any Needed CSW services
+
+* To run sequence-manager in simulation mode, the **CSW Location Service** must be running.
+
+## 3. Install esw-services
+
+The following command creates an executable file named `esw-services` in the default installation directory.
+
+```bash
+cs install esw-services:<version | SHA>
+```
+
+## 4. Run sequence-manager in simulation mode
+
+```bash
+cs launch esw-services – start -s --simulation
+//  where:
+//    -s : to start SequenceManager
+//    --simulation : in simulation mode
+```
+    
+## 5. Running sequence-manager in simulation mode independent of esw-services
+
+```bash
+cs launch sequence-manager:<version | SHA> -- start --simulation
+```   
+
+@@@ warning
+If sequence-manager is started independent of esw-services in the simulation mode then following things are needed to be taken care of:
+* Agents won't be spawned automatically, they have to be started manually.
+* A version.conf needs to be created in config-service for the Provision api to work. 
+@@@
+
+

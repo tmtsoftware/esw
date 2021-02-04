@@ -183,3 +183,36 @@ and processing state can handle common msgs without any state change.
 ## Running Sequence Manager
 
 For running Sequence Manager, please refer @ref:[this](./apps/sequence-manager-app.md).
+
+## Sequence Manager simulation mode
+Simulation mode for SM is mainly for testing the functionality/scenarios of apps interacting with SM.
+
+### Approach followed:
+* In this approach we will be spawning actual sequence manager, agents, sequence-components and sequencers(simulation mode).
+
+* When the sequence manager is started using the esw-services with the simulation flag, the following things are done.
+    
+    1. If a obs-mode config is provided using -o flag, it is used and if not then a default config is used.
+    2. Three agents are spawned automatically(ESW, TCS, IRIS)
+
+* When the sequence-manager is up and running(--simulation):
+
+    1. suppose `Provision` command is sent to SM. Now as we are using actual agents, seq-components our 
+       production level logic eg: shutting-down previous seq-comps, agent-allocation for seq-comps, etc.
+        can be tested 
+    2. suppose `Configure` command is sent to SM. Now as we are using sequencers in simulated mode any 
+        obs-mode can be configured(as long as there is an entry for it in the provided obs-mode conf or the 
+        default). Also the success as well as all the failure scenarios (resource conflict, configuration 
+        missing, etc) can be tested.
+    3. all the other apis like startSequencer, shutdownAllSeqComps etc will work properly with correct entries
+        made in location service.
+        
+* Only agents will be started in the same jvm process.Since sequence components are started by agents 
+  using `cs launch ...`,  command they will not be in the same process.
+
+### Running Sequence Manager in simulation mode
+
+For running Sequence Manager, please refer @ref:[this](./apps/sequence-manager-app.md/).
+
+
+
