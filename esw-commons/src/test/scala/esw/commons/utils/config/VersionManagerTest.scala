@@ -1,5 +1,7 @@
 package esw.commons.utils.config
 
+import java.nio.file.Path
+
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import com.typesafe.config.{Config, ConfigException, ConfigOrigin}
@@ -8,7 +10,6 @@ import csw.config.client.commons.ConfigUtils
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
 
-import java.nio.file.Path
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
@@ -38,7 +39,7 @@ class VersionManagerTest extends BaseTestSuite {
       (FileNotFound(errorMsg), errorMsg),
       (new ConfigException.Missing(versionConfPath.toString), "scripts.version is not present"),
       (new ConfigException.WrongType(mock[ConfigOrigin], versionConfPath.toString), "value of scripts.version is not string"),
-      (new RuntimeException(runtimeErrorStr), runtimeErrorStr)
+      (new RuntimeException(runtimeErrorStr), s"Failed to fetch script version: $runtimeErrorStr")
     ).foreach {
       case (exception, msg) =>
         s"throw ScriptVersionConfException if ${exception.getClass.getSimpleName} | ESW-360" in {
@@ -47,10 +48,10 @@ class VersionManagerTest extends BaseTestSuite {
 
           when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.failed(exception))
 
-          val scriptVersionConfException = intercept[ScriptVersionConfException] {
+          val scriptVersionConfException = intercept[FetchingScriptVersionFailed] {
             Await.result(versionManager.getScriptVersion(versionConfPath), 100.millis)
           }
-          scriptVersionConfException should ===(ScriptVersionConfException(msg))
+          scriptVersionConfException should ===(FetchingScriptVersionFailed(msg))
         }
     }
   }

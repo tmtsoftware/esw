@@ -9,7 +9,7 @@ import esw.agent.service.api.models.{Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.extensions.MapExt.MapOps
-import esw.commons.utils.config.{VersionManager, ScriptVersionConfException}
+import esw.commons.utils.config.{VersionManager, FetchingScriptVersionFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -82,7 +82,7 @@ class AgentUtil(
 
   private def spawnSeqCompByVersion(mapping: List[(AgentLocation, SeqCompPrefix)]) = {
     versionManager.getScriptVersion(versionConfPath).flatMap(spawnCompsByMapping(mapping, _)).recover {
-      case ScriptVersionConfException(msg) => ProvisionVersionFailure(msg)
+      case FetchingScriptVersionFailed(msg) => ProvisionVersionFailure(msg)
     }
   }
 

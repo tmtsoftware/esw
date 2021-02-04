@@ -11,7 +11,7 @@ import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand
 import esw.agent.service.api.models.{Failed, KillResponse, Killed}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.utils.config.{VersionManager, ScriptVersionConfException}
+import esw.commons.utils.config.{VersionManager, FetchingScriptVersionFailed}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -82,7 +82,7 @@ class ProcessManager(
           .map(_.tap(onProcessExit(_, command.connection)))
       }
       .recover {
-        case ScriptVersionConfException(msg) => Left(msg)
+        case FetchingScriptVersionFailed(msg) => Left(msg)
       }
 
   //it checks if the given process is alive

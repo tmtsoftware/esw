@@ -1,13 +1,14 @@
 package esw.agent.akka.app
 
 import java.nio.file.Path
+
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
-import esw.commons.utils.config.ScriptVersionConfException
+import esw.commons.utils.config.FetchingScriptVersionFailed
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
@@ -210,7 +211,7 @@ class SpawnComponentTest extends AgentSetup {
 
       when(locationService.find(argEq(seqCompConn))).thenReturn(Future.successful(None))
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
-      when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.failed(ScriptVersionConfException(errorMsg)))
+      when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.failed(FetchingScriptVersionFailed(errorMsg)))
 
       mockSuccessfulProcess()
 
