@@ -39,7 +39,6 @@ jobs:
           sbtn clean
           sbtn scalafmtCheck
           sbtn makeSite
-          sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Unit Tests
         run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
