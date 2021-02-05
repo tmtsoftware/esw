@@ -1,6 +1,7 @@
 name: nightly
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '30 19 * * *' # run at 1:00 AM IST
 

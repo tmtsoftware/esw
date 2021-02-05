@@ -217,8 +217,15 @@ lazy val `esw-integration-test` = project
   )
   .settings(
     Test / test := {
-      val _ = publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
-      (Test / test).value
+      if (!sys.props.contains("disableIntegrationTests")) {
+        sLog.value.info("============== Running publishLocal ==============")
+        val _ = publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
+        sLog.value.info("============== Finished publishLocal ==============")
+        (Test / test).value
+      }
+      else {
+        sLog.value.warn("============== Skipping integration tests ============== ")
+      }
     }
   )
 
@@ -406,8 +413,8 @@ lazy val `esw-http-template-wiring` = project
 lazy val `esw-performance-test` = project
   .dependsOn(
     `esw-testkit`,
-    `esw-sm-api`.jvm ,
-    `esw-gateway-api`.jvm ,
+    `esw-sm-api`.jvm,
+    `esw-gateway-api`.jvm,
     `esw-ocs-dsl-kt`,
     `esw-ocs-app`
   )
@@ -417,4 +424,3 @@ lazy val `esw-performance-test` = project
     kotlinVersion := "1.4.10",
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
-
