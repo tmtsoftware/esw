@@ -27,6 +27,9 @@ trait SequenceManagerData {
   val tcsResource: Resource             = Resource(TCS)
   val eswResource: Resource             = Resource(ESW)
   val wfosResource: Resource            = Resource(WFOS)
+  val darkNightSequencers: Sequencers   = Sequencers(ESW, TCS)
+  val darkNight2Sequencers: Sequencers  = Sequencers(ESW)
+  val darkNight3Sequencers: Sequencers  = Sequencers(ESW, WFOS)
   val sequencerComponentId: ComponentId = ComponentId(sequencerPrefix, Sequencer)
   val agentComponentId: ComponentId     = ComponentId(agentPrefix, Machine)
   val seqCompComponentId: ComponentId   = ComponentId(seqCompPrefix, SequenceComponent)
@@ -61,11 +64,16 @@ trait SequenceManagerData {
   )
   val provisionSuccess: ProvisionResponse.Success.type = Success
   val configuredObsMode: ObsModeDetails =
-    models.ObsModeDetails(ObsMode("DarkNight_1"), Configured, Resources(eswResource, tcsResource))
+    models.ObsModeDetails(ObsMode("DarkNight_1"), Configured, Resources(eswResource, tcsResource), darkNightSequencers)
   val configurableObsMode: ObsModeDetails =
-    models.ObsModeDetails(ObsMode("DarkNight_2"), Configurable, Resources(eswResource, irisResource))
+    models.ObsModeDetails(ObsMode("DarkNight_2"), Configurable, Resources(eswResource, irisResource), darkNight2Sequencers)
   val nonConfigurableObsMode: ObsModeDetails =
-    models.ObsModeDetails(ObsMode("DarkNight_3"), NonConfigurable, Resources(eswResource, irisResource, wfosResource))
+    models.ObsModeDetails(
+      ObsMode("DarkNight_3"),
+      NonConfigurable,
+      Resources(eswResource, irisResource, wfosResource),
+      darkNightSequencers
+    )
   val ObsModesDetailsSuccess: ObsModesDetailsResponse.Success = ObsModesDetailsResponse.Success(
     Set(configuredObsMode, configurableObsMode, nonConfigurableObsMode)
   )

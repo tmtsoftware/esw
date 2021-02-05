@@ -28,7 +28,7 @@ import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 import esw.sm.api.models.ResourceStatus.{Available, InUse}
-import esw.sm.api.models.{AgentStatus, ObsModeDetails, ProvisionConfig, Resource, Resources, SequenceComponentStatus}
+import esw.sm.api.models.{AgentStatus, ObsModeDetails, ProvisionConfig, Resource, Resources, SequenceComponentStatus, Sequencers}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
@@ -860,14 +860,17 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     "getObsModesDetails should return all ObsModes with their status | ESW-466" in {
       locationService.unregisterAll().futureValue
       registerKeycloak()
-      val eswSeqCompPrefix   = Prefix(ESW, "primary")
-      val irisSeqCompPrefix  = Prefix(IRIS, "primary")
-      val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
-      val irisResource       = Resource(IRIS)
-      val nscuResource       = Resource(NSCU)
-      val nfiraosResource    = Resource(NFIRAOS)
-      val tcsResource        = Resource(TCS)
-      val wfosResource       = Resource(WFOS)
+      val darkNightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS)
+      val irisCalSequencers: Sequencers   = Sequencers(IRIS, ESW, AOESW)
+      val wfosCalSequencers: Sequencers   = Sequencers(WFOS, ESW)
+      val eswSeqCompPrefix                = Prefix(ESW, "primary")
+      val irisSeqCompPrefix               = Prefix(IRIS, "primary")
+      val aoeswSeqCompPrefix              = Prefix(AOESW, "primary")
+      val irisResource                    = Resource(IRIS)
+      val nscuResource                    = Resource(NSCU)
+      val nfiraosResource                 = Resource(NFIRAOS)
+      val tcsResource                     = Resource(TCS)
+      val wfosResource                    = Resource(WFOS)
 
       TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
 
@@ -877,9 +880,14 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
-          ObsModeDetails(IRIS_CAL, Configured, Resources(irisResource, nfiraosResource, nscuResource)),
-          ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource)),
-          ObsModeDetails(IRIS_DARKNIGHT, NonConfigurable, Resources(irisResource, tcsResource, nfiraosResource))
+          ObsModeDetails(IRIS_CAL, Configured, Resources(irisResource, nfiraosResource, nscuResource), irisCalSequencers),
+          ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource), wfosCalSequencers),
+          ObsModeDetails(
+            IRIS_DARKNIGHT,
+            NonConfigurable,
+            Resources(irisResource, tcsResource, nfiraosResource),
+            darkNightSequencers
+          )
         )
       )
 

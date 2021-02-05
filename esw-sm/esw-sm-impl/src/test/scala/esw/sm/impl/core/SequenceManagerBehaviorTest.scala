@@ -558,9 +558,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
-          ObsModeDetails(clearSkies, Configured, Resources(tcsResource, irisResource)),
-          ObsModeDetails(darkNight, NonConfigurable, Resources(nscuResource, tcsResource)),
-          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource))
+          ObsModeDetails(clearSkies, Configured, Resources(tcsResource, irisResource), clearSkiesSequencers),
+          ObsModeDetails(darkNight, NonConfigurable, Resources(nscuResource, tcsResource), darkNightSequencers),
+          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOSequencers)
         )
       )
       obsModesDetailsResponseProbe.expectMessage(expectedMessage)

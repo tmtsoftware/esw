@@ -11,7 +11,7 @@ import esw.sm.api.models.ObsModeStatus.Configurable
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
-import esw.sm.api.models.{AgentStatus, ObsModeDetails, ProvisionConfig, Resources}
+import esw.sm.api.models.{AgentStatus, ObsModeDetails, ProvisionConfig, Resources, Sequencers}
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
@@ -79,7 +79,7 @@ class SequenceManagerRequestHandlerTest
 
     "return observation modes with status for getObsModesDetails request | ESW-466" in {
       val expectedObsModesDetailsResponse =
-        ObsModesDetailsResponse.Success(Set(ObsModeDetails(obsMode, Configurable, Resources())))
+        ObsModesDetailsResponse.Success(Set(ObsModeDetails(obsMode, Configurable, Resources(), Sequencers())))
       when(sequenceManagerApi.getObsModesDetails)
         .thenReturn(Future.successful(expectedObsModesDetailsResponse))
 

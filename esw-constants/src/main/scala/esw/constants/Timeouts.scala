@@ -47,8 +47,9 @@ object SequencerTimeouts {
 }
 
 object SequenceManagerTimeouts {
-  private val Processing: FiniteDuration   = 1.second // This includes time for processing other than 3rd party calls
-  val GetAllRunningObsMode: FiniteDuration = 3.seconds
+  private val Processing: FiniteDuration = 1.second // This includes time for processing other than 3rd party calls
+  val GetObsModesDetails: FiniteDuration = 1.seconds
+  require(GetObsModesDetails <= 2.seconds, "max timeout violated for GetObsModesDetails")
 
   val Configure: FiniteDuration = SequenceComponentTimeouts.Status + SequenceComponentTimeouts.LoadScript + Processing
   require(Configure <= 7.seconds, "max timeout violated for Configure")

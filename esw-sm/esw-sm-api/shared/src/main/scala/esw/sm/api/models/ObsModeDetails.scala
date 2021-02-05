@@ -2,7 +2,7 @@ package esw.sm.api.models
 
 import esw.ocs.api.models.ObsMode
 
-case class ObsModeDetails(obsMode: ObsMode, status: ObsModeStatus, resources: Resources)
+case class ObsModeDetails(obsMode: ObsMode, status: ObsModeStatus, resources: Resources, sequencers: Sequencers)
 
 sealed trait ObsModeStatus
 

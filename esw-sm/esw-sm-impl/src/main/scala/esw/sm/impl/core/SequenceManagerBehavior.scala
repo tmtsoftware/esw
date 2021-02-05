@@ -231,7 +231,8 @@ class SequenceManagerBehavior(
             ObsModeDetails(
               obsMode,
               getObsModeStatus(obsMode, configuredObsModes),
-              sequenceManagerConfig.resources(obsMode).get
+              sequenceManagerConfig.resources(obsMode).get,
+              sequenceManagerConfig.sequencers(obsMode).get
             )
           )
 
