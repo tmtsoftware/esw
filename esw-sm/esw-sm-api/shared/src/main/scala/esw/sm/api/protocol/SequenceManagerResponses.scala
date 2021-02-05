@@ -4,7 +4,7 @@ import csw.location.api.models.ComponentId
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models.{AgentStatus, ObsModeDetails, Resource, ResourceStatus, SequenceComponentStatus}
+import esw.sm.api.models._
 
 sealed trait SmResponse extends SmAkkaSerializable
 
@@ -141,9 +141,13 @@ object Unhandled {
 sealed trait ResourcesStatusResponse extends SmResponse
 case class ResourceStatusResponse(
     resource: Resource,
-    status: ResourceStatus = ResourceStatus.Available,
-    obsMode: Option[ObsMode] = None
+    status: ResourceStatus,
+    obsMode: Option[ObsMode]
 )
+
+object ResourceStatusResponse {
+  def apply(resource: Resource): ResourceStatusResponse = ResourceStatusResponse(resource, ResourceStatus.Available, None)
+}
 
 object ResourcesStatusResponse {
 

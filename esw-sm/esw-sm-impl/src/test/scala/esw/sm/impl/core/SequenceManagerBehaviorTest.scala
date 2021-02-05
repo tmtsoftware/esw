@@ -11,10 +11,10 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
+import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus, SequenceManagerState, _}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -578,10 +578,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedResources = ResourcesStatusResponse.Success(
         List(
-          ResourceStatusResponse(nscuResource, ResourceStatus.Available),
-          ResourceStatusResponse(tcsResource, ResourceStatus.Available),
-          ResourceStatusResponse(irisResource, ResourceStatus.Available),
-          ResourceStatusResponse(wfosResource, ResourceStatus.Available)
+          ResourceStatusResponse(nscuResource),
+          ResourceStatusResponse(tcsResource),
+          ResourceStatusResponse(irisResource),
+          ResourceStatusResponse(wfosResource)
         )
       )
 
@@ -598,8 +598,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         List(
           ResourceStatusResponse(nscuResource, ResourceStatus.InUse, Some(darkNight)),
           ResourceStatusResponse(tcsResource, ResourceStatus.InUse, Some(darkNight)),
-          ResourceStatusResponse(irisResource, ResourceStatus.Available),
-          ResourceStatusResponse(wfosResource, ResourceStatus.Available)
+          ResourceStatusResponse(irisResource),
+          ResourceStatusResponse(wfosResource)
         )
       )
 
