@@ -78,7 +78,7 @@ object SequenceManagerLatencyTest extends LocationUtils {
   private def switchObsMode(prevObsMode: ObsMode, nextObsMode: ObsMode, histogram: Histogram): Unit = {
     val (configureResponse, latency) = Timing.measureTimeMillis {
       shutdownObsMode(prevObsMode)
-      configureObsMode(prevObsMode)
+      configureObsMode(nextObsMode)
     }
     histogram.recordValue(latency)
 
