@@ -32,7 +32,7 @@ After making sure that all the pre-requisites are satisfied, we can directly run
 - Add TMT apps channel to your local Coursier installation using below command
 
 ```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
+cs channel --add https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
 ```
 
 - After adding TMT apps channel you can simply launch esw-shell by executing

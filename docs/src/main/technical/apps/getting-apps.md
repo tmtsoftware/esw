@@ -21,13 +21,13 @@ use one of the following commands.
 For developer machine setup, type:
 
 ```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
+cs channel --add https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json
 ```
 
 For a production machine setup, type:
 
 ```bash
-cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
+cs channel --add https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.prod.json
 ```
 
 ## 3. Starting CSW Services
