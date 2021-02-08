@@ -142,11 +142,11 @@ sealed trait ResourcesStatusResponse extends SmResponse
 case class ResourceStatusResponse(
     resource: Resource,
     status: ResourceStatus,
-    obsMode: Option[ObsMode]
+    obsMode: Option[ObsMode] = None
 )
 
 object ResourceStatusResponse {
-  def apply(resource: Resource): ResourceStatusResponse = ResourceStatusResponse(resource, ResourceStatus.Available, None)
+  def apply(resource: Resource): ResourceStatusResponse = ResourceStatusResponse(resource, ResourceStatus.Available)
 }
 
 object ResourcesStatusResponse {
