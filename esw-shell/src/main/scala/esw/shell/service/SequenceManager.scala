@@ -44,13 +44,14 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configService: Con
          |  version = $version
          |}""".stripMargin
     try {
-      configService
+      val id = configService
         .update(
           versionConfigPath,
           ConfigData.fromString(seqScriptsVersion),
           "Update sequencer scripts version for test setup"
         )
         .await()
+      configService.setActiveVersion(versionConfigPath, id, "setting updated version as active").await()
     }
     catch {
       case _: FileNotFound =>
