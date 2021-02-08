@@ -1,10 +1,10 @@
 package esw.sm.app
 
-import csw.config.api.{ConfigData, TokenFactory}
-import csw.config.api.scaladsl.ConfigService
-import csw.config.client.scaladsl.ConfigClientFactory
-
 import java.nio.file.{Path, Paths}
+
+import csw.config.api.scaladsl.ConfigService
+import csw.config.api.{ConfigData, TokenFactory}
+import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
@@ -68,22 +68,24 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
       intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
       intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
 
-      TestSetup.startSequenceManager(sequenceManagerPrefix, obsModeConfigPath, simulation = true)
+      TestSetup.startSequenceManager(sequenceManagerPrefix, obsModeConfigPath, true, Some(eswAgentPrefix), simulation = true)
 
       val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
       smAkkaLocation.prefix shouldBe sequenceManagerPrefix
 
-      // ESW-366 verify agent prefix and pid metadata is present in Sequence manager akka location
-      println(smAkkaLocation.metadata)
+      //  verify agent prefix and pid metadata is present in Sequence manager akka location
+      smAkkaLocation.metadata.getAgentPrefix shouldBe (Some(eswAgentPrefix))
+      smAkkaLocation.metadata.getPid.get shouldNot equal(None)
 
       val smHttpLocation = resolveHTTPLocation(sequenceManagerPrefix, Service)
       smHttpLocation.prefix shouldBe sequenceManagerPrefix
 
-      // ESW-366 verify agent prefix and pid metadata is present in Sequence manager http location
-      println(smHttpLocation.metadata)
-      TestSetup.cleanup()
+      // verify agent prefix and pid metadata is present in Sequence manager http location
+      smHttpLocation.metadata.getAgentPrefix shouldBe (Some(eswAgentPrefix))
+      smHttpLocation.metadata.getPid.get shouldNot equal(None)
 
     }
+
     "be able to add component's entries in the location service on receiving commands like provision, configure, etc| ESW-174" in {
 
       val eswRunningSeqComp = Prefix(ESW, "ESW_10")
@@ -149,7 +151,6 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
 
       //clean up the provisioned sequence components
       sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
-      TestSetup.cleanup()
     }
   }
 }
