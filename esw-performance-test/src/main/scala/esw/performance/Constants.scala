@@ -10,7 +10,7 @@ object Constants {
   val obsMode2: ObsMode = ObsMode("obsMode2")
   val obsMode3: ObsMode = ObsMode("obsMode3")
 
-  val enableSwitching = false
+  val enableSwitching = true
 
   val warmupIterations = 3
   val actualIterations = 20
