@@ -842,7 +842,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       sequenceManager.configure(IRIS_CAL).futureValue
 
-      val expectedStatus = List(
+      val expectedStatus = Set(
         ResourceStatusResponse(Resource(IRIS), InUse, Some(IRIS_CAL)),
         ResourceStatusResponse(Resource(NSCU), InUse, Some(IRIS_CAL)),
         ResourceStatusResponse(Resource(WFOS), Available, None),
@@ -851,7 +851,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       )
 
       val actualResponse = sequenceManager.getResources.futureValue.asInstanceOf[ResourcesStatusResponse.Success]
-      actualResponse.resourcesStatus should ===(expectedStatus)
+      actualResponse.resourcesStatus.toSet should ===(expectedStatus)
 
       sequenceManager.shutdownAllSequenceComponents().futureValue
       TestSetup.cleanup()
