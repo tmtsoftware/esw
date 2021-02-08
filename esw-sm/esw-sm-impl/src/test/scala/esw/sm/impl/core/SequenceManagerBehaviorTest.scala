@@ -577,17 +577,17 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
 
-      val expectedResources = ResourcesStatusResponse.Success(
-        List(
+      val expectedResources =
+        Set(
           ResourceStatusResponse(nscuResource),
           ResourceStatusResponse(tcsResource),
           ResourceStatusResponse(irisResource),
           ResourceStatusResponse(wfosResource)
         )
-      )
 
       smRef ! GetResources(getResponseProbe.ref)
-      getResponseProbe.expectMessage(expectedResources)
+      val res = getResponseProbe.expectMessageType[ResourcesStatusResponse.Success]
+      res.resourcesStatus.toSet should ===(expectedResources)
     }
 
     "return resources in use when obsMode is configured | ESW-467 " in {
@@ -595,17 +595,17 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val locations        = List(akkaLocation(ComponentId(Prefix(ESW, darkNight.name), Sequencer)))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(locations)))
 
-      val expectedResources = ResourcesStatusResponse.Success(
-        List(
+      val expectedResources =
+        Set(
           ResourceStatusResponse(nscuResource, ResourceStatus.InUse, Some(darkNight)),
           ResourceStatusResponse(tcsResource, ResourceStatus.InUse, Some(darkNight)),
           ResourceStatusResponse(irisResource),
           ResourceStatusResponse(wfosResource)
         )
-      )
 
       smRef ! GetResources(getResponseProbe.ref)
-      getResponseProbe.expectMessage(expectedResources)
+      val res = getResponseProbe.expectMessageType[ResourcesStatusResponse.Success]
+      res.resourcesStatus.toSet should ===(expectedResources)
     }
 
     "return Failed if RegistrationListingFailed gives error | ESW-467" in {

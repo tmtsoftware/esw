@@ -19,7 +19,7 @@ import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState, _}
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.{ResourceStatusResponse, _}
 import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
@@ -163,37 +163,30 @@ class SequenceManagerBehavior(
       }
     }
 
-  private def getAllResources: Set[Resource] = {
-    val obsModes = sequenceManagerConfig.obsModes.keys
-    obsModes.flatMap(obsMode => getResources(obsMode).resources).toSet
+  private def buildResourceStatusList(runningObsModes: Set[ObsMode]) = {
+    val obsModes           = sequenceManagerConfig.obsModes.toSet
+    val resourceToObsMode  = obsModes.flatMap(kv => kv._2.resources.resources.map(r => (r, kv._1)))
+    val (inUse, available) = resourceToObsMode.partition(t => runningObsModes.contains(t._2))
+
+    val inUseResources = inUse.map {
+      case (resource, mode) => ResourceStatusResponse(resource, ResourceStatus.InUse, Some(mode))
+    }
+    val availableResources = available.filterNot(t => inUse.exists(_._1 == t._1)).map(t => ResourceStatusResponse(t._1))
+    inUseResources ++ availableResources
   }
 
-  private def getResourcesStatus(replyTo: ActorRef[ResourcesStatusResponse]): Future[Unit] = {
-    val resources: Set[Resource]                               = getAllResources
-    var resourcesStatus: Map[Resource, ResourceStatusResponse] = Map()
-
-    resources.foreach(resource => {
-      // marking all resources as available in this loop
-      resourcesStatus += resource -> ResourceStatusResponse(resource)
-    })
-
+  private def getResourcesStatus(replyTo: ActorRef[ResourcesStatusResponse]): Future[Unit] =
     getRunningObsModes.mapToAdt(
-      obsModes => {
-        obsModes.foreach(obsMode => {
-          getResources(obsMode).resources.foreach(resource => {
-            // marking resources which are in use
-            resourcesStatus += resource -> ResourceStatusResponse(resource, ResourceStatus.InUse, Some(obsMode))
-          })
-        })
-        logger.info(s"Sequence Manager response Success: ${resourcesStatus.values.toList}")
-        replyTo ! ResourcesStatusResponse.Success(resourcesStatus.values.toList)
+      runningObsModes => {
+        val resourceStatus = buildResourceStatusList(runningObsModes)
+        logger.info(s"Sequence Manager response Success: $resourceStatus")
+        replyTo ! ResourcesStatusResponse.Success(resourceStatus.toList)
       },
       error => {
         logger.error(s"Sequence Manager response Failure: ${error.getMessage}")
         replyTo ! ResourcesStatusResponse.Failed(error.getMessage)
       }
     )
-  }
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
@@ -218,27 +211,22 @@ class SequenceManagerBehavior(
     }
 
   private def getObsModesDetails: Future[ObsModesDetailsResponse] = {
-    def getObsModeStatus(obsMode: ObsMode, configuredObsModes: Set[ObsMode]): ObsModeStatus = {
+    def getObsModeStatus(obsMode: ObsMode, resources: Resources, configuredObsModes: Set[ObsMode]): ObsModeStatus = {
       if (configuredObsModes.contains(obsMode)) Configured
-      else if (isNonConfigurable(sequenceManagerConfig.resources(obsMode).get, configuredObsModes)) NonConfigurable
+      else if (isNonConfigurable(resources, configuredObsModes)) NonConfigurable
       else Configurable
     }
 
     getRunningObsModes.mapToAdt(
       configuredObsModes => {
-        val obsModes = sequenceManagerConfig.obsModes.keys.toSet
-        val obsModesDetails =
-          obsModes.map(obsMode =>
-            ObsModeDetails(
-              obsMode,
-              getObsModeStatus(obsMode, configuredObsModes),
-              sequenceManagerConfig.resources(obsMode).get,
-              sequenceManagerConfig.sequencers(obsMode).get
-            )
-          )
+        val obsModes = sequenceManagerConfig.obsModes.toSet
+        val obsModesDetails = obsModes.map {
+          case (obsMode, ObsModeConfig(resources, sequencers)) =>
+            ObsModeDetails(obsMode, getObsModeStatus(obsMode, resources, configuredObsModes), resources, sequencers)
+        }
 
         val response = ObsModesDetailsResponse.Success(obsModesDetails)
-        logger.info(s"Sequence Manager response Success: ${response}")
+        logger.info(s"Sequence Manager response Success: $response")
         response
       },
       error => {
