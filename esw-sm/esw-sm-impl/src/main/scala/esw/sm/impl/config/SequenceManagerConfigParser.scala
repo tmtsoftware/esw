@@ -1,11 +1,10 @@
 package esw.sm.impl.config
 
-import java.nio.file.Path
 import com.typesafe.config.ConfigRenderOptions
 import csw.config.client.commons.ConfigUtils
-import esw.sm.api.models.SequenceManagerConfig
 import io.bullet.borer._
 
+import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
 
 // Reads config file for all observing modes and parse it into SequenceManagerConfig

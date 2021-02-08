@@ -2,7 +2,7 @@ package esw.sm.impl.config
 
 import csw.prefix.models.Subsystem._
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.{ObsModeConfig, Resource, Resources, SequenceManagerConfig, Sequencers}
+import esw.sm.api.models.{Resource, Resources, Sequencers}
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike

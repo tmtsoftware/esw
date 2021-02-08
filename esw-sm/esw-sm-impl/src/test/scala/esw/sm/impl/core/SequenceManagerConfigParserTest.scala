@@ -1,18 +1,18 @@
 package esw.sm.impl.core
 
-import java.nio.file.Paths
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem._
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.{ObsModeConfig, Resource, Resources, SequenceManagerConfig, Sequencers}
+import esw.sm.api.models.{Resource, Resources, Sequencers}
 import esw.sm.impl.config._
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Borer.Error.InvalidInputData
 import org.scalatest.prop.TableDrivenPropertyChecks
 
+import java.nio.file.Paths
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenPropertyChecks {

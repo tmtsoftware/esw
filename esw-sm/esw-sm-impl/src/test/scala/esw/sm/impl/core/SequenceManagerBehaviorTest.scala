@@ -21,6 +21,7 @@ import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
+import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks

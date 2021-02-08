@@ -11,15 +11,16 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
+import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState, _}
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
 import esw.sm.api.protocol._
+import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
