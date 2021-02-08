@@ -24,9 +24,10 @@ object AutoMultiJvm extends AutoPlugin {
 
   override def projectConfigurations: Seq[Configuration] = List(MultiJvm)
 
-  private def multiNodeHostNames = sys.env.get("multiNodeHosts") match {
-    case Some(str) => str.split(",").toSeq
-    case None      => Seq.empty
-  }
+  private def multiNodeHostNames =
+    sys.env.get("multiNodeHosts") match {
+      case Some(str) => str.split(",").toSeq
+      case None      => Seq.empty
+    }
 
 }
