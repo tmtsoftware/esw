@@ -17,7 +17,7 @@ import csw.time.core.models.UTCTime
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
+class SimpleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
   import cswCtx._
   private val log = loggerFactory.getLogger
@@ -54,9 +54,9 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
 
 }
 
-class SampleAssemblyBehaviorFactory extends ComponentBehaviorFactory {
+class SimpleAssemblyBehaviorFactory extends ComponentBehaviorFactory {
 
   override def handlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext): ComponentHandlers =
-    new SampleAssemblyHandlers(ctx, cswCtx)
+    new SimpleAssemblyHandlers(ctx, cswCtx)
 
 }

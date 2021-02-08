@@ -10,7 +10,7 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 
-class SampleHCDHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
+class SimpleHCDHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
   import cswCtx._
   private val log = loggerFactory.getLogger
@@ -42,9 +42,9 @@ class SampleHCDHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswCont
 
 }
 
-class SampleHCDBehaviorFactory extends ComponentBehaviorFactory {
+class SimpleHCDBehaviorFactory extends ComponentBehaviorFactory {
 
   override def handlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext): ComponentHandlers =
-    new SampleHCDHandlers(ctx, cswCtx)
+    new SimpleHCDHandlers(ctx, cswCtx)
 
 }
