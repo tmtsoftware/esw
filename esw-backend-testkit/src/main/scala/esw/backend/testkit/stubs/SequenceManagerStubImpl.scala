@@ -75,7 +75,31 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
       )
     )
 
-  override def getObsModesDetails: Future[ObsModesDetailsResponse] = ???
+  override def getObsModesDetails: Future[ObsModesDetailsResponse] =
+    Future.successful(
+      ObsModesDetailsResponse.Success(
+        Set(
+          ObsModeDetails(
+            ObsMode("DarkNight_1"),
+            ObsModeStatus.Configured,
+            Resources(Set(Resource(ESW), Resource(IRIS))),
+            Sequencers(List(ESW, TCS))
+          ),
+          ObsModeDetails(
+            ObsMode("DarkNight_2"),
+            ObsModeStatus.Configurable,
+            Resources(Set(Resource(IRIS), Resource(TCS))),
+            Sequencers(List(ESW, IRIS))
+          ),
+          ObsModeDetails(
+            ObsMode("DarkNight_3"),
+            ObsModeStatus.NonConfigurable,
+            Resources(Set(Resource(TCS))),
+            Sequencers(List(TCS))
+          )
+        )
+      )
+    )
 }
 
 class SequenceManagerStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
