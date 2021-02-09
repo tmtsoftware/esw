@@ -6,7 +6,6 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.client.utils.LocationServerStatus
-import csw.logging.client.scaladsl.{LoggerFactory, LoggingSystemFactory}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
@@ -27,13 +26,9 @@ object SequenceManagerReliabilityTest extends LocationUtils {
 
   LocationServerStatus.requireUpLocally()
 
-  private val loggerFactory         = new LoggerFactory(Prefix(ESW, "perf.test"))
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
   private val smLocation            = resolveAkkaLocation(sequenceManagerPrefix, Service)
   private val smClient              = SequenceManagerApiFactory.makeAkkaClient(smLocation)
-
-  private val log    = loggerFactory.getLogger
-  private val logger = LoggingSystemFactory.forTestingOnly()
 
   def main(args: Array[String]): Unit = {
     val histogram       = new Histogram(3)
@@ -85,7 +80,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     Thread.sleep(Constants.timeout)
 
     // get obsMode details
-    getObsModesDetails
+    getObsModesDetails()
 
     // shutdown all obsMode2 sequencers individually
     shutdownSequencers(obsMode2)
@@ -100,7 +95,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     Thread.sleep(Constants.timeout)
 
     // shutdown obsMode4 using subsystem shutdown
-    getObsModesDetails
+    getObsModesDetails()
       .filter(_.obsMode == obsMode4)
       .foreach(_.sequencers.subsystems.foreach(shutdownSubsystemSequencers))
 
@@ -144,7 +139,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   }
 
   private def restartSequencers(obsMode: ObsMode): Unit = {
-    getObsModesDetails
+    getObsModesDetails()
       .filter(_.obsMode == obsMode)
       .foreach(obsModeDetails => obsModeDetails.sequencers.subsystems.foreach(restartSequencer(_, obsMode)))
   }
@@ -173,7 +168,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   }
 
   private def shutdownSequencers(obsMode: ObsMode): Unit = {
-    getObsModesDetails
+    getObsModesDetails()
       .filter(_.obsMode == obsMode)
       .foreach(obsModeDetails => {
         obsModeDetails.sequencers.subsystems.foreach(shutdownSequencer(_, obsMode))
