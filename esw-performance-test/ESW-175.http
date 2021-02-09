@@ -11,7 +11,7 @@ GET http://<your-ip>:4000/active-config/tmt/osw/version.conf
 
 
 
-##### Optional
+################################# Optional Steps ###################################################
 #### To update version config
 PUT http://<your-ip>:4000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
