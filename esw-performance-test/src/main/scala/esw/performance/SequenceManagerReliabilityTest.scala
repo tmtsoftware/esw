@@ -164,7 +164,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     // configure obsMode1
     println(s"----------> step $step")
     configureObsMode(obsMode1, configureHist)
-    step +=1git
+    step +=1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
