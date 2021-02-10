@@ -93,66 +93,96 @@ object SequenceManagerReliabilityTest extends LocationUtils {
       shutdownSeqHist: Histogram
   ): Unit = {
 
+    var step = 1
     // configure obsMode1
+    println(s"----------> step $step")
     configureObsMode(obsMode1, configureHist)
+    step +=1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // shutdown obsMode1
+    println(s"----------> step $step")
     shutdownObsMode(obsMode1, shutdownHist)
+    step +=1
+
     Thread.sleep(Constants.timeout)
+
     // configure obsMode2
+    println(s"----------> step $step")
     configureObsMode(obsMode2, configureHist)
+    step +=1
 
     // configure obsMode4 ... (non-conflicting with obsMode2)
+    println(s"----------> step $step")
     configureObsMode(obsMode4, configureHist)
+    step +=1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // restarting all obsMode2 sequencers
+    println(s"----------> step $step")
     restartSequencers(obsMode2, restartHist)
 
+    step +=1
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // get obsMode details
+    println(s"----------> step $step")
     getObsModesDetails()
+    step +=1
 
     // shutdown all obsMode2 sequencers individually
+    println(s"----------> step $step")
     shutdownSequencers(obsMode2, shutdownSeqHist)
+    step +=1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // configure obsMode3 (having conflicting resources with obsMode4)
+    println(s"----------> step $step")
     configureObsMode(obsMode3, configureHist)
+    step +=1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // shutdown obsMode4 using subsystem shutdown
+    println(s"----------> step $step")
     getObsModesDetails()
       .filter(_.obsMode == obsMode4)
       .foreach(_.sequencers.subsystems.foreach(shutdownSubsystemSequencers))
+    step +=1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // configure obsMode1
+    println(s"----------> step $step")
     configureObsMode(obsMode1, configureHist)
+    step +=1git
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // switch between obsModes1 and obsMode3
+    println(s"----------> step $step")
     shutdownObsMode(obsMode1, shutdownHist)
+    step +=1
+
     Thread.sleep(Constants.timeout)
+    println(s"----------> step $step")
     configureObsMode(obsMode3, configureHist)
+    step +=1
 
     // shutdownAll obsModes
+    println(s"----------> step $step")
     smClient.shutdownAllSequencers().futureValue
+    step +=1
 
   }
 
