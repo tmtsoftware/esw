@@ -12,8 +12,9 @@ addSbtPlugin("com.timushev.sbt"                  % "sbt-rewarn"               % 
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % "3.0.0")
 
 resolvers += Resolver.bintrayRepo("twtmt", "sbt-plugins")
-addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.2.0")
-addSbtPlugin("com.github.tmtsoftware" % "kotlin-plugin" % "2.1.0")
+resolvers += "jitpack" at "https://jitpack.io"
+libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "d841ff88bd"
+libraryDependencies += "com.github.tmtsoftware" % "sbt-docs"      % "9fe4596ff8"
 
 resolvers += Resolver.jcenterRepo
 addSbtPlugin("net.aichler" % "sbt-jupiter-interface" % "0.8.4")
