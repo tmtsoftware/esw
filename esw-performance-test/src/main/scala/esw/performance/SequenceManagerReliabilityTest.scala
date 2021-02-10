@@ -12,6 +12,7 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
 import esw.performance.Constants._
 import esw.performance.utils.PerfUtils.{printResults, recordResults}
+import esw.performance.utils.Timing
 import esw.sm.api.actor.client.SequenceManagerApiFactory
 import esw.sm.api.protocol.ConfigureResponse.Failure
 import esw.sm.api.protocol._
@@ -31,50 +32,87 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   private val smClient              = SequenceManagerApiFactory.makeAkkaClient(smLocation)
 
   def main(args: Array[String]): Unit = {
-    val histogram       = new Histogram(3)
-    val warmUpHistogram = new Histogram(3)
-
-    val provisionResponse = smClient.provision(provisionConfig).futureValue
+    val provisionResponse = smClient.provision(provisionConfigReliability).futureValue
     provisionResponse shouldBe a[ProvisionResponse.Success.type]
 
-    repeatScenario(warmupIterations, warmUpHistogram, "Warmup")
-    repeatScenario(actualIterations, histogram, "Actual")
-    recordResults(histogram, "results.txt")
+    warmUp()
+    actualPerf()
 
     actorSystem.terminate()
   }
 
-  private def repeatScenario(times: Int, histogram: Histogram, label: String): Unit = {
-    (1 to times).foreach { iterationNumber =>
-      println(s"$label iteration ------> $iterationNumber")
-      scenario(histogram)
-    }
-
-    //log.info(s"$label latencies")
-    printResults(histogram)
+  private def warmUp(): Unit = {
+    val warmUpConfigureHistogram   = new Histogram(3)
+    val warmUpShutdownHistogram    = new Histogram(3)
+    val warmUpRestartHistogram     = new Histogram(3)
+    val warmUpShutdownSeqHistogram = new Histogram(3)
+    repeatScenario(
+      warmupIterations,
+      "Warmup",
+      warmUpConfigureHistogram,
+      warmUpShutdownHistogram,
+      warmUpRestartHistogram,
+      warmUpShutdownSeqHistogram
+    )
   }
 
-  private def scenario(histogram: Histogram): Unit = {
+  private def actualPerf(): Unit = {
+    val configureHistogram   = new Histogram(3)
+    val shutdownHistogram    = new Histogram(3)
+    val restartHistogram     = new Histogram(3)
+    val shutdownSeqHistogram = new Histogram(3)
+    repeatScenario(actualIterations, "Actual", configureHistogram, shutdownHistogram, restartHistogram, shutdownSeqHistogram)
+    recordResults(configureHistogram, "configure_results.txt")
+    recordResults(shutdownHistogram, "shutdown_results.txt")
+    recordResults(restartHistogram, "restart_results.txt")
+    recordResults(shutdownSeqHistogram, "shutdown_seq_results.txt")
+  }
+
+  private def repeatScenario(
+      times: Int,
+      label: String,
+      configureHist: Histogram,
+      shutdownHist: Histogram,
+      restartHist: Histogram,
+      shutdownSeqHist: Histogram
+  ): Unit = {
+    (1 to times).foreach { iterationNumber =>
+      println(s"$label iteration ------> $iterationNumber")
+      scenario(configureHist, shutdownHist, restartHist, shutdownSeqHist)
+    }
+    printResults(configureHist)
+    printResults(shutdownHist)
+    printResults(restartHist)
+    printResults(shutdownHist)
+  }
+
+  private def scenario(
+      configureHist: Histogram,
+      shutdownHist: Histogram,
+      restartHist: Histogram,
+      shutdownSeqHist: Histogram
+  ): Unit = {
+
     // configure obsMode1
-    configureObsMode(obsMode1)
+    configureObsMode(obsMode1, configureHist)
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // shutdown obsMode1
-    shutdownObsMode(obsMode1)
+    shutdownObsMode(obsMode1, shutdownHist)
     Thread.sleep(Constants.timeout)
     // configure obsMode2
-    configureObsMode(obsMode2)
+    configureObsMode(obsMode2, configureHist)
 
     // configure obsMode4 ... (non-conflicting with obsMode2)
-    configureObsMode(obsMode4)
+    configureObsMode(obsMode4, configureHist)
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // restarting all obsMode2 sequencers
-    restartSequencers(obsMode2)
+    restartSequencers(obsMode2, restartHist)
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
@@ -83,13 +121,13 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     getObsModesDetails()
 
     // shutdown all obsMode2 sequencers individually
-    shutdownSequencers(obsMode2)
+    shutdownSequencers(obsMode2, shutdownSeqHist)
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // configure obsMode3 (having conflicting resources with obsMode4)
-    configureObsMode(obsMode3)
+    configureObsMode(obsMode3, configureHist)
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
@@ -103,63 +141,66 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     Thread.sleep(Constants.timeout)
 
     // configure obsMode1
-    configureObsMode(obsMode1)
+    configureObsMode(obsMode1, configureHist)
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
     // switch between obsModes1 and obsMode3
-    shutdownObsMode(obsMode1)
+    shutdownObsMode(obsMode1, shutdownHist)
     Thread.sleep(Constants.timeout)
-    configureObsMode(obsMode3)
+    configureObsMode(obsMode3, configureHist)
 
     // shutdownAll obsModes
     smClient.shutdownAllSequencers().futureValue
 
   }
 
-  private def shutdownObsMode(obsMode: ObsMode): ShutdownSequencersResponse = {
-    val shutdownResponse = smClient.shutdownObsModeSequencers(obsMode).futureValue
+  private def shutdownObsMode(obsMode: ObsMode, histogram: Histogram) = {
+    val (shutdownResponse, shutdownLatency) = Timing.measureTimeMillis(smClient.shutdownObsModeSequencers(obsMode).futureValue)
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
         println(s"Shutdown $obsMode Response --> ShutdownSequencersResponse.Success $obsMode")
       case failure: ShutdownSequencersResponse.Failure => println(Console.RED + s"${failure.getMessage}")
     }
+    histogram.recordValue(shutdownLatency)
     shutdownResponse
   }
 
-  private def configureObsMode(obsMode: ObsMode): ConfigureResponse = {
-    val configureResponse = smClient.configure(obsMode).futureValue
+  private def configureObsMode(obsMode: ObsMode, histogram: Histogram) = {
+    val (configureResponse, configureLatency) = Timing.measureTimeMillis(smClient.configure(obsMode).futureValue)
     configureResponse match {
       case ConfigureResponse.Success(masterSequencerComponentId) =>
         println(s"Configure $obsMode Response --> ConfigureResponse.Success $masterSequencerComponentId")
       case failure: Failure => println(Console.RED + s"${failure.getMessage}")
     }
+    histogram.recordValue(configureLatency)
     configureResponse
   }
 
-  private def restartSequencers(obsMode: ObsMode): Unit = {
+  private def restartSequencers(obsMode: ObsMode, histogram: Histogram): Unit = {
     getObsModesDetails()
       .filter(_.obsMode == obsMode)
-      .foreach(obsModeDetails => obsModeDetails.sequencers.subsystems.foreach(restartSequencer(_, obsMode)))
+      .foreach(obsModeDetails =>
+        obsModeDetails.sequencers.subsystems.foreach((subSystem: Subsystem) => restartSequencer(subSystem, obsMode, histogram))
+      )
   }
 
-  private def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Unit = {
-    val restartResponse = smClient.restartSequencer(subSystem, obsMode).futureValue
+  private def restartSequencer(subSystem: Subsystem, obsMode: ObsMode, histogram: Histogram) = {
+    val (restartResponse, restartLatency) = Timing.measureTimeMillis(smClient.restartSequencer(subSystem, obsMode).futureValue)
     restartResponse match {
       case RestartSequencerResponse.Success(componentId) =>
         println(s"Restart $subSystem sequencer response ---> RestartSequencerResponse.Success($componentId)")
       case failure: RestartSequencerResponse.Failure => println(Console.RED + s"${failure.getMessage}")
     }
+    histogram.recordValue(restartLatency)
+    restartResponse
   }
 
   private def getObsModesDetails() = {
     val obsModeDetailsResponse = smClient.getObsModesDetails.futureValue
     obsModeDetailsResponse match {
-      case ObsModesDetailsResponse.Success(obsModeDetails) => {
-        println(s"obsmode----------details $obsModeDetails")
-        obsModeDetails
-      }
+      case ObsModesDetailsResponse.Success(obsModeDetails) => obsModeDetails
       case failure: ObsModesDetailsResponse.Failure => {
         println(Console.RED + s"${failure.getMessage}")
         Nil
@@ -167,20 +208,23 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     }
   }
 
-  private def shutdownSequencers(obsMode: ObsMode): Unit = {
+  private def shutdownSequencers(obsMode: ObsMode, histogram: Histogram): Unit = {
     getObsModesDetails()
       .filter(_.obsMode == obsMode)
       .foreach(obsModeDetails => {
-        obsModeDetails.sequencers.subsystems.foreach(shutdownSequencer(_, obsMode))
+        obsModeDetails.sequencers.subsystems.foreach((subsystem: Subsystem) => shutdownSequencer(subsystem, obsMode, histogram))
       })
   }
 
-  private def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Unit = {
-    val shutdownResponse = smClient.shutdownSequencer(subsystem, obsMode).futureValue
+  private def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode, histogram: Histogram) = {
+    val (shutdownResponse, shutdownSeqLatency) =
+      Timing.measureTimeMillis(smClient.shutdownSequencer(subsystem, obsMode).futureValue)
     shutdownResponse match {
       case ShutdownSequencersResponse.Success          => println(s"$subsystem sequencer for $obsMode shutdown Successfully")
       case failure: ShutdownSequencersResponse.Failure => println(Console.RED + s"${failure.getMessage}")
     }
+    histogram.recordValue(shutdownSeqLatency)
+    shutdownResponse
   }
 
   private def shutdownSubsystemSequencers(subsystem: Subsystem): Unit = {
