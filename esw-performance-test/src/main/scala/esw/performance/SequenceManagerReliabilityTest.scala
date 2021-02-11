@@ -114,6 +114,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     configureObsMode(obsMode2, configureHist)
     step += 1
 
+    Thread.sleep(Constants.timeout)
+
     // configure obsMode4 ... (non-conflicting with obsMode2)
     println(s"----------> step $step")
     configureObsMode(obsMode4, configureHist)
@@ -178,6 +180,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     println(s"----------> step $step")
     shutdownSequencers(obsMode3, shutdownSeqHist)
     step += 1
+
+    Thread.sleep(Constants.timeout)
   }
 
   private def shutdownObsMode(obsMode: ObsMode, histogram: Histogram) = {
