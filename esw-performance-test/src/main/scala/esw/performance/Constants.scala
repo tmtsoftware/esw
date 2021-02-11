@@ -14,7 +14,7 @@ object Constants {
   val enableSwitching = true
 
   val warmupIterations = 2
-  val actualIterations = 5
+  val actualIterations = 100
 
   val timeout: Int = 20 * 1000
 

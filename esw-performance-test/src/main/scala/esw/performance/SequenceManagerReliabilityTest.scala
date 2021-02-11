@@ -6,6 +6,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.client.utils.LocationServerStatus
+import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
@@ -30,6 +31,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
   private val smLocation            = resolveAkkaLocation(sequenceManagerPrefix, Service)
   private val smClient              = SequenceManagerApiFactory.makeAkkaClient(smLocation)
+  private val loggerFactory         = new LoggerFactory(Prefix(ESW, "reliability.perf.test"))
+  private val log                   = loggerFactory.getLogger
 
   def main(args: Array[String]): Unit = {
     val provisionResponse = smClient.provision(provisionConfigReliability).futureValue
@@ -78,6 +81,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   ): Unit = {
     (1 to times).foreach { iterationNumber =>
       println(s"$label iteration ------> $iterationNumber")
+      log.info(s"$label iteration ------> $iterationNumber")
       scenario(configureHist, shutdownHist, restartHist, shutdownSeqHist)
     }
     printResults(configureHist)
@@ -94,62 +98,73 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   ): Unit = {
 
     var step = 1
-    // configure obsMode1
+    // step1: configure obsMode1
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     configureObsMode(obsMode1, configureHist)
     step += 1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
-    // shutdown obsMode1
+    // step2: shutdown obsMode1
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     shutdownObsMode(obsMode1, shutdownHist)
     step += 1
 
+    // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
-    // configure obsMode2
+    // step3: configure obsMode2
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     configureObsMode(obsMode2, configureHist)
     step += 1
 
+    // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
-    // configure obsMode4 ... (non-conflicting with obsMode2)
+    // step4: configure obsMode4 ... (non-conflicting with obsMode2)
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     configureObsMode(obsMode4, configureHist)
     step += 1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
-    // restarting all obsMode2 sequencers
+    // step5: restarting all obsMode2 sequencers
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     restartSequencers(obsMode2, restartHist)
     step += 1
 
-    // get obsMode details
+    // step6: get obsMode details
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     println("Fetched obsModes details")
     getObsModesDetails()
     step += 1
 
-    // shutdown all obsMode2 sequencers individually
+    // step7: shutdown all obsMode2 sequencers individually
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     shutdownSequencers(obsMode2, shutdownSeqHist)
     step += 1
 
-    // configure obsMode3 (having conflicting resources with obsMode4)
+    // step8: configure obsMode3 (having conflicting resources with obsMode4)
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     configureObsMode(obsMode3, configureHist)
     step += 1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
-    // shutdown obsMode4 using subsystem shutdown
+    // step9: shutdown obsMode4 using subsystem shutdown
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     getObsModesDetails()
       .filter(_.obsMode == obsMode4)
       .foreach(_.sequencers.subsystems.foreach(shutdownSubsystemSequencers))
@@ -158,27 +173,34 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
-    // configure obsMode1
+    // step10: configure obsMode1
     println(s"----------> step $step")
+    log.info(s"----------> step $step")
     configureObsMode(obsMode1, configureHist)
     step += 1
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
-    // switch between obsModes1 and obsMode3
+    // step11: configure obsMode3 non-conflicting with obsMode1
     println(s"----------> step $step")
-    shutdownObsMode(obsMode1, shutdownHist)
-    step += 1
-
-    Thread.sleep(Constants.timeout)
-    println(s"----------> step $step")
+    log.info(s"----------> step $step")
     configureObsMode(obsMode3, configureHist)
     step += 1
 
-    // shutdownAll obsModes
+    // to simulate actual observation
+    Thread.sleep(Constants.timeout)
+
+    // step12: shutdown obsMode1 sequencers
     println(s"----------> step $step")
-    shutdownSequencers(obsMode3, shutdownSeqHist)
+    log.info(s"----------> step $step")
+    shutdownSequencers(obsMode1, shutdownHist)
+    step += 1
+
+    // step13: shutdownAll obsModes
+    println(s"----------> step $step")
+    log.info(s"----------> step $step")
+    shutdownObsMode(obsMode3, shutdownSeqHist)
     step += 1
 
     Thread.sleep(Constants.timeout)
@@ -189,7 +211,12 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
         println(s"Shutdown $obsMode Response --> ShutdownSequencersResponse.Success $obsMode")
-      case failure: ShutdownSequencersResponse.Failure => println(Console.RED + s"${failure.getMessage}")
+        log.info(s"Shutdown $obsMode Response --> ShutdownSequencersResponse.Success $obsMode")
+      case failure: ShutdownSequencersResponse.Failure => {
+        println(Console.RED + s"${failure.getMessage}")
+        log.error(s"Failure to shutdownObsMode $obsMode : ${failure.getMessage}")
+
+      }
     }
     histogram.recordValue(shutdownLatency)
     shutdownResponse
@@ -200,7 +227,11 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     configureResponse match {
       case ConfigureResponse.Success(masterSequencerComponentId) =>
         println(s"Configure $obsMode Response --> ConfigureResponse.Success $masterSequencerComponentId")
-      case failure: Failure => println(Console.RED + s"${failure.getMessage}")
+        log.info(s"Configure $obsMode Response --> ConfigureResponse.Success $masterSequencerComponentId")
+      case failure: Failure => {
+        println(Console.RED + s"${failure.getMessage}")
+        log.error(s"Failure to configure $obsMode : ${failure.getMessage}")
+      }
     }
     histogram.recordValue(configureLatency)
     configureResponse
@@ -221,9 +252,14 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   private def restartSequencer(subSystem: Subsystem, obsMode: ObsMode, histogram: Histogram) = {
     val (restartResponse, restartLatency) = Timing.measureTimeMillis(smClient.restartSequencer(subSystem, obsMode).futureValue)
     restartResponse match {
-      case RestartSequencerResponse.Success(componentId) =>
+      case RestartSequencerResponse.Success(componentId) => {
         println(s"Restart $subSystem sequencer response ---> RestartSequencerResponse.Success($componentId)")
-      case failure: RestartSequencerResponse.Failure => println(Console.RED + s"${failure.getMessage}")
+        log.info(s"Restart $subSystem sequencer response ---> RestartSequencerResponse.Success($componentId)")
+      }
+      case failure: RestartSequencerResponse.Failure => {
+        println(Console.RED + s"${failure.getMessage}")
+        log.error(s"Failure to restart sequencer of subsystem:$subSystem, obsMode:$obsMode : ${failure.getMessage}")
+      }
     }
     histogram.recordValue(restartLatency)
     restartResponse
@@ -235,6 +271,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
       case ObsModesDetailsResponse.Success(obsModeDetails) => obsModeDetails
       case failure: ObsModesDetailsResponse.Failure => {
         println(Console.RED + s"${failure.getMessage}")
+        log.error(s"Get obsMode failed : ${failure.getMessage}")
         Nil
       }
     }
@@ -256,8 +293,14 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     val (shutdownResponse, shutdownSeqLatency) =
       Timing.measureTimeMillis(smClient.shutdownSequencer(subsystem, obsMode).futureValue)
     shutdownResponse match {
-      case ShutdownSequencersResponse.Success          => println(s"$subsystem sequencer for $obsMode shutdown Successfully")
-      case failure: ShutdownSequencersResponse.Failure => println(Console.RED + s"${failure.getMessage}")
+      case ShutdownSequencersResponse.Success => {
+        println(s"$subsystem sequencer for $obsMode shutdown Successfully")
+        log.info(s"$subsystem sequencer for $obsMode shutdown Successfully")
+      }
+      case failure: ShutdownSequencersResponse.Failure => {
+        println(Console.RED + s"${failure.getMessage}")
+        log.error(s"Failure to shutdown Sequencer for $subsystem, $obsMode : ${failure.getMessage}")
+      }
     }
     histogram.recordValue(shutdownSeqLatency)
     shutdownResponse
@@ -266,8 +309,14 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   private def shutdownSubsystemSequencers(subsystem: Subsystem): Unit = {
     val shutdownResponse = smClient.shutdownSubsystemSequencers(subsystem).futureValue
     shutdownResponse match {
-      case ShutdownSequencersResponse.Success          => println(s"sequencers for $subsystem shutdown Successfully")
-      case failure: ShutdownSequencersResponse.Failure => println(Console.RED + s"${failure.getMessage}")
+      case ShutdownSequencersResponse.Success => {
+        println(s"sequencers for $subsystem shutdown Successfully")
+        log.info(s"sequencers for $subsystem shutdown Successfully")
+      }
+      case failure: ShutdownSequencersResponse.Failure => {
+        println(Console.RED + s"${failure.getMessage}")
+        log.info(s" ${failure.getMessage}")
+      }
     }
   }
 
