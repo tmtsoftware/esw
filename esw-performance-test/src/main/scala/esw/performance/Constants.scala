@@ -14,9 +14,9 @@ object Constants {
   val enableSwitching = true
 
   val warmupIterations = 2
-  val actualIterations = 20
+  val actualIterations = 5
 
-  val timeout: Int = 5 * 1000
+  val timeout: Int = 20 * 1000
 
   val provisionConfig: ProvisionConfig = ProvisionConfig(
     List(
