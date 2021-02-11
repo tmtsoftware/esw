@@ -182,6 +182,12 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
 
+    // step12: shutdown obsMode1 sequencers
+    println(s"----------> step $step")
+    log.info(s"----------> step $step")
+    shutdownSequencers(obsMode1, shutdownHist)
+    step += 1
+
     // step11: configure obsMode3 non-conflicting with obsMode1
     println(s"----------> step $step")
     log.info(s"----------> step $step")
@@ -190,12 +196,6 @@ object SequenceManagerReliabilityTest extends LocationUtils {
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
-
-    // step12: shutdown obsMode1 sequencers
-    println(s"----------> step $step")
-    log.info(s"----------> step $step")
-    shutdownSequencers(obsMode1, shutdownHist)
-    step += 1
 
     // step13: shutdownAll obsModes
     println(s"----------> step $step")
