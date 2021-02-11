@@ -42,7 +42,6 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
 lazy val esw = (project in file("."))
   .aggregate(aggregateProjects: _*)
   .enablePlugins(NoPublish, UnidocSitePlugin, GithubPublishPlugin, GitBranchPrompt, GithubRelease, ContractPlugin)
-  .disablePlugins(BintrayPlugin)
   .settings(DocSettings.makeSiteMappings(docs))
   .settings(Settings.addAliases())
   .settings(DocSettings.docExclusions(unidocExclusions))
