@@ -140,6 +140,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     restartSequencers(obsMode2, restartHist)
     step += 1
 
+    //8
     // step6: get obsMode details
     println(s"----------> step $step")
     log.info(s"----------> step $step")
@@ -147,12 +148,15 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     getObsModesDetails()
     step += 1
 
+    //9
+    Thread.sleep(Constants.timeout)
+
     // step7: shutdown all obsMode2 sequencers individually
     println(s"----------> step $step")
     log.info(s"----------> step $step")
     shutdownSequencers(obsMode2, shutdownSeqHist)
     step += 1
-
+    // 13
     // step8: configure obsMode3 (having conflicting resources with obsMode4)
     println(s"----------> step $step")
     log.info(s"----------> step $step")
@@ -181,13 +185,14 @@ object SequenceManagerReliabilityTest extends LocationUtils {
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
-
+    // 16
     // step12: shutdown obsMode1 sequencers
     println(s"----------> step $step")
     log.info(s"----------> step $step")
     shutdownSequencers(obsMode1, shutdownHist)
     step += 1
 
+    // 20
     // step11: configure obsMode3 non-conflicting with obsMode1
     println(s"----------> step $step")
     log.info(s"----------> step $step")
@@ -204,6 +209,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     step += 1
 
     Thread.sleep(Constants.timeout)
+    // 22
   }
 
   private def shutdownObsMode(obsMode: ObsMode, histogram: Histogram) = {
