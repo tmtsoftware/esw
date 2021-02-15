@@ -17,4 +17,8 @@ object FileUtils {
     tempConfigPath
   }
 
+  def readResource(resource: String): String = {
+    Source.fromResource(resource).mkString
+  }
+
 }

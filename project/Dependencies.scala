@@ -293,6 +293,7 @@ object Dependencies {
       Csw.`csw-config-client`,
       Csw.`csw-aas-http`,
       Csw.`csw-location-api`.value,
+      Libs.`embedded-keycloak`,
       Akka.`akka-stream-typed`        % Provided,
       Libs.`case-app`                 % Provided,
       Akka.`akka-remote`              % Test,
@@ -343,7 +344,6 @@ object Dependencies {
     Seq(
       Csw.`csw-framework`,
       Libs.`ammonite`,
-      Libs.`embedded-keycloak`,
       Libs.`tmt-test-reporter` % Test
     )
   )

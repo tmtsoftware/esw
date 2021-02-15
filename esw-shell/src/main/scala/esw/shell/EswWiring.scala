@@ -7,8 +7,11 @@ import csw.config.api.scaladsl.ConfigService
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.framework.CswWiring
 import csw.location.api.scaladsl.LocationService
+import esw.commons.extensions.FutureExt.FutureOps
+import esw.commons.utils.aas.Keycloak
+import esw.commons.utils.config.ConfigServiceExt
 import esw.commons.utils.location.LocationServiceUtil
-import esw.shell.utils.Keycloak
+import esw.constants.CommonTimeouts
 
 class EswWiring {
   lazy val cswWiring = new CswWiring
@@ -18,15 +21,17 @@ class EswWiring {
   private lazy val locationService: LocationService   = cswWiring.cswContext.locationService
   private lazy val locationUtils: LocationServiceUtil = new LocationServiceUtil(locationService)
   private lazy val configService: ConfigService       = ConfigClientFactory.adminApi(typedSystem, locationService, tokenFactory)
+  private lazy val configServiceExt: ConfigServiceExt = new ConfigServiceExt(configService)
 
-  lazy val factories = new Factories(locationUtils, configService)
+  lazy val factories = new Factories(locationUtils, configServiceExt)
 
   private lazy val config                      = ConfigFactory.load().getConfig("csw")
   private lazy val configAdminUsername: String = config.getString("configAdminUsername")
   private lazy val configAdminPassword: String = config.getString("configAdminPassword")
+  private lazy val keycloak                    = new Keycloak(locationService)(typedSystem.executionContext)
 
   private def tokenFactory: TokenFactory =
     new TokenFactory {
-      override def getToken: String = Keycloak.getToken(configAdminUsername, configAdminPassword)
+      override def getToken: String = keycloak.getToken(configAdminUsername, configAdminPassword).await(CommonTimeouts.Wiring)
     }
 }

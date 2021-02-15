@@ -5,12 +5,12 @@ import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
-import csw.config.api.scaladsl.ConfigService
 import csw.location.api.models.ComponentType.{Assembly, HCD, Machine}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.client.AgentClient
 import esw.commons.extensions.EitherExt.EitherOps
 import esw.commons.extensions.FutureExt.FutureOps
+import esw.commons.utils.config.ConfigServiceExt
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
 import esw.gateway.api.AdminApi
@@ -26,7 +26,9 @@ import esw.sm.api.protocol.ProvisionResponse
 
 import scala.concurrent.ExecutionContext
 
-class Factories(val locationUtils: LocationServiceUtil, configService: ConfigService)(implicit val actorSystem: ActorSystem[_]) {
+class Factories(val locationUtils: LocationServiceUtil, configServiceExt: ConfigServiceExt)(implicit
+    val actorSystem: ActorSystem[_]
+) {
   implicit lazy val ec: ExecutionContext = actorSystem.executionContext
 
   private val eswTestKit: EswTestKit = new EswTestKit() {}
@@ -54,7 +56,7 @@ class Factories(val locationUtils: LocationServiceUtil, configService: ConfigSer
     new AgentClient(
       locationUtils.findAkkaLocation(agentPrefix, Machine).map(_.throwLeft).await()
     )
-  def sequenceManager(): SequenceManagerApi = new SequenceManager(locationUtils, configService).service
+  def sequenceManager(): SequenceManagerApi = new SequenceManager(locationUtils, configServiceExt).service
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse =
-    new SequenceManager(locationUtils, configService).provision(config, sequencerScriptsVersion)
+    new SequenceManager(locationUtils, configServiceExt).provision(config, sequencerScriptsVersion)
 }

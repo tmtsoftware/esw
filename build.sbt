@@ -401,7 +401,7 @@ lazy val `esw-shell` = project
     libraryDependencies ++= Dependencies.EswShell.value,
     fork := false // this is needed for the ammonite shell to run
   )
-  .dependsOn(`esw-ocs-impl`, `esw-sm-api`.jvm, `esw-agent-akka-client`, `esw-gateway-impl`, `esw-testkit`)
+  .dependsOn(`esw-ocs-impl`, `esw-sm-api`.jvm, `esw-commons`, `esw-agent-akka-client`, `esw-gateway-impl`, `esw-testkit`)
 
 lazy val `esw-http-template-wiring` = project
   .dependsOn(`esw-constants`, `esw-http-core`)
