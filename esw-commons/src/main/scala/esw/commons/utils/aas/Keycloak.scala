@@ -10,6 +10,7 @@ import org.tmt.embedded_keycloak.utils.BearerToken
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// $COVERAGE-OFF$
 class Keycloak(locationService: LocationService)(implicit ec: ExecutionContext) {
   private val Realm  = "TMT"
   private val Client = "tmt-frontend-app"
@@ -23,3 +24,4 @@ class Keycloak(locationService: LocationService)(implicit ec: ExecutionContext) 
     }
   }
 }
+// $COVERAGE-ON$
