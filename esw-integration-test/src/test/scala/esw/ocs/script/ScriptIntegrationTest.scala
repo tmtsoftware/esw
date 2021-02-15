@@ -371,11 +371,12 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       response.asInstanceOf[Error].message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: boom"
     }
 
-    "be able to send publish and subscribe to observe event published by Sequencer | ESW-81" in {
-      val command           = Observe(Prefix("esw.test"), CommandName("observe-start"), None)
+    "be able to send publish and subscribe to observe event published by Sequencer | ESW-81, ESW-421" in {
+      // ESW-421 - Please refer TestSript.kts for usage of ObsId, ExposureId and ExposureStart event
+      val command           = Observe(Prefix("esw.test"), CommandName("exposure-start"), None)
       val sequence          = Sequence(command)
       val expectedPrefix    = Prefix(ocsSubsystem, ocsObsMode.name)
-      val expectedEventName = SequencerObserveEventNames.ObserveStart
+      val expectedEventName = SequencerObserveEventNames.ExposureStart
       val expectedEventKey  = EventKey(expectedPrefix, expectedEventName)
       val testProbe         = createTestProbe(Set(expectedEventKey))
 
@@ -384,7 +385,10 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val actualObserveEvent = testProbe.expectMessageType[ObserveEvent]
       actualObserveEvent.eventName should ===(expectedEventName)
       actualObserveEvent.source should ===(expectedPrefix)
-      actualObserveEvent.paramSet shouldBe Set(StringKey.make("obsId").set("2021A-011-153"))
+      actualObserveEvent.paramSet shouldBe Set(
+        StringKey.make("obsId").set("2021A-011-153"),
+        StringKey.make("exposureId").set("2021A-011-153-TCS-DET-SCI0-0001")
+      )
     }
 
   }

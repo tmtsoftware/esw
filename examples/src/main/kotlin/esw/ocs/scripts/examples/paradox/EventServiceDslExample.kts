@@ -2,7 +2,6 @@
 
 package esw.ocs.scripts.examples.paradox
 
-import csw.params.core.models.ObsId
 import csw.params.events.Event
 import csw.params.events.EventKey
 import csw.params.events.ObserveEvent
@@ -10,6 +9,7 @@ import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.epics.EventVariable
 import esw.ocs.dsl.epics.ParamVariable
+import esw.ocs.dsl.highlevel.models.ObsId
 import esw.ocs.dsl.params.intKey
 import kotlin.time.seconds
 
@@ -28,7 +28,7 @@ script {
         //#system-event
 
         //#observe-event
-        val observeEvent: ObserveEvent = sequencerObserveEvent.observationStart(ObsId.apply("2020A-001-123"))
+        val observeEvent: ObserveEvent = sequencerObserveEvent.observationStart(ObsId("2020A-001-123"))
         //#observe-event
 
         //#publish

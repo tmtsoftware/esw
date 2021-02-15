@@ -3,7 +3,6 @@ package esw.ocs.scripts.examples.testData
 import com.typesafe.config.ConfigFactory
 import csw.alarm.models.Key.AlarmKey
 import csw.params.commands.CommandResponse
-import csw.params.core.models.ObsId
 import csw.params.core.states.StateName
 import csw.params.events.Event
 import csw.prefix.models.Prefix
@@ -25,8 +24,22 @@ script {
     onSetup("command-2") {
     }
 
-    onObserve("observe-start") {
-        publishEvent(observeStart(ObsId.apply("2021A-011-153")))
+    // ESW-421 demonstrate creating exposureId and obsId. Getting components from exposureId and ObsId
+    onObserve("exposure-start") {
+        val obsId = ObsId("2021A-011-153")
+        // do something with ObsId components
+        println(obsId.programId)
+        println(obsId.programId.semesterId)
+        println(obsId.programId.semesterId.semester)
+
+        // create exposureId
+        val exposureIdStr = "${obsId}-TCS-DET-SCI0-0001"
+        val exposureId = ExposureId(exposureIdStr)
+        // do something with exposureId components
+        println(exposureId.subsystem)
+        println(exposureId.det)
+
+        publishEvent(exposureStart(obsId, exposureId))
     }
 
     onSetup("command-3") {
