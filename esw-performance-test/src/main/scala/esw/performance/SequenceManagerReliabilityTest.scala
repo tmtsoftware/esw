@@ -37,10 +37,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   def main(args: Array[String]): Unit = {
     val provisionResponse = smClient.provision(provisionConfigReliability).futureValue
     provisionResponse shouldBe a[ProvisionResponse.Success.type]
-
     warmUp()
     actualPerf()
-
     actorSystem.terminate()
   }
 
@@ -50,7 +48,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     val warmUpRestartHistogram     = new Histogram(3)
     val warmUpShutdownSeqHistogram = new Histogram(3)
     repeatScenario(
-      warmupIterations,
+      warmupIterationsReliability,
       "Warmup",
       warmUpConfigureHistogram,
       warmUpShutdownHistogram,
@@ -64,7 +62,14 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     val shutdownHistogram    = new Histogram(3)
     val restartHistogram     = new Histogram(3)
     val shutdownSeqHistogram = new Histogram(3)
-    repeatScenario(actualIterations, "Actual", configureHistogram, shutdownHistogram, restartHistogram, shutdownSeqHistogram)
+    repeatScenario(
+      actualIterationsReliability,
+      "Actual",
+      configureHistogram,
+      shutdownHistogram,
+      restartHistogram,
+      shutdownSeqHistogram
+    )
     recordResults(configureHistogram, "configure_results.txt")
     recordResults(shutdownHistogram, "shutdown_results.txt")
     recordResults(restartHistogram, "restart_results.txt")
@@ -140,15 +145,13 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     restartSequencers(obsMode2, restartHist)
     step += 1
 
-    //8
     // step6: get obsMode details
     println(s"----------> step $step")
     log.info(s"----------> step $step")
-    println("Fetched obsModes details")
     getObsModesDetails()
+    println("Fetched obsModes details")
     step += 1
 
-    //9
     Thread.sleep(Constants.timeout)
 
     // step7: shutdown all obsMode2 sequencers individually
@@ -156,7 +159,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     log.info(s"----------> step $step")
     shutdownSequencers(obsMode2, shutdownSeqHist)
     step += 1
-    // 13
+
     // step8: configure obsMode3 (having conflicting resources with obsMode4)
     println(s"----------> step $step")
     log.info(s"----------> step $step")
@@ -185,14 +188,13 @@ object SequenceManagerReliabilityTest extends LocationUtils {
 
     // to simulate actual observation
     Thread.sleep(Constants.timeout)
-    // 16
+
     // step12: shutdown obsMode1 sequencers
     println(s"----------> step $step")
     log.info(s"----------> step $step")
     shutdownSequencers(obsMode1, shutdownHist)
     step += 1
 
-    // 20
     // step11: configure obsMode3 non-conflicting with obsMode1
     println(s"----------> step $step")
     log.info(s"----------> step $step")
@@ -209,7 +211,6 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     step += 1
 
     Thread.sleep(Constants.timeout)
-    // 22
   }
 
   private def shutdownObsMode(obsMode: ObsMode, histogram: Histogram) = {

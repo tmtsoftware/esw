@@ -1,5 +1,5 @@
 #### To Add version config. this API call will also mark it as active version
-POST http://192.168.0.102:4000/config/tmt/osw/version.conf
+POST http://<your-ip>:4000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
 
 {
@@ -7,13 +7,13 @@ Content-Type: application/octet-stream
 }
 
 ##### To check active config
-GET http://192.168.0.102:4000/active-config/tmt/osw/version.conf
+GET http://<your-ip>:4000/active-config/tmt/osw/version.conf
 
 
 
 ################################# Optional Steps ###################################################
 #### To update version config
-PUT http://192.168.0.102:4000/config/tmt/osw/version.conf
+PUT http://<your-ip>:4000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
 
 {
@@ -21,8 +21,8 @@ Content-Type: application/octet-stream
 }
 
 ##### To make it active version of the config. id is returned from first/second call
-PUT http://172.31.28.137:4000/active-version/tmt/osw/version.conf?id=4&comment=abcd
+PUT http://<your-ip>:4000/active-version/tmt/osw/version.conf?id=4&comment=abcd
 
 
 ##### To check if config is updated and marked as active
-GET http://192.168.0.102:4000/active-config/tmt/osw/version.conf
+GET http://<your-ip>:4000/active-config/tmt/osw/version.conf
