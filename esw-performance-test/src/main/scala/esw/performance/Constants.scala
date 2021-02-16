@@ -37,11 +37,11 @@ object Constants {
     )
   )
 
-  val timeoutSMReliability: Int = 5 * 1000
+  val timeoutSMReliability: Int = 1 * 1000
 
   val warmupIterationsOverhead = 100
   val actualIterationsOverhead = 2000
 
   val warmupIterationsReliability = 1
-  val actualIterationsReliability = 300
+  val actualIterationsReliability = 5000
 }
