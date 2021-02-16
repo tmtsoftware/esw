@@ -1,5 +1,8 @@
 package esw.integration
 
+import java.io.File
+import java.nio.file.{Files, Path, Paths}
+
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -22,13 +25,13 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.server.{GatewaySetup, GatewayWiring}
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
-import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
+import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.sm.api.models.ResourceStatus.{Available, InUse}
-import esw.sm.api.models.{AgentStatus, ObsModeDetails, ProvisionConfig, Resource, Resources, SequenceComponentStatus, Sequencers}
+import esw.sm.api.models._
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
@@ -37,8 +40,6 @@ import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
@@ -56,7 +57,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     super.beforeAll()
     gatewayServerWiring = startGateway()
     // agent app setup
-    spawnAgent(AgentSettings(agentPrefix, 1.minute, channel, versionConfPath))
+    spawnAgent(AgentSettings(agentPrefix, channel, versionConfPath))
     agentClient = AgentClient.make(agentPrefix, locationServiceUtil).rightValue
     // agent service setup
     agentServiceWiring = AgentServiceApp.start(startLogging = false)
@@ -686,7 +687,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       //spawn ESW agent
       val agentPrefix = getRandomAgentPrefix(ESW)
-      spawnAgent(AgentSettings(agentPrefix, 1.minute, channel, versionConfPath))
+      spawnAgent(AgentSettings(agentPrefix, channel, versionConfPath))
 
       //verify that agent is available
       resolveAkkaLocation(agentPrefix, Machine)
@@ -762,8 +763,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents to provision and verify they are running
-      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel, versionConfPath))
-      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel, versionConfPath))
+      spawnAgent(AgentSettings(eswAgentPrefix, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, channel, versionConfPath))
 
       val eswRunningSeqComp = Prefix(ESW, "ESW_10")
       TestSetup.startSequenceComponents(eswRunningSeqComp)
@@ -794,8 +795,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents
-      spawnAgent(AgentSettings(eswAgentPrefix, 1.minute, channel, versionConfPath))
-      spawnAgent(AgentSettings(irisAgentPrefix, 1.minute, channel, versionConfPath))
+      spawnAgent(AgentSettings(eswAgentPrefix, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, channel, versionConfPath))
 
       val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 

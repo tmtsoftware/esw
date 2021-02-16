@@ -7,8 +7,6 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.testcommons.BaseTestSuite
 
-import scala.concurrent.duration.DurationLong
-
 class AgentSettingsTest extends BaseTestSuite {
 
   "from" must {
@@ -16,7 +14,6 @@ class AgentSettingsTest extends BaseTestSuite {
       val config =
         ConfigFactory.parseString(s"""
           |agent {
-          |  durationToWaitForComponentRegistration = 15s
           |  coursier.channel = "${Cs.channel}"
           |  osw.version.confPath = "script/resources/application.conf"
           |}
@@ -24,7 +21,7 @@ class AgentSettingsTest extends BaseTestSuite {
 
       val prefix        = Prefix(ESW, "machine_A1")
       val agentSettings = AgentSettings(prefix, config)
-      agentSettings should ===(AgentSettings(prefix, 15.seconds, Cs.channel, Path.of("script/resources/application.conf")))
+      agentSettings should ===(AgentSettings(prefix, Cs.channel, Path.of("script/resources/application.conf")))
     }
   }
 }
