@@ -11,7 +11,8 @@ import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand
 import esw.agent.service.api.models.{Failed, KillResponse, Killed}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.utils.config.{VersionManager, FetchingScriptVersionFailed}
+import esw.commons.utils.config.{FetchingScriptVersionFailed, VersionManager}
+import esw.constants.AgentTimeouts
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -32,7 +33,7 @@ class ProcessManager(
     verifyComponentIsNotAlreadyRegistered(command.connection)
       .flatMapE(_ => startComponent(command))
       .flatMapE(process =>
-        waitForRegistration(command.connection, agentSettings.durationToWaitForComponentRegistration).flatMapE(_ =>
+        waitForRegistration(command.connection, AgentTimeouts.DurationToWaitForComponentRegistration).flatMapE(_ =>
           reconcile(process, command.connection)
         )
       )

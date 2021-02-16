@@ -24,8 +24,13 @@ object CommonTimeouts {
 }
 
 object AgentTimeouts {
-  val SpawnComponent: FiniteDuration = 20.seconds
-  val KillComponent: FiniteDuration  = 3.seconds
+  val DurationToWaitForComponentRegistration: FiniteDuration = 18.seconds
+  val SpawnComponent: FiniteDuration                         = 20.seconds
+  require(
+    DurationToWaitForComponentRegistration <= SpawnComponent,
+    "SpawnComponent composes over DurationToWaitForComponentRegistration. DurationToWaitForComponentRegistration should be lesser"
+  )
+  val KillComponent: FiniteDuration = 3.seconds
 }
 
 object SequenceComponentTimeouts {

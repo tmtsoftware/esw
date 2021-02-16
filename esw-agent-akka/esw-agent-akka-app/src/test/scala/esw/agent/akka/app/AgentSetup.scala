@@ -1,5 +1,9 @@
 package esw.agent.akka.app
 
+import java.net.URI
+import java.nio.file.{Path, Paths}
+import java.util.concurrent.CompletableFuture
+
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
@@ -15,9 +19,6 @@ import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
-import java.net.URI
-import java.nio.file.{Path, Paths}
-import java.util.concurrent.CompletableFuture
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Random
@@ -35,7 +36,7 @@ class AgentSetup extends BaseTestSuite {
   implicit val logger: Logger            = mock[Logger]
   val agentPrefix: Prefix                = Prefix(randomSubsystem, randomString(10))
   val versionConfPath: Path              = Path.of(randomString(20))
-  val agentSettings: AgentSettings       = AgentSettings(agentPrefix, 15.seconds, Cs.channel, versionConfPath)
+  val agentSettings: AgentSettings       = AgentSettings(agentPrefix, Cs.channel, versionConfPath)
 
   val metadata: Metadata = Metadata().withAgentPrefix(agentPrefix).withPid(12345)
 
