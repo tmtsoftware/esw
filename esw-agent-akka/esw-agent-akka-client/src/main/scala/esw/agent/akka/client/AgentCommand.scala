@@ -1,15 +1,16 @@
 package esw.agent.akka.client
 
-import java.nio.file.Path
-
 import akka.actor.typed.ActorRef
-import csw.location.api.models.ComponentType.{SequenceComponent, Service}
+import csw.location.api.models.ComponentType.{Container, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.Subsystem.{CSW, ESW}
+import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api._
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
+
+import java.nio.file.Path
 
 sealed trait AgentCommand
 sealed trait AgentRemoteCommand extends AgentCommand with AgentAkkaSerializable
@@ -56,6 +57,21 @@ object AgentCommand {
       override def commandArgs(extraArgs: List[String]): List[String] = {
         val args = if (isConfigLocal) command :+ "-l" else command
         args ++ extraArgs ++ sim
+      }
+    }
+
+    case class SpawnContainer(
+        replyTo: ActorRef[SpawnResponse],
+        containerConfig: ContainerConfig
+    ) extends SpawnCommand {
+      private val componentName               = s"${containerConfig.appName}"
+      override val prefix: Prefix             = Prefix(CSW, componentName)
+      override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, Container))
+      private val command                     = List(containerConfig.configFilePath.toString)
+
+      override def commandArgs(extraArgs: List[String]): List[String] = {
+        val args = if (containerConfig.isConfigLocal) "--local" :: command else command
+        args ++ extraArgs
       }
     }
   }

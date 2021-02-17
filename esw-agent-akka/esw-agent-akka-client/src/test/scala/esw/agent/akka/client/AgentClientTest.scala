@@ -1,8 +1,5 @@
 package esw.agent.akka.client
 
-import java.net.URI
-import java.nio.file.Path
-
 import akka.actor.typed.ActorRef
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
@@ -11,12 +8,15 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api.models.{KillResponse, SpawnResponse}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
+import java.net.URI
+import java.nio.file.Path
 import scala.concurrent.Future
 import scala.util.Random
 
@@ -134,6 +134,19 @@ class AgentClientTest extends ActorTestSuit {
         case SpawnSequenceManager(replyTo, `configPath`, true, None, _) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceManager(configPath, isConfigLocal = true, None, simulation = true).futureValue should ===(spawnResponse)
+      }
+    }
+  }
+
+  "spawnContainers" should {
+    "send spawnContainer message to agent and return a future with agent response | ESW-379" in {
+      val config            = ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = true)
+      val spawnResponse     = mock[SpawnResponse]
+      val spawnResponseList = List(spawnResponse)
+      withBehavior {
+        case SpawnContainer(replyTo, `config`) => replyTo ! spawnResponse
+      } check { ac =>
+        ac.spawnContainers(List(config)).futureValue should ===(spawnResponseList)
       }
     }
   }

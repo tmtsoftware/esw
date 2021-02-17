@@ -1,12 +1,13 @@
 package esw.agent.akka.client
 
-import java.nio.file.Path
-
 import akka.actor.typed.ActorRef
 import csw.prefix.models.Prefix
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
+
+import java.nio.file.Path
 
 class SpawnCommandTest extends BaseTestSuite {
 
@@ -62,6 +63,34 @@ class SpawnCommandTest extends BaseTestSuite {
       val expectedDefaultArgs = List("start", "-o", obsConfPath.toString, "-l")
 
       val randomArgs = List(randomString(10), randomString(10))
+
+      command.commandArgs() should ===(expectedDefaultArgs)
+      command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
+    }
+  }
+
+  "SpawnContainer's commandArg method" must {
+    val actorRef = mock[ActorRef[SpawnResponse]]
+
+    "append given extra argument | ESW-366" in {
+      val containerConfig =
+        ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = false)
+      val command = SpawnContainer(actorRef, containerConfig)
+
+      val expectedDefaultArgs = List(containerConfig.configFilePath.toString)
+      val randomArgs          = List(randomString(10), randomString(10))
+
+      command.commandArgs() should ===(expectedDefaultArgs)
+      command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
+    }
+
+    "append --local if config path is Local" in {
+      val containerConfig =
+        ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = true)
+      val command = SpawnContainer(actorRef, containerConfig)
+
+      val expectedDefaultArgs = List("--local", containerConfig.configFilePath.toString)
+      val randomArgs          = List(randomString(10), randomString(10))
 
       command.commandArgs() should ===(expectedDefaultArgs)
       command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)

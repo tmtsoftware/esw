@@ -61,9 +61,9 @@ class Wiring(startCmd: Start) {
 
   def stop(): Unit = serviceList.foreach(_.stop())
 
-  private def DefaultAgentPrefix: Prefix = Prefix(ESW, "primary")
+  private def defaultAgentPrefix: Prefix = Prefix(ESW, "primary")
 
-  private def agentPrefix: Prefix = startCmd.agentPrefix.getOrElse(DefaultAgentPrefix)
+  private def agentPrefix: Prefix = startCmd.agentPrefix.getOrElse(defaultAgentPrefix)
 
   private def agentPrefixForSM: Option[Prefix] = if (startCmd.agent) Some(agentPrefix) else None
 }

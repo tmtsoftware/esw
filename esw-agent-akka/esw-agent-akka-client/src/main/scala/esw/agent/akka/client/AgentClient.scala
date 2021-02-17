@@ -1,7 +1,5 @@
 package esw.agent.akka.client
 
-import java.nio.file.Path
-
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
@@ -10,12 +8,14 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.constants.AgentTimeouts
 
+import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]) {
@@ -42,6 +42,17 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
+
+  def spawnContainers(hostConfig: List[ContainerConfig]): Future[List[SpawnResponse]] = {
+    import actorSystem.executionContext
+    val spawnFutures = hostConfig.map(c => {
+      (agentRef ? (SpawnContainer(_, c)))(
+        AgentTimeouts.SpawnComponent,
+        actorSystem.scheduler
+      )
+    })
+    Future.sequence(spawnFutures)
+  }
 
   def killComponent(location: Location): Future[KillResponse] =
     (agentRef ? (KillComponent(_, location)))(AgentTimeouts.KillComponent, actorSystem.scheduler)

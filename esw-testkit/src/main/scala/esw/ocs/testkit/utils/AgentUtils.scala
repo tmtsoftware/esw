@@ -7,6 +7,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
 
+import java.nio.file.Paths
 import scala.util.Random
 
 trait AgentUtils {
@@ -23,7 +24,12 @@ trait AgentUtils {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
     }
     agentWiring = Some(wiring)
-    AgentApp.start(wiring, startLogging = false)
+    AgentApp.start(
+      wiring,
+      Paths.get(""),
+      isConfigLocal = true,
+      startLogging = false
+    ) //TODO: Fix host config path and configLocal args
   }
 
   def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))
