@@ -73,7 +73,11 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .mapRight(_ => SequenceComponentResponse.Ok)
       .mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
-  def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = sequenceComponentApi(loc).restartScript()
+  def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] =
+    {
+      println(s"########## Restart script received for location : $loc")
+      sequenceComponentApi(loc).restartScript()
+    }
 
   def getSequenceComponentStatus(seqCompLocation: SeqCompLocation): Future[SequenceComponentStatus] =
     sequenceComponentApi(seqCompLocation).status.map(s =>
@@ -92,7 +96,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .listAkkaLocationsBy(SequenceComponent)
       .flatMapRight(Future.traverse(_)(shutdown))
 
-  private def shutdown(seqCompLocation: SeqCompLocation) = sequenceComponentApi(seqCompLocation).shutdown()
+  private def shutdown(seqCompLocation: SeqCompLocation) = {
+    println("#################### Creating seqcomp impl and sending shutdown shutdown")
+    sequenceComponentApi(seqCompLocation).shutdown()
+  }
 
   private def filterIdleSequenceComponents(seqCompLocations: List[SeqCompLocation]) =
     Future
