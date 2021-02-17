@@ -7,6 +7,7 @@ import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
+import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.highlevel.models.ScriptError
 import esw.ocs.dsl.internal.ScriptWiring
@@ -33,6 +34,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), logger, strandEc, shutdownTask) }
     override val isOnline: Boolean get() = scriptDsl.isOnline
     final override val prefix: String = wiring.scriptContext.prefix().toString()
+    val obsMode: ObsMode = wiring.scriptContext.obsMode()
     override val sequencerObserveEvent: SequencerObserveEvent = SequencerObserveEvent(Prefix.apply(prefix))
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->

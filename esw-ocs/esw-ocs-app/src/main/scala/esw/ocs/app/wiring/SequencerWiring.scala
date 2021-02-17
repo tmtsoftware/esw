@@ -108,6 +108,7 @@ private[ocs] class SequencerWiring(
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
     prefix,
+    obsMode,
     jLogger,
     sequenceOperatorFactory,
     actorSystem,
