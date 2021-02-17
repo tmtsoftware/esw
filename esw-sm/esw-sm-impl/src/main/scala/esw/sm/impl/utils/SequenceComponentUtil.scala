@@ -73,11 +73,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .mapRight(_ => SequenceComponentResponse.Ok)
       .mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
-  def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] =
-    {
-      println(s"########## Restart script received for location : $loc")
-      sequenceComponentApi(loc).restartScript()
-    }
+  def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = {
+    println(s"########## Restart script received for location : $loc")
+    sequenceComponentApi(loc).restartScript()
+  }
 
   def getSequenceComponentStatus(seqCompLocation: SeqCompLocation): Future[SequenceComponentStatus] =
     sequenceComponentApi(seqCompLocation).status.map(s =>
