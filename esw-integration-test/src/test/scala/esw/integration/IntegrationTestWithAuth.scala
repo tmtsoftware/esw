@@ -19,7 +19,7 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
-import esw.agent.service.api.models.{Killed, Spawned}
+import esw.agent.service.api.models.{Failed, Killed, Spawned}
 import esw.agent.service.app.{AgentServiceApp, AgentServiceWiring}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.gateway.api.clients.ClientFactory
@@ -203,11 +203,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
   "Agent" must {
 
-    "start and register itself with location service | ESW-237" in {
-      val agentLocation = locationService.resolve(AkkaConnection(ComponentId(agentPrefix, Machine)), 5.seconds).futureValue
-      agentLocation should not be empty
-    }
-
     "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325, ESW-366, ESW-367" in {
       val darknight = ObsMode("darknight")
       spawnSequenceComponent(agentClient, irisPrefix.componentName).futureValue should ===(Spawned)
@@ -245,6 +240,15 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       location.metadata.getPid.isDefined should ===(true)
 
       agentClient.killComponent(location).futureValue
+    }
+
+    "return error response when spawn sequence component fails because of invalid version |  ESW-471" in {
+      val response = agentClient.spawnSequenceComponent(irisPrefix.componentName, Some("invalid-binary-version")).futureValue
+      response should ===(
+        Failed(
+          s"${ComponentId(irisPrefix, SequenceComponent)} is not registered with location service. Reason: Process failed to spawn due to reasons like invalid binary version etc or failed to register with location service."
+        )
+      )
     }
   }
 

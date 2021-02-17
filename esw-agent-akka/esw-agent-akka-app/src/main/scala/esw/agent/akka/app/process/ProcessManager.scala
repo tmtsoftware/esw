@@ -105,7 +105,11 @@ class ProcessManager(
       .resolve(connection.of[Location], timeout)
       .map {
         case Some(_) => Right(())
-        case None    => Left(s"${connection.componentId} is not registered with location service".tap(log.warn(_)))
+        case None =>
+          Left(
+            s"${connection.componentId} is not registered with location service. Reason: Process failed to spawn due to reasons like invalid binary version etc or failed to register with location service."
+              .tap(log.warn(_))
+          )
       }
       .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
 

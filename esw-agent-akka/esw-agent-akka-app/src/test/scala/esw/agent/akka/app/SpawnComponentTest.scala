@@ -123,7 +123,11 @@ class SpawnComponentTest extends AgentSetup {
       mockSuccessfulProcess()
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None)
-      probe.expectMessage(Failed(s"$seqCompComponentId is not registered with location service"))
+      probe.expectMessage(
+        Failed(
+          s"$seqCompComponentId is not registered with location service. Reason: Process failed to spawn due to reasons like invalid binary version etc or failed to register with location service."
+        )
+      )
     }
 
     "reply 'Failed' if process fails before registration is successful | ESW-367" in {
