@@ -34,7 +34,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), logger, strandEc, shutdownTask) }
     override val isOnline: Boolean get() = scriptDsl.isOnline
     final override val prefix: String = wiring.scriptContext.prefix().toString()
-    val obsMode: ObsMode = wiring.scriptContext.obsMode()
+    final override val obsMode: ObsMode = wiring.scriptContext.obsMode()
     override val sequencerObserveEvent: SequencerObserveEvent = SequencerObserveEvent(Prefix.apply(prefix))
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
