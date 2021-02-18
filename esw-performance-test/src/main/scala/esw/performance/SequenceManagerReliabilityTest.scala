@@ -32,12 +32,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   private val smClient              = SequenceManagerApiFactory.makeAkkaClient(smLocation)
 
   def main(args: Array[String]): Unit = {
-    val provisionResponse = smClient.provision(provisionConfigReliability).futureValue
-    provisionResponse shouldBe a[ProvisionResponse.Success.type]
-
     warmUp()
     actualPerf()
-
     actorSystem.terminate()
   }
 
@@ -95,65 +91,15 @@ object SequenceManagerReliabilityTest extends LocationUtils {
 
     // configure obsMode1
     configureObsMode(obsMode1, configureHist)
+    Thread.sleep(Constants.timeout)
 
-    // to simulate actual observation
+    // restart obsMode1
+    restartSequencers(obsMode1, configureHist)
     Thread.sleep(Constants.timeout)
 
     // shutdown obsMode1
     shutdownObsMode(obsMode1, shutdownHist)
     Thread.sleep(Constants.timeout)
-    // configure obsMode2
-    configureObsMode(obsMode2, configureHist)
-
-    // configure obsMode4 ... (non-conflicting with obsMode2)
-    configureObsMode(obsMode4, configureHist)
-
-    // to simulate actual observation
-    Thread.sleep(Constants.timeout)
-
-    // restarting all obsMode2 sequencers
-    restartSequencers(obsMode2, restartHist)
-
-    // to simulate actual observation
-    Thread.sleep(Constants.timeout)
-
-    // get obsMode details
-    getObsModesDetails()
-
-    // shutdown all obsMode2 sequencers individually
-    shutdownSequencers(obsMode2, shutdownSeqHist)
-
-    // to simulate actual observation
-    Thread.sleep(Constants.timeout)
-
-    // configure obsMode3 (having conflicting resources with obsMode4)
-    configureObsMode(obsMode3, configureHist)
-
-    // to simulate actual observation
-    Thread.sleep(Constants.timeout)
-
-    // shutdown obsMode4 using subsystem shutdown
-    getObsModesDetails()
-      .filter(_.obsMode == obsMode4)
-      .foreach(_.sequencers.subsystems.foreach(shutdownSubsystemSequencers))
-
-    // to simulate actual observation
-    Thread.sleep(Constants.timeout)
-
-    // configure obsMode1
-    configureObsMode(obsMode1, configureHist)
-
-    // to simulate actual observation
-    Thread.sleep(Constants.timeout)
-
-    // switch between obsModes1 and obsMode3
-    shutdownObsMode(obsMode1, shutdownHist)
-    Thread.sleep(Constants.timeout)
-    configureObsMode(obsMode3, configureHist)
-
-    // shutdownAll obsModes
-    smClient.shutdownAllSequencers().futureValue
-
   }
 
   private def shutdownObsMode(obsMode: ObsMode, histogram: Histogram) = {

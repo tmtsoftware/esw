@@ -53,7 +53,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       subsystem: Subsystem,
       obsMode: ObsMode,
       seqCompLocation: SeqCompLocation
-  ): Future[Either[StartSequencerResponse.Failure, Started]] =
+  ): Future[Either[StartSequencerResponse.Failure, Started]] = {
+    println(s"-------------> Sending loadScript to $seqCompLocation")
     sequenceComponentApi(seqCompLocation)
       .loadScript(subsystem, obsMode)
       .flatMap {
@@ -62,8 +63,12 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
         case error: ScriptError.LoadingScriptFailed  => Future.successful(Left(LoadScriptError(error.msg)))
         case error: Unhandled                        => Future.successful(Left(LoadScriptError(error.msg)))
       }
+  }
 
-  def unloadScript(seqCompLocation: SeqCompLocation): Future[Ok.type] = sequenceComponentApi(seqCompLocation).unloadScript()
+  def unloadScript(seqCompLocation: SeqCompLocation): Future[Ok.type] = {
+    println(s"-------------> Sending unloadScript to $seqCompLocation")
+    sequenceComponentApi(seqCompLocation).unloadScript()
+  }
 
   def shutdownSequenceComponent(prefix: SeqCompPrefix): Future[ShutdownSequenceComponentResponse] =
     shutdown(prefix).mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
@@ -92,7 +97,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .listAkkaLocationsBy(SequenceComponent)
       .flatMapRight(Future.traverse(_)(shutdown))
 
-  private def shutdown(seqCompLocation: SeqCompLocation) = sequenceComponentApi(seqCompLocation).shutdown()
+  private def shutdown(seqCompLocation: SeqCompLocation) = {
+    println(s"-------------> Sending shutdown to $seqCompLocation")
+    sequenceComponentApi(seqCompLocation).shutdown()
+  }
 
   private def filterIdleSequenceComponents(seqCompLocations: List[SeqCompLocation]) =
     Future
