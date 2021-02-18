@@ -120,44 +120,49 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     // step2: shutdown obsMode1
     shutdownObsMode(obsMode1, shutdownHist)
 
-    // step3: configure obsMode2
-    configureObsMode(obsMode2, configureHist)
-
-    // step4: configure obsMode4 ... (non-conflicting with obsMode2)
-    configureObsMode(obsMode4, configureHist)
-
     // step5: restarting all obsMode2 sequencers
-    restartSequencers(obsMode2, restartHist)
+    restartSequencers(obsMode1, restartHist)
 
-    // step6: get obsMode details
-    getObsModesDetails
-    println("Fetched obsModes details")
-    Thread.sleep(Constants.timeoutSMReliability)
+    // step2: shutdown obsMode1
+    shutdownObsMode(obsMode1, shutdownHist)
 
-    // step7: shutdown all obsMode2 sequencers individually
-    shutdownSequencers(obsMode2, shutdownSeqHist)
 
-    // step8: configure obsMode3 (having conflicting resources with obsMode4)
-    Try {
-      configureObsMode(obsMode3, configureHist)
-    }.recover(e => println(s"Configure $obsMode3 failed due to: " + e.getMessage))
-
-    // step9: shutdown obsMode4 using subsystem shutdown
-    getObsModesDetails
-      .filter(_.obsMode == obsMode4)
-      .foreach(_.sequencers.subsystems.foreach(shutdownSubsystemSequencers))
-
-    // step10: configure obsMode1
-    configureObsMode(obsMode1, configureHist)
-
-    // step12: shutdown obsMode1 sequencers
-    shutdownSequencers(obsMode1, shutdownHist)
-
-    // step11: configure obsMode3 non-conflicting with obsMode1
-    configureObsMode(obsMode3, configureHist)
-
-    // step13: shutdownAll obsModes
-    shutdownObsMode(obsMode3, shutdownSeqHist)
+    //    // step3: configure obsMode2
+//    configureObsMode(obsMode2, configureHist)
+//
+//    // step4: configure obsMode4 ... (non-conflicting with obsMode2)
+//    configureObsMode(obsMode4, configureHist)
+//
+//
+//    // step6: get obsMode details
+//    getObsModesDetails
+//    println("Fetched obsModes details")
+//    Thread.sleep(Constants.timeoutSMReliability)
+//
+//    // step7: shutdown all obsMode2 sequencers individually
+//    shutdownSequencers(obsMode2, shutdownSeqHist)
+//
+//    // step8: configure obsMode3 (having conflicting resources with obsMode4)
+//    Try {
+//      configureObsMode(obsMode3, configureHist)
+//    }.recover(e => println(s"Configure $obsMode3 failed due to: " + e.getMessage))
+//
+//    // step9: shutdown obsMode4 using subsystem shutdown
+//    getObsModesDetails
+//      .filter(_.obsMode == obsMode4)
+//      .foreach(_.sequencers.subsystems.foreach(shutdownSubsystemSequencers))
+//
+//    // step10: configure obsMode1
+//    configureObsMode(obsMode1, configureHist)
+//
+//    // step12: shutdown obsMode1 sequencers
+//    shutdownSequencers(obsMode1, shutdownHist)
+//
+//    // step11: configure obsMode3 non-conflicting with obsMode1
+//    configureObsMode(obsMode3, configureHist)
+//
+//    // step13: shutdownAll obsModes
+//    shutdownObsMode(obsMode3, shutdownSeqHist)
 
   }
 
@@ -190,6 +195,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   }
 
   private def restartSequencers(obsMode: ObsMode, histogram: Histogram): Unit = {
+    // todo change filter -> find
     getObsModesDetails
       .filter(_.obsMode == obsMode)
       .foreach(obsModeDetails =>
@@ -224,6 +230,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   }
 
   private def shutdownSequencers(obsMode: ObsMode, histogram: Histogram): Unit = {
+   // todo change filter -> find
     getObsModesDetails
       .filter(_.obsMode == obsMode)
       .foreach(obsModeDetails => {
