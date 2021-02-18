@@ -8,7 +8,8 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.client.utils.LocationServerStatus
-import csw.logging.client.scaladsl.LoggerFactory
+import csw.logging.client.scaladsl.{LoggerFactory, LoggingSystemFactory}
+import csw.network.utils.Networks
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
@@ -34,9 +35,13 @@ object SequenceManagerReliabilityTest extends LocationUtils {
 
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
   private val smLocation            = resolveAkkaLocation(sequenceManagerPrefix, Service)
-  private val smClient              = SequenceManagerApiFactory.makeAkkaClient(smLocation)
-  private val loggerFactory         = new LoggerFactory(Prefix(ESW, "reliability.perf.test"))
-  private val log                   = loggerFactory.getLogger
+  LoggingSystemFactory.start("SMReliabilityTest", "0.1.0-SNAPSHOT", Networks().hostname, actorSystem)
+
+  private val smClient      = SequenceManagerApiFactory.makeAkkaClient(smLocation)
+  private val loggerFactory = new LoggerFactory(Prefix(ESW, "reliability.perf.test"))
+  private val log           = loggerFactory.getLogger
+
+  log.info(s"${actorSystem.name} is at address: ${actorSystem.address.toString}")
 
   def main(args: Array[String]): Unit = {
     val provisionResponse = smClient.provision(provisionConfigReliability).futureValue

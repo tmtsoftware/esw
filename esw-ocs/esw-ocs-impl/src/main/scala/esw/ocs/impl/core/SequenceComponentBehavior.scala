@@ -109,6 +109,7 @@ class SequenceComponentBehavior(
       handler: (ActorContext[SequenceComponentMsg], HandleableMsg) => Behavior[SequenceComponentMsg]
   ): Behavior[SequenceComponentMsg] =
     Behaviors.receive[SequenceComponentMsg] { (ctx, msg) =>
+      log.info(s"Sequence component received message : [$msg]")
       msg match {
         case msg: HandleableMsg => handler(ctx, msg)
         case msg: UnhandleableSequenceComponentMsg =>
