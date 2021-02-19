@@ -1,7 +1,5 @@
 package esw.sm.app
 
-import java.nio.file.{Path, Paths}
-
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
@@ -22,12 +20,14 @@ import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ConfigureResponse.Success
 import esw.sm.api.protocol.{ConfigureResponse, ProvisionResponse, ShutdownSequenceComponentResponse, ShutdownSequencersResponse}
 
+import java.nio.file.{Path, Paths}
 import scala.concurrent.duration.DurationInt
 
 class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, ConfigServer) with AgentSetup {
 
   private val sequenceManagerPrefix   = Prefix(ESW, "sequence_manager")
   private val obsModeConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smObsModeConfigSimulation.conf").toURI)
+  private val hostConfigPath: Path    = Paths.get(ClassLoader.getSystemResource("hostConfig.conf").toURI)
 
   private val eswAgentPrefix  = getRandomAgentPrefix(ESW)
   private val tcsAgentPrefix  = getRandomAgentPrefix(TCS)
@@ -50,9 +50,9 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
     // create obsMode config file on config server
     adminApi.create(configFilePath, ConfigData.fromString(scriptVersionConf), annex = false, "First commit").futureValue
 
-    spawnAgent(AgentSettings(eswAgentPrefix, channel, configFilePath))
-    spawnAgent(AgentSettings(tcsAgentPrefix, channel, configFilePath))
-    spawnAgent(AgentSettings(irisAgentPrefix, channel, configFilePath))
+    spawnAgent(AgentSettings(eswAgentPrefix, channel, configFilePath), hostConfigPath, isConfigLocal = true)
+    spawnAgent(AgentSettings(tcsAgentPrefix, channel, configFilePath), hostConfigPath, isConfigLocal = true)
+    spawnAgent(AgentSettings(irisAgentPrefix, channel, configFilePath), hostConfigPath, isConfigLocal = true)
   }
 
   override def afterEach(): Unit = {
@@ -68,20 +68,26 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
       intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
       intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
 
-      TestSetup.startSequenceManager(sequenceManagerPrefix, obsModeConfigPath, true, Some(eswAgentPrefix), simulation = true)
+      TestSetup.startSequenceManager(
+        sequenceManagerPrefix,
+        obsModeConfigPath,
+        isConfigLocal = true,
+        Some(eswAgentPrefix),
+        simulation = true
+      )
 
       val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
       smAkkaLocation.prefix shouldBe sequenceManagerPrefix
 
       //  verify agent prefix and pid metadata is present in Sequence manager akka location
-      smAkkaLocation.metadata.getAgentPrefix shouldBe (Some(eswAgentPrefix))
+      smAkkaLocation.metadata.getAgentPrefix shouldBe Some(eswAgentPrefix)
       smAkkaLocation.metadata.getPid.get shouldNot equal(None)
 
       val smHttpLocation = resolveHTTPLocation(sequenceManagerPrefix, Service)
       smHttpLocation.prefix shouldBe sequenceManagerPrefix
 
       // verify agent prefix and pid metadata is present in Sequence manager http location
-      smHttpLocation.metadata.getAgentPrefix shouldBe (Some(eswAgentPrefix))
+      smHttpLocation.metadata.getAgentPrefix shouldBe Some(eswAgentPrefix)
       smHttpLocation.metadata.getPid.get shouldNot equal(None)
 
     }

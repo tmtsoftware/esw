@@ -7,7 +7,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
 
-import java.nio.file.Paths
+import java.nio.file.Path
 import scala.util.Random
 
 trait AgentUtils {
@@ -18,9 +18,9 @@ trait AgentUtils {
 
   def getRandomAgentPrefix(subsystem: Subsystem): Prefix = Prefix(subsystem, s"machine_${Random.nextInt().abs}")
 
-  def spawnAgent(agentSettings: AgentSettings): Unit = {
+  def spawnAgent(agentSettings: AgentSettings, hostConfigPath: Path, isConfigLocal: Boolean): Unit = {
     val system = actorSystem
-    val wiring = new AgentWiring(agentSettings, Paths.get(""), isConfigLocal = true) {
+    val wiring = new AgentWiring(agentSettings, hostConfigPath, isConfigLocal) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
     }
     agentWiring = Some(wiring)

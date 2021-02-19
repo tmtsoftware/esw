@@ -9,8 +9,11 @@ import csw.location.api.scaladsl.LocationService
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.FrameworkTestKit
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
+import esw.commons.utils.files.FileUtils
 import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, MachineAgent}
 import esw.ocs.testkit.utils._
+
+import java.nio.file.Path
 
 abstract class EswTestKit(services: Service*)
     extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)
@@ -30,6 +33,7 @@ abstract class EswTestKit(services: Service*)
   lazy val eventService: EventService       = underlyingFrameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
   lazy val eventSubscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val eventPublisher: EventPublisher   = eventService.defaultPublisher
+  private lazy val hostConfigPath: Path     = FileUtils.cpyFileToTmpFromResource("hostConfig.conf")
 
   def underlyingFrameworkTestKit: FrameworkTestKit = frameworkTestKit
 
@@ -37,7 +41,7 @@ abstract class EswTestKit(services: Service*)
     super.beforeAll()
     if (services.contains(AAS)) startKeycloak()
     if (services.contains(Gateway)) spawnGateway()
-    if (services.contains(MachineAgent)) spawnAgent(agentSettings)
+    if (services.contains(MachineAgent)) spawnAgent(agentSettings, hostConfigPath, isConfigLocal = true)
     if (services.contains(AgentService)) spawnAgentService()
   }
 
