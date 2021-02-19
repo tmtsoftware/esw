@@ -25,14 +25,12 @@ object AgentApp extends CommandApp[AgentCliCommand] {
     }
 
   private[esw] def start(agentSettings: AgentSettings, hostConfigPath: Path, isConfigLocal: Boolean): AgentWiring = {
-    val wiring = new AgentWiring(agentSettings)
-    start(wiring, hostConfigPath, isConfigLocal)
+    val wiring = new AgentWiring(agentSettings, hostConfigPath, isConfigLocal)
+    start(wiring)
   }
 
   private[esw] def start(
       wiring: AgentWiring,
-      hostConfigPath: Path,
-      isConfigLocal: Boolean,
       startLogging: Boolean = true
   ): AgentWiring = {
     import wiring._
@@ -49,8 +47,6 @@ object AgentApp extends CommandApp[AgentCliCommand] {
         }
 
       log.info("agent started")
-
-      spawnContainers(hostConfigPath, isConfigLocal)
       wiring
     }
     catch {

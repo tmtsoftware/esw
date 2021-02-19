@@ -8,7 +8,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{CSW, ESW}
 import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api._
-import esw.agent.service.api.models.{KillResponse, SpawnResponse}
+import esw.agent.service.api.models.{KillResponse, SpawnResponse, StartContainersResponse}
 
 import java.nio.file.Path
 
@@ -75,6 +75,8 @@ object AgentCommand {
       }
     }
   }
+
+  case class StartContainers(replyTo: ActorRef[StartContainersResponse]) extends AgentRemoteCommand
 
   case class KillComponent(replyTo: ActorRef[KillResponse], location: Location) extends AgentRemoteCommand
 }

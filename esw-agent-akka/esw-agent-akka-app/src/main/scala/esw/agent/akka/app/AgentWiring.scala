@@ -16,18 +16,15 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager, ProcessOutput}
-import esw.agent.akka.client.models.ContainerConfig
-import esw.agent.akka.client.{AgentClient, AgentCommand}
+import esw.agent.akka.client.AgentCommand
 import esw.commons.utils.config.VersionManager
-import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
 
 import java.nio.file.Path
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 // $COVERAGE-OFF$
-class AgentWiring(agentSettings: AgentSettings) {
+class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Path, isConfigLocal: Boolean) {
 
   val prefix: Prefix = agentSettings.prefix
 
@@ -50,33 +47,12 @@ class AgentWiring(agentSettings: AgentSettings) {
   lazy val processOutput   = new ProcessOutput()
   lazy val processExecutor = new ProcessExecutor(processOutput)
   lazy val processManager  = new ProcessManager(locationService, versionManager, processExecutor, agentSettings)
-  lazy val agentActor      = new AgentActor(processManager)
+  lazy val agentActor      = new AgentActor(processManager, configUtils, hostConfigPath, isConfigLocal)
 
   lazy val lazyAgentRegistration: Future[RegistrationResult] =
     locationService.register(AkkaRegistrationFactory.make(agentConnection, agentRef))
 
   lazy val agentRef: ActorRef[AgentCommand] =
     Await.result(typedSystem ? (Spawn(agentActor.behavior, "agent-actor", Props.empty, _)), timeout.duration)
-
-  def spawnContainers(path: Path, isConfigLocal: Boolean): Unit = {
-    val locationServiceUtil = new LocationServiceUtil(locationService)
-    AgentClient.make(prefix, locationServiceUtil).map {
-      case Left(error) => log.error(s"Unable to find agent: ${error.msg}")
-      case Right(agentClient) =>
-        val hostConfig = getHostConfig(configUtils, path, isConfigLocal)
-        Await.result(agentClient.spawnContainers(hostConfig), CommonTimeouts.Wiring)
-    }
-  }
-
-  private def getHostConfig(configUtils: ConfigUtils, path: Path, isConfigLocal: Boolean)(implicit
-      ec: ExecutionContext
-  ): List[ContainerConfig] = {
-    val containerConfigsF = configUtils
-      .getConfig(path, isConfigLocal)
-      .map(config => {
-        config.getConfigList("containers").asScala.map(c => ContainerConfig(c)).toList
-      })
-    Await.result(containerConfigsF, CommonTimeouts.Wiring)
-  }
 }
 // $COVERAGE-ON$

@@ -137,17 +137,4 @@ class AgentClientTest extends ActorTestSuit {
       }
     }
   }
-
-  "spawnContainers" should {
-    "send spawnContainer message to agent and return a future with agent response | ESW-379" in {
-      val config            = ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = true)
-      val spawnResponse     = mock[SpawnResponse]
-      val spawnResponseList = List(spawnResponse)
-      withBehavior {
-        case SpawnContainer(replyTo, `config`) => replyTo ! spawnResponse
-      } check { ac =>
-        ac.spawnContainers(List(config)).futureValue should ===(spawnResponseList)
-      }
-    }
-  }
 }

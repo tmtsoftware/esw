@@ -1,10 +1,8 @@
 package esw.agent.akka.app
 
-import java.net.URI
-import java.nio.file.{Path, Paths}
-import java.util.concurrent.CompletableFuture
-
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
+import com.typesafe.config.ConfigFactory
+import csw.config.client.commons.ConfigUtils
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
@@ -19,6 +17,9 @@ import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
+import java.net.URI
+import java.nio.file.{Path, Paths}
+import java.util.concurrent.CompletableFuture
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Random
@@ -28,7 +29,9 @@ class AgentSetup extends BaseTestSuite {
   implicit val scheduler: Scheduler                       = system.scheduler
   implicit val ec: ExecutionContext                       = system.executionContext
 
+  val IsHostConfigLocal                  = true
   val locationService: LocationService   = mock[LocationService]
+  val configUtils: ConfigUtils           = mock[ConfigUtils]
   val versionManager: VersionManager     = mock[VersionManager]
   val processExecutor: ProcessExecutor   = mock[ProcessExecutor]
   val process: Process                   = mock[Process]
@@ -37,8 +40,8 @@ class AgentSetup extends BaseTestSuite {
   val agentPrefix: Prefix                = Prefix(randomSubsystem, randomString(10))
   val versionConfPath: Path              = Path.of(randomString(20))
   val agentSettings: AgentSettings       = AgentSettings(agentPrefix, Cs.channel, versionConfPath)
-
-  val metadata: Metadata = Metadata().withAgentPrefix(agentPrefix).withPid(12345)
+  val hostConfigPath: Path               = Paths.get("hostConfig.conf")
+  val metadata: Metadata                 = Metadata().withAgentPrefix(agentPrefix).withPid(12345)
 
   val seqCompName: String                          = randomString(10)
   val seqCompPrefix: Prefix                        = Prefix(agentPrefix.subsystem, seqCompName)
@@ -59,6 +62,8 @@ class AgentSetup extends BaseTestSuite {
 
   val sequencerScriptsVersion: String = randomString(10)
 
+  when(configUtils.getConfig(hostConfigPath, IsHostConfigLocal))
+    .thenReturn(Future.successful(ConfigFactory.parseString("containers:[]")))
   when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
 
   override def beforeEach(): Unit = {
@@ -70,7 +75,7 @@ class AgentSetup extends BaseTestSuite {
     val processManager: ProcessManager = new ProcessManager(locationService, versionManager, processExecutor, agentSettings) {
       override def processHandle(pid: Long): Option[ProcessHandle] = Some(mockedProcessHandle)
     }
-    system.systemActorOf(new AgentActor(processManager).behavior, name)
+    system.systemActorOf(new AgentActor(processManager, configUtils, hostConfigPath, IsHostConfigLocal).behavior, name)
   }
 
   def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {

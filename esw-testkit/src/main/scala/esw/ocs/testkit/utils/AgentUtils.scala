@@ -20,16 +20,14 @@ trait AgentUtils {
 
   def spawnAgent(agentSettings: AgentSettings): Unit = {
     val system = actorSystem
-    val wiring = new AgentWiring(agentSettings) {
+    val wiring = new AgentWiring(agentSettings, Paths.get(""), isConfigLocal = true) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
     }
     agentWiring = Some(wiring)
     AgentApp.start(
       wiring,
-      Paths.get(""),
-      isConfigLocal = true,
       startLogging = false
-    ) //TODO: Fix host config path and configLocal args
+    )
   }
 
   def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))
