@@ -3,7 +3,8 @@ package esw.agent.akka.app.ext
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
@@ -32,6 +33,15 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val versionManager: VersionManager  = mock[VersionManager]
   private val versionConfPath: Path           = Path.of(randomString(30))
   private val sequencerScriptsVersion: String = randomString(10)
+  private val containerConfig: ContainerConfig = ContainerConfig(
+    "org",
+    "module",
+    "SampleContainerCmdApp",
+    "0.0.1",
+    "Standalone",
+    Path.of("container.conf"),
+    isConfigLocal = true
+  )
 
   when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
 
@@ -51,6 +61,9 @@ class SpawnCommandExtTest extends BaseTestSuite {
     SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None, simulation = true)
   private val spawnSeqMgrSimulationCmd =
     s"cs launch --channel $channel sequence-manager -- start -o $obsModeConf -l -a $agentPrefix --simulation"
+  private val spawnContainer = SpawnContainer(replyTo, containerConfig)
+  private val spawnContainerCmd =
+    s"cs launch ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local ${containerConfig.configFilePath}"
 
   "SpawnCommand.executableCommandStr" must {
     Table(
@@ -60,7 +73,8 @@ class SpawnCommandExtTest extends BaseTestSuite {
       ("SpawnSequenceComponentSimulation", spawnSeqCompSimulation, spawnSeqCompSimulationCmd),
       ("SpawnSequenceManager", spawnSeqMgr, spawnSeqMgrCmd),
       ("SpawnSequenceManager(version)", spawnSeqMgrWithVersion, spawnSeqMgrWithVersionCmd),
-      ("SpawnSequenceManagerSimulation", spawnSeqMgrSimulation, spawnSeqMgrSimulationCmd)
+      ("SpawnSequenceManagerSimulation", spawnSeqMgrSimulation, spawnSeqMgrSimulationCmd),
+      ("SpawnContainer", spawnContainer, spawnContainerCmd)
     ).foreach {
       case (name, spawnCommand, expectedCommandStr) =>
         name in {

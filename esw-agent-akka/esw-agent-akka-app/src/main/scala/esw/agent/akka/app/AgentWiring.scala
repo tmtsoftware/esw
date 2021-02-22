@@ -24,7 +24,7 @@ import java.nio.file.Path
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 // $COVERAGE-OFF$
-class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Path, isConfigLocal: Boolean) {
+class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Option[Path], isConfigLocal: Boolean) {
 
   val prefix: Prefix = agentSettings.prefix
 

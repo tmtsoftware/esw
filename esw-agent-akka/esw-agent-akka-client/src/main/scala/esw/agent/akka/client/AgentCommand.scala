@@ -76,7 +76,8 @@ object AgentCommand {
     }
   }
 
-  case class StartContainers(replyTo: ActorRef[StartContainersResponse]) extends AgentRemoteCommand
+  case class StartContainers(replyTo: ActorRef[StartContainersResponse], hostConfigPath: Path, isConfigLocal: Boolean)
+      extends AgentRemoteCommand
 
   case class KillComponent(replyTo: ActorRef[KillResponse], location: Location) extends AgentRemoteCommand
 }

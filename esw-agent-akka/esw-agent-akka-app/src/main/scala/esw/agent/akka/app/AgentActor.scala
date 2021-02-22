@@ -17,27 +17,31 @@ import java.nio.file.Path
 import scala.concurrent.{Await, Future}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
-class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostConfigPath: Path, isConfigLocal: Boolean)(implicit
-    system: ActorSystem[_]
+class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostConfigPath: Option[Path], isConfigLocal: Boolean)(
+    implicit system: ActorSystem[_]
 ) {
   import system.executionContext
 
   private[agent] def behavior: Behavior[AgentCommand] = {
     Behaviors.setup { ctx =>
-      ctx.self ! StartContainers(ctx.system.deadLetters)
+      hostConfigPath.foreach(p => ctx.self ! StartContainers(ctx.system.deadLetters, p, isConfigLocal))
       Behaviors.receiveMessage[AgentCommand] { command =>
         command match {
-          case cmd: SpawnCommand                => processManager.spawn(cmd).mapToAdt(_ => Spawned, Failed).map(cmd.replyTo ! _)
-          case StartContainers(replyTo)         => spawnContainers(ctx.self).map(replyTo ! _)
-          case KillComponent(replyTo, location) => processManager.kill(location).map(replyTo ! _)
+          case cmd: SpawnCommand                             => processManager.spawn(cmd).mapToAdt(_ => Spawned, Failed).map(cmd.replyTo ! _)
+          case StartContainers(replyTo, path, isConfigLocal) => spawnContainers(ctx.self, path, isConfigLocal).map(replyTo ! _)
+          case KillComponent(replyTo, location)              => processManager.kill(location).map(replyTo ! _)
         }
         Behaviors.same
       }
     }
   }
 
-  private def spawnContainers(agentRef: ActorRef[AgentCommand]): Future[StartContainersResponse] = {
-    val hostConfig = getHostConfig
+  private def spawnContainers(
+      agentRef: ActorRef[AgentCommand],
+      hostConfigPath: Path,
+      isConfigLocal: Boolean
+  ): Future[StartContainersResponse] = {
+    val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
     val spawnFutures = hostConfig.map(c => {
       (agentRef ? (SpawnContainer(_, c)))(
         AgentTimeouts.SpawnComponent,
@@ -47,9 +51,9 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
     Future.sequence(spawnFutures).map(StartContainersResponse)
   }
 
-  private def getHostConfig: List[ContainerConfig] = {
+  private def getHostConfig(path: Path, isConfigLocal: Boolean): List[ContainerConfig] = {
     val containerConfigsF = configUtils
-      .getConfig(hostConfigPath, isConfigLocal)
+      .getConfig(path, isConfigLocal)
       .map(config => {
         config.getConfigList("containers").asScala.map(c => ContainerConfig(c)).toList
       })

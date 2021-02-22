@@ -1,17 +1,18 @@
 package esw.agent.akka.app
 
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
-import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
-import csw.location.api.models.ComponentType.{SequenceComponent, Service}
+import csw.location.api.models.ComponentType.{Container, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.CSW
 import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
-import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
@@ -29,7 +30,6 @@ class AgentSetup extends BaseTestSuite {
   implicit val scheduler: Scheduler                       = system.scheduler
   implicit val ec: ExecutionContext                       = system.executionContext
 
-  val IsHostConfigLocal                  = true
   val locationService: LocationService   = mock[LocationService]
   val configUtils: ConfigUtils           = mock[ConfigUtils]
   val versionManager: VersionManager     = mock[VersionManager]
@@ -40,7 +40,6 @@ class AgentSetup extends BaseTestSuite {
   val agentPrefix: Prefix                = Prefix(randomSubsystem, randomString(10))
   val versionConfPath: Path              = Path.of(randomString(20))
   val agentSettings: AgentSettings       = AgentSettings(agentPrefix, Cs.channel, versionConfPath)
-  val hostConfigPath: Path               = Paths.get("hostConfig.conf")
   val metadata: Metadata                 = Metadata().withAgentPrefix(agentPrefix).withPid(12345)
 
   val seqCompName: String                          = randomString(10)
@@ -60,22 +59,47 @@ class AgentSetup extends BaseTestSuite {
   val spawnSequenceManager: ActorRef[SpawnResponse] => SpawnSequenceManager =
     SpawnSequenceManager(_, Paths.get("obsmode.conf"), isConfigLocal = true, None)
 
+  val containerConfig: ContainerConfig =
+    ContainerConfig(
+      "org",
+      "module",
+      "SampleContainerCmdApp",
+      "0.0.1",
+      "Standalone",
+      Path.of("container.conf"),
+      isConfigLocal = true
+    )
+  val spawnContainer: ActorRef[SpawnResponse] => SpawnContainer = SpawnContainer(_, containerConfig)
+  val firstContainerPrefix: Prefix                              = Prefix(CSW, "SampleContainerCmdApp")
+  val firstContainerComponentId: ComponentId                    = ComponentId(firstContainerPrefix, Container)
+  val firstContainerConn: AkkaConnection                        = AkkaConnection(firstContainerComponentId)
+  val firstContainerLocation: AkkaLocation                      = AkkaLocation(firstContainerConn, new URI("some"), metadata)
+  val firstContainerLocationF: Future[Some[AkkaLocation]]       = Future.successful(Some(firstContainerLocation))
+  val secondContainerPrefix: Prefix                             = Prefix(CSW, "SampleContainerCmdApp2")
+  val secondContainerComponentId: ComponentId                   = ComponentId(secondContainerPrefix, Container)
+  val secondContainerConn: AkkaConnection                       = AkkaConnection(secondContainerComponentId)
+  val secondContainerLocation: AkkaLocation                     = AkkaLocation(secondContainerConn, new URI("some"), metadata)
+  val secondContainerLocationF: Future[Some[AkkaLocation]]      = Future.successful(Some(secondContainerLocation))
+
   val sequencerScriptsVersion: String = randomString(10)
 
-  when(configUtils.getConfig(hostConfigPath, IsHostConfigLocal))
-    .thenReturn(Future.successful(ConfigFactory.parseString("containers:[]")))
   when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(locationService, processExecutor, process, logger)
+    reset(locationService, processExecutor, process, logger, configUtils)
   }
 
-  def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String = "test-actor"): ActorRef[AgentCommand] = {
+  def spawnAgentActor(
+      agentSettings: AgentSettings = agentSettings,
+      name: String = "test-actor",
+      hostConfigPath: Option[Path] = None,
+      isConfigLocal: Boolean = true
+  ): ActorRef[AgentCommand] = {
     val processManager: ProcessManager = new ProcessManager(locationService, versionManager, processExecutor, agentSettings) {
       override def processHandle(pid: Long): Option[ProcessHandle] = Some(mockedProcessHandle)
     }
-    system.systemActorOf(new AgentActor(processManager, configUtils, hostConfigPath, IsHostConfigLocal).behavior, name)
+    system.systemActorOf(new AgentActor(processManager, configUtils, hostConfigPath, isConfigLocal).behavior, name)
   }
 
   def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
@@ -107,5 +131,11 @@ class AgentSetup extends BaseTestSuite {
     // Sequence Manager
     when(locationService.find(argEq(seqManagerConn))).thenReturn(Future.successful(None))
     when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration])).thenReturn(seqManagerLocationF)
+
+    // Container
+    when(locationService.find(argEq(firstContainerConn))).thenReturn(Future.successful(None))
+    when(locationService.resolve(argEq(firstContainerConn), any[FiniteDuration])).thenReturn(firstContainerLocationF)
+    when(locationService.find(argEq(secondContainerConn))).thenReturn(Future.successful(None))
+    when(locationService.resolve(argEq(secondContainerConn), any[FiniteDuration])).thenReturn(secondContainerLocationF)
   }
 }

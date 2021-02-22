@@ -7,7 +7,6 @@ import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
 import esw.constants.CommonTimeouts
 import esw.services.internal.ManagedService
 
-import java.nio.file.Paths
 import scala.concurrent.Await
 
 object Agent {
@@ -17,7 +16,7 @@ object Agent {
 
   //TODO: Fix host config path and configLocal args
   private def startAgent(prefix: Prefix, agentConfig: Config): AgentWiring =
-    AgentApp.start(AgentSettings(prefix, agentConfig), Paths.get(""), isConfigLocal = true)
+    AgentApp.start(AgentSettings(prefix, agentConfig), None, isConfigLocal = true)
 
   private def stopAgent(wiring: AgentWiring): Unit =
     Await.result(wiring.actorRuntime.shutdown(ActorSystemTerminateReason), CommonTimeouts.Wiring)

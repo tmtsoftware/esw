@@ -24,7 +24,7 @@ object AgentApp extends CommandApp[AgentCliCommand] {
         start(AgentSettings(Prefix(prefix), ConfigFactory.load()), hostConfigPath, isConfigLocal)
     }
 
-  private[esw] def start(agentSettings: AgentSettings, hostConfigPath: Path, isConfigLocal: Boolean): AgentWiring = {
+  private[esw] def start(agentSettings: AgentSettings, hostConfigPath: Option[Path], isConfigLocal: Boolean): AgentWiring = {
     val wiring = new AgentWiring(agentSettings, hostConfigPath, isConfigLocal)
     start(wiring)
   }

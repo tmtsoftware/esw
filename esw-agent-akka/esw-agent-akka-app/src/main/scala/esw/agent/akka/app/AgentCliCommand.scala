@@ -23,9 +23,9 @@ object AgentCliCommand {
       @HelpMessage("Required: Prefix of machine. tcs.primary_machine, ocs.machine1 etc")
       @Short("p")
       prefix: String,
-      @HelpMessage("Required: Path of host config for this agent")
+      @HelpMessage("Optional: Path of host config for this agent")
       @Short("h")
-      hostConfigPath: Path,
+      hostConfigPath: Option[Path],
       @HelpMessage("Optional: Flag for reading host config from local machine")
       @Short("l")
       local: Boolean = false

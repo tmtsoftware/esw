@@ -50,14 +50,13 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
   private var agentServiceWiring: AgentServiceWiring   = _
   private val locationServiceUtil                      = new LocationServiceUtil(locationService)
   private val configTestKit: ConfigTestKit             = frameworkTestKit.configTestKit
-  private val hostConfigPath: Path                     = Paths.get(ClassLoader.getSystemResource("hostConfig.conf").toURI)
 
   override def beforeAll(): Unit = {
     // gateway setup
     super.beforeAll()
     gatewayServerWiring = startGateway()
     // agent app setup
-    spawnAgent(AgentSettings(agentPrefix, channel, versionConfPath), hostConfigPath, isConfigLocal = true)
+    spawnAgent(AgentSettings(agentPrefix, channel, versionConfPath))
     agentClient = AgentClient.make(agentPrefix, locationServiceUtil).rightValue
     // agent service setup
     agentServiceWiring = AgentServiceApp.start(startLogging = false)
@@ -691,7 +690,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       //spawn ESW agent
       val agentPrefix = getRandomAgentPrefix(ESW)
-      spawnAgent(AgentSettings(agentPrefix, channel, versionConfPath), hostConfigPath, isConfigLocal = true)
+      spawnAgent(AgentSettings(agentPrefix, channel, versionConfPath))
 
       //verify that agent is available
       resolveAkkaLocation(agentPrefix, Machine)
@@ -767,8 +766,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents to provision and verify they are running
-      spawnAgent(AgentSettings(eswAgentPrefix, channel, versionConfPath), hostConfigPath, isConfigLocal = true)
-      spawnAgent(AgentSettings(irisAgentPrefix, channel, versionConfPath), hostConfigPath, isConfigLocal = true)
+      spawnAgent(AgentSettings(eswAgentPrefix, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, channel, versionConfPath))
 
       val eswRunningSeqComp = Prefix(ESW, "ESW_10")
       TestSetup.startSequenceComponents(eswRunningSeqComp)
@@ -799,8 +798,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val eswAgentPrefix  = getRandomAgentPrefix(ESW)
       val irisAgentPrefix = getRandomAgentPrefix(IRIS)
       // start required agents
-      spawnAgent(AgentSettings(eswAgentPrefix, channel, versionConfPath), hostConfigPath, isConfigLocal = true)
-      spawnAgent(AgentSettings(irisAgentPrefix, channel, versionConfPath), hostConfigPath, isConfigLocal = true)
+      spawnAgent(AgentSettings(eswAgentPrefix, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, channel, versionConfPath))
 
       val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 

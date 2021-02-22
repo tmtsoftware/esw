@@ -15,7 +15,8 @@ class KillComponentTest extends AgentSetup {
   Table(
     ("Name", "SpawnCommand", "Location"),
     ("SequenceComponent", spawnSequenceComp, seqCompLocation),
-    ("SequenceManager", spawnSequenceManager, seqManagerLocation)
+    ("SequenceManager", spawnSequenceManager, seqManagerLocation),
+    ("Container", spawnContainer, firstContainerLocation)
   ).foreach {
     case (name, spawnComponent, location) =>
       s"KillComponent [$name]" must {

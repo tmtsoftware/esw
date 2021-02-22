@@ -18,9 +18,9 @@ trait AgentUtils {
 
   def getRandomAgentPrefix(subsystem: Subsystem): Prefix = Prefix(subsystem, s"machine_${Random.nextInt().abs}")
 
-  def spawnAgent(agentSettings: AgentSettings, hostConfigPath: Path, isConfigLocal: Boolean): Unit = {
+  def spawnAgent(agentSettings: AgentSettings, hostConfigPath: Option[Path] = None, isHostConfigLocal: Boolean = true): Unit = {
     val system = actorSystem
-    val wiring = new AgentWiring(agentSettings, hostConfigPath, isConfigLocal) {
+    val wiring = new AgentWiring(agentSettings, hostConfigPath, isHostConfigLocal) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
     }
     agentWiring = Some(wiring)

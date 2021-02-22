@@ -1,17 +1,19 @@
 package esw.agent.akka.app
 
-import java.nio.file.Path
-
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import com.typesafe.config.ConfigFactory
+import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
+import esw.agent.akka.client.AgentCommand.StartContainers
+import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned, StartContainersResponse}
 import esw.commons.utils.config.FetchingScriptVersionFailed
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
+import java.nio.file.{Path, Paths}
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
@@ -222,6 +224,68 @@ class SpawnComponentTest extends AgentSetup {
       agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None)
 
       probe.expectMessage(Failed(errorMsg))
+    }
+
+    "StartContainers" must {
+      val hostConfigPath: Path = Paths.get(getClass.getResource("/hostConfig.conf").toURI)
+      val isHostConfigLocal    = true
+      def expectedCommand(org: String, module: String, appName: String, confPath: String) =
+        List(
+          "cs",
+          "launch",
+          s"$org::$module:0.0.1",
+          "-r",
+          "jitpack",
+          "-M",
+          s"$appName",
+          "--",
+          "--local",
+          s"$confPath"
+        )
+
+      "reply 'StartContainersResponse' and spawn containers on agent spawn | ESW-379" in {
+        when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
+          .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
+        mockLocationService()
+        mockSuccessfulProcess()
+
+        spawnAgentActor(agentSettings, "test-actor-random-10", Some(hostConfigPath), isHostConfigLocal)
+
+        // agent actor sends StartContainers message to self
+        Thread.sleep(100)
+
+        verify(processExecutor).runCommand(
+          expectedCommand("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath.conf"),
+          firstContainerPrefix
+        )
+        verify(processExecutor).runCommand(
+          expectedCommand("com.github.tmtsoftware.sample2", "csw-sampledeploy2", "SampleContainerCmdApp2", "confPath2.conf"),
+          secondContainerPrefix
+        )
+      }
+
+      "reply 'StartContainersResponse' and spawn containers on receiving message | ESW-379" in {
+        LoggingSystemFactory.forTestingOnly()
+        val agentActorRef = spawnAgentActor(name = "test-actor-random-11")
+        val probe         = TestProbe[StartContainersResponse]()
+
+        when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
+          .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
+        mockLocationService()
+        mockSuccessfulProcess()
+
+        agentActorRef ! StartContainers(probe.ref, hostConfigPath, isHostConfigLocal)
+        probe.expectMessage(StartContainersResponse(List(Spawned, Spawned)))
+
+        verify(processExecutor).runCommand(
+          expectedCommand("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath.conf"),
+          firstContainerPrefix
+        )
+        verify(processExecutor).runCommand(
+          expectedCommand("com.github.tmtsoftware.sample2", "csw-sampledeploy2", "SampleContainerCmdApp2", "confPath2.conf"),
+          secondContainerPrefix
+        )
+      }
     }
   }
 }
