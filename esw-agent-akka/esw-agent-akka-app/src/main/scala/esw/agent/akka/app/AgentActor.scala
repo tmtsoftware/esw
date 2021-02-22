@@ -24,11 +24,11 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
 
   private[agent] def behavior: Behavior[AgentCommand] = {
     Behaviors.setup { ctx =>
-      hostConfigPath.foreach(p => ctx.self ! StartContainers(ctx.system.deadLetters, p, isConfigLocal))
+      hostConfigPath.foreach(p => ctx.self ! SpawnContainers(ctx.system.deadLetters, p, isConfigLocal))
       Behaviors.receiveMessage[AgentCommand] { command =>
         command match {
           case cmd: SpawnCommand                             => processManager.spawn(cmd).mapToAdt(_ => Spawned, Failed).map(cmd.replyTo ! _)
-          case StartContainers(replyTo, path, isConfigLocal) => spawnContainers(ctx.self, path, isConfigLocal).map(replyTo ! _)
+          case SpawnContainers(replyTo, path, isConfigLocal) => spawnContainers(ctx.self, path, isConfigLocal).map(replyTo ! _)
           case KillComponent(replyTo, location)              => processManager.kill(location).map(replyTo ! _)
         }
         Behaviors.same
@@ -40,7 +40,7 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
       agentRef: ActorRef[AgentCommand],
       hostConfigPath: Path,
       isConfigLocal: Boolean
-  ): Future[StartContainersResponse] = {
+  ): Future[SpawnContainersResponse] = {
     val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
     val spawnFutures = hostConfig.map(c => {
       (agentRef ? (SpawnContainer(_, c)))(
@@ -48,7 +48,7 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
         system.scheduler
       )
     })
-    Future.sequence(spawnFutures).map(StartContainersResponse)
+    Future.sequence(spawnFutures).map(SpawnContainersResponse)
   }
 
   private def getHostConfig(path: Path, isConfigLocal: Boolean): List[ContainerConfig] = {

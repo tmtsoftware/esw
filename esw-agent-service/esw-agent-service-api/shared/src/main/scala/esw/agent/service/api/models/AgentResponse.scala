@@ -10,4 +10,4 @@ sealed trait KillResponse  extends AgentResponse
 case object Spawned                                          extends SpawnResponse
 case object Killed                                           extends KillResponse
 case class Failed(msg: String)                               extends SpawnResponse with KillResponse
-case class StartContainersResponse(res: List[SpawnResponse]) extends AgentResponse
+case class SpawnContainersResponse(res: List[SpawnResponse]) extends AgentResponse

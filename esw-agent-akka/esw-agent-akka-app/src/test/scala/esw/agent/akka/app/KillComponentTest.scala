@@ -20,7 +20,7 @@ class KillComponentTest extends AgentSetup {
   ).foreach {
     case (name, spawnComponent, location) =>
       s"KillComponent [$name]" must {
-        s"reply Killed after stopping a registered component gracefully | ESW-276, ESW-367" in {
+        s"reply Killed after stopping a registered component gracefully | ESW-276, ESW-367, ESW-379" in {
           agentWithSpawnedComponent(name + "1") { (agentActorRef, killResponseProbe) =>
             agentActorRef ! KillComponent(killResponseProbe.ref, location)
             killResponseProbe.expectMessage(Killed)
@@ -30,7 +30,7 @@ class KillComponentTest extends AgentSetup {
           }
         }
 
-        s"reply 'Killed' when process is already stopping by another message [Idempotent] | ESW-276, ESW-367" in {
+        s"reply 'Killed' when process is already stopping by another message [Idempotent] | ESW-276, ESW-367, ESW-379" in {
           agentWithSpawnedComponent(name + "2") { (agentActorRef, killResponseProbe) =>
             agentActorRef ! KillComponent(killResponseProbe.ref, location)
             agentActorRef ! KillComponent(killResponseProbe.ref, location)
