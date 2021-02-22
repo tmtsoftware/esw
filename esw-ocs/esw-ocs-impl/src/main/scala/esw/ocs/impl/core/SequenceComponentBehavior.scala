@@ -2,6 +2,7 @@ package esw.ocs.impl.core
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
+import com.typesafe.config.ConfigFactory
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
@@ -29,6 +30,9 @@ class SequenceComponentBehavior(
 
   def idle: Behavior[SequenceComponentMsg] =
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (_, msg) =>
+      log.info(
+        s"FLAG for quarantine cleanup -----> ${actorSystem.settings.config.getDuration("akka.remote.artery.advanced.remove-quarantined-association-after")}"
+      )
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
         case LoadScript(subsystem, obsMode, replyTo) =>
