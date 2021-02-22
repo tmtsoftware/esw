@@ -23,6 +23,8 @@ object Command {
       agentService: Boolean = false,
       @HelpMessage("Prefix for agent. If provided, this will be used instead of default.")
       agentPrefix: Option[Prefix],
+      @HelpMessage("Path of hostConfig file.")
+      hostConfigPath: Option[Path],
       @ExtraName("g")
       @HelpMessage("Start gateway with default command role config.")
       gateway: Boolean = false,
@@ -42,6 +44,7 @@ object Command {
         agent: Boolean = false,
         agentService: Boolean = false,
         agentPrefix: Option[Prefix] = None,
+        hostConfigPath: Option[Path] = None,
         gateway: Boolean = false,
         commandRoleConfig: Option[Path] = None,
         sequenceManager: Boolean = false,
@@ -49,12 +52,23 @@ object Command {
         simulation: Boolean = false
     ): Start = {
       if (agent || agentService || gateway || sequenceManager)
-        new Start(agent, agentService, agentPrefix, gateway, commandRoleConfig, sequenceManager, obsModeConfig, simulation)
+        new Start(
+          agent,
+          agentService,
+          agentPrefix,
+          hostConfigPath,
+          gateway,
+          commandRoleConfig,
+          sequenceManager,
+          obsModeConfig,
+          simulation
+        )
       else
         new Start(
           agent = true,
           agentService = true,
           agentPrefix,
+          hostConfigPath,
           gateway = true,
           commandRoleConfig,
           sequenceManager = true,
