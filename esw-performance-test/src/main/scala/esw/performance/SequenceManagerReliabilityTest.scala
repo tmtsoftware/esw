@@ -14,7 +14,8 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
-import esw.performance.Constants._
+import esw.performance.constants.ObsModes._
+import esw.performance.constants.SMReliabilityConstants
 import esw.performance.utils.PerfUtils.{printResults, recordResults}
 import esw.performance.utils.Timing
 import esw.sm.api.actor.client.SequenceManagerApiFactory
@@ -44,7 +45,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   log.info(s"${actorSystem.name} is at address: ${actorSystem.address.toString}")
 
   def main(args: Array[String]): Unit = {
-    val provisionResponse = smClient.provision(provisionConfigReliability).futureValue
+    val provisionResponse = smClient.provision(SMReliabilityConstants.provisionConfig).futureValue
     provisionResponse shouldBe a[ProvisionResponse.Success.type]
     warmUp()
     actualPerf()
@@ -57,7 +58,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     val warmUpRestartHistogram     = new Histogram(3)
     val warmUpShutdownSeqHistogram = new Histogram(3)
     repeatScenario(
-      warmupIterationsReliability,
+      SMReliabilityConstants.warmupIterations,
       "Warmup",
       warmUpConfigureHistogram,
       warmUpShutdownHistogram,
@@ -72,7 +73,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     val restartHistogram     = new Histogram(3)
     val shutdownSeqHistogram = new Histogram(3)
     repeatScenario(
-      actualIterationsReliability,
+      SMReliabilityConstants.actualIterations,
       "Actual",
       configureHistogram,
       shutdownHistogram,
@@ -132,7 +133,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     // step6: get obsMode details
     getObsModesDetails
     println("Fetched obsModes details")
-    Thread.sleep(Constants.timeoutSMReliability)
+    Thread.sleep(SMReliabilityConstants.timeout)
 
     // step7: shutdown all obsMode2 sequencers individually
     shutdownSequencers(obsMode2, shutdownSeqHist)
@@ -172,7 +173,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     }
     histogram.recordValue(shutdownLatency)
     // to simulate actual observation
-    Thread.sleep(Constants.timeoutSMReliability)
+    Thread.sleep(SMReliabilityConstants.timeout)
   }
 
   private def configureObsMode(obsMode: ObsMode, histogram: Histogram) = {
@@ -186,7 +187,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     }
     histogram.recordValue(configureLatency)
     // to simulate actual observation
-    Thread.sleep(Constants.timeoutSMReliability)
+    Thread.sleep(SMReliabilityConstants.timeout)
   }
 
   private def restartSequencers(obsMode: ObsMode, histogram: Histogram): Unit = {
@@ -212,7 +213,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     }
     histogram.recordValue(restartLatency)
     // to simulate actual observation
-    Thread.sleep(Constants.timeoutSMReliability)
+    Thread.sleep(SMReliabilityConstants.timeout)
   }
 
   private def getObsModesDetails = {
@@ -248,7 +249,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     }
     histogram.recordValue(shutdownSeqLatency)
     // to simulate actual observation
-    Thread.sleep(Constants.timeoutSMReliability)
+    Thread.sleep(SMReliabilityConstants.timeout)
   }
 
   private def shutdownSubsystemSequencers(subsystem: Subsystem): Unit = {
@@ -262,7 +263,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
         throw new Exception(s"Failed to shutdown sequencers for $subsystem : ${failure.getMessage}")
     }
     // to simulate actual observation
-    Thread.sleep(Constants.timeoutSMReliability)
+    Thread.sleep(SMReliabilityConstants.timeout)
   }
 
 }
