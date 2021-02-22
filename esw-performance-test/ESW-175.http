@@ -21,7 +21,7 @@ Content-Type: application/octet-stream
 }
 
 ##### To make it active version of the config. id is returned from first/second call
-PUT http://<your-ip>:4000/active-version/tmt/osw/version.conf?id=4&comment=abcd
+PUT http://<your-ip>:4000/active-version/tmt/osw/version.conf?id=[id]&comment=abcd
 
 
 ##### To check if config is updated and marked as active

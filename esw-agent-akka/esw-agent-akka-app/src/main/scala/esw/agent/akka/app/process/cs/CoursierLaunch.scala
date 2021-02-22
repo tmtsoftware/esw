@@ -4,6 +4,7 @@ import java.io.File
 
 import scala.util.Try
 
+// TODO refactor
 case class CoursierLaunch(appName: String, appVersion: Option[String]) {
   private val app = appVersion.fold(appName)(version => s"$appName:$version")
 

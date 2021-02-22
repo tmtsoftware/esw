@@ -3,7 +3,6 @@ package esw.ocs.app
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
 import caseapp.RemainingArgs
-import com.typesafe.config.ConfigFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.location.client.utils.LocationServerStatus
@@ -34,9 +33,6 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
 
   def run(command: SequencerAppCommand, args: RemainingArgs): Unit = {
     LocationServerStatus.requireUpLocally()
-    val config = ConfigFactory.load()
-    println("####################")
-    println(config.getConfig("csw-logging"))
     run(command)
   }
 
@@ -46,12 +42,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     try {
       // irrespective of which command received, Sequence Component needs to be started
       val sequenceCompLocation = reportSequenceComponent(wiring.start())
-      if (enableLogging) {
-        startLogging(sequenceCompLocation.prefix.toString())
-        // TODO to remove
-        log.info("Logging System started")
-        println("Logging System started")
-      }
+      if (enableLogging) startLogging(sequenceCompLocation.prefix.toString())
       command match {
         case _: SequenceComponent => // sequence component is already started
         case Sequencer(seqCompSubsystem, _, _, seqSubsystem, mode, _) =>

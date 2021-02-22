@@ -27,6 +27,9 @@ object Constants {
     )
   )
 
+  val warmupIterationsOverhead = 100
+  val actualIterationsOverhead = 2000
+
   val provisionConfigReliability: ProvisionConfig = ProvisionConfig(
     List(
       AgentProvisionConfig(Prefix("ESW.machine1"), 2),
@@ -36,12 +39,7 @@ object Constants {
       AgentProvisionConfig(Prefix("WFOS.machine1"), 1)
     )
   )
-
-  val warmupIterationsOverhead = 100
-  val actualIterationsOverhead = 2000
-
-  val timeoutSMReliability: Int = 1 * 1000
-
+  val timeoutSMReliability: Int   = 5 * 1000
   val warmupIterationsReliability = 1
-  val actualIterationsReliability = 5000
+  val actualIterationsReliability = 330
 }

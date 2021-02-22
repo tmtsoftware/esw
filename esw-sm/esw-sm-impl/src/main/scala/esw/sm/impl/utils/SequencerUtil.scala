@@ -33,12 +33,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .flatMapRight(startSequencersByMapping(obsMode, _)) // load scripts for sequencers on mapped sequence components
       .mapToAdt(identity, identity)
 
-  def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] = {
-    println(s"Finding sequencer for obsmode: $obsMode, subsystem : $subsystem")
+  def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
       .findSequencer(subsystem, obsMode.name)
       .flatMapToAdt(restartSequencer, e => LocationServiceError(e.msg))
-  }
 
   def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
     shutdownSequencersAndHandleErrors(getSequencer(subsystem, obsMode))
@@ -62,15 +60,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         errors => FailedToStartSequencers(errors.map(_.msg).toSet)
       )
 
-  private def restartSequencer(sequencerLocation: AkkaLocation) = {
-    println(s"Finding sequencer for location : $sequencerLocation")
+  private def restartSequencer(sequencerLocation: AkkaLocation) =
     makeSequencerClient(sequencerLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.restartScript(_).map {
         case SequencerLocation(location) => RestartSequencerResponse.Success(location.connection.componentId)
         case error: ScriptError          => LoadScriptError(error.msg)
         case Unhandled(_, _, msg)        => LoadScriptError(msg) // restart is unhandled in idle or shutting down state
       })
-  }
 
   private def getSequencer(subsystem: Subsystem, obsMode: ObsMode) =
     locationServiceUtil.findSequencer(subsystem, obsMode.name).mapRight(List(_))
@@ -88,12 +84,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     }
 
   // get sequence component from Sequencer and unload sequencer script
-  private def unloadScript(sequencerLocation: AkkaLocation) = {
-    println(s"############# Creating sequence-component client and sending unload script command for: $sequencerLocation")
+  private def unloadScript(sequencerLocation: AkkaLocation) =
     makeSequencerClient(sequencerLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.unloadScript)
       .map(_ => ShutdownSequencersResponse.Success)
-  }
 
   private def unloadScripts(sequencerLocations: List[AkkaLocation]) =
     Future.traverse(sequencerLocations)(unloadScript).map(_ => ShutdownSequencersResponse.Success)

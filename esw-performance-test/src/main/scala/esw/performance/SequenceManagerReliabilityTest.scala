@@ -225,7 +225,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   }
 
   private def shutdownSequencers(obsMode: ObsMode, histogram: Histogram): Unit = {
-   // todo change filter -> find
+    // todo change filter -> find
     getObsModesDetails
       .filter(_.obsMode == obsMode)
       .foreach(obsModeDetails => {
