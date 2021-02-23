@@ -39,7 +39,7 @@ class AgentSetup extends BaseTestSuite {
   implicit val logger: Logger            = mock[Logger]
   val agentPrefix: Prefix                = Prefix(randomSubsystem, randomString(10))
   val versionConfPath: Path              = Path.of(randomString(20))
-  val agentSettings: AgentSettings       = AgentSettings(agentPrefix, Cs.channel, versionConfPath)
+  val agentSettings: AgentSettings       = AgentSettings(agentPrefix, Cs.channel, versionConfPath, gcMetricsEnabled = false)
   val metadata: Metadata                 = Metadata().withAgentPrefix(agentPrefix).withPid(12345)
 
   val seqCompName: String                          = randomString(10)

@@ -49,9 +49,9 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
     // create obsMode config file on config server
     adminApi.create(configFilePath, ConfigData.fromString(scriptVersionConf), annex = false, "First commit").futureValue
 
-    spawnAgent(AgentSettings(eswAgentPrefix, channel, configFilePath))
-    spawnAgent(AgentSettings(tcsAgentPrefix, channel, configFilePath))
-    spawnAgent(AgentSettings(irisAgentPrefix, channel, configFilePath))
+    spawnAgent(AgentSettings(eswAgentPrefix, channel, configFilePath, gcMetricsEnabled = false))
+    spawnAgent(AgentSettings(tcsAgentPrefix, channel, configFilePath, gcMetricsEnabled = false))
+    spawnAgent(AgentSettings(irisAgentPrefix, channel, configFilePath, gcMetricsEnabled = false))
   }
 
   override def afterEach(): Unit = {
