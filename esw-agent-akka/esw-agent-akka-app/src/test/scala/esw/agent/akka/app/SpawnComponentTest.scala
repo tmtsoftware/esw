@@ -278,8 +278,8 @@ class SpawnComponentTest extends AgentSetup {
         agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
         val expectedResponse = SpawnContainersResponse(
           Map(
-            "com.github.tmtsoftware.sample:csw-sampledeploy:SampleContainerCmdApp"    -> Spawned,
-            "com.github.tmtsoftware.sample2:csw-sampledeploy2:SampleContainerCmdApp2" -> Spawned
+            "com.github.tmtsoftware.sample:SampleContainerCmdApp"   -> Spawned,
+            "com.github.tmtsoftware.sample2:SampleContainerCmdApp2" -> Spawned
           )
         )
         probe.expectMessage(expectedResponse)
@@ -305,13 +305,13 @@ class SpawnComponentTest extends AgentSetup {
           .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
         mockLocationService()
         mockSuccessfulProcess()
-        when(processExecutor.runCommand(secondContainerCommand, Prefix(CSW, "SampleContainerCmdApp2"))).thenReturn(Left("Error"))
+        when(processExecutor.runCommand(secondContainerCommand, Prefix(CSW, "com.github.tmtsoftware.sample2:SampleContainerCmdApp2"))).thenReturn(Left("Error"))
 
         agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
         val expectedResponse = SpawnContainersResponse(
           Map(
-            "com.github.tmtsoftware.sample:csw-sampledeploy:SampleContainerCmdApp"    -> Spawned,
-            "com.github.tmtsoftware.sample2:csw-sampledeploy2:SampleContainerCmdApp2" -> Failed("Error")
+            "com.github.tmtsoftware.sample:SampleContainerCmdApp"    -> Spawned,
+            "com.github.tmtsoftware.sample2:SampleContainerCmdApp2" -> Failed("Error")
           )
         )
         probe.expectMessage(expectedResponse)

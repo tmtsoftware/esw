@@ -61,8 +61,8 @@ class AgentSetup extends BaseTestSuite {
 
   val containerConfig: ContainerConfig =
     ContainerConfig(
-      "org",
-      "module",
+      "com.github.tmtsoftware.sample",
+      "csw-sampledeploy",
       "SampleContainerCmdApp",
       "0.0.1",
       "Standalone",
@@ -70,12 +70,12 @@ class AgentSetup extends BaseTestSuite {
       isConfigLocal = true
     )
   val spawnContainer: ActorRef[SpawnResponse] => SpawnContainer = SpawnContainer(_, containerConfig)
-  val firstContainerPrefix: Prefix                              = Prefix(CSW, "SampleContainerCmdApp")
+  val firstContainerPrefix: Prefix                              = Prefix(CSW, "com.github.tmtsoftware.sample:SampleContainerCmdApp")
   val firstContainerComponentId: ComponentId                    = ComponentId(firstContainerPrefix, Container)
   val firstContainerConn: AkkaConnection                        = AkkaConnection(firstContainerComponentId)
   val firstContainerLocation: AkkaLocation                      = AkkaLocation(firstContainerConn, new URI("some"), metadata)
   val firstContainerLocationF: Future[Some[AkkaLocation]]       = Future.successful(Some(firstContainerLocation))
-  val secondContainerPrefix: Prefix                             = Prefix(CSW, "SampleContainerCmdApp2")
+  val secondContainerPrefix: Prefix                             = Prefix(CSW, "com.github.tmtsoftware.sample2:SampleContainerCmdApp2")
   val secondContainerComponentId: ComponentId                   = ComponentId(secondContainerPrefix, Container)
   val secondContainerConn: AkkaConnection                       = AkkaConnection(secondContainerComponentId)
   val secondContainerLocation: AkkaLocation                     = AkkaLocation(secondContainerConn, new URI("some"), metadata)

@@ -64,7 +64,7 @@ object AgentCommand {
         replyTo: ActorRef[SpawnResponse],
         containerConfig: ContainerConfig
     ) extends SpawnCommand {
-      private val componentName               = s"${containerConfig.orgName}:${containerConfig.deployModule}:${containerConfig.appName}"
+      private val componentName               = s"${containerConfig.orgName}:${containerConfig.appName}"
       override val prefix: Prefix             = Prefix(CSW, componentName)
       override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, Container))
       private val command                     = List(containerConfig.configFilePath.toString)

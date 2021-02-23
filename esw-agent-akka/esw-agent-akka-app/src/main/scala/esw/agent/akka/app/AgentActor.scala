@@ -59,5 +59,5 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
     Await.result(containerConfigsF, CommonTimeouts.Wiring)
   }
 
-  private def containerId(config: ContainerConfig): String = s"${config.orgName}:${config.deployModule}:${config.appName}"
+  private def containerId(config: ContainerConfig): String = s"${config.orgName}:${config.appName}"
 }
