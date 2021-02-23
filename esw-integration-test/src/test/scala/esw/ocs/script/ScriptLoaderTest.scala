@@ -29,6 +29,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val iAlarmService           = mock[IAlarmService]
   private val sequencerClientFactory  = mock[(Subsystem, ObsMode) => CompletionStage[SequencerApi]]
   private val prefix                  = Prefix("ESW.filter.wheel")
+  private val obsMode                 = mock[ObsMode]
   private val config                  = mock[Config]
   private val heartbeatInterval       = Duration.ofSeconds(3)
 
@@ -38,6 +39,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   val scriptContext = new ScriptContext(
     heartbeatInterval,
     prefix,
+    obsMode,
     logger,
     sequenceOperatorFactory,
     actorSystem,

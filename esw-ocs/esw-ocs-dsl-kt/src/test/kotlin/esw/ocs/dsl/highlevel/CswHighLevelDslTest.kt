@@ -5,6 +5,7 @@ import akka.actor.typed.SpawnProtocol
 import com.typesafe.config.Config
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.scaladsl.LocationService
+import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.highlevel.models.Prefix
@@ -34,7 +35,7 @@ class CswHighLevelDslTest {
     private val cswServices: CswServices = mockk()
     private val locationService: LocationService = mockk()
     private val iLocationService: ILocationService = mockk()
-    private val scriptContext = ScriptContext(mockk(), Prefix("TCS.filter.wheel"), mockk(), mockk(), system, mockk(), mockk(), mockk(), config)
+    private val scriptContext = ScriptContext(mockk(), Prefix("TCS.filter.wheel"), mockk(), mockk(), mockk(), system, mockk(), mockk(), mockk(), config)
 
     init {
         every { config.getConfig("csw-alarm") }.returns(alarmConfig)
@@ -52,6 +53,7 @@ class CswHighLevelDslTest {
         override val coroutineScope: CoroutineScope = mockk()
         override val isOnline: Boolean get() = true
         override val prefix: String = scriptContext.prefix().toString()
+        override val obsMode: ObsMode = scriptContext.obsMode()
         override val sequencerObserveEvent: SequencerObserveEvent = SequencerObserveEvent(Prefix(prefix))
         override val actorSystem: ActorSystem<SpawnProtocol.Command> = system
 

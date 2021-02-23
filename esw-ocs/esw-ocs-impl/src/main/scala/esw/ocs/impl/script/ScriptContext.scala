@@ -16,6 +16,7 @@ import esw.ocs.impl.core.SequenceOperator
 class ScriptContext(
     val heartbeatInterval: Duration,
     val prefix: Prefix,
+    val obsMode: ObsMode,
     val jLogger: ILogger,
     val sequenceOperatorFactory: () => SequenceOperator,
     val actorSystem: ActorSystem[SpawnProtocol.Command],
