@@ -17,7 +17,7 @@ import esw.gateway.api.clients.ClientFactory
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.testkit.utils.{GatewayUtils, KeycloakUtils}
-import esw.performance.Constants.{actualIterationsOverhead, warmupIterationsOverhead}
+import esw.performance.constants.InfraOverheadConstants
 import esw.performance.utils.PerfUtils.{printResults, recordResults}
 import esw.performance.utils.Timing
 import org.HdrHistogram.Histogram
@@ -51,12 +51,12 @@ object InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
     val histogram       = new Histogram(3)
     val warmUpHistogram = new Histogram(3)
 
-    (1 to warmupIterationsOverhead).foreach { iterationNumber =>
+    (1 to InfraOverheadConstants.warmupIterations).foreach { iterationNumber =>
       println(s"Warmup iteration ------> $iterationNumber")
       testScenario(eswSequencerClient, warmUpHistogram)
     }
 
-    (1 to actualIterationsOverhead).foreach { iterationNumber =>
+    (1 to InfraOverheadConstants.actualIterations).foreach { iterationNumber =>
       println(s"Actual iteration ------> $iterationNumber")
       testScenario(eswSequencerClient, histogram)
     }

@@ -11,7 +11,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
-import esw.performance.Constants._
+import esw.performance.constants.ObsModes._
+import esw.performance.constants.SMLatencyConstants
 import esw.performance.utils.PerfUtils.{printResults, recordResults}
 import esw.performance.utils.Timing
 import esw.sm.api.actor.client.SequenceManagerApiFactory
@@ -40,11 +41,11 @@ object SequenceManagerLatencyTest extends LocationUtils {
     val histogram       = new Histogram(3)
     val warmUpHistogram = new Histogram(3)
 
-    val provisionResponse = smClient.provision(provisionConfig).futureValue
+    val provisionResponse = smClient.provision(SMLatencyConstants.provisionConfig).futureValue
     provisionResponse shouldBe a[ProvisionResponse.Success.type]
 
-    repeatScenario(warmupIterations, warmUpHistogram, "Warmup")
-    repeatScenario(actualIterations, histogram, "Actual")
+    repeatScenario(SMLatencyConstants.warmupIterations, warmUpHistogram, "Warmup")
+    repeatScenario(SMLatencyConstants.actualIterations, histogram, "Actual")
     recordResults(histogram, "results.txt")
 
     actorSystem.terminate()
@@ -64,9 +65,9 @@ object SequenceManagerLatencyTest extends LocationUtils {
     //-------------------- Configure ObsMode1 -------------------------------
     configureObsMode(obsMode1)
 
-    Thread.sleep(Constants.timeout)
+    Thread.sleep(SMLatencyConstants.timeout)
 
-    if (enableSwitching) {
+    if (SMLatencyConstants.enableSwitching) {
       switchObsMode(obsMode1, obsMode2, histogram)
       switchObsMode(obsMode2, obsMode3, histogram)
       switchObsMode(obsMode3, obsMode1, histogram)
@@ -86,7 +87,7 @@ object SequenceManagerLatencyTest extends LocationUtils {
     log.info("latency: " + latency)
 
     // To simulate observation
-    Thread.sleep(Constants.timeout) //todo: async delay
+    Thread.sleep(SMLatencyConstants.timeout) //todo: async delay
   }
 
   private def shutdownObsMode(obsMode: ObsMode): ShutdownSequencersResponse = {
