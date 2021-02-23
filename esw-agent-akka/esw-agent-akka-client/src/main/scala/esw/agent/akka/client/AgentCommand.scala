@@ -8,7 +8,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{CSW, ESW}
 import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api._
-import esw.agent.service.api.models.{KillResponse, SpawnResponse, SpawnContainersResponse}
+import esw.agent.service.api.models.{KillResponse, SpawnContainersResponse, SpawnResponse}
 
 import java.nio.file.Path
 
@@ -64,7 +64,7 @@ object AgentCommand {
         replyTo: ActorRef[SpawnResponse],
         containerConfig: ContainerConfig
     ) extends SpawnCommand {
-      private val componentName               = s"${containerConfig.appName}"
+      private val componentName               = s"${containerConfig.orgName}:${containerConfig.deployModule}:${containerConfig.appName}"
       override val prefix: Prefix             = Prefix(CSW, componentName)
       override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, Container))
       private val command                     = List(containerConfig.configFilePath.toString)

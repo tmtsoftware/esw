@@ -42,13 +42,12 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] = {
     val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
-    val spawnFutures = hostConfig.map(c => {
-      (agentRef ? (SpawnContainer(_, c)))(
-        AgentTimeouts.SpawnComponent,
-        system.scheduler
-      )
-    })
-    Future.sequence(spawnFutures).map(SpawnContainersResponse)
+    val spawnFuturesMap = hostConfig
+      .map(c => {
+        containerId(c) -> (agentRef ? (SpawnContainer(_, c)))(AgentTimeouts.SpawnComponent, system.scheduler)
+      })
+      .toMap
+    Future.sequence(spawnFuturesMap.values).map(fs => SpawnContainersResponse((spawnFuturesMap.keys zip fs).toMap))
   }
 
   private def getHostConfig(path: Path, isConfigLocal: Boolean): List[ContainerConfig] = {
@@ -59,4 +58,6 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
       })
     Await.result(containerConfigsF, CommonTimeouts.Wiring)
   }
+
+  private def containerId(config: ContainerConfig): String = s"${config.orgName}:${config.deployModule}:${config.appName}"
 }
