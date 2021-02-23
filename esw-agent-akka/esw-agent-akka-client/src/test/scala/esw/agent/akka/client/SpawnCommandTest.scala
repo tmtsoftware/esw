@@ -72,7 +72,7 @@ class SpawnCommandTest extends BaseTestSuite {
   "SpawnContainer's commandArg method" must {
     val actorRef = mock[ActorRef[SpawnResponse]]
 
-    "append given extra argument | ESW-366" in {
+    "append given extra argument | ESW-379" in {
       val containerConfig =
         ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = false)
       val command = SpawnContainer(actorRef, containerConfig)
@@ -84,7 +84,7 @@ class SpawnCommandTest extends BaseTestSuite {
       command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
     }
 
-    "append --local if config path is Local" in {
+    "append --local if config path is Local | ESW-379" in {
       val containerConfig =
         ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = true)
       val command = SpawnContainer(actorRef, containerConfig)

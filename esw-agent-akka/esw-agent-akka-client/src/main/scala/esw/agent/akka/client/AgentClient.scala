@@ -7,8 +7,8 @@ import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Prefix
-import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.akka.client.AgentCommand.{KillComponent, SpawnContainers}
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
@@ -38,6 +38,15 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
       simulation: Boolean = false
   ): Future[SpawnResponse] =
     (agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version, simulation)))(
+      AgentTimeouts.SpawnComponent,
+      actorSystem.scheduler
+    )
+
+  def spawnContainers(
+      hostConfigPath: Path,
+      isConfigLocal: Boolean
+  ): Future[SpawnContainersResponse] =
+    (agentRef ? (SpawnContainers(_, hostConfigPath, isConfigLocal)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )

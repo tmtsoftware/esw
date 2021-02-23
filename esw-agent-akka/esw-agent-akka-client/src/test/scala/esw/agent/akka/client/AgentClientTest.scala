@@ -7,9 +7,9 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.service.api.models.{KillResponse, SpawnResponse}
+import esw.agent.akka.client.AgentCommand.{KillComponent, SpawnContainers}
+import esw.agent.service.api.models.{KillResponse, SpawnContainersResponse, SpawnResponse}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
@@ -133,6 +133,18 @@ class AgentClientTest extends ActorTestSuit {
         case SpawnSequenceManager(replyTo, `configPath`, true, None, _) => replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceManager(configPath, isConfigLocal = true, None, simulation = true).futureValue should ===(spawnResponse)
+      }
+    }
+  }
+
+  "spawnContainers" should {
+    "send spawnSequenceManager message to agent and return a future with agent response | ESW-379" in {
+      val hostConfigPath          = Path.of("hostConfig.conf")
+      val spawnContainersResponse = mock[SpawnContainersResponse]
+      withBehavior {
+        case SpawnContainers(replyTo, `hostConfigPath`, true) => replyTo ! spawnContainersResponse
+      } check { ac =>
+        ac.spawnContainers(hostConfigPath, isConfigLocal = true).futureValue should ===(spawnContainersResponse)
       }
     }
   }
