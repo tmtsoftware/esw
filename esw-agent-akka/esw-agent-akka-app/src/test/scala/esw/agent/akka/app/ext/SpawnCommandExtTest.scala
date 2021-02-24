@@ -1,7 +1,5 @@
 package esw.agent.akka.app.ext
 
-import java.nio.file.{Path, Paths}
-
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.AgentSettings
@@ -13,6 +11,7 @@ import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
 
+import java.nio.file.{Path, Paths}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SpawnCommandExtTest extends BaseTestSuite {
@@ -41,17 +40,17 @@ class SpawnCommandExtTest extends BaseTestSuite {
     "SampleContainerCmdApp",
     "0.0.1",
     "Standalone",
-    Path.of("container.conf"),
+    Path.of("standalone.conf"),
     isConfigLocal = true
   )
 
   when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
 
-  val spawnSeqMgr            = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None)
-  val spawnSeqMgrWithVersion = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))
-  val spawnSeqMgrSimulation =
+  private val spawnSeqMgr            = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None)
+  private val spawnSeqMgrWithVersion = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))
+  private val spawnSeqMgrSimulation =
     SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None, simulation = true)
-  val spawnContainer = SpawnContainer(replyTo, containerConfig)
+  private val spawnContainer = SpawnContainer(replyTo, containerConfig)
 
   "SpawnCommand.executableCommandStr" must {
     val spawnSeqCompCmd =
@@ -66,7 +65,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
     val spawnSeqMgrSimulationCmd =
       s"cs launch --channel $channel sequence-manager -- start -o $obsModeConf -l -a $agentPrefix --simulation"
     val spawnContainerCmd =
-      s"cs launch ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local ${containerConfig.configFilePath}"
+      s"cs launch ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath}"
     val agentSettings = AgentSettings(agentPrefix, channel, versionConfPath, gcMetricsEnabled = false)
 
     Table(
@@ -110,7 +109,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
     val spawnContainerCmdWithGCMetrics =
       s"cs launch --java-opt -Xlog:gc:file=${gcLogFileName(
         s"${containerConfig.orgName}::${containerConfig.deployModule}"
-      )}::filecount=1 ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local ${containerConfig.configFilePath}"
+      )}::filecount=1 ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath}"
 
     Table(
       ("Command", "SpawnCommand", "ExpectedCommandStr"),

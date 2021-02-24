@@ -70,7 +70,9 @@ object AgentCommand {
       private val command                     = List(containerConfig.configFilePath.toString)
 
       override def commandArgs(extraArgs: List[String]): List[String] = {
-        val args = if (containerConfig.isConfigLocal) "--local" :: command else command
+        var args = command
+        if (containerConfig.mode == "Standalone") args = "--standalone" :: args
+        if (containerConfig.isConfigLocal) args = "--local" :: args
         args ++ extraArgs
       }
     }

@@ -84,6 +84,18 @@ class SpawnCommandTest extends BaseTestSuite {
       command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
     }
 
+    "append --standalone if mode is Standalone | ESW-379" in {
+      val containerConfig =
+        ContainerConfig("org", "dep", "app", "ver", "Standalone", Path.of("container.conf"), isConfigLocal = false)
+      val command = SpawnContainer(actorRef, containerConfig)
+
+      val expectedDefaultArgs = List("--standalone", containerConfig.configFilePath.toString)
+      val randomArgs          = List(randomString(10), randomString(10))
+
+      command.commandArgs() should ===(expectedDefaultArgs)
+      command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
+    }
+
     "append --local if config path is Local | ESW-379" in {
       val containerConfig =
         ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = true)

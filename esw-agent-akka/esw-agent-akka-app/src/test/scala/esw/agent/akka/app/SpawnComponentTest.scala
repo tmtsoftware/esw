@@ -305,12 +305,14 @@ class SpawnComponentTest extends AgentSetup {
           .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
         mockLocationService()
         mockSuccessfulProcess()
-        when(processExecutor.runCommand(secondContainerCommand, Prefix(CSW, "com.github.tmtsoftware.sample2:SampleContainerCmdApp2"))).thenReturn(Left("Error"))
+        when(
+          processExecutor.runCommand(secondContainerCommand, Prefix(CSW, "com.github.tmtsoftware.sample2:SampleContainerCmdApp2"))
+        ).thenReturn(Left("Error"))
 
         agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
         val expectedResponse = SpawnContainersResponse(
           Map(
-            "com.github.tmtsoftware.sample:SampleContainerCmdApp"    -> Spawned,
+            "com.github.tmtsoftware.sample:SampleContainerCmdApp"   -> Spawned,
             "com.github.tmtsoftware.sample2:SampleContainerCmdApp2" -> Failed("Error")
           )
         )
