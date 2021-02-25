@@ -1,6 +1,7 @@
 package esw.agent.akka.app.ext
 
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
@@ -50,7 +51,8 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val spawnSeqMgrWithVersion = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))
   private val spawnSeqMgrSimulation =
     SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None, simulation = true)
-  private val spawnContainer = SpawnContainer(replyTo, containerConfig)
+  private val spawnContainer =
+    SpawnContainer(replyTo, ComponentId(Prefix("Container.testContainer"), ComponentType.Container), containerConfig)
 
   "SpawnCommand.executableCommandStr" must {
     val spawnSeqCompCmd =

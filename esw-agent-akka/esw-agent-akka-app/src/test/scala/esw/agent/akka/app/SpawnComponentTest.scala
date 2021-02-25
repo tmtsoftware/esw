@@ -3,9 +3,8 @@ package esw.agent.akka.app
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import com.typesafe.config.ConfigFactory
-import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.CSW
+import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.akka.client.AgentCommand.SpawnContainers
@@ -247,6 +246,10 @@ class SpawnComponentTest extends AgentSetup {
       "reply 'SpawnContainersResponse' and spawn containers on agent spawn | ESW-379" in {
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
           .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
+        when(configUtils.getConfig(Paths.get("confPath1.conf"), isLocal = true))
+          .thenReturn(Future.successful(ConfigFactory.parseString("name = \"testContainer1\"")))
+        when(configUtils.getConfig(Paths.get("confPath2.conf"), isLocal = true))
+          .thenReturn(Future.successful(ConfigFactory.parseString("prefix = \"ESW.testHCD\"\ncomponentType = hcd")))
         mockLocationService()
         mockSuccessfulProcess()
 
@@ -256,76 +259,108 @@ class SpawnComponentTest extends AgentSetup {
         Thread.sleep(100)
 
         verify(processExecutor).runCommand(
-          command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath.conf"),
+          command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath1.conf"),
           firstContainerPrefix
         )
         verify(processExecutor).runCommand(
-          command("com.github.tmtsoftware.sample2", "csw-sampledeploy2", "SampleContainerCmdApp2", "confPath2.conf"),
-          secondContainerPrefix
+          List(
+            "cs",
+            "launch",
+            "com.github.tmtsoftware.sample2::csw-sampledeploy2:0.0.1",
+            "-r",
+            "jitpack",
+            "-M",
+            "SampleContainerCmdApp2",
+            "--",
+            "--local",
+            "--standalone",
+            "confPath2.conf"
+          ),
+          secondComponentPrefix
         )
       }
 
       "reply 'SpawnContainersResponse' and spawn containers on receiving message | ESW-379" in {
-        LoggingSystemFactory.forTestingOnly()
         val agentActorRef = spawnAgentActor(name = "test-actor-random-11")
         val probe         = TestProbe[SpawnContainersResponse]()
-
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
           .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
+        when(configUtils.getConfig(Paths.get("confPath1.conf"), isLocal = true))
+          .thenReturn(Future.successful(ConfigFactory.parseString("name = \"testContainer1\"")))
+        when(configUtils.getConfig(Paths.get("confPath2.conf"), isLocal = true))
+          .thenReturn(Future.successful(ConfigFactory.parseString("prefix = \"ESW.testHCD\"\ncomponentType = hcd")))
         mockLocationService()
         mockSuccessfulProcess()
 
         agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
+
         val expectedResponse = SpawnContainersResponse(
           Map(
-            "com.github.tmtsoftware.sample:SampleContainerCmdApp"   -> Spawned,
-            "com.github.tmtsoftware.sample2:SampleContainerCmdApp2" -> Spawned
+            "Container.testContainer1" -> Spawned,
+            "ESW.testHCD"              -> Spawned
           )
         )
         probe.expectMessage(expectedResponse)
-
         verify(processExecutor).runCommand(
-          command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath.conf"),
+          command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath1.conf"),
           firstContainerPrefix
         )
         verify(processExecutor).runCommand(
-          command("com.github.tmtsoftware.sample2", "csw-sampledeploy2", "SampleContainerCmdApp2", "confPath2.conf"),
-          secondContainerPrefix
+          List(
+            "cs",
+            "launch",
+            "com.github.tmtsoftware.sample2::csw-sampledeploy2:0.0.1",
+            "-r",
+            "jitpack",
+            "-M",
+            "SampleContainerCmdApp2",
+            "--",
+            "--local",
+            "--standalone",
+            "confPath2.conf"
+          ),
+          secondComponentPrefix
         )
       }
 
       "reply 'SpawnContainersResponse' with Failed response if some container fail to spawn | ESW-379" in {
-        LoggingSystemFactory.forTestingOnly()
         val agentActorRef = spawnAgentActor(name = "test-actor-random-12")
         val probe         = TestProbe[SpawnContainersResponse]()
         val secondContainerCommand =
-          command("com.github.tmtsoftware.sample2", "csw-sampledeploy2", "SampleContainerCmdApp2", "confPath2.conf")
-
+          List(
+            "cs",
+            "launch",
+            "com.github.tmtsoftware.sample2::csw-sampledeploy2:0.0.1",
+            "-r",
+            "jitpack",
+            "-M",
+            "SampleContainerCmdApp2",
+            "--",
+            "--local",
+            "--standalone",
+            "confPath2.conf"
+          )
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
           .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
+        when(configUtils.getConfig(Paths.get("confPath1.conf"), isLocal = true))
+          .thenReturn(Future.successful(ConfigFactory.parseString("name = \"testContainer1\"")))
+        when(configUtils.getConfig(Paths.get("confPath2.conf"), isLocal = true))
+          .thenReturn(Future.successful(ConfigFactory.parseString("prefix = \"ESW.testHCD\"\ncomponentType = hcd")))
         mockLocationService()
         mockSuccessfulProcess()
         when(
-          processExecutor.runCommand(secondContainerCommand, Prefix(CSW, "com.github.tmtsoftware.sample2:SampleContainerCmdApp2"))
+          processExecutor.runCommand(secondContainerCommand, Prefix(ESW, "testHCD"))
         ).thenReturn(Left("Error"))
 
         agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
+
         val expectedResponse = SpawnContainersResponse(
           Map(
-            "com.github.tmtsoftware.sample:SampleContainerCmdApp"   -> Spawned,
-            "com.github.tmtsoftware.sample2:SampleContainerCmdApp2" -> Failed("Error")
+            "Container.testContainer1" -> Spawned,
+            "ESW.testHCD"              -> Failed("Error")
           )
         )
         probe.expectMessage(expectedResponse)
-
-        verify(processExecutor).runCommand(
-          command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath.conf"),
-          firstContainerPrefix
-        )
-        verify(processExecutor).runCommand(
-          secondContainerCommand,
-          secondContainerPrefix
-        )
       }
     }
   }

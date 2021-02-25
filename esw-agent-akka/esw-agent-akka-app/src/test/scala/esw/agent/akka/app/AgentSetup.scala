@@ -2,13 +2,13 @@ package esw.agent.akka.app
 
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.config.client.commons.ConfigUtils
-import csw.location.api.models.ComponentType.{Container, SequenceComponent, Service}
+import csw.location.api.models.ComponentType.{Container, HCD, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
-import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.CSW
+import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
@@ -69,15 +69,15 @@ class AgentSetup extends BaseTestSuite {
       Path.of("container.conf"),
       isConfigLocal = true
     )
-  val spawnContainer: ActorRef[SpawnResponse] => SpawnContainer = SpawnContainer(_, containerConfig)
-  val firstContainerPrefix: Prefix                              = Prefix(CSW, "com.github.tmtsoftware.sample:SampleContainerCmdApp")
+  val firstContainerPrefix: Prefix                              = Prefix(Subsystem.Container, "testContainer1")
   val firstContainerComponentId: ComponentId                    = ComponentId(firstContainerPrefix, Container)
+  val spawnContainer: ActorRef[SpawnResponse] => SpawnContainer = SpawnContainer(_, firstContainerComponentId, containerConfig)
   val firstContainerConn: AkkaConnection                        = AkkaConnection(firstContainerComponentId)
   val firstContainerLocation: AkkaLocation                      = AkkaLocation(firstContainerConn, new URI("some"), metadata)
   val firstContainerLocationF: Future[Some[AkkaLocation]]       = Future.successful(Some(firstContainerLocation))
-  val secondContainerPrefix: Prefix                             = Prefix(CSW, "com.github.tmtsoftware.sample2:SampleContainerCmdApp2")
-  val secondContainerComponentId: ComponentId                   = ComponentId(secondContainerPrefix, Container)
-  val secondContainerConn: AkkaConnection                       = AkkaConnection(secondContainerComponentId)
+  val secondComponentPrefix: Prefix                             = Prefix(ESW, "testHCD")
+  val secondComponentCompId: ComponentId                        = ComponentId(secondComponentPrefix, HCD)
+  val secondContainerConn: AkkaConnection                       = AkkaConnection(secondComponentCompId)
   val secondContainerLocation: AkkaLocation                     = AkkaLocation(secondContainerConn, new URI("some"), metadata)
   val secondContainerLocationF: Future[Some[AkkaLocation]]      = Future.successful(Some(secondContainerLocation))
 

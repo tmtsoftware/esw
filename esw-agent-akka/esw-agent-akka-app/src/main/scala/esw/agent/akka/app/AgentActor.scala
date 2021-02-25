@@ -4,6 +4,9 @@ import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.config.client.commons.ConfigUtils
+import csw.location.api.models.{ComponentId, ComponentType}
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.Container
 import esw.agent.akka.app.process.ProcessManager
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnContainer
@@ -44,7 +47,11 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
     val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
     val spawnFuturesMap = hostConfig
       .map(c => {
-        containerId(c) -> (agentRef ? (SpawnContainer(_, c)))(AgentTimeouts.SpawnComponent, system.scheduler)
+        val componentId = containerComponentId(c)
+        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, c)))(
+          AgentTimeouts.SpawnComponent,
+          system.scheduler
+        )
       })
       .toMap
     Future.sequence(spawnFuturesMap.values).map(fs => SpawnContainersResponse((spawnFuturesMap.keys zip fs).toMap))
@@ -56,8 +63,16 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
       .map(config => {
         config.getConfigList("containers").asScala.map(c => ContainerConfig(c)).toList
       })
-    Await.result(containerConfigsF, CommonTimeouts.Wiring)
+    Await.result(containerConfigsF, CommonTimeouts.FetchConfig)
   }
 
-  private def containerId(config: ContainerConfig): String = s"${config.orgName}:${config.appName}"
+  private def containerComponentId(config: ContainerConfig): ComponentId = {
+    val containerConfig =
+      Await.result(configUtils.getConfig(config.configFilePath, config.isConfigLocal), CommonTimeouts.FetchConfig)
+    if (config.mode == "Standalone") {
+      val componentType = if (containerConfig.getString("componentType") == "hcd") ComponentType.HCD else ComponentType.Assembly
+      ComponentId(Prefix(containerConfig.getString("prefix")), componentType)
+    }
+    else ComponentId(Prefix(Container, containerConfig.getString("name")), ComponentType.Container)
+  }
 }

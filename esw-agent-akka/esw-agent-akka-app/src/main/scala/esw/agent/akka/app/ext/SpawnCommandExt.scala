@@ -26,7 +26,7 @@ object SpawnCommandExt {
           scriptsVersion.map(Coursier.ocsApp(_, agentSettings.gcMetricsEnabled).launch(agentSettings.coursierChannel, args))
         case SpawnSequenceManager(_, _, _, version, _) =>
           Future.successful(Coursier.smApp(version, agentSettings.gcMetricsEnabled).launch(agentSettings.coursierChannel, args))
-        case SpawnContainer(_, config) =>
+        case SpawnContainer(_, _, config) =>
           Future.successful(
             Coursier
               .containerApp(config, agentSettings.gcMetricsEnabled)
