@@ -10,6 +10,7 @@ object Main extends App {
     .Main(
       predefCode = """
                        |import java.nio.file.Path
+                       |import java.nio.file.Paths
                        |import akka.util.Timeout
                        |import akka.Done
                        |import scala.concurrent.duration.{Duration, DurationDouble}
