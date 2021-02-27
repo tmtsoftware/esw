@@ -3,18 +3,18 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "d9a78d83ba"
+  private val MSocketVersion = "95b8cf2"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
-  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.15" // MIT License
+  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.29" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
   val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.4") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"   //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
-  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.8"
-  val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.4"
+  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "3.0.0"
+  val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.9.1"
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
@@ -29,7 +29,7 @@ object Libs {
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "65b291486c"
+  private val Version = "07f3c3c"
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version
@@ -57,7 +57,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.11"
+  private val Version     = "2.6.13"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
@@ -69,7 +69,7 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.2.3" //all akka is Apache License 2.0
+  private val Version = "10.2.4" //all akka is Apache License 2.0
 
   val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
   val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
