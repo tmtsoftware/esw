@@ -1,7 +1,5 @@
 package esw.performance
 
-import java.util.Calendar
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.scaladsl.LocationService
@@ -95,13 +93,10 @@ object SequenceManagerReliabilityTest extends LocationUtils {
       shutdownSeqHist: Histogram
   ): Unit = {
 
-    println(s"Start Test ---> ${Calendar.getInstance().getTime}")
     (1 to times).foreach { iterationNumber =>
-      println(s"$label iteration ------> $iterationNumber")
       log.info(s"$label iteration ------> $iterationNumber")
       scenario(configureHist, shutdownHist, restartHist, shutdownSeqHist)
     }
-    println(s"End Test ---> ${Calendar.getInstance().getTime}")
     printResults(configureHist)
     printResults(shutdownHist)
     printResults(restartHist)
@@ -132,7 +127,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
 
     // step6: get obsMode details
     getObsModesDetails
-    println("Fetched obsModes details")
+    log.info("Fetched obsModes details")
     Thread.sleep(SMReliabilityConstants.timeout)
 
     // step7: shutdown all obsMode2 sequencers individually
@@ -141,7 +136,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     // step8: configure obsMode3 (having conflicting resources with obsMode4)
     Try {
       configureObsMode(obsMode3, configureHist)
-    }.recover(e => println(s"Configure $obsMode3 failed due to: " + e.getMessage))
+    }.recover(e => log.info(s"Expected Error Scenario: Configure $obsMode3 failed due to: " + e.getMessage))
 
     // step9: shutdown obsMode4 using subsystem shutdown
     getObsModesDetails
@@ -166,7 +161,6 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     val (shutdownResponse, shutdownLatency) = Timing.measureTimeMillis(smClient.shutdownObsModeSequencers(obsMode).futureValue)
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
-        println(s"Shutdown $obsMode Response --> ShutdownSequencersResponse.Success $obsMode")
         log.info(s"Shutdown $obsMode Response --> ShutdownSequencersResponse.Success $obsMode")
       case failure: ShutdownSequencersResponse.Failure =>
         throw new Exception(s"Failure to shutdownObsMode $obsMode : ${failure.getMessage}")
@@ -180,7 +174,6 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     val (configureResponse, configureLatency) = Timing.measureTimeMillis(smClient.configure(obsMode).futureValue)
     configureResponse match {
       case ConfigureResponse.Success(masterSequencerComponentId) =>
-        println(s"Configure $obsMode Response --> ConfigureResponse.Success $masterSequencerComponentId")
         log.info(s"Configure $obsMode Response --> ConfigureResponse.Success $masterSequencerComponentId")
       case failure: Failure =>
         throw new Exception(s"Failure to configure $obsMode : ${failure.getMessage}")
@@ -191,9 +184,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   }
 
   private def restartSequencers(obsMode: ObsMode, histogram: Histogram): Unit = {
-    // todo change filter -> find
     getObsModesDetails
-      .filter(_.obsMode == obsMode)
+      .find(_.obsMode == obsMode)
       .foreach(obsModeDetails =>
         obsModeDetails.sequencers.subsystems.foreach((subSystem: Subsystem) => {
           restartSequencer(subSystem, obsMode, histogram)
@@ -204,10 +196,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   private def restartSequencer(subSystem: Subsystem, obsMode: ObsMode, histogram: Histogram): Unit = {
     val (restartResponse, restartLatency) = Timing.measureTimeMillis(smClient.restartSequencer(subSystem, obsMode).futureValue)
     restartResponse match {
-      case RestartSequencerResponse.Success(componentId) => {
-        println(s"Restart $subSystem sequencer response ---> RestartSequencerResponse.Success($componentId)")
+      case RestartSequencerResponse.Success(componentId) =>
         log.info(s"Restart $subSystem sequencer response ---> RestartSequencerResponse.Success($componentId)")
-      }
       case failure: RestartSequencerResponse.Failure =>
         throw new Exception(s"Failure to restart sequencer of subsystem:$subSystem, obsMode:$obsMode : ${failure.getMessage}")
     }
@@ -226,9 +216,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   }
 
   private def shutdownSequencers(obsMode: ObsMode, histogram: Histogram): Unit = {
-    // todo change filter -> find
     getObsModesDetails
-      .filter(_.obsMode == obsMode)
+      .find(_.obsMode == obsMode)
       .foreach(obsModeDetails => {
         obsModeDetails.sequencers.subsystems.foreach((subsystem: Subsystem) => {
           shutdownSequencer(subsystem, obsMode, histogram)
@@ -240,10 +229,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     val (shutdownResponse, shutdownSeqLatency) =
       Timing.measureTimeMillis(smClient.shutdownSequencer(subsystem, obsMode).futureValue)
     shutdownResponse match {
-      case ShutdownSequencersResponse.Success => {
-        println(s"$subsystem sequencer for $obsMode shutdown Successfully")
+      case ShutdownSequencersResponse.Success =>
         log.info(s"$subsystem sequencer for $obsMode shutdown Successfully")
-      }
       case failure: ShutdownSequencersResponse.Failure =>
         throw new Exception(s"Failure to shutdown Sequencer for $subsystem, $obsMode : ${failure.getMessage}")
     }
@@ -255,10 +242,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   private def shutdownSubsystemSequencers(subsystem: Subsystem): Unit = {
     val shutdownResponse = smClient.shutdownSubsystemSequencers(subsystem).futureValue
     shutdownResponse match {
-      case ShutdownSequencersResponse.Success => {
-        println(s"sequencers for $subsystem shutdown Successfully")
+      case ShutdownSequencersResponse.Success =>
         log.info(s"sequencers for $subsystem shutdown Successfully")
-      }
       case failure: ShutdownSequencersResponse.Failure =>
         throw new Exception(s"Failed to shutdown sequencers for $subsystem : ${failure.getMessage}")
     }
