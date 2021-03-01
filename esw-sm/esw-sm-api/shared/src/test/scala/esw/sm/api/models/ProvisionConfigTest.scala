@@ -32,9 +32,7 @@ class ProvisionConfigTest extends AnyWordSpec with Matchers {
 
     "throw IllegalArgumentException if given sequence component count is 0 or less | ESW-347" in {
       val prefix = Prefix(ESW, "primary")
-      intercept[IllegalArgumentException] { AgentProvisionConfig(prefix, 0) }
-
-      val count = Random.between(-100, 0) //negative count
+      val count  = Random.between(-100, 0) //negative count
       intercept[IllegalArgumentException] { AgentProvisionConfig(prefix, count) }
     }
 

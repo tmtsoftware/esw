@@ -6,7 +6,7 @@ import esw.sm.api.models.ProvisionConfig.{AgentPrefix, SequenceComponentPrefix}
 case class AgentProvisionConfig(agentPrefix: Prefix, countOfSeqComps: Int) {
   // check count is greater than Zero
   require(
-    countOfSeqComps > 0,
+    countOfSeqComps >= 0,
     "Invalid sequence component count: Count of sequence components must be greater than Zero"
   )
 }
