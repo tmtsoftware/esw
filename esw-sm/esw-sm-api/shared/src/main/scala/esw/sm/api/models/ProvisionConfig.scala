@@ -7,7 +7,7 @@ case class AgentProvisionConfig(agentPrefix: Prefix, countOfSeqComps: Int) {
   // check count is greater than Zero
   require(
     countOfSeqComps >= 0,
-    "Invalid sequence component count: Count of sequence components must be greater than Zero"
+    "Invalid sequence component count: Count of sequence components must be greater than or equal to Zero"
   )
 }
 
