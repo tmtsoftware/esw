@@ -16,8 +16,10 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
-import esw.agent.service.api.models.{Failed, Killed, Spawned}
+import esw.agent.service.api.models.{Failed, Killed, SpawnContainersResponse, Spawned}
 import esw.agent.service.app.{AgentServiceApp, AgentServiceWiring}
+import esw.commons.utils.files.FileUtils
+import esw.commons.utils.files.FileUtils.stripExtension
 import esw.commons.utils.location.LocationServiceUtil
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.server.{GatewaySetup, GatewayWiring}
@@ -37,7 +39,7 @@ import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
 
-import java.io.File
+import java.io.{File, PrintWriter}
 import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
@@ -248,6 +250,41 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
           s"${ComponentId(irisPrefix, SequenceComponent)} is not registered with location service. Reason: Process failed to spawn due to reasons like invalid binary version etc or failed to register with location service."
         )
       )
+    }
+
+    "return Spawned on SpawnContainers | ESW-379" in {
+      val containerConfPath = FileUtils.cpyFileToTmpFromResource("testContainer.conf")
+      val hostConfigStr =
+        s"""
+          |containers: [
+          |  {
+          |    orgName: "com.github.tmtsoftware.esw"
+          |    deployModule: "esw-integration-test"
+          |    appName: "esw.agent.test.TestContainerCmdApp"
+          |    version: "0.1.0-SNAPSHOT"
+          |    mode: "Container"
+          |    configFilePath: "$containerConfPath"
+          |    configFileLocation: "Local"
+          |  }
+          |]
+          |""".stripMargin
+      val hostConfigFilePath = Files.createTempFile("hostConfig-", ".conf")
+      Files.write(hostConfigFilePath, hostConfigStr.getBytes)
+      hostConfigFilePath.toFile.deleteOnExit()
+
+      // spawn containers
+      agentClient.spawnContainers(hostConfigFilePath, isConfigLocal = true).futureValue should ===(
+        SpawnContainersResponse(Map("Container.TestContainer" -> Spawned))
+      )
+
+      // Verify registration in location service
+      val containerConnection             = AkkaConnection(ComponentId(Prefix(Container, "TestContainer"), ComponentType.Container))
+      val assemblyConnection              = AkkaConnection(ComponentId(Prefix(ESW, "testAssembly"), ComponentType.Assembly))
+      val containerLocation: AkkaLocation = locationService.resolve(containerConnection, 5.seconds).futureValue.value
+      val assemblyLocation: AkkaLocation  = locationService.resolve(assemblyConnection, 5.seconds).futureValue.value
+
+      agentClient.killComponent(assemblyLocation).futureValue
+      agentClient.killComponent(containerLocation).futureValue
     }
   }
 
