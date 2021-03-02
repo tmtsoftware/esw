@@ -1,7 +1,5 @@
 package esw.agent.akka.app.ext
 
-import java.nio.file.Path
-
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentCommand.SpawnCommand
