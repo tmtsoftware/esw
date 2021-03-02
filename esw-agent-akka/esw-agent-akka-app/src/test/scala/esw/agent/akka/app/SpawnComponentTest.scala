@@ -18,7 +18,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 class SpawnComponentTest extends AgentSetup {
-  private val eswVersion = randomString(10)
+
   "Spawn" must {
     "reply 'Spawned' and spawn sequence component process | ESW-237" in {
       val agentActorRef = spawnAgentActor(name = "test-actor1")

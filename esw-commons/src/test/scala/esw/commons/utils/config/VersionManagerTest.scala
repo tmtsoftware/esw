@@ -30,7 +30,7 @@ class VersionManagerTest extends BaseTestSuite {
       val version        = randomString(10)
 
       when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.successful(config))
-      when(config.getString("scripts.version")).thenReturn(version)
+      when(config.getString("scripts")).thenReturn(version)
       versionManager.getScriptVersion.futureValue should ===(version)
     }
 
@@ -41,15 +41,15 @@ class VersionManagerTest extends BaseTestSuite {
       val version        = randomString(10)
 
       when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.successful(config))
-      when(config.getString("sequence-manager.version")).thenReturn(version)
+      when(config.getString("esw")).thenReturn(version)
       versionManager.eswVersion.futureValue should ===(version)
     }
 
     Table(
       ("exception", "expectedMsg"),
       (FileNotFound(errorMsg), errorMsg),
-      (new ConfigException.Missing(versionConfPath.toString), "scripts.version is not present"),
-      (new ConfigException.WrongType(mock[ConfigOrigin], versionConfPath.toString), "value of scripts.version is not string"),
+      (new ConfigException.Missing(versionConfPath.toString), "scripts is not present"),
+      (new ConfigException.WrongType(mock[ConfigOrigin], versionConfPath.toString), "value of scripts is not string"),
       (new RuntimeException(runtimeErrorStr), s"Failed to fetch script version: $runtimeErrorStr")
     ).foreach {
       case (exception, msg) =>

@@ -82,8 +82,10 @@ class AgentSetup extends BaseTestSuite {
   val secondContainerLocationF: Future[Some[AkkaLocation]]      = Future.successful(Some(secondContainerLocation))
 
   val sequencerScriptsVersion: String = randomString(10)
+  val eswVersion: String              = randomString(10)
 
   when(versionManager.getScriptVersion).thenReturn(Future.successful(sequencerScriptsVersion))
+  when(versionManager.eswVersion).thenReturn(Future.successful(eswVersion))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
