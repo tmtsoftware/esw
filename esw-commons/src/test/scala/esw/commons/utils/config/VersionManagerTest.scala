@@ -23,15 +23,26 @@ class VersionManagerTest extends BaseTestSuite {
     val errorMsg        = randomString(10)
     val versionConfPath = Path.of(randomString(10))
 
-    "return version if config is present | ESW-360" in {
+    "return scripts version if config is present | ESW-360" in {
       val configUtils    = mock[ConfigUtils]
-      val versionManager = new VersionManager(configUtils)
+      val versionManager = new VersionManager(versionConfPath, configUtils)
       val config         = mock[Config]
       val version        = randomString(10)
 
       when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.successful(config))
       when(config.getString("scripts.version")).thenReturn(version)
-      versionManager.getScriptVersion(versionConfPath).futureValue should ===(version)
+      versionManager.getScriptVersion.futureValue should ===(version)
+    }
+
+    "return sequence manager version if config is present | ESW-360" in {
+      val configUtils    = mock[ConfigUtils]
+      val versionManager = new VersionManager(versionConfPath, configUtils)
+      val config         = mock[Config]
+      val version        = randomString(10)
+
+      when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.successful(config))
+      when(config.getString("sequence-manager.version")).thenReturn(version)
+      versionManager.eswVersion.futureValue should ===(version)
     }
 
     Table(
@@ -44,12 +55,12 @@ class VersionManagerTest extends BaseTestSuite {
       case (exception, msg) =>
         s"throw ScriptVersionConfException if ${exception.getClass.getSimpleName} | ESW-360" in {
           val configUtils    = mock[ConfigUtils]
-          val versionManager = new VersionManager(configUtils)
+          val versionManager = new VersionManager(versionConfPath, configUtils)
 
           when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.failed(exception))
 
           val scriptVersionConfException = intercept[FetchingScriptVersionFailed] {
-            Await.result(versionManager.getScriptVersion(versionConfPath), 100.millis)
+            Await.result(versionManager.getScriptVersion, 100.millis)
           }
           scriptVersionConfException should ===(FetchingScriptVersionFailed(msg))
         }

@@ -42,7 +42,7 @@ class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Option[Path], is
 
   private lazy val configClientService = ConfigClientFactory.clientApi(actorSystem, locationService)
   private lazy val configUtils         = new ConfigUtils(configClientService)
-  private lazy val versionManager      = new VersionManager(configUtils)
+  private lazy val versionManager      = new VersionManager(agentSettings.versionConfPath, configUtils)
 
   lazy val processOutput   = new ProcessOutput()
   lazy val processExecutor = new ProcessExecutor(processOutput)

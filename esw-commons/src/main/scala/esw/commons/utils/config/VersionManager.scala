@@ -8,16 +8,21 @@ import csw.config.client.commons.ConfigUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class VersionManager(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
-  private val scriptVersion = "scripts.version"
-  def getScriptVersion(path: Path): Future[String] =
+class VersionManager(versionConfPath: Path, configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
+
+  private val scriptsKey              = "scripts"
+  lazy val eswVersion: Future[String] = getVersionFor(versionConfPath, "esw")
+
+  def getScriptVersion: Future[String] = getVersionFor(versionConfPath, scriptsKey)
+
+  private def getVersionFor(path: Path, key: String): Future[String] =
     configUtils
       .getConfig(path, isLocal = false)
-      .map(config => config.getString(scriptVersion))
+      .map(config => config.getString(key))
       .recover {
         case FileNotFound(msg)            => throw FetchingScriptVersionFailed(msg)
-        case _: ConfigException.Missing   => throw FetchingScriptVersionFailed(s"$scriptVersion is not present")
-        case _: ConfigException.WrongType => throw FetchingScriptVersionFailed(s"value of $scriptVersion is not string")
+        case _: ConfigException.Missing   => throw FetchingScriptVersionFailed(s"$key is not present")
+        case _: ConfigException.WrongType => throw FetchingScriptVersionFailed(s"value of $key is not string")
         case e                            => throw FetchingScriptVersionFailed(s"Failed to fetch script version: ${e.getMessage}")
       }
 }

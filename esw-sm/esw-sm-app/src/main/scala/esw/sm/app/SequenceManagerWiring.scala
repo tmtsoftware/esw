@@ -61,7 +61,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   private lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(smActorSystem)
   private lazy val loggerFactory                            = new LoggerFactory(prefix)
   private implicit lazy val logger: Logger                  = loggerFactory.getLogger
-  private lazy val versionManager                           = new VersionManager(configUtils)
+  private lazy val versionManager                           = new VersionManager(versionConfPath, configUtils)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   private lazy val sequenceComponentAllocator = new SequenceComponentAllocator()

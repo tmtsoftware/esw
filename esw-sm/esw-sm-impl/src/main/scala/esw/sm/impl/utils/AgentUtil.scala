@@ -81,7 +81,7 @@ class AgentUtil(
   }
 
   private def spawnSeqCompByVersion(mapping: List[(AgentLocation, SeqCompPrefix)]) = {
-    versionManager.getScriptVersion(versionConfPath).flatMap(spawnCompsByMapping(mapping, _)).recover {
+    versionManager.getScriptVersion.flatMap(spawnCompsByMapping(mapping, _)).recover {
       case FetchingScriptVersionFailed(msg) => ProvisionVersionFailure(msg)
     }
   }

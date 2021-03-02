@@ -35,6 +35,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val versionManager: VersionManager  = mock[VersionManager]
   private val versionConfPath: Path           = Path.of(randomString(30))
   private val sequencerScriptsVersion: String = randomString(10)
+  private val eswVersion: String              = randomString(10)
   private val containerConfig: ContainerConfig = ContainerConfig(
     "org",
     "module",
@@ -45,7 +46,8 @@ class SpawnCommandExtTest extends BaseTestSuite {
     isConfigLocal = true
   )
 
-  when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
+  when(versionManager.getScriptVersion).thenReturn(Future.successful(sequencerScriptsVersion))
+  when(versionManager.eswVersion).thenReturn(Future.successful(eswVersion))
 
   private val spawnSeqMgr            = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, None)
   private val spawnSeqMgrWithVersion = SpawnSequenceManager(replyTo, obsModeConfPath, isConfigLocal = true, Some(version))
@@ -61,11 +63,11 @@ class SpawnCommandExtTest extends BaseTestSuite {
       s"cs launch --channel $channel ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
     val spawnSeqCompSimulationCmd =
       s"cs launch --channel $channel ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
-    val spawnSeqMgrCmd = s"cs launch --channel $channel sequence-manager -- start -o $obsModeConf -l -a $agentPrefix"
+    val spawnSeqMgrCmd = s"cs launch --channel $channel sequence-manager:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix"
     val spawnSeqMgrWithVersionCmd =
       s"cs launch --channel $channel sequence-manager:$version -- start -o $obsModeConf -l -a $agentPrefix"
     val spawnSeqMgrSimulationCmd =
-      s"cs launch --channel $channel sequence-manager -- start -o $obsModeConf -l -a $agentPrefix --simulation"
+      s"cs launch --channel $channel sequence-manager:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
     val spawnContainerCmd =
       s"cs launch ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath}"
 
@@ -82,7 +84,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
       ).foreach {
         case (name, spawnCommand, expectedCommandStr) =>
           name in {
-            spawnCommand.executableCommandStr(channel, agentPrefix, versionManager, versionConfPath).futureValue should ===(
+            spawnCommand.executableCommandStr(channel, agentPrefix, versionManager).futureValue should ===(
               expectedCommandStr.split(" ").toList
             )
           }

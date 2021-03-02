@@ -123,7 +123,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
       when(eswClient.spawnSequenceComponent(eswSeqComp1Name, Some(version))).thenReturn(Future.successful(Spawned))
       when(irisClient.spawnSequenceComponent(irisSeqComp1Name, Some(version))).thenReturn(Future.successful(Spawned))
-      when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(version))
+      when(versionManager.getScriptVersion).thenReturn(Future.successful(version))
 
       agentUtil.provision(provisionConfig).futureValue should ===(ProvisionResponse.Success)
 
@@ -147,7 +147,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
       when(agentClient.spawnSequenceComponent(eswSeqComp1Name, Some(version))).thenReturn(Future.successful(Spawned))
       when(agentClient.spawnSequenceComponent(eswSeqComp2Name, Some(version))).thenReturn(Future.successful(Failed(errorMsg)))
-      when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(version))
+      when(versionManager.getScriptVersion).thenReturn(Future.successful(version))
 
       val response = agentUtil.provision(provisionConfig).futureValue
       response shouldBe a[ProvisionResponse.SpawningSequenceComponentsFailed]
@@ -200,7 +200,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.failed(FetchingScriptVersionFailed(errorMsg)))
+      when(versionManager.getScriptVersion).thenReturn(Future.failed(FetchingScriptVersionFailed(errorMsg)))
 
       agentUtil.provision(provisionConfig).futureValue should ===(ProvisionVersionFailure(errorMsg))
     }

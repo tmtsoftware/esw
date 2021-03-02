@@ -76,7 +76,7 @@ class ProcessManager(
   //starts a process with the executable string of the given spawn command
   private def startComponent(command: SpawnCommand) =
     command
-      .executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix, versionManager, agentSettings.versionConfPath)
+      .executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix, versionManager)
       .map { cmdStr =>
         processExecutor
           .runCommand(cmdStr, command.prefix)

@@ -18,7 +18,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 class SpawnComponentTest extends AgentSetup {
-
+  private val eswVersion = randomString(10)
   "Spawn" must {
     "reply 'Spawned' and spawn sequence component process | ESW-237" in {
       val agentActorRef = spawnAgentActor(name = "test-actor1")
@@ -151,6 +151,7 @@ class SpawnComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor9")
       val probe         = TestProbe[SpawnResponse]()
 
+      when(versionManager.eswVersion).thenReturn(Future.successful(eswVersion))
       when(locationService.find(argEq(seqManagerConn))).thenReturn(Future.successful(None))
       when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration])).thenReturn(seqManagerLocationF)
 
@@ -165,7 +166,7 @@ class SpawnComponentTest extends AgentSetup {
           "launch",
           "--channel",
           Cs.channel,
-          "sequence-manager",
+          s"sequence-manager:$eswVersion",
           "--",
           "start",
           "-o",
@@ -182,6 +183,7 @@ class SpawnComponentTest extends AgentSetup {
       val agentActorRef = spawnAgentActor(name = "test-actor-random-9")
       val probe         = TestProbe[SpawnResponse]()
 
+      when(versionManager.eswVersion).thenReturn(Future.successful(eswVersion))
       when(locationService.find(argEq(seqManagerConn))).thenReturn(Future.successful(None))
       when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration])).thenReturn(seqManagerLocationF)
 
@@ -196,7 +198,7 @@ class SpawnComponentTest extends AgentSetup {
           "launch",
           "--channel",
           Cs.channel,
-          "sequence-manager",
+          s"sequence-manager:$eswVersion",
           "--",
           "start",
           "-o",
@@ -217,7 +219,7 @@ class SpawnComponentTest extends AgentSetup {
 
       when(locationService.find(argEq(seqCompConn))).thenReturn(Future.successful(None))
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
-      when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.failed(FetchingScriptVersionFailed(errorMsg)))
+      when(versionManager.getScriptVersion).thenReturn(Future.failed(FetchingScriptVersionFailed(errorMsg)))
 
       mockSuccessfulProcess()
 

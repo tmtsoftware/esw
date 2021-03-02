@@ -83,7 +83,7 @@ class AgentSetup extends BaseTestSuite {
 
   val sequencerScriptsVersion: String = randomString(10)
 
-  when(versionManager.getScriptVersion(versionConfPath)).thenReturn(Future.successful(sequencerScriptsVersion))
+  when(versionManager.getScriptVersion).thenReturn(Future.successful(sequencerScriptsVersion))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
