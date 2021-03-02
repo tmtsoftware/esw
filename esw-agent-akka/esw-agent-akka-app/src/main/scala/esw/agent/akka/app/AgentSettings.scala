@@ -8,8 +8,7 @@ import csw.prefix.models.Prefix
 case class AgentSettings(
     prefix: Prefix,
     coursierChannel: String,
-    versionConfPath: Path,
-    gcMetricsEnabled: Boolean
+    versionConfPath: Path
 )
 
 object AgentSettings {
@@ -18,8 +17,7 @@ object AgentSettings {
     AgentSettings(
       prefix,
       agentConfig.getString("coursier.channel"),
-      Path.of(agentConfig.getString("osw.version.confPath")),
-      agentConfig.getBoolean("enable-gc-metrics")
+      Path.of(agentConfig.getString("osw.version.confPath"))
     )
   }
 }

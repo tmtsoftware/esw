@@ -16,15 +16,12 @@ class AgentSettingsTest extends BaseTestSuite {
           |agent {
           |  coursier.channel = "${Cs.channel}"
           |  osw.version.confPath = "script/resources/application.conf"
-          |  enable-gc-metrics = false
           |}
           |""".stripMargin)
 
       val prefix        = Prefix(ESW, "machine_A1")
       val agentSettings = AgentSettings(prefix, config)
-      agentSettings should ===(
-        AgentSettings(prefix, Cs.channel, Path.of("script/resources/application.conf"), gcMetricsEnabled = false)
-      )
+      agentSettings should ===(AgentSettings(prefix, Cs.channel, Path.of("script/resources/application.conf")))
     }
   }
 }
