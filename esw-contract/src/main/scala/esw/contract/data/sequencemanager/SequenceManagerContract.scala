@@ -5,7 +5,7 @@ import csw.contract.generator.ClassNameHelpers._
 import csw.contract.generator._
 import csw.prefix.models.Subsystem
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
-import esw.sm.api.models.{ObsModeDetails, Resource, ResourceStatus}
+import esw.sm.api.models.{ObsModeDetails, ObsModeStatus, Resource, ResourceStatus}
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 
@@ -23,7 +23,8 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       unhandled
     ),
     ModelType[ProvisionResponse](provisionSuccess, couldNotFindMachines, spawningSequenceComponentsFailed, unhandled),
-    ModelType[ObsModeDetails](configuredObsMode, configurableObsMode, nonConfigurableObsMode),
+    ModelType[ObsModeDetails](configuredObsMode),
+    ModelType[ObsModeStatus](ObsModeStatus.Configurable, ObsModeStatus.Configured, ObsModeStatus.NonConfigurable),
     ModelType[ObsModesDetailsResponse](ObsModesDetailsSuccess, locationServiceError),
     ModelType[StartSequencerResponse](
       alreadyRunning,
