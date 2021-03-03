@@ -121,7 +121,7 @@ lazy val `esw-ocs-dsl-kt` = project
   .enablePlugins(KotlinPlugin, MaybeCoverage)
   .settings(
     fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
-    kotlinVersion := "1.4.10",
+    kotlinVersion := EswKeys.kotlinVersion,
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
@@ -290,7 +290,7 @@ lazy val examples = project
   .in(file("examples"))
   .enablePlugins(KotlinPlugin)
   .settings(
-    kotlinVersion := "1.4.10",
+    kotlinVersion := EswKeys.kotlinVersion,
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
   .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
@@ -419,6 +419,6 @@ lazy val `esw-performance-test` = project
   .enablePlugins(KotlinPlugin)
   .settings(
     libraryDependencies ++= Dependencies.PerformanceTest.value,
-    kotlinVersion := "1.4.10",
+    kotlinVersion := EswKeys.kotlinVersion,
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )

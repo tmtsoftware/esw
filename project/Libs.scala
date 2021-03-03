@@ -88,7 +88,7 @@ object Borer {
 }
 
 object Kotlin {
-  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"         % "1.4.21"
+  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"         % EswKeys.kotlinVersion
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8"    % "1.4.2"
   val kotlintest        = "io.kotest"             % "kotest-assertions-core-jvm" % "4.3.2"
   val mockk             = "io.mockk"              % "mockk"                      % "1.10.5"
