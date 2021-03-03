@@ -32,12 +32,13 @@ class Wiring(startCmd: Start) {
 
   private lazy val agentApp: ManagedService[AgentWiring] =
     Agent.service(startCmd.agent, agentPrefix, systemConfig, startCmd.hostConfigPath)
+  private lazy val agentApp3: ManagedService[AgentWiring]           = Agent.service(startCmd.agent, Prefix("TCS.machine2"), systemConfig)
   private lazy val agentService: ManagedService[AgentServiceWiring] = AgentService.service(startCmd.agentService)
   private lazy val gatewayService: ManagedService[GatewayWiring]    = Gateway.service(startCmd.gateway, startCmd.commandRoleConfig)
   private lazy val smService: ManagedService[SequenceManagerWiring] =
     SequenceManager.service(startCmd.sequenceManager, startCmd.obsModeConfig, agentPrefixForSM, startCmd.simulation)
 
-  lazy val serviceList = List(agentApp, agentService, gatewayService, smService)
+  lazy val serviceList = List(agentApp, agentService, gatewayService, smService, agentApp3)
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
@@ -54,9 +55,22 @@ class Wiring(startCmd: Start) {
 
   private val obsModeConfRemotePath = Path.of(systemConfig.getString("esw.sm.obsModeConfigPath"))
   private val configData            = ConfigData.fromString(FileUtils.readResource("smObsModeConfig.conf"))
+  private val provisionData         = ConfigData.fromString(FileUtils.readResource("smProvisionConfig.json"))
   private lazy val configServiceExt = new ConfigServiceExt(configService)
 
+  private val VersionConf =
+    s"""
+       |scripts = a332c0280d
+       |
+       |esw = ff4de77b78
+       |
+       |""".stripMargin
+
+  private val versionConfigData = ConfigData.fromString(VersionConf)
+
   configServiceExt.saveConfig(obsModeConfRemotePath, configData)
+  configServiceExt.saveConfig(Path.of("/tmt/osw/version.conf"), versionConfigData)
+  configServiceExt.saveConfig(Path.of("/tmt/esw/smProvisionConfig.json"), provisionData)
 
   def start(): Unit = serviceList.foreach(_.start())
 
