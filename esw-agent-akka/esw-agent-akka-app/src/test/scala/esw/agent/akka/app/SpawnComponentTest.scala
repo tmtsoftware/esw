@@ -8,7 +8,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.akka.client.AgentCommand.SpawnContainers
-import esw.agent.service.api.models.{Failed, SpawnContainersResponse, SpawnResponse, Spawned}
+import esw.agent.service.api.models._
 import esw.commons.utils.config.FetchingScriptVersionFailed
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
@@ -261,7 +261,12 @@ class SpawnComponentTest extends AgentSetup {
         Thread.sleep(100)
 
         verify(processExecutor).runCommand(
-          command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath1.conf"),
+          command(
+            "com.github.tmtsoftware.sample",
+            "csw-sampledeploy",
+            "csw.sampledeploy.SampleContainerCmdApp",
+            "confPath1.conf"
+          ),
           containerPrefixOne
         )
         verify(processExecutor).runCommand(
@@ -272,7 +277,7 @@ class SpawnComponentTest extends AgentSetup {
             "-r",
             "jitpack",
             "-M",
-            "SampleContainerCmdApp2",
+            "csw.sample2deploy.Sample2ContainerCmdApp",
             "--",
             "--local",
             "--standalone",
@@ -282,7 +287,7 @@ class SpawnComponentTest extends AgentSetup {
         )
       }
 
-      "reply 'SpawnContainersResponse' and spawn containers on receiving message | ESW-379" in {
+      "reply 'Completed' and spawn containers on receiving message | ESW-379" in {
         val agentActorRef = spawnAgentActor(name = "test-actor-random-11")
         val probe         = TestProbe[SpawnContainersResponse]()
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
@@ -296,7 +301,7 @@ class SpawnComponentTest extends AgentSetup {
 
         agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
 
-        val expectedResponse = SpawnContainersResponse(
+        val expectedResponse = Completed(
           Map(
             "Container.testContainer1" -> Spawned,
             "ESW.testHCD"              -> Spawned
@@ -304,7 +309,12 @@ class SpawnComponentTest extends AgentSetup {
         )
         probe.expectMessage(expectedResponse)
         verify(processExecutor).runCommand(
-          command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath1.conf"),
+          command(
+            "com.github.tmtsoftware.sample",
+            "csw-sampledeploy",
+            "csw.sampledeploy.SampleContainerCmdApp",
+            "confPath1.conf"
+          ),
           containerPrefixOne
         )
         verify(processExecutor).runCommand(
@@ -315,7 +325,7 @@ class SpawnComponentTest extends AgentSetup {
             "-r",
             "jitpack",
             "-M",
-            "SampleContainerCmdApp2",
+            "csw.sample2deploy.Sample2ContainerCmdApp",
             "--",
             "--local",
             "--standalone",
@@ -325,7 +335,7 @@ class SpawnComponentTest extends AgentSetup {
         )
       }
 
-      "reply 'SpawnContainersResponse' with Failed response if some container fail to spawn | ESW-379" in {
+      "reply 'Completed' with Failed response if some container fail to spawn | ESW-379" in {
         val agentActorRef = spawnAgentActor(name = "test-actor-random-12")
         val probe         = TestProbe[SpawnContainersResponse]()
         val secondContainerCommand =
@@ -336,7 +346,7 @@ class SpawnComponentTest extends AgentSetup {
             "-r",
             "jitpack",
             "-M",
-            "SampleContainerCmdApp2",
+            "csw.sample2deploy.Sample2ContainerCmdApp",
             "--",
             "--local",
             "--standalone",
@@ -356,12 +366,24 @@ class SpawnComponentTest extends AgentSetup {
 
         agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
 
-        val expectedResponse = SpawnContainersResponse(
+        val expectedResponse = Completed(
           Map(
             "Container.testContainer1" -> Spawned,
             "ESW.testHCD"              -> Failed("Error")
           )
         )
+        probe.expectMessage(expectedResponse)
+      }
+
+      "reply 'Failed' if error occurs while spawning containers | ESW-379" in {
+        val agentActorRef = spawnAgentActor(name = "test-actor-random-13")
+        val probe         = TestProbe[SpawnContainersResponse]()
+        when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
+          .thenThrow(new RuntimeException("error"))
+
+        agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
+
+        val expectedResponse = Failed("error")
         probe.expectMessage(expectedResponse)
       }
     }

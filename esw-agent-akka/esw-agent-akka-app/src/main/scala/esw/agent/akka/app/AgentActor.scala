@@ -1,12 +1,11 @@
 package esw.agent.akka.app
 
-import java.nio.file.Path
-
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.config.client.commons.ConfigUtils
 import csw.location.api.models.{ComponentId, ComponentType}
+import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.Container
 import esw.agent.akka.app.process.ProcessManager
@@ -18,11 +17,15 @@ import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.constants.{AgentTimeouts, CommonTimeouts}
 
+import java.nio.file.Path
 import scala.concurrent.{Await, Future}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
+import scala.util.chaining.scalaUtilChainingOps
 
 class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostConfigPath: Option[Path], isConfigLocal: Boolean)(
-    implicit system: ActorSystem[_]
+    implicit
+    system: ActorSystem[_],
+    log: Logger
 ) {
   import system.executionContext
 
@@ -45,19 +48,24 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
       hostConfigPath: Path,
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] = {
-    val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
-    val spawnResponsesF = hostConfig
-      .map(config => {
-        val componentId = containerComponentId(config)
-        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
-          AgentTimeouts.SpawnComponent,
-          system.scheduler
-        )
-      })
-      .toMap
-    Future
-      .sequence(spawnResponsesF.values)
-      .map(spawnResponses => SpawnContainersResponse((spawnResponsesF.keys zip spawnResponses).toMap))
+    try {
+      val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
+      val spawnResponsesF = hostConfig
+        .map(config => {
+          val componentId = containerComponentId(config)
+          componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
+            AgentTimeouts.SpawnComponent,
+            system.scheduler
+          )
+        })
+        .toMap
+      Future
+        .sequence(spawnResponsesF.values)
+        .map(spawnResponses => Completed((spawnResponsesF.keys zip spawnResponses).toMap))
+    }
+    catch {
+      case e: Exception => Future.successful(Failed(e.getMessage.tap(log.error(_))))
+    }
   }
 
   private def getHostConfig(path: Path, isConfigLocal: Boolean): List[ContainerConfig] = {

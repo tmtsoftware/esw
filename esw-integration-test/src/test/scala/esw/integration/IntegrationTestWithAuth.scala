@@ -1,8 +1,5 @@
 package esw.integration
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
-
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -19,7 +16,7 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
-import esw.agent.service.api.models.{Failed, Killed, SpawnContainersResponse, Spawned}
+import esw.agent.service.api.models.{Completed, Failed, Killed, Spawned}
 import esw.agent.service.app.{AgentServiceApp, AgentServiceWiring}
 import esw.commons.utils.files.FileUtils
 import esw.commons.utils.location.LocationServiceUtil
@@ -41,6 +38,8 @@ import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
 
+import java.io.File
+import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
@@ -252,7 +251,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       )
     }
 
-    "return Spawned on SpawnContainers | ESW-379" in {
+    "spawn and kill containers | ESW-379" in {
       val containerConfPath = FileUtils.cpyFileToTmpFromResource("testContainer.conf")
       val hostConfigStr =
         s"""
@@ -274,17 +273,19 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       // spawn containers
       agentClient.spawnContainers(hostConfigFilePath, isConfigLocal = true).futureValue should ===(
-        SpawnContainersResponse(Map("Container.TestContainer" -> Spawned))
+        Completed(Map("Container.TestContainer" -> Spawned))
       )
 
       // Verify registration in location service
       val containerConnection             = AkkaConnection(ComponentId(Prefix(Container, "TestContainer"), ComponentType.Container))
-      val assemblyConnection              = AkkaConnection(ComponentId(Prefix(ESW, "testAssembly"), ComponentType.Assembly))
       val containerLocation: AkkaLocation = locationService.resolve(containerConnection, 5.seconds).futureValue.value
-      val assemblyLocation: AkkaLocation  = locationService.resolve(assemblyConnection, 5.seconds).futureValue.value
 
-      agentClient.killComponent(assemblyLocation).futureValue
-      agentClient.killComponent(containerLocation).futureValue
+      // kill the spawned container CSW-131
+      val killResult = agentClient.killComponent(containerLocation).futureValue
+      killResult should ===(Killed)
+
+      // verify that container and its child components are killed
+      intercept[RuntimeException](resolveAkkaLocation(Prefix("Container.TestContainer"), ComponentType.Container))
     }
   }
 
