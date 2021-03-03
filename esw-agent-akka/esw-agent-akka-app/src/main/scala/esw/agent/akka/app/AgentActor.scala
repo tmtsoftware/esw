@@ -1,5 +1,7 @@
 package esw.agent.akka.app
 
+import java.nio.file.Path
+
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
@@ -16,7 +18,6 @@ import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.constants.{AgentTimeouts, CommonTimeouts}
 
-import java.nio.file.Path
 import scala.concurrent.{Await, Future}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
@@ -45,25 +46,25 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] = {
     val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
-    val spawnFuturesMap = hostConfig
-      .map(c => {
-        val componentId = containerComponentId(c)
-        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, c)))(
+    val spawnResponsesF = hostConfig
+      .map(config => {
+        val componentId = containerComponentId(config)
+        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
           AgentTimeouts.SpawnComponent,
           system.scheduler
         )
       })
       .toMap
-    Future.sequence(spawnFuturesMap.values).map(fs => SpawnContainersResponse((spawnFuturesMap.keys zip fs).toMap))
+    Future
+      .sequence(spawnResponsesF.values)
+      .map(spawnResponses => SpawnContainersResponse((spawnResponsesF.keys zip spawnResponses).toMap))
   }
 
   private def getHostConfig(path: Path, isConfigLocal: Boolean): List[ContainerConfig] = {
-    val containerConfigsF = configUtils
+    val hostConfigF = configUtils
       .getConfig(path, isConfigLocal)
-      .map(config => {
-        config.getConfigList("containers").asScala.map(c => ContainerConfig(c)).toList
-      })
-    Await.result(containerConfigsF, CommonTimeouts.FetchConfig)
+      .map(_.getConfigList("containers").asScala.map(ContainerConfig(_)).toList)
+    Await.result(hostConfigF, CommonTimeouts.FetchConfig)
   }
 
   private def containerComponentId(config: ContainerConfig): ComponentId = {

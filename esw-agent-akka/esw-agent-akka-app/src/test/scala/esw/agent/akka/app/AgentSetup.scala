@@ -69,17 +69,17 @@ class AgentSetup extends BaseTestSuite {
       Path.of("container.conf"),
       isConfigLocal = true
     )
-  val firstContainerPrefix: Prefix                              = Prefix(Subsystem.Container, "testContainer1")
-  val firstContainerComponentId: ComponentId                    = ComponentId(firstContainerPrefix, Container)
-  val spawnContainer: ActorRef[SpawnResponse] => SpawnContainer = SpawnContainer(_, firstContainerComponentId, containerConfig)
-  val firstContainerConn: AkkaConnection                        = AkkaConnection(firstContainerComponentId)
-  val firstContainerLocation: AkkaLocation                      = AkkaLocation(firstContainerConn, new URI("some"), metadata)
-  val firstContainerLocationF: Future[Some[AkkaLocation]]       = Future.successful(Some(firstContainerLocation))
-  val secondComponentPrefix: Prefix                             = Prefix(ESW, "testHCD")
-  val secondComponentCompId: ComponentId                        = ComponentId(secondComponentPrefix, HCD)
-  val secondContainerConn: AkkaConnection                       = AkkaConnection(secondComponentCompId)
-  val secondContainerLocation: AkkaLocation                     = AkkaLocation(secondContainerConn, new URI("some"), metadata)
-  val secondContainerLocationF: Future[Some[AkkaLocation]]      = Future.successful(Some(secondContainerLocation))
+  val containerPrefixOne: Prefix                                = Prefix(Subsystem.Container, "testContainer1")
+  val containerComponentIdOne: ComponentId                      = ComponentId(containerPrefixOne, Container)
+  val spawnContainer: ActorRef[SpawnResponse] => SpawnContainer = SpawnContainer(_, containerComponentIdOne, containerConfig)
+  val containerConnOne: AkkaConnection                          = AkkaConnection(containerComponentIdOne)
+  val containerLocationOne: AkkaLocation                        = AkkaLocation(containerConnOne, new URI("some"), metadata)
+  val containerLocationOneF: Future[Some[AkkaLocation]]         = Future.successful(Some(containerLocationOne))
+  val componentPrefixTwo: Prefix                                = Prefix(ESW, "testHCD")
+  val componentCompIdTwo: ComponentId                           = ComponentId(componentPrefixTwo, HCD)
+  val containerConnTwo: AkkaConnection                          = AkkaConnection(componentCompIdTwo)
+  val containerLocationTwo: AkkaLocation                        = AkkaLocation(containerConnTwo, new URI("some"), metadata)
+  val containerLocationTwoF: Future[Some[AkkaLocation]]         = Future.successful(Some(containerLocationTwo))
 
   val sequencerScriptsVersion: String = randomString(10)
   val eswVersion: String              = randomString(10)
@@ -135,9 +135,9 @@ class AgentSetup extends BaseTestSuite {
     when(locationService.resolve(argEq(seqManagerConn), any[FiniteDuration])).thenReturn(seqManagerLocationF)
 
     // Container
-    when(locationService.find(argEq(firstContainerConn))).thenReturn(Future.successful(None))
-    when(locationService.resolve(argEq(firstContainerConn), any[FiniteDuration])).thenReturn(firstContainerLocationF)
-    when(locationService.find(argEq(secondContainerConn))).thenReturn(Future.successful(None))
-    when(locationService.resolve(argEq(secondContainerConn), any[FiniteDuration])).thenReturn(secondContainerLocationF)
+    when(locationService.find(argEq(containerConnOne))).thenReturn(Future.successful(None))
+    when(locationService.resolve(argEq(containerConnOne), any[FiniteDuration])).thenReturn(containerLocationOneF)
+    when(locationService.find(argEq(containerConnTwo))).thenReturn(Future.successful(None))
+    when(locationService.resolve(argEq(containerConnTwo), any[FiniteDuration])).thenReturn(containerLocationTwoF)
   }
 }

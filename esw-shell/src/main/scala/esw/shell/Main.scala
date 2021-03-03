@@ -30,6 +30,7 @@ object Main extends App {
                        |import csw.location.api.models._
                        |import csw.location.api.models.ComponentType._
                        |import csw.location.api.models.ConnectionType._
+                       |import csw.location.api.models.Connection._
                        |import csw.logging.models.LogMetadata
                        |import csw.command.api.{DemandMatcher, DemandMatcherAll, PresenceMatcher}
                        |import esw.ocs.api.models._

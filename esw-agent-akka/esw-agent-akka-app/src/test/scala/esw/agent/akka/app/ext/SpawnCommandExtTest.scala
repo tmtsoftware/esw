@@ -33,7 +33,6 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val spawnSeqCompSimulation  = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = true)
 
   private val versionManager: VersionManager  = mock[VersionManager]
-  private val versionConfPath: Path           = Path.of(randomString(30))
   private val sequencerScriptsVersion: String = randomString(10)
   private val eswVersion: String              = randomString(10)
   private val containerConfig: ContainerConfig = ContainerConfig(

@@ -262,7 +262,7 @@ class SpawnComponentTest extends AgentSetup {
 
         verify(processExecutor).runCommand(
           command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath1.conf"),
-          firstContainerPrefix
+          containerPrefixOne
         )
         verify(processExecutor).runCommand(
           List(
@@ -278,7 +278,7 @@ class SpawnComponentTest extends AgentSetup {
             "--standalone",
             "confPath2.conf"
           ),
-          secondComponentPrefix
+          componentPrefixTwo
         )
       }
 
@@ -305,7 +305,7 @@ class SpawnComponentTest extends AgentSetup {
         probe.expectMessage(expectedResponse)
         verify(processExecutor).runCommand(
           command("com.github.tmtsoftware.sample", "csw-sampledeploy", "SampleContainerCmdApp", "confPath1.conf"),
-          firstContainerPrefix
+          containerPrefixOne
         )
         verify(processExecutor).runCommand(
           List(
@@ -321,7 +321,7 @@ class SpawnComponentTest extends AgentSetup {
             "--standalone",
             "confPath2.conf"
           ),
-          secondComponentPrefix
+          componentPrefixTwo
         )
       }
 
