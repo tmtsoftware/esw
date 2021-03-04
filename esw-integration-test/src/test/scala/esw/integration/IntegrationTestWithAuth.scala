@@ -796,7 +796,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val configFilePath = Path.of("/tmt/osw/version.conf")
       val scriptVersionConf: String =
         """
-          | scripts.version = 0.1.0-SNAPSHOT
+          | scripts = 0.1.0-SNAPSHOT
           |""".stripMargin
       // create obsMode config file on config server
       adminApi.create(configFilePath, ConfigData.fromString(scriptVersionConf), annex = false, "First commit").futureValue

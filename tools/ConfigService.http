@@ -10,26 +10,21 @@ client_id=tmt-frontend-app&grant_type=password&username=esw-user&password=esw-us
 
 ############### config Service #############
 #save smObsModeConfig file
-POST http://your-ip:5000/config/smObsModeConfig.conf
+PUT http://192.168.0.100:5000/config/tmt/esw/smProvisionConfig.json
+Content-Type: application/octet-stream
+Authorization: Bearer {{access_token}}
+
+\"{\"ESW.primary\":1,\"IRIS.primary\":1}\"
+
+############### config Service #############
+#save smObsModeConfig file
+POST http://192.168.0.100:5000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
 Authorization: Bearer {{access_token}}
 
 {
-  "esw-sm": {
-    "obsModes": {
-      "IRIS_Darknight": {
-        "resources": ["IRIS", "TCS", "NFIRAOS"],
-        "sequencers": ["IRIS", "ESW", "TCS"]
-      },
-      "IRIS_Cal": {
-        "resources": ["IRIS", "NSCU", "NFIRAOS"],
-        "sequencers": ["IRIS", "ESW", "AOESW"]
-      },
-      "WFOS_Cal": {
-        "resources": ["WFOS"],
-        "sequencers": ["WFOS", "ESW"]
-      }
-    }
+  "scripts": {
+    "version": "0.2.0"
   }
 }
 
@@ -38,19 +33,19 @@ POST http://<your-ip>:4000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
 
 {
-  scripts.version="0.1.0-SNAPSHOT"
+  scripts="0.1.0-SNAPSHOT"
 }
 
 ##### To check active config
-GET http://<your-ip>:4000/active-config/tmt/osw/version.conf
+GET http://192.168.0.100:5000/active-config/tmt/esw/smProvisionConfig.json
 
 #### To update version config
-PUT http://<your-ip>:4000/config/tmt/osw/version.conf
+PUT http://192.168.0.100:5000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
 Authorization: Bearer {{access_token}}
 
 {
-  scripts.version="0.1.0-SNAPSHOT"
+  scripts="0.1.0-SNAPSHOT"
 }
 
 ##### To make it active version of the config. id is returned from first/second call
@@ -59,4 +54,12 @@ Authorization: Bearer {{access_token}}
 
 
 ##### To check if config is updated and marked as active
-GET http://<your-ip>:4000/active-config/tmt/osw/version.conf
+GET http://192.168.0.103:5000/active-config/tmt/osw/version.conf
+
+##### To check if config is updated and marked as active
+POST http://192.168.0.103:53354/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "GetAgentStatus"
+}

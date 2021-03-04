@@ -63,11 +63,11 @@ Content-Type: application/json
 }
 
 ### get running obsmodes
-POST http://192.168.1.8:58476/post-endpoint
+POST http://192.168.0.100:58488/post-endpoint
 Content-Type: application/json
 
 {
-  "_type" : "GetObsModesDetails"SequenceManagerBehaviorTest.scala
+  "_type" : "GetObsModesDetails"
 }
 
 ### shutdown obsmode sequencers

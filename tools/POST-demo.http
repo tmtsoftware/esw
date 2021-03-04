@@ -158,3 +158,34 @@ Content-Type: application/json
 }
 
 ###
+
+### get
+POST http://192.168.43.100:4040/post-endpoint
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "_type": "SpawnSequenceManager",
+  "agentPrefix": "ESW.primary",
+  "isConfigLocal": false,
+  "obsModeConfigPath": "smObsModeConfig.conf",
+  "version": []
+}
+
+############### Alarm Service #############
+POST http://192.168.43.100:62203/post-endpoint
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "_type": "Provision",
+  "config": {
+    "config": [
+      {
+        "agentPrefix": "ESW.primary",
+        "countOfSeqComps": 2
+      }
+    ]
+  }
+}
+

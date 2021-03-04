@@ -3,7 +3,7 @@ POST http://<your-ip>:4000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
 
 {
-  scripts.version="0.1.0-SNAPSHOT"
+  scripts ="0.1.0-SNAPSHOT"
 }
 
 ##### To check active config
@@ -17,7 +17,7 @@ PUT http://<your-ip>:4000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
 
 {
-  scripts.version="0.1.0-SNAPSHOT"
+  scripts ="0.1.0-SNAPSHOT"
 }
 
 ##### To make it active version of the config. id is returned from first/second call
