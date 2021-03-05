@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import csw.prefix.models.Prefix
-import esw.commons.auth.SubsystemUserRolePolicy
+import esw.commons.auth.AuthPolicies
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs._
 import esw.ocs.api.protocol.SequencerRequest
@@ -55,7 +55,7 @@ class SequencerPostHandler(
 
   private def sPost(route: => Route) =
     destinationPrefix match {
-      case Some(prefix) => securityDirectives.sPost(SubsystemUserRolePolicy(prefix.subsystem))(_ => route)
+      case Some(prefix) => securityDirectives.sPost(AuthPolicies.subsystemUserRolePolicy(prefix.subsystem))(_ => route)
       case None         => route // auth is disabled in this case
     }
 }

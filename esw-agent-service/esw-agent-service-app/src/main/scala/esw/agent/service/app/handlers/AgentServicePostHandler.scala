@@ -7,7 +7,7 @@ import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs._
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
-import esw.commons.auth.EswUserRolePolicy
+import esw.commons.auth.AuthPolicies
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
 class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: SecurityDirectives)
@@ -27,5 +27,5 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
         sPost(complete(killComponent(componentId)))
     }
 
-  private def sPost(route: => Route): Route = securityDirective.sPost(EswUserRolePolicy())(_ => route)
+  private def sPost(route: => Route): Route = securityDirective.sPost(AuthPolicies.eswUserRolePolicy)(_ => route)
 }

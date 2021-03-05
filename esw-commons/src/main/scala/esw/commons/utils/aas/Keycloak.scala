@@ -10,18 +10,18 @@ import org.tmt.embedded_keycloak.utils.BearerToken
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// FIXME: This should be moved to test scope or appropriate location
 // $COVERAGE-OFF$
 class Keycloak(locationService: LocationService)(implicit ec: ExecutionContext) {
   private val Realm  = "TMT"
   private val Client = "tmt-frontend-app"
 
-  def getToken(userName: String, password: String): Future[String] = {
-    locationService.find(HttpConnection(ComponentId(Prefix(CSW, "AAS"), Service))).map { locOp =>
-      val location = locOp.getOrElse(throw new RuntimeException("KeyCloak is not up"))
+  def getToken(userName: String, password: String): Future[String] =
+    locationService.find(HttpConnection(ComponentId(Prefix(CSW, "AAS"), Service))).map { locOpt =>
+      val location = locOpt.getOrElse(throw new RuntimeException("KeyCloak is not up"))
       val host     = location.uri.getHost
       val port     = location.uri.getPort
       BearerToken.fromServer(port, userName, password, Realm, Client, host).token
     }
-  }
 }
 // $COVERAGE-ON$

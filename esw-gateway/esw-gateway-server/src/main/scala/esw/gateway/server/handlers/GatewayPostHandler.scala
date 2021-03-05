@@ -8,7 +8,7 @@ import csw.command.client.auth.CommandRoles
 import csw.command.client.handlers.CommandServiceRequestHandler
 import csw.location.api.models.ComponentId
 import csw.logging.models.Level
-import esw.commons.auth.{EswOrSubsystemUserPolicy, EswUserOrSubsystemEngPolicy}
+import esw.commons.auth.AuthPolicies
 import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.GatewayRequest
 import esw.gateway.api.protocol.GatewayRequest._
@@ -50,12 +50,12 @@ class GatewayPostHandler(
     }
 
   private def onSetLogLevel(componentId: ComponentId, logLevel: Level): Route =
-    securityDirectives.sPost(EswOrSubsystemUserPolicy(componentId.prefix.subsystem))(_ =>
+    securityDirectives.sPost(AuthPolicies.eswUserOrSubsystemUserPolicy(componentId.prefix.subsystem))(_ =>
       complete(adminApi.setLogLevel(componentId, logLevel))
     )
 
   private def sPost(componentId: ComponentId, route: => Route): Route =
-    securityDirectives.sPost(EswUserOrSubsystemEngPolicy(componentId.prefix.subsystem))(_ => route)
+    securityDirectives.sPost(AuthPolicies.eswUserOrSubsystemEngPolicy(componentId.prefix.subsystem))(_ => route)
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceRequest): Route =
     onSuccess(resolver.commandService(componentId) zip commandRoles) { (commandService, roles) =>

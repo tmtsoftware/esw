@@ -9,11 +9,8 @@ import csw.config.client.commons.ConfigUtils
 import scala.concurrent.{ExecutionContext, Future}
 
 class VersionManager(versionConfPath: Path, configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
-
-  private val scriptsKey              = "scripts"
-  lazy val eswVersion: Future[String] = getVersionFor(versionConfPath, "esw")
-
-  def getScriptVersion: Future[String] = getVersionFor(versionConfPath, scriptsKey)
+  lazy val eswVersion: Future[String]  = getVersionFor(versionConfPath, "esw")
+  def getScriptVersion: Future[String] = getVersionFor(versionConfPath, "scripts")
 
   private def getVersionFor(path: Path, key: String): Future[String] =
     configUtils

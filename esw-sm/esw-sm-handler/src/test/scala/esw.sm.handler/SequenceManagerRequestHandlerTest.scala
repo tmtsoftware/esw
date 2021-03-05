@@ -6,12 +6,12 @@ import csw.aas.http.SecurityDirectives
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.commons.auth.EswUserRolePolicy
-import esw.sm.api.models.ObsModeStatus.Configurable
+import esw.commons.auth.AuthPolicies
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
-import esw.sm.api.models.{AgentStatus, ObsModeDetails, ProvisionConfig, Resources, Sequencers}
+import esw.sm.api.models.ObsModeStatus.Configurable
+import esw.sm.api.models._
 import esw.sm.api.protocol.SequenceManagerRequest._
 import esw.sm.api.protocol._
 import esw.testcommons.BaseTestSuite
@@ -38,7 +38,7 @@ class SequenceManagerRequestHandlerTest
   private val obsMode     = ObsMode(string10)
   private val componentId = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
 
-  private val eswUserPolicy        = EswUserRolePolicy()
+  private val eswUserPolicy        = AuthPolicies.eswUserRolePolicy
   private val accessToken          = mock[AccessToken]
   private val accessTokenDirective = BasicDirectives.extract(_ => accessToken)
 

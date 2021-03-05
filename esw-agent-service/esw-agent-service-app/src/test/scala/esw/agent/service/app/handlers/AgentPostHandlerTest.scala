@@ -1,7 +1,5 @@
 package esw.agent.service.app.handlers
 
-import java.nio.file.Path
-
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -14,13 +12,14 @@ import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models._
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
-import esw.commons.auth.EswUserRolePolicy
+import esw.commons.auth.AuthPolicies
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
 import msocket.security.models.AccessToken
 
+import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with AgentServiceCodecs with ClientHttpCodecs {
@@ -52,12 +51,12 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
     "be able to start a sequence manager | ESW-361" in {
       val spawnSMRequest = SpawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, None)
 
-      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(securityDirective.sPost(AuthPolicies.eswUserRolePolicy)).thenReturn(dummyDirective)
       when(agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, None))
         .thenReturn(Future.successful(Spawned))
 
       post(spawnSMRequest) ~> route ~> check {
-        verify(securityDirective).sPost(EswUserRolePolicy())
+        verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
         responseAs[SpawnResponse] should ===(Spawned)
       }
     }
@@ -65,12 +64,12 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
     "be able to send failure response when agent is not found | ESW-361" in {
       val spawnSMRequest = SpawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = false, None)
 
-      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(securityDirective.sPost(AuthPolicies.eswUserRolePolicy)).thenReturn(dummyDirective)
       when(agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = false, None))
         .thenReturn(Future.successful(failedResponse))
 
       post(spawnSMRequest) ~> route ~> check {
-        verify(securityDirective).sPost(EswUserRolePolicy())
+        verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
         responseAs[SpawnResponse] should ===(failedResponse)
       }
     }
@@ -81,12 +80,12 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
     "be able to start a sequence component | ESW-361" in {
       val spawnSeqCompRequest = SpawnSequenceComponent(agentPrefix, sequenceCompName, None)
 
-      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(securityDirective.sPost(AuthPolicies.eswUserRolePolicy)).thenReturn(dummyDirective)
       when(agentService.spawnSequenceComponent(agentPrefix, sequenceCompName, None))
         .thenReturn(Future.successful(Spawned))
 
       post(spawnSeqCompRequest) ~> route ~> check {
-        verify(securityDirective).sPost(EswUserRolePolicy())
+        verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
         responseAs[SpawnResponse] should ===(Spawned)
       }
     }
@@ -94,12 +93,12 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
     "be able to send failure response when agent is not found | ESW-361" in {
       val spawnSeqCompRequest = SpawnSequenceComponent(agentPrefix, sequenceCompName, None)
 
-      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(securityDirective.sPost(AuthPolicies.eswUserRolePolicy)).thenReturn(dummyDirective)
       when(agentService.spawnSequenceComponent(agentPrefix, sequenceCompName, None))
         .thenReturn(Future.successful(failedResponse))
 
       post(spawnSeqCompRequest) ~> route ~> check {
-        verify(securityDirective).sPost(EswUserRolePolicy())
+        verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
         responseAs[SpawnResponse] should ===(failedResponse)
       }
     }
@@ -111,21 +110,21 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
     val stopComponentRequest = KillComponent(componentId)
 
     "be able to stop component of the given componentId | ESW-361" in {
-      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(securityDirective.sPost(AuthPolicies.eswUserRolePolicy)).thenReturn(dummyDirective)
       when(agentService.killComponent(componentId)).thenReturn(Future.successful(Killed))
 
       post(stopComponentRequest) ~> route ~> check {
-        verify(securityDirective).sPost(EswUserRolePolicy())
+        verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
         responseAs[KillResponse] should ===(Killed)
       }
     }
 
     "be able to send failure response when agent is not found | ESW-361" in {
-      when(securityDirective.sPost(EswUserRolePolicy())).thenReturn(dummyDirective)
+      when(securityDirective.sPost(AuthPolicies.eswUserRolePolicy)).thenReturn(dummyDirective)
       when(agentService.killComponent(componentId)).thenReturn(Future.successful(failedResponse))
 
       post(stopComponentRequest) ~> route ~> check {
-        verify(securityDirective).sPost(EswUserRolePolicy())
+        verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
         responseAs[KillResponse] should ===(failedResponse)
       }
     }

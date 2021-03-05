@@ -3,7 +3,7 @@ package esw.sm.handler
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
-import esw.commons.auth.EswUserRolePolicy
+import esw.commons.auth.AuthPolicies
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs._
 import esw.sm.api.protocol.SequenceManagerRequest
@@ -36,5 +36,5 @@ class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securit
 
     }
 
-  def sPost(route: => Route): Route = securityDirectives.sPost(EswUserRolePolicy())(_ => route)
+  def sPost(route: => Route): Route = securityDirectives.sPost(AuthPolicies.eswUserRolePolicy)(_ => route)
 }

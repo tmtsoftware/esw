@@ -7,6 +7,7 @@ import csw.config.api.exceptions.FileNotFound
 import csw.config.api.scaladsl.ConfigService
 import esw.commons.extensions.FutureExt.FutureOps
 
+// FIXME: This should be moved to test scope or appropriate location
 class ConfigServiceExt(configService: ConfigService) {
 
   def saveConfig(remotePath: Path, configData: ConfigData): Unit = {
