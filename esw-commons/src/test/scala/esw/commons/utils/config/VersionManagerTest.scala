@@ -34,7 +34,7 @@ class VersionManagerTest extends BaseTestSuite {
       versionManager.getScriptVersion.futureValue should ===(version)
     }
 
-    "return sequence manager version if config is present | ESW-360" in {
+    "return esw version if config is present | ESW-360" in {
       val configUtils    = mock[ConfigUtils]
       val versionManager = new VersionManager(versionConfPath, configUtils)
       val config         = mock[Config]
@@ -50,7 +50,7 @@ class VersionManagerTest extends BaseTestSuite {
       (FileNotFound(errorMsg), errorMsg),
       (new ConfigException.Missing(versionConfPath.toString), "scripts is not present"),
       (new ConfigException.WrongType(mock[ConfigOrigin], versionConfPath.toString), "value of scripts is not string"),
-      (new RuntimeException(runtimeErrorStr), s"Failed to fetch script version: $runtimeErrorStr")
+      (new RuntimeException(runtimeErrorStr), s"Failed to fetch scripts version: $runtimeErrorStr")
     ).foreach {
       case (exception, msg) =>
         s"throw ScriptVersionConfException if ${exception.getClass.getSimpleName} | ESW-360" in {
@@ -61,6 +61,27 @@ class VersionManagerTest extends BaseTestSuite {
 
           val scriptVersionConfException = intercept[FetchingScriptVersionFailed] {
             Await.result(versionManager.getScriptVersion, 100.millis)
+          }
+          scriptVersionConfException should ===(FetchingScriptVersionFailed(msg))
+        }
+    }
+
+    Table(
+      ("exception", "expectedMsg"),
+      (FileNotFound(errorMsg), errorMsg),
+      (new ConfigException.Missing(versionConfPath.toString), "esw is not present"),
+      (new ConfigException.WrongType(mock[ConfigOrigin], versionConfPath.toString), "value of esw is not string"),
+      (new RuntimeException(runtimeErrorStr), s"Failed to fetch esw version: $runtimeErrorStr")
+    ).foreach {
+      case (exception, msg) =>
+        s"throw eswVersionConfException if ${exception.getClass.getSimpleName} | ESW-360, ESW-445" in {
+          val configUtils    = mock[ConfigUtils]
+          val versionManager = new VersionManager(versionConfPath, configUtils)
+
+          when(configUtils.getConfig(versionConfPath, isLocal = false)).thenReturn(Future.failed(exception))
+
+          val scriptVersionConfException = intercept[FetchingScriptVersionFailed] {
+            Await.result(versionManager.eswVersion, 100.millis)
           }
           scriptVersionConfException should ===(FetchingScriptVersionFailed(msg))
         }

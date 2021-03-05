@@ -23,6 +23,6 @@ class VersionManager(versionConfPath: Path, configUtils: ConfigUtils)(implicit e
         case FileNotFound(msg)            => throw FetchingScriptVersionFailed(msg)
         case _: ConfigException.Missing   => throw FetchingScriptVersionFailed(s"$key is not present")
         case _: ConfigException.WrongType => throw FetchingScriptVersionFailed(s"value of $key is not string")
-        case e                            => throw FetchingScriptVersionFailed(s"Failed to fetch script version: ${e.getMessage}")
+        case e                            => throw FetchingScriptVersionFailed(s"Failed to fetch $key version: ${e.getMessage}")
       }
 }
