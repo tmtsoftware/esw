@@ -78,6 +78,7 @@ object AgentCommand {
     }
   }
 
+  // FIXME: Use String instead of Path type for hostConfigPath as this is remote message
   case class SpawnContainers(replyTo: ActorRef[SpawnContainersResponse], hostConfigPath: Path, isConfigLocal: Boolean)
       extends AgentRemoteCommand
 

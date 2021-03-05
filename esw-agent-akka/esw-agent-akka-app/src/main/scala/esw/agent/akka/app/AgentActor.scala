@@ -50,15 +50,13 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
   ): Future[SpawnContainersResponse] = {
     try {
       val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
-      val spawnResponsesF = hostConfig
-        .map(config => {
-          val componentId = containerComponentId(config)
-          componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
-            AgentTimeouts.SpawnComponent,
-            system.scheduler
-          )
-        })
-        .toMap
+      val spawnResponsesF = hostConfig.map { config =>
+        val componentId = containerComponentId(config)
+        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
+          AgentTimeouts.SpawnComponent,
+          system.scheduler
+        )
+      }.toMap
       Future
         .sequence(spawnResponsesF.values)
         .map(spawnResponses => Completed((spawnResponsesF.keys zip spawnResponses).toMap))
@@ -69,16 +67,20 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
   }
 
   private def getHostConfig(path: Path, isConfigLocal: Boolean): List[ContainerConfig] = {
+    // FIXME: Create proper model for HostConfig, then no need to hand parse "containers" list
     val hostConfigF = configUtils
       .getConfig(path, isConfigLocal)
       .map(_.getConfigList("containers").asScala.map(ContainerConfig(_)).toList)
+    // FIXME: Do not block inside actor
     Await.result(hostConfigF, CommonTimeouts.FetchConfig)
   }
 
   private def containerComponentId(config: ContainerConfig): ComponentId = {
+    // FIXME: Do not block inside actor
     val containerConfig =
       Await.result(configUtils.getConfig(config.configFilePath, config.isConfigLocal), CommonTimeouts.FetchConfig)
     if (config.mode == "Standalone") {
+      // FIXME: componentType is case insensitive, this will fail for 'HCD'
       val componentType = if (containerConfig.getString("componentType") == "hcd") ComponentType.HCD else ComponentType.Assembly
       ComponentId(Prefix(containerConfig.getString("prefix")), componentType)
     }

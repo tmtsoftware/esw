@@ -14,6 +14,8 @@ case class ContainerConfig(
     isConfigLocal: Boolean
 )
 
+// FIXME: Use domain models for 'mode' and 'ConfigFileLocation', refer `ContainerBootstrapInfo` from CSW repo.
+//  Use Json.decode from borer for parsing config instead of hand parsing, refer ConfigParser.parseHost from CSW repo.
 object ContainerConfig {
   def apply(config: Config): ContainerConfig = {
     ContainerConfig(
