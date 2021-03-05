@@ -157,7 +157,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
 
   }
 
-  private def shutdownObsMode(obsMode: ObsMode, histogram: Histogram) = {
+  private def shutdownObsMode(obsMode: ObsMode, histogram: Histogram): Unit = {
     val (shutdownResponse, shutdownLatency) = Timing.measureTimeMillis(smClient.shutdownObsModeSequencers(obsMode).futureValue)
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
@@ -170,7 +170,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     Thread.sleep(SMReliabilityConstants.timeout)
   }
 
-  private def configureObsMode(obsMode: ObsMode, histogram: Histogram) = {
+  private def configureObsMode(obsMode: ObsMode, histogram: Histogram): Unit = {
     val (configureResponse, configureLatency) = Timing.measureTimeMillis(smClient.configure(obsMode).futureValue)
     configureResponse match {
       case ConfigureResponse.Success(masterSequencerComponentId) =>
