@@ -15,10 +15,10 @@ import esw.agent.akka.client.AgentCommand._
 import esw.agent.akka.client.models.ContainerConfig
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.constants.{AgentTimeouts, CommonTimeouts}
+import esw.constants.AgentTimeouts
 
 import java.nio.file.Path
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.chaining.scalaUtilChainingOps
 
@@ -49,41 +49,53 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] = {
     try {
-      val hostConfig = getHostConfig(hostConfigPath, isConfigLocal)
-      val spawnResponsesF = hostConfig.map { config =>
-        val componentId = containerComponentId(config)
-        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
-          AgentTimeouts.SpawnComponent,
-          system.scheduler
-        )
-      }.toMap
-      Future
-        .sequence(spawnResponsesF.values)
-        .map(spawnResponses => Completed((spawnResponsesF.keys zip spawnResponses).toMap))
+      val hostConfigF = getHostConfig(hostConfigPath, isConfigLocal)
+      hostConfigF.flatMap(hostConfig => {
+        val spawnResponseMapF = spawnResponseMap(agentRef, hostConfig)
+        spawnResponseMapF.flatMap(spawnResponseMap => {
+          Future
+            .sequence(spawnResponseMap.values)
+            .map(spawnResponses => Completed((spawnResponseMap.keys zip spawnResponses).toMap))
+        })
+      })
     }
     catch {
       case e: Exception => Future.successful(Failed(e.getMessage.tap(log.error(_))))
     }
   }
 
-  private def getHostConfig(path: Path, isConfigLocal: Boolean): List[ContainerConfig] = {
-    // FIXME: Create proper model for HostConfig, then no need to hand parse "containers" list
-    val hostConfigF = configUtils
-      .getConfig(path, isConfigLocal)
-      .map(_.getConfigList("containers").asScala.map(ContainerConfig(_)).toList)
-    // FIXME: Do not block inside actor
-    Await.result(hostConfigF, CommonTimeouts.FetchConfig)
+  private def spawnResponseMap(
+      agentRef: ActorRef[AgentCommand],
+      hostConfig: List[ContainerConfig]
+  ): Future[Map[String, Future[SpawnResponse]]] = {
+    val spawnResponsePairs = hostConfig.map { config =>
+      val componentIdF = getContainerComponentId(config)
+      componentIdF.map(componentId => {
+        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
+          AgentTimeouts.SpawnComponent,
+          system.scheduler
+        )
+      })
+    }
+    Future.sequence(spawnResponsePairs).map(_.toMap)
   }
 
-  private def containerComponentId(config: ContainerConfig): ComponentId = {
-    // FIXME: Do not block inside actor
-    val containerConfig =
-      Await.result(configUtils.getConfig(config.configFilePath, config.isConfigLocal), CommonTimeouts.FetchConfig)
-    if (config.mode == "Standalone") {
-      // FIXME: componentType is case insensitive, this will fail for 'HCD'
-      val componentType = if (containerConfig.getString("componentType") == "hcd") ComponentType.HCD else ComponentType.Assembly
-      ComponentId(Prefix(containerConfig.getString("prefix")), componentType)
-    }
-    else ComponentId(Prefix(Container, containerConfig.getString("name")), ComponentType.Container)
+  private def getHostConfig(path: Path, isConfigLocal: Boolean): Future[List[ContainerConfig]] = {
+    // FIXME: Create proper model for HostConfig, then no need to hand parse "containers" list
+    configUtils
+      .getConfig(path, isConfigLocal)
+      .map(_.getConfigList("containers").asScala.map(ContainerConfig(_)).toList)
+  }
+
+  private def getContainerComponentId(config: ContainerConfig): Future[ComponentId] = {
+    val containerConfigF = configUtils.getConfig(config.configFilePath, config.isConfigLocal)
+    containerConfigF.map(containerConfig => {
+      if (config.mode == "Standalone") {
+        // FIXME: componentType is case insensitive, this will fail for 'HCD'
+        val componentType = if (containerConfig.getString("componentType") == "hcd") ComponentType.HCD else ComponentType.Assembly
+        ComponentId(Prefix(containerConfig.getString("prefix")), componentType)
+      }
+      else ComponentId(Prefix(Container, containerConfig.getString("name")), ComponentType.Container)
+    })
   }
 }
