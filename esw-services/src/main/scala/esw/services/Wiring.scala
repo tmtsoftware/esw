@@ -13,6 +13,7 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.AgentWiring
+import esw.agent.service.api.models.SpawnResponse
 import esw.agent.service.app.AgentServiceWiring
 import esw.commons.extensions.FutureExt.FutureOps
 import esw.commons.utils.aas.Keycloak
@@ -23,24 +24,23 @@ import esw.gateway.server.GatewayWiring
 import esw.services.apps.{Agent, AgentService, Gateway, SequenceManager}
 import esw.services.cli.Command.Start
 import esw.services.internal.ManagedService
-import esw.sm.app.SequenceManagerWiring
 
 class Wiring(startCmd: Start) {
 
   lazy implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol())
   private val systemConfig: Config                                  = ConfigFactory.load()
 
+  lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
+
   private lazy val agentApp: ManagedService[AgentWiring] =
     Agent.service(startCmd.agent, agentPrefix, systemConfig, startCmd.hostConfigPath)
   private lazy val agentApp3: ManagedService[AgentWiring]           = Agent.service(startCmd.agent, Prefix("TCS.machine2"), systemConfig)
   private lazy val agentService: ManagedService[AgentServiceWiring] = AgentService.service(startCmd.agentService)
   private lazy val gatewayService: ManagedService[GatewayWiring]    = Gateway.service(startCmd.gateway, startCmd.commandRoleConfig)
-  private lazy val smService: ManagedService[SequenceManagerWiring] =
-    SequenceManager.service(startCmd.sequenceManager, startCmd.obsModeConfig, agentPrefixForSM, startCmd.simulation)
+  private lazy val smService: ManagedService[SpawnResponse] =
+    new SequenceManager(locationService).service(startCmd.sequenceManager, startCmd.obsModeConfig, startCmd.simulation)
 
   lazy val serviceList = List(agentApp, agentService, gatewayService, smService, agentApp3)
-
-  lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   private lazy val configService: ConfigService = ConfigClientFactory.adminApi(actorSystem, locationService, tokenFactory)
   private lazy val config                       = systemConfig.getConfig("csw")
@@ -62,7 +62,7 @@ class Wiring(startCmd: Start) {
     s"""
        |scripts = a332c0280d
        |
-       |esw = ff4de77b78
+       |esw = 0.1.0-SNAPSHOT
        |
        |""".stripMargin
 
@@ -79,6 +79,4 @@ class Wiring(startCmd: Start) {
   private def defaultAgentPrefix: Prefix = Prefix(ESW, "primary")
 
   private def agentPrefix: Prefix = startCmd.agentPrefix.getOrElse(defaultAgentPrefix)
-
-  private def agentPrefixForSM: Option[Prefix] = if (startCmd.agent) Some(agentPrefix) else None
 }
