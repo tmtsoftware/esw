@@ -4,7 +4,7 @@ import akka.actor.typed.ActorRef
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.akka.client.models.ContainerConfig
+import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig, ContainerMode}
 import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 
@@ -75,7 +75,7 @@ class SpawnCommandTest extends BaseTestSuite {
 
     "append given extra argument | ESW-379" in {
       val containerConfig =
-        ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = false)
+        ContainerConfig("org", "dep", "app", "ver", ContainerMode.Container, Path.of("container.conf"), ConfigFileLocation.Remote)
       val command =
         SpawnContainer(actorRef, ComponentId(Prefix("Container.testContainer"), ComponentType.Container), containerConfig)
 
@@ -88,7 +88,15 @@ class SpawnCommandTest extends BaseTestSuite {
 
     "append --standalone if mode is Standalone | ESW-379" in {
       val containerConfig =
-        ContainerConfig("org", "dep", "app", "ver", "Standalone", Path.of("container.conf"), isConfigLocal = false)
+        ContainerConfig(
+          "org",
+          "dep",
+          "app",
+          "ver",
+          ContainerMode.Standalone,
+          Path.of("container.conf"),
+          ConfigFileLocation.Remote
+        )
       val command =
         SpawnContainer(actorRef, ComponentId(Prefix("Container.testContainer"), ComponentType.Container), containerConfig)
 
@@ -101,7 +109,7 @@ class SpawnCommandTest extends BaseTestSuite {
 
     "append --local if config path is Local | ESW-379" in {
       val containerConfig =
-        ContainerConfig("org", "dep", "app", "ver", "container", Path.of("container.conf"), isConfigLocal = true)
+        ContainerConfig("org", "dep", "app", "ver", ContainerMode.Container, Path.of("container.conf"), ConfigFileLocation.Local)
       val command =
         SpawnContainer(actorRef, ComponentId(Prefix("Container.testContainer"), ComponentType.Container), containerConfig)
 

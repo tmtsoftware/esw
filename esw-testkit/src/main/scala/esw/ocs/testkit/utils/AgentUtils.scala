@@ -7,7 +7,6 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
 
-import java.nio.file.Path
 import scala.util.Random
 
 trait AgentUtils {

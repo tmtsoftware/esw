@@ -1,18 +1,17 @@
 package esw.agent.akka.app.ext
 
-import java.nio.file.{Path, Paths}
-
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.akka.client.models.ContainerConfig
+import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig, ContainerMode}
 import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.Tables.Table
 
+import java.nio.file.{Path, Paths}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SpawnCommandExtTest extends BaseTestSuite {
@@ -40,9 +39,9 @@ class SpawnCommandExtTest extends BaseTestSuite {
     "module",
     "SampleContainerCmdApp",
     "0.0.1",
-    "Standalone",
+    ContainerMode.Standalone,
     Path.of("standalone.conf"),
-    isConfigLocal = true
+    ConfigFileLocation.Local
   )
 
   when(versionManager.getScriptVersion).thenReturn(Future.successful(sequencerScriptsVersion))

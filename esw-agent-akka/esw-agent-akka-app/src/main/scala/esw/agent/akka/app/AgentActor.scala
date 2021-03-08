@@ -12,14 +12,13 @@ import esw.agent.akka.app.process.ProcessManager
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnContainer
 import esw.agent.akka.client.AgentCommand._
-import esw.agent.akka.client.models.ContainerConfig
+import esw.agent.akka.client.models._
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.constants.AgentTimeouts
 
 import java.nio.file.{Path, Paths}
 import scala.concurrent.Future
-import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.chaining.scalaUtilChainingOps
 
 class AgentActor(
@@ -52,9 +51,9 @@ class AgentActor(
       hostConfigPath: String,
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] = {
-    try {
-      val hostConfigF = getHostConfig(Paths.get(hostConfigPath), isConfigLocal)
-      hostConfigF.flatMap(hostConfig => {
+    val hostConfigF = getHostConfig(Paths.get(hostConfigPath), isConfigLocal)
+    hostConfigF
+      .flatMap(hostConfig => {
         val spawnResponseMapF = spawnResponseMap(agentRef, hostConfig)
         spawnResponseMapF.flatMap(spawnResponseMap => {
           Future
@@ -62,17 +61,16 @@ class AgentActor(
             .map(spawnResponses => Completed((spawnResponseMap.keys zip spawnResponses).toMap))
         })
       })
-    }
-    catch {
-      case e: Exception => Future.successful(Failed(e.getMessage.tap(log.error(_))))
-    }
+      .recoverWith {
+        case e: Exception => Future.successful(Failed(e.getMessage.tap(log.error(_))))
+      }
   }
 
   private def spawnResponseMap(
       agentRef: ActorRef[AgentCommand],
-      hostConfig: List[ContainerConfig]
+      hostConfig: HostConfig
   ): Future[Map[String, Future[SpawnResponse]]] = {
-    val spawnResponsePairs = hostConfig.map { config =>
+    val spawnResponsePairs = hostConfig.containers.map { config =>
       val componentIdF = getContainerComponentId(config)
       componentIdF.map(componentId => {
         componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
@@ -84,22 +82,21 @@ class AgentActor(
     Future.sequence(spawnResponsePairs).map(_.toMap)
   }
 
-  private def getHostConfig(path: Path, isConfigLocal: Boolean): Future[List[ContainerConfig]] = {
-    // FIXME: Create proper model for HostConfig, then no need to hand parse "containers" list
-    configUtils
-      .getConfig(path, isConfigLocal)
-      .map(_.getConfigList("containers").asScala.map(ContainerConfig(_)).toList)
-  }
+  private def getHostConfig(path: Path, isConfigLocal: Boolean): Future[HostConfig] =
+    configUtils.getConfig(path, isConfigLocal).map(HostConfig(_))
 
-  private def getContainerComponentId(config: ContainerConfig): Future[ComponentId] = {
-    val containerConfigF = configUtils.getConfig(config.configFilePath, config.isConfigLocal)
-    containerConfigF.map(containerConfig => {
-      if (config.mode == "Standalone") {
-        val componentType =
-          if (containerConfig.getString("componentType").toLowerCase == "hcd") ComponentType.HCD else ComponentType.Assembly
-        ComponentId(Prefix(containerConfig.getString("prefix")), componentType)
+  private def getContainerComponentId(containerConfig: ContainerConfig): Future[ComponentId] = {
+    val isContainerConfigLocal = containerConfig.configFileLocation == ConfigFileLocation.Local
+    val containerInfoConfigF   = configUtils.getConfig(containerConfig.configFilePath, isContainerConfigLocal)
+    containerInfoConfigF.map(containerInfoConfig => {
+      if (containerConfig.mode == ContainerMode.Standalone) {
+        val componentInfo = ComponentInfo(containerInfoConfig)
+        ComponentId(componentInfo.prefix, componentInfo.componentType)
       }
-      else ComponentId(Prefix(Container, containerConfig.getString("name")), ComponentType.Container)
+      else {
+        val containerInfo = ContainerInfo(containerInfoConfig)
+        ComponentId(Prefix(Container, containerInfo.name), ComponentType.Container)
+      }
     })
   }
 }
