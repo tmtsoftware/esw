@@ -95,7 +95,7 @@ class AgentSetup extends BaseTestSuite {
   def spawnAgentActor(
       agentSettings: AgentSettings = agentSettings,
       name: String = "test-actor",
-      hostConfigPath: Option[Path] = None,
+      hostConfigPath: Option[String] = None,
       isConfigLocal: Boolean = true
   ): ActorRef[AgentCommand] = {
     val processManager: ProcessManager = new ProcessManager(locationService, versionManager, processExecutor, agentSettings) {

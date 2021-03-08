@@ -17,13 +17,17 @@ import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.constants.AgentTimeouts
 
-import java.nio.file.Path
+import java.nio.file.{Path, Paths}
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.chaining.scalaUtilChainingOps
 
-class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostConfigPath: Option[Path], isConfigLocal: Boolean)(
-    implicit
+class AgentActor(
+    processManager: ProcessManager,
+    configUtils: ConfigUtils,
+    hostConfigPath: Option[String],
+    isConfigLocal: Boolean
+)(implicit
     system: ActorSystem[_],
     log: Logger
 ) {
@@ -45,11 +49,11 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
 
   private def spawnContainers(
       agentRef: ActorRef[AgentCommand],
-      hostConfigPath: Path,
+      hostConfigPath: String,
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] = {
     try {
-      val hostConfigF = getHostConfig(hostConfigPath, isConfigLocal)
+      val hostConfigF = getHostConfig(Paths.get(hostConfigPath), isConfigLocal)
       hostConfigF.flatMap(hostConfig => {
         val spawnResponseMapF = spawnResponseMap(agentRef, hostConfig)
         spawnResponseMapF.flatMap(spawnResponseMap => {
@@ -91,8 +95,8 @@ class AgentActor(processManager: ProcessManager, configUtils: ConfigUtils, hostC
     val containerConfigF = configUtils.getConfig(config.configFilePath, config.isConfigLocal)
     containerConfigF.map(containerConfig => {
       if (config.mode == "Standalone") {
-        // FIXME: componentType is case insensitive, this will fail for 'HCD'
-        val componentType = if (containerConfig.getString("componentType") == "hcd") ComponentType.HCD else ComponentType.Assembly
+        val componentType =
+          if (containerConfig.getString("componentType").toLowerCase == "hcd") ComponentType.HCD else ComponentType.Assembly
         ComponentId(Prefix(containerConfig.getString("prefix")), componentType)
       }
       else ComponentId(Prefix(Container, containerConfig.getString("name")), ComponentType.Container)

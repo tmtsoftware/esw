@@ -272,7 +272,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       hostConfigFilePath.toFile.deleteOnExit()
 
       // spawn containers
-      agentClient.spawnContainers(hostConfigFilePath, isConfigLocal = true).futureValue should ===(
+      agentClient.spawnContainers(hostConfigFilePath.toString, isConfigLocal = true).futureValue should ===(
         Completed(Map("Container.TestContainer" -> Spawned))
       )
 

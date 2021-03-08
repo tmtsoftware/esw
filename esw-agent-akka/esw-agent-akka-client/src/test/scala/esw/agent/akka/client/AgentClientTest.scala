@@ -9,7 +9,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.akka.client.AgentCommand.{KillComponent, SpawnContainers}
-import esw.agent.service.api.models.{KillResponse, Completed, SpawnResponse}
+import esw.agent.service.api.models.{Completed, KillResponse, SpawnResponse}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
@@ -139,7 +139,7 @@ class AgentClientTest extends ActorTestSuit {
 
   "spawnContainers" should {
     "send spawnSequenceManager message to agent and return a future with agent response | ESW-379" in {
-      val hostConfigPath          = Path.of("hostConfig.conf")
+      val hostConfigPath          = "hostConfig.conf"
       val spawnContainersResponse = mock[Completed]
       withBehavior {
         case SpawnContainers(replyTo, `hostConfigPath`, true) => replyTo ! spawnContainersResponse

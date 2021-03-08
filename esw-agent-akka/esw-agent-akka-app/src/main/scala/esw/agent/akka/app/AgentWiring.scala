@@ -20,11 +20,10 @@ import esw.agent.akka.client.AgentCommand
 import esw.commons.utils.config.VersionManager
 import esw.constants.CommonTimeouts
 
-import java.nio.file.Path
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 // $COVERAGE-OFF$
-class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Option[Path], isConfigLocal: Boolean) {
+class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Option[String], isConfigLocal: Boolean) {
 
   val prefix: Prefix = agentSettings.prefix
 

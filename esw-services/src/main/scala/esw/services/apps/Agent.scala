@@ -7,7 +7,6 @@ import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
 import esw.constants.CommonTimeouts
 import esw.services.internal.ManagedService
 
-import java.nio.file.Path
 import scala.concurrent.Await
 
 object Agent {
@@ -16,11 +15,11 @@ object Agent {
       enable: Boolean,
       agentPrefix: Prefix,
       agentConfig: Config,
-      hostConfigPath: Option[Path] = None
+      hostConfigPath: Option[String] = None
   ): ManagedService[AgentWiring] =
     ManagedService("agent", enable, () => startAgent(agentPrefix, agentConfig, hostConfigPath), stopAgent)
 
-  private def startAgent(prefix: Prefix, agentConfig: Config, hostConfigPath: Option[Path]): AgentWiring =
+  private def startAgent(prefix: Prefix, agentConfig: Config, hostConfigPath: Option[String]): AgentWiring =
     AgentApp.start(AgentSettings(prefix, agentConfig), hostConfigPath, isConfigLocal = true)
 
   private def stopAgent(wiring: AgentWiring): Unit =

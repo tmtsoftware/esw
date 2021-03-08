@@ -5,7 +5,6 @@ import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, HelpMessage, ExtraName => Short}
 import csw.prefix.models.Prefix
 
-import java.nio.file.Path
 import scala.util.Try
 
 sealed trait AgentCliCommand
@@ -25,7 +24,7 @@ object AgentCliCommand {
       prefix: String,
       @HelpMessage("Optional: Path of host config for this agent")
       @Short("h")
-      hostConfigPath: Option[Path],
+      hostConfigPath: Option[String],
       @HelpMessage("Optional: Flag for reading host config from local machine")
       @Short("l")
       local: Boolean = false

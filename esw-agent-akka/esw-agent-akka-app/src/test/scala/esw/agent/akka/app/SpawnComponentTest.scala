@@ -255,7 +255,7 @@ class SpawnComponentTest extends AgentSetup {
         mockLocationService()
         mockSuccessfulProcess()
 
-        spawnAgentActor(agentSettings, "test-actor-random-10", Some(hostConfigPath), isHostConfigLocal)
+        spawnAgentActor(agentSettings, "test-actor-random-10", Some(hostConfigPath.toString), isHostConfigLocal)
 
         // agent actor sends SpawnContainers message to self
         Thread.sleep(100)
@@ -295,11 +295,11 @@ class SpawnComponentTest extends AgentSetup {
         when(configUtils.getConfig(Paths.get("confPath1.conf"), isLocal = true))
           .thenReturn(Future.successful(ConfigFactory.parseString("name = \"testContainer1\"")))
         when(configUtils.getConfig(Paths.get("confPath2.conf"), isLocal = true))
-          .thenReturn(Future.successful(ConfigFactory.parseString("prefix = \"ESW.testHCD\"\ncomponentType = hcd")))
+          .thenReturn(Future.successful(ConfigFactory.parseString("prefix = \"ESW.testHCD\"\ncomponentType = HCD")))
         mockLocationService()
         mockSuccessfulProcess()
 
-        agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
+        agentActorRef ! SpawnContainers(probe.ref, hostConfigPath.toString, isHostConfigLocal)
 
         val expectedResponse = Completed(
           Map(
@@ -364,7 +364,7 @@ class SpawnComponentTest extends AgentSetup {
           processExecutor.runCommand(secondContainerCommand, Prefix(ESW, "testHCD"))
         ).thenReturn(Left("Error"))
 
-        agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
+        agentActorRef ! SpawnContainers(probe.ref, hostConfigPath.toString, isHostConfigLocal)
 
         val expectedResponse = Completed(
           Map(
@@ -381,7 +381,7 @@ class SpawnComponentTest extends AgentSetup {
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
           .thenThrow(new RuntimeException("error"))
 
-        agentActorRef ! SpawnContainers(probe.ref, hostConfigPath, isHostConfigLocal)
+        agentActorRef ! SpawnContainers(probe.ref, hostConfigPath.toString, isHostConfigLocal)
 
         val expectedResponse = Failed("error")
         probe.expectMessage(expectedResponse)

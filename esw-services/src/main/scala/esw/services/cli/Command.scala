@@ -24,7 +24,7 @@ object Command {
       @HelpMessage("Prefix for agent. If provided, this will be used instead of default.")
       agentPrefix: Option[Prefix],
       @HelpMessage("Path of hostConfig file.")
-      hostConfigPath: Option[Path],
+      hostConfigPath: Option[String],
       @ExtraName("g")
       @HelpMessage("Start gateway with default command role config.")
       gateway: Boolean = false,
@@ -44,7 +44,7 @@ object Command {
         agent: Boolean = false,
         agentService: Boolean = false,
         agentPrefix: Option[Prefix] = None,
-        hostConfigPath: Option[Path] = None,
+        hostConfigPath: Option[String] = None,
         gateway: Boolean = false,
         commandRoleConfig: Option[Path] = None,
         sequenceManager: Boolean = false,

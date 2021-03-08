@@ -43,7 +43,7 @@ class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[
     )
 
   def spawnContainers(
-      hostConfigPath: Path,
+      hostConfigPath: String,
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] =
     (agentRef ? (SpawnContainers(_, hostConfigPath, isConfigLocal)))(

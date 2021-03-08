@@ -8,7 +8,6 @@ import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix
 import esw.agent.akka.app.AgentCliCommand.StartCommand
 
-import java.nio.file.Path
 import scala.concurrent.Await
 import scala.util.control.NonFatal
 
@@ -24,7 +23,7 @@ object AgentApp extends CommandApp[AgentCliCommand] {
         start(AgentSettings(Prefix(prefix), ConfigFactory.load()), hostConfigPath, isConfigLocal)
     }
 
-  private[esw] def start(agentSettings: AgentSettings, hostConfigPath: Option[Path], isConfigLocal: Boolean): AgentWiring = {
+  private[esw] def start(agentSettings: AgentSettings, hostConfigPath: Option[String], isConfigLocal: Boolean): AgentWiring = {
     val wiring = new AgentWiring(agentSettings, hostConfigPath, isConfigLocal)
     start(wiring)
   }
