@@ -4,7 +4,6 @@ import java.nio.file.{Files, Path}
 import scala.io.Source
 import scala.util.Using
 
-// FIXME: This should be moved to test scope or appropriate location
 object FileUtils {
 
   private def stripExtension(fileName: String, ext: String = ".conf") = fileName.replaceAll(ext, "")
@@ -18,6 +17,12 @@ object FileUtils {
     tempConfigPath
   }
 
-  def readResource(resource: String): String = Source.fromResource(resource).mkString
+  def createTempConfFile(name: String, configStr: String): Path = {
+    val tempConfigPath = Files.createTempFile(s"${stripExtension(name)}-", ".conf")
+    Files.write(tempConfigPath, configStr.getBytes)
+    tempConfigPath.toFile.deleteOnExit()
+    tempConfigPath
+  }
 
+  def readResource(resource: String): String = Source.fromResource(resource).mkString
 }

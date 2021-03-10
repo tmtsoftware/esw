@@ -48,9 +48,12 @@ cs launch esw-shell:<version | SHA>
 `esw-shell` can be used to spawn simulated HCD/Assembly which uses the handlers specified in 
 `esw-shell/src/main/scala/esw/shell/component/SimulatedComponentHandlers.scala`
 
+
+Below example commands will spawn a simulated HCD/Assembly on `ESW.machine1` agent. It is assumed that 
+`ESW.machine1` is already running.
 ```bash
-spawnSimulatedHCD("ESW.testHCD") // "ESW.testHCD" is the HCD prefix
-spawnSimulatedAssembly("ESW.testAssembly") // "ESW.testAssembly" is the assembly prefix
+spawnSimulatedHCD("ESW.testHCD", "ESW.machine1") // "ESW.testHCD" is the HCD prefix
+spawnSimulatedAssembly("ESW.testAssembly", "ESW.machine1") // "ESW.testAssembly" is the assembly prefix
 ```
 
 ### Finding the required component

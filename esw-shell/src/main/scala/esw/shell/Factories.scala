@@ -1,30 +1,28 @@
 package esw.shell
 
-import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
-import csw.command.client.messages.ComponentMessage
 import csw.location.api.models.ComponentType.{Assembly, HCD, Machine}
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.prefix.models.Subsystem
 import esw.agent.akka.client.AgentClient
+import esw.agent.service.api.models.SpawnContainersResponse
 import esw.commons.extensions.EitherExt.EitherOps
 import esw.commons.extensions.FutureExt.FutureOps
 import esw.commons.utils.config.ConfigServiceExt
 import esw.commons.utils.location.LocationServiceUtil
-import esw.constants.CommonTimeouts
 import esw.gateway.api.AdminApi
 import esw.gateway.impl.AdminImpl
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.testkit.EswTestKit
-import esw.shell.component.SimulatedComponentBehaviourFactory
-import esw.shell.service.SequenceManager
+import esw.shell.service.{Container, SequenceManager}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class Factories(val locationUtils: LocationServiceUtil, configServiceExt: ConfigServiceExt)(implicit
     val actorSystem: ActorSystem[_]
@@ -40,10 +38,14 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
     CommandServiceFactory.make(
       locationUtils.findAkkaLocation(prefix, HCD).map(_.throwLeft).await()
     )
-  def spawnSimulatedHCD(prefix: String): ActorRef[ComponentMessage] =
-    eswTestKit.spawnHCD(Prefix(prefix), new SimulatedComponentBehaviourFactory()).await(CommonTimeouts.Wiring)
-  def spawnSimulatedAssembly(prefix: String): ActorRef[ComponentMessage] =
-    eswTestKit.spawnAssembly(Prefix(prefix), new SimulatedComponentBehaviourFactory()).await(CommonTimeouts.Wiring)
+  def spawnSimulatedHCD(hcdPrefix: String, agentPrefix: String): Future[SpawnContainersResponse] = {
+    val client = agentClient(agentPrefix)
+    Container.spawnSimulatedComponent(hcdPrefix, HCD, client)
+  }
+  def spawnSimulatedAssembly(assemblyPrefix: String, agentPrefix: String): Future[SpawnContainersResponse] = {
+    val client = agentClient(agentPrefix)
+    Container.spawnSimulatedComponent(assemblyPrefix, HCD, client)
+  }
 
   // ============= ESW ============
   def sequencerCommandService(subsystem: Subsystem, obsMode: String): SequencerApi = {

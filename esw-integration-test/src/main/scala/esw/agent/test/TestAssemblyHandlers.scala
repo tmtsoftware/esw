@@ -1,4 +1,4 @@
-package esw.agent.akka
+package esw.agent.test
 
 import akka.actor.typed.scaladsl.ActorContext
 import csw.command.client.messages.TopLevelActorMessage
