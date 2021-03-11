@@ -34,13 +34,12 @@ class Wiring(startCmd: Start) {
 
   private lazy val agentApp: ManagedService[AgentWiring] =
     Agent.service(startCmd.agent, agentPrefix, systemConfig, startCmd.hostConfigPath)
-  private lazy val agentApp3: ManagedService[AgentWiring]           = Agent.service(startCmd.agent, Prefix("TCS.machine2"), systemConfig)
   private lazy val agentService: ManagedService[AgentServiceWiring] = AgentService.service(startCmd.agentService)
   private lazy val gatewayService: ManagedService[GatewayWiring]    = Gateway.service(startCmd.gateway, startCmd.commandRoleConfig)
   private lazy val smService: ManagedService[SpawnResponse] =
     new SequenceManager(locationService).service(startCmd.sequenceManager, startCmd.obsModeConfig, startCmd.simulation)
 
-  lazy val serviceList = List(agentApp, agentService, gatewayService, smService, agentApp3)
+  lazy val serviceList = List(agentApp, agentService, gatewayService, smService)
 
   private lazy val configService: ConfigService = ConfigClientFactory.adminApi(actorSystem, locationService, tokenFactory)
   private lazy val config                       = systemConfig.getConfig("csw")
