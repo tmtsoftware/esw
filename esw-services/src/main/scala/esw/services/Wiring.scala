@@ -11,7 +11,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.Subsystem._
 import esw.agent.akka.app.AgentWiring
 import esw.agent.service.api.models.SpawnResponse
 import esw.agent.service.app.AgentServiceWiring
@@ -22,24 +22,21 @@ import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
 import esw.gateway.server.GatewayWiring
 import esw.services.apps.{Agent, AgentService, Gateway, SequenceManager}
+import esw.services.cli.Command
 import esw.services.cli.Command.Start
 import esw.services.internal.ManagedService
 
-class Wiring(startCmd: Start) {
+class Wiring(cmd: Command) {
 
   lazy implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol())
   private val systemConfig: Config                                  = ConfigFactory.load()
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
-  private lazy val agentApp: ManagedService[AgentWiring] =
-    Agent.service(startCmd.agent, agentPrefix, systemConfig, startCmd.hostConfigPath)
-  private lazy val agentService: ManagedService[AgentServiceWiring] = AgentService.service(startCmd.agentService)
-  private lazy val gatewayService: ManagedService[GatewayWiring]    = Gateway.service(startCmd.gateway, startCmd.commandRoleConfig)
-  private lazy val smService: ManagedService[SpawnResponse] =
-    new SequenceManager(locationService).service(startCmd.sequenceManager, startCmd.obsModeConfig, startCmd.simulation)
-
-  lazy val serviceList = List(agentApp, agentService, gatewayService, smService)
+  private lazy val serviceList: List[ManagedService[_]] = cmd match {
+    case s: Start                          => getServiceListForStart(s)
+    case Command.StartEngUIBackendServices => getServiceListForEngUIBackend
+  }
 
   private lazy val configService: ConfigService = ConfigClientFactory.adminApi(actorSystem, locationService, tokenFactory)
   private lazy val config                       = systemConfig.getConfig("csw")
@@ -75,7 +72,34 @@ class Wiring(startCmd: Start) {
 
   def stop(): Unit = serviceList.foreach(_.stop())
 
-  private def defaultAgentPrefix: Prefix = Prefix(ESW, "primary")
+  private def getServiceListForStart(cmd: Start) = {
+    val agentPrefix: Prefix                              = cmd.agentPrefix.getOrElse(Prefix(ESW, "primary"))
+    val agentApp: ManagedService[AgentWiring]            = Agent.service(cmd.agent, agentPrefix, systemConfig, cmd.hostConfigPath)
+    val agentService: ManagedService[AgentServiceWiring] = AgentService.service(cmd.agentService)
+    val gatewayService: ManagedService[GatewayWiring]    = Gateway.service(cmd.gateway, cmd.commandRoleConfig)
+    val smService: ManagedService[SpawnResponse] =
+      new SequenceManager(locationService).service(cmd.sequenceManager, cmd.obsModeConfig, cmd.simulation)
 
-  private def agentPrefix: Prefix = startCmd.agentPrefix.getOrElse(defaultAgentPrefix)
+    val serviceList = List(agentApp, agentService, gatewayService, smService)
+    serviceList
+  }
+
+  private def getServiceListForEngUIBackend: List[ManagedService[_]] = {
+    // start agents as per provision config
+    val agentApp1: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(ESW, "machine1"), systemConfig)
+    val agentApp2: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(AOESW, "machine1"), systemConfig)
+    val agentApp3: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(IRIS, "machine1"), systemConfig)
+    val agentApp4: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(TCS, "machine1"), systemConfig)
+    val agentApp5: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(WFOS, "machine1"), systemConfig)
+
+    val agentService: ManagedService[AgentServiceWiring] = AgentService.service(enable = true)
+
+    val gatewayService: ManagedService[GatewayWiring] = Gateway.service(enable = true, None)
+
+    val smService: ManagedService[SpawnResponse] =
+      new SequenceManager(locationService).service(enable = true, None, simulation = true)
+
+    val serviceList = List(agentApp1, agentApp2, agentApp3, agentApp4, agentApp5, agentService, gatewayService, smService)
+    serviceList
+  }
 }

@@ -9,7 +9,7 @@ import csw.location.api.models.ComponentType.{Machine, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
+import csw.prefix.models.Subsystem.ESW
 import csw.services.utils.ColoredConsole.GREEN
 import esw.agent.akka.app.AgentWiring
 import esw.agent.akka.client.AgentClient
@@ -22,14 +22,10 @@ import scala.concurrent.{Await, ExecutionContext}
 
 class SequenceManager(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) {
 
-  private val agentConfig: Config                    = ConfigFactory.load()
-  private val eswAgent1Prefix: Prefix                = Prefix(ESW, "machine1")
-  private val eswAgent1: ManagedService[AgentWiring] = Agent.service(enable = true, eswAgent1Prefix, agentConfig)
-  private val eswAgent2: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(ESW, "machine2"), agentConfig)
-  private val tcsAgent: ManagedService[AgentWiring]  = Agent.service(enable = true, Prefix(TCS, "machine1"), agentConfig)
-  private val irisAgent: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(IRIS, "machine1"), agentConfig)
-  private val agentsForSimulation                    = List(eswAgent2, tcsAgent, irisAgent)
-  implicit val executionContext: ExecutionContext    = actorSystem.executionContext
+  private val agentConfig: Config                  = ConfigFactory.load()
+  private val smAgentPrefix: Prefix                = Prefix(ESW, "sm_machine")
+  private val smAgent: ManagedService[AgentWiring] = Agent.service(enable = true, smAgentPrefix, agentConfig)
+  implicit val executionContext: ExecutionContext  = actorSystem.executionContext
 
   def service(
       enable: Boolean,
@@ -40,7 +36,7 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
       "sequence-manager",
       enable,
       () => startSM(getConfig(maybeObsModeConfigPath), simulation),
-      r => stopSM(r, simulation)
+      _ => stopSM()
     )
 
   private def getConfig(maybeObsModeConfigPath: Option[Path]): Path =
@@ -50,27 +46,23 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
     }
 
   private def startSM(obsModeConfigPath: Path, simulation: Boolean): SpawnResponse = {
-    if (simulation) agentsForSimulation.foreach(_.start())
-
-    eswAgent1.start()
+    smAgent.start()
 
     val spawnResponse = locationService
-      .resolve(AkkaConnection(ComponentId(eswAgent1Prefix, Machine)), CommonTimeouts.ResolveLocation)
+      .resolve(AkkaConnection(ComponentId(smAgentPrefix, Machine)), CommonTimeouts.ResolveLocation)
       .flatMap {
         case Some(agentLocation) =>
           new AgentClient(agentLocation)
             .spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, simulation = simulation)
         case None =>
           throw new RuntimeException(
-            s"Spawn sequence manager failed: failed to locate agent $eswAgent1Prefix for spawning sequence manager"
+            s"Spawn sequence manager failed: failed to locate agent $smAgentPrefix for spawning sequence manager"
           )
       }
     Await.result(spawnResponse, CommonTimeouts.Wiring)
   }
 
-  private def stopSM(spawnResponse: SpawnResponse, simulation: Boolean): Unit = {
-    if (simulation) agentsForSimulation.foreach(_.stop())
-
+  private def stopSM(): Unit = {
     val smLocation = Await
       .result(
         locationService
@@ -82,12 +74,12 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
     val smAgentLocation = Await
       .result(
         locationService
-          .resolve(AkkaConnection(ComponentId(eswAgent1Prefix, Machine)), CommonTimeouts.ResolveLocation),
+          .resolve(AkkaConnection(ComponentId(smAgentPrefix, Machine)), CommonTimeouts.ResolveLocation),
         CommonTimeouts.Wiring
       )
       .getOrElse(
         throw new RuntimeException(
-          s"Sequence Manager kill failed: Failed to resolve Agent $eswAgent1Prefix spawning Sequence Manager"
+          s"Sequence Manager kill failed: Failed to resolve Agent $smAgentPrefix spawning Sequence Manager"
         )
       )
 

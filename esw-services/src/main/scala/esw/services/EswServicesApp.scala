@@ -20,10 +20,11 @@ object EswServicesApp extends EswCommandApp[Command] {
 
   override def run(command: Command, args: RemainingArgs): Unit =
     command match {
-      case s: Start => run(s)
+      case s: Start                  => run(s)
+      case StartEngUIBackendServices => run(StartEngUIBackendServices)
     }
 
-  def run(command: Start): Unit = {
+  def run(command: Command): Unit = {
     val wiring = new Wiring(command)
     try {
       LoggingSystemFactory.start(appName, appVersion, hostname, wiring.actorSystem)

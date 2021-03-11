@@ -1,5 +1,8 @@
 {
   "ESW.machine1": 1,
   "TCS.machine1": 1,
-  "IRIS.machine1": 1
+  "IRIS.machine1": 1,
+  "WFOS.machine1": 1,
+  "AOESW.machine1": 1,
+  "ESW.sm_machine": 1
 }
