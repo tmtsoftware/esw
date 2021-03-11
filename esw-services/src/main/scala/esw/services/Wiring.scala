@@ -34,8 +34,8 @@ class Wiring(cmd: Command) {
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   private lazy val serviceList: List[ManagedService[_]] = cmd match {
-    case s: Start                          => getServiceListForStart(s)
-    case Command.StartEngUIBackendServices => getServiceListForEngUIBackend
+    case s: Start                   => getServiceListForStart(s)
+    case Command.StartEngUIServices => getServiceListForEngUIBackend
   }
 
   private lazy val configService: ConfigService = ConfigClientFactory.adminApi(actorSystem, locationService, tokenFactory)

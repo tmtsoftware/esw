@@ -20,8 +20,8 @@ object EswServicesApp extends EswCommandApp[Command] {
 
   override def run(command: Command, args: RemainingArgs): Unit =
     command match {
-      case s: Start                  => run(s)
-      case StartEngUIBackendServices => run(StartEngUIBackendServices)
+      case s: Start           => run(s)
+      case StartEngUIServices => run(StartEngUIServices)
     }
 
   def run(command: Command): Unit = {

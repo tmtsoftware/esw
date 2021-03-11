@@ -20,3 +20,9 @@ If you are not building csw from the sources, you can run `csw-services` as foll
 
 - Run `sbt "esw-services/run start"` inside esw repository.
 - Run `sbt "esw-services/run start --help"` to get more information.
+
+## Running the esw-services for testing esw-ocs-eng-ui
+
+- Run `sbt "csw-services/run start -c"` inside csw repository.
+- Run `sbt "esw-services/run start-eng-ui-services"` inside esw repository.
+- Run `npm start` inside esw-ocs-eng-ui repository.

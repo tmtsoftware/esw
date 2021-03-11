@@ -78,7 +78,7 @@ object Command {
     }
   }
 
-  @CommandName("start-eng-ui-backend")
+  @CommandName("start-eng-ui-services")
   @HelpMessage("starts ESW services needed by ocs eng ui")
-  final case object StartEngUIBackendServices extends Command
+  final case object StartEngUIServices extends Command
 }
