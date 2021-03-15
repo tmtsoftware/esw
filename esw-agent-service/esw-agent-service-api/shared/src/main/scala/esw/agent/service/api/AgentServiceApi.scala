@@ -1,11 +1,10 @@
 package esw.agent.service.api
 
-import java.nio.file.Path
-
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
-import esw.agent.service.api.models.{KillResponse, SpawnResponse}
+import esw.agent.service.api.models.{KillResponse, SpawnContainersResponse, SpawnResponse}
 
+import java.nio.file.Path
 import scala.concurrent.Future
 
 /**
@@ -42,6 +41,17 @@ trait AgentServiceApi {
    * @return [[esw.agent.service.api.models.SpawnResponse]] as a Future value
    */
   def spawnSequenceComponent(agentPrefix: Prefix, componentName: String, version: Option[String] = None): Future[SpawnResponse]
+
+  /**
+   * spawn containers using a specific agent
+   * It will return [[esw.agent.service.api.models.SpawnContainersResponse]] indicating the status of spawned containers
+   *
+   * @param agentPrefix - prefix of the agent
+   * @param hostConfigPath - path of host config file
+   * @param isConfigLocal - true if host config is to be read from local filesystem
+   * @return [[esw.agent.service.api.models.SpawnContainersResponse]] as a Future value
+   */
+  def spawnContainers(agentPrefix: Prefix, hostConfigPath: String, isConfigLocal: Boolean): Future[SpawnContainersResponse]
 
   /**
    * kill the component of given componentId which was spawned by an agent

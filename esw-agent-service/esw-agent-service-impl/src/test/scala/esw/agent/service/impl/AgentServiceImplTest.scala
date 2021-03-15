@@ -9,7 +9,7 @@ import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata, TcpLocation}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.models.{Failed, Killed, SpawnResponse}
+import esw.agent.service.api.models.{Completed, Failed, Killed, SpawnResponse}
 import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.BaseTestSuite
@@ -36,7 +36,7 @@ class AgentServiceImplTest extends BaseTestSuite {
 
   "AgentService" must {
 
-    "spawnSequenceComponent Api" must {
+    "spawnSequenceComponent API" must {
 
       val spawnRes      = mock[SpawnResponse]
       val componentName = randomString(10)
@@ -62,7 +62,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       }
     }
 
-    "spawnSequenceManager Api" must {
+    "spawnSequenceManager API" must {
       val obsConfPath = mock[Path]
 
       "be able to send spawn sequence manager message to given agent | ESW-361" in {
@@ -93,7 +93,38 @@ class AgentServiceImplTest extends BaseTestSuite {
       }
     }
 
-    "killComponent Api" must {
+    "spawnContainer API" must {
+      val agentPrefix    = mock[Prefix]
+      val hostConfigPath = randomString(5)
+      val isConfigLocal  = randomBool
+
+      "be able to spawn containers for given hostConfig | ESW-480" in {
+        when(agentClientMock.spawnContainers(hostConfigPath, isConfigLocal))
+          .thenReturn(Future.successful(Completed(Map.empty)))
+
+        agentService.spawnContainers(agentPrefix, hostConfigPath, isConfigLocal).futureValue
+
+        verify(agentClientMock).spawnContainers(hostConfigPath, isConfigLocal)
+      }
+
+      "give Failed when agent is not available | ESW-480" in {
+        val locationService = mock[LocationServiceUtil]
+
+        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val expectedErrorMsg = "error"
+        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+
+        val agentService = new AgentServiceImpl(locationService)
+
+        agentService.spawnContainers(agentPrefix, hostConfigPath, isConfigLocal).futureValue should ===(
+          Failed(expectedErrorMsg)
+        )
+
+        verify(locationService).find(akkaConnection)
+      }
+    }
+
+    "killComponent API" must {
       val componentId     = mock[ComponentId]
       val componentPrefix = mock[Prefix]
       when(componentId.prefix).thenReturn(componentPrefix)
@@ -153,7 +184,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       }
     }
 
-    "agentClient Api" must {
+    "agentClient API" must {
       "be able to create agent client for given agentPrefix | ESW-361" in {
         val locationService = mock[LocationServiceUtil]
         val akkaConnection  = AkkaConnection(ComponentId(agentPrefix, Machine))

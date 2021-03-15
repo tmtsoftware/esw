@@ -53,4 +53,5 @@ trait BaseTestSuite
   def randomSubsystem: Subsystem        = randomFrom(Subsystem.values.toList)
   def randomString(size: Int): String   = Random.alphanumeric.take(size).mkString
   def randomInt(till: Int): Int         = Random.between(1, till)
+  def randomBool: Boolean               = Random.nextBoolean()
 }

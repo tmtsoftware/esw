@@ -1,17 +1,16 @@
 package esw.backend.testkit.stubs
 
-import java.nio.file.Path
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.backend.auth.MockedAuth
 import csw.location.api.models.ComponentId
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.agent.service.api.AgentServiceApi
-import esw.agent.service.api.models.{KillResponse, Killed, SpawnResponse, Spawned}
+import esw.agent.service.api.models._
 import esw.agent.service.app.AgentServiceWiring
 import esw.ocs.testkit.utils.LocationUtils
 
+import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentServiceStubImpl extends AgentServiceApi {
@@ -27,6 +26,12 @@ class AgentServiceStubImpl extends AgentServiceApi {
       componentName: String,
       version: Option[String]
   ): Future[SpawnResponse] = Future.successful(Spawned)
+
+  override def spawnContainers(
+      agentPrefix: Prefix,
+      hostConfigPath: String,
+      isConfigLocal: Boolean
+  ): Future[SpawnContainersResponse] = Future.successful(Completed(Map.empty))
 
   override def killComponent(componentId: ComponentId): Future[KillResponse] = Future.successful(Killed)
 }

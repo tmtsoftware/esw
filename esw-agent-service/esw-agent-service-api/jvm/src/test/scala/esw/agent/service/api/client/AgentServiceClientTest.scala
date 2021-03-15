@@ -1,27 +1,27 @@
 package esw.agent.service.api.client
 
-import java.nio.file.Path
-
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.codecs.AgentServiceCodecs
-import esw.agent.service.api.models.{KillResponse, SpawnResponse}
+import esw.agent.service.api.models.{KillResponse, SpawnContainersResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.service.api.protocol.AgentServiceRequest.{
+  KillComponent,
+  SpawnContainers,
+  SpawnSequenceComponent,
+  SpawnSequenceManager
+}
+import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
-import org.mockito.MockitoSugar.{mock, when}
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatest.wordspec.AnyWordSpec
 
+import java.nio.file.Path
 import scala.concurrent.Future
 
-class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentServiceCodecs {
+class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
 
   val postClient: Transport[AgentServiceRequest] = mock[Transport[AgentServiceRequest]]
   val agentServiceClient                         = new AgentServiceClient(postClient)
@@ -58,6 +58,22 @@ class AgentServiceClientTest extends AnyWordSpec with Matchers with AgentService
       ).thenReturn(Future.successful(spawnResponse))
 
       agentServiceClient.spawnSequenceComponent(agentPrefix, seqComponentName, None).futureValue shouldBe spawnResponse
+    }
+
+    "return SpawnContainersResponse for spawnContainers request" in {
+      val hostConfigPath          = randomString(5)
+      val isConfigLocal           = randomBool
+      val spawnContainers         = SpawnContainers(agentPrefix, hostConfigPath, isConfigLocal)
+      val spawnContainersResponse = mock[SpawnContainersResponse]
+
+      when(
+        postClient.requestResponse[SpawnContainersResponse](argEq(spawnContainers))(
+          any[Decoder[SpawnContainersResponse]](),
+          any[Encoder[SpawnContainersResponse]]()
+        )
+      ).thenReturn(Future.successful(spawnContainersResponse))
+
+      agentServiceClient.spawnContainers(agentPrefix, hostConfigPath, isConfigLocal).futureValue shouldBe spawnContainersResponse
     }
 
     "return KillResponse for killComponent request" in {

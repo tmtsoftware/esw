@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added Shutdown, Restart, GoOnline, GoOffline, GetContainerLifecycleState and GetComponentLifecycleState Admin API routes in Gateway.
 - Added GetResources, GetObsModesDetails API in the Sequence Manager
 - Removed GetRunningObsMode API from Sequence Manager
+- Added spawnContainers API to agent app and agent service
 
 ## [ESW v0.2.1] - 2021-01-29
 

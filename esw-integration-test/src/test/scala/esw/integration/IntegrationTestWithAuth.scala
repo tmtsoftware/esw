@@ -252,7 +252,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     }
 
     "spawn and kill containers | ESW-379" in {
-      val containerConfPath = FileUtils.cpyFileToTmpFromResource("testContainer.conf")
+      val containerConfPath = Paths.get(ClassLoader.getSystemResource("testContainer.conf").toURI)
       val hostConfigStr =
         s"""
           |containers: [
@@ -267,9 +267,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
           |  }
           |]
           |""".stripMargin
-      val hostConfigFilePath = Files.createTempFile("hostConfig-", ".conf")
-      Files.write(hostConfigFilePath, hostConfigStr.getBytes)
-      hostConfigFilePath.toFile.deleteOnExit()
+      val hostConfigFilePath = FileUtils.createTempConfFile("hostConfig.conf", hostConfigStr)
 
       // spawn containers
       agentClient.spawnContainers(hostConfigFilePath.toString, isConfigLocal = true).futureValue should ===(
@@ -324,6 +322,41 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       //verify that component is killed
       intercept[RuntimeException](resolveAkkaLocation(smPrefix, Service))
+    }
+
+    "start and kill containers on the given agent | ESW-480" in {
+      val containerConfPath = Paths.get(ClassLoader.getSystemResource("testContainer.conf").toURI)
+      val hostConfigStr =
+        s"""
+           |containers: [
+           |  {
+           |    orgName: "com.github.tmtsoftware.esw"
+           |    deployModule: "esw-integration-test"
+           |    appName: "esw.agent.test.TestContainerCmdApp"
+           |    version: "0.1.0-SNAPSHOT"
+           |    mode: "Container"
+           |    configFilePath: "$containerConfPath"
+           |    configFileLocation: "Local"
+           |  }
+           |]
+           |""".stripMargin
+      val hostConfigFilePath = FileUtils.createTempConfFile("hostConfig.conf", hostConfigStr)
+
+      // spawn container
+      agentService
+        .spawnContainers(agentPrefix, hostConfigFilePath.toString, isConfigLocal = true)
+        .futureValue shouldBe Completed(Map("Container.TestContainer" -> Spawned))
+
+      // verify container is started
+      resolveAkkaLocation(Prefix(Container, "TestContainer"), ComponentType.Container)
+
+      // kill container
+      agentService
+        .killComponent(ComponentId(Prefix(Container, "TestContainer"), ComponentType.Container))
+        .futureValue shouldBe Killed
+
+      // verify that container is killed
+      intercept[RuntimeException](resolveAkkaLocation(Prefix(Container, "TestContainer"), ComponentType.Container))
     }
   }
 

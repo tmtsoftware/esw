@@ -11,7 +11,12 @@ import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models._
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest.{KillComponent, SpawnSequenceComponent, SpawnSequenceManager}
+import esw.agent.service.api.protocol.AgentServiceRequest.{
+  KillComponent,
+  SpawnContainers,
+  SpawnSequenceComponent,
+  SpawnSequenceManager
+}
 import esw.commons.auth.AuthPolicies
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
@@ -100,6 +105,37 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
       post(spawnSeqCompRequest) ~> route ~> check {
         verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
         responseAs[SpawnResponse] should ===(failedResponse)
+      }
+    }
+
+  }
+
+  "SpawnContainers" must {
+    val hostConfigPath = randomString(5)
+    val isConfigLocal  = randomBool
+    "be able to start containers | ESW-480" in {
+      val spawnContainersRequest = SpawnContainers(agentPrefix, hostConfigPath, isConfigLocal)
+
+      when(securityDirective.sPost(AuthPolicies.eswUserRolePolicy)).thenReturn(dummyDirective)
+      when(agentService.spawnContainers(agentPrefix, hostConfigPath, isConfigLocal))
+        .thenReturn(Future.successful(Completed(Map.empty)))
+
+      post(spawnContainersRequest) ~> route ~> check {
+        verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
+        responseAs[SpawnContainersResponse] should ===(Completed(Map.empty))
+      }
+    }
+
+    "be able to send failure response when agent is not found | ESW-480" in {
+      val spawnContainersRequest = SpawnContainers(agentPrefix, hostConfigPath, isConfigLocal)
+
+      when(securityDirective.sPost(AuthPolicies.eswUserRolePolicy)).thenReturn(dummyDirective)
+      when(agentService.spawnContainers(agentPrefix, hostConfigPath, isConfigLocal))
+        .thenReturn(Future.successful(failedResponse))
+
+      post(spawnContainersRequest) ~> route ~> check {
+        verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
+        responseAs[SpawnContainersResponse] should ===(failedResponse)
       }
     }
 
