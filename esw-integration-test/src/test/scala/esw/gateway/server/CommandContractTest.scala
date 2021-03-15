@@ -26,7 +26,7 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory()).futureValue
+    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory())
   }
 
   "CommandApi" must {

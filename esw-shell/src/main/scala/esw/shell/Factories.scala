@@ -16,7 +16,6 @@ import esw.gateway.api.AdminApi
 import esw.gateway.impl.AdminImpl
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerImpl
-import esw.ocs.testkit.EswTestKit
 import esw.shell.service.{Container, SequenceManager}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.ProvisionConfig
@@ -28,8 +27,6 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
     val actorSystem: ActorSystem[_]
 ) {
   implicit lazy val ec: ExecutionContext = actorSystem.executionContext
-
-  private val eswTestKit: EswTestKit = new EswTestKit() {}
 
   // ============= CSW ============
   def assemblyCommandService(prefix: String): CommandService =

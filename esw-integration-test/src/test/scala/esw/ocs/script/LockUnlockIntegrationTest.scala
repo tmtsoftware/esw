@@ -17,7 +17,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory()).futureValue
+    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory())
   }
 
   override def beforeEach(): Unit = {

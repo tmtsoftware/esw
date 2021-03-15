@@ -30,7 +30,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnHCD(Prefix("esw.testHcd"), new HcdBehaviourFactory()).futureValue
+    spawnHCD(Prefix("esw.testHcd"), new HcdBehaviourFactory())
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()
