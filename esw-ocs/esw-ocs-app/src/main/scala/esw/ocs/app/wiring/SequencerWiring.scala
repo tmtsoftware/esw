@@ -129,9 +129,10 @@ private[ocs] class SequencerWiring(
     new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
   )
 
+  private lazy val metadata          = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
   private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
   private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime)
-  private lazy val httpServerBinding = httpService.startAndRegisterServer()
+  private lazy val httpServerBinding = httpService.startAndRegisterServer(metadata)
 
   private val shutdownHttpService: () => Future[Done] = () =>
     async {
@@ -155,7 +156,7 @@ private[ocs] class SequencerWiring(
 
         Await.result(httpServerBinding, CommonTimeouts.Wiring)
 
-        val registration = AkkaRegistrationFactory.make(AkkaConnection(componentId), sequencerRef)
+        val registration = AkkaRegistrationFactory.make(AkkaConnection(componentId), sequencerRef, metadata)
         val loc = Await.result(
           locationServiceUtil.register(registration).mapLeft(e => LocationServiceError(e.msg)),
           CommonTimeouts.Wiring
