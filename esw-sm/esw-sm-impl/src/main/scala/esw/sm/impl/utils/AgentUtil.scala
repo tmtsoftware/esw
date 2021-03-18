@@ -2,14 +2,14 @@ package esw.sm.impl.utils
 
 import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.AkkaConnection
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.{Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.extensions.MapExt.MapOps
-import esw.commons.utils.config.{VersionManager, FetchingScriptVersionFailed}
+import esw.commons.utils.config.{FetchingScriptVersionFailed, VersionManager}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.models.{AgentStatus, ProvisionConfig, SequenceComponentStatus}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -17,15 +17,12 @@ import esw.sm.api.protocol.ProvisionResponse.{ProvisionVersionFailure, SpawningS
 import esw.sm.api.protocol.{AgentStatusResponse, ProvisionResponse}
 import esw.sm.impl.utils.Types._
 
-import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentUtil(
     locationServiceUtil: LocationServiceUtil,
-    sequenceComponentUtil: SequenceComponentUtil,
     agentAllocator: AgentAllocator,
     versionManager: VersionManager,
-    versionConfPath: Path,
     simulation: Boolean = false
 )(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
@@ -35,9 +32,11 @@ class AgentUtil(
       .mapRight(groupByAgentWithOrphans)
       .flatMapE {
         case (agentMap, compsWithoutAgent) =>
-          getAndAddAgentsWithoutSeqComp(agentMap).flatMapRight(
-            getAgentStatus(_) zip getSeqCompsStatus(compsWithoutAgent)
-          )
+          getAndAddAgentsWithoutSeqComp(agentMap).flatMapE { agentMap =>
+            getAllSequencers.mapRight { sequencers =>
+              (getAgentStatus(agentMap, sequencers), getSeqCompsStatus(compsWithoutAgent, sequencers))
+            }
+          }
       }
       .mapToAdt(
         { case (agentStatus, orphans) => AgentStatusResponse.Success(agentStatus, orphans) },
@@ -65,14 +64,26 @@ class AgentUtil(
   private def getAllAgents             = locationServiceUtil.listAkkaLocationsBy(Machine)
   private def getAllAgentIds           = getAllAgents.mapRight(_.map(_.connection.componentId))
   private def getAllSequenceComponents = locationServiceUtil.listAkkaLocationsBy(SequenceComponent)
+  private def getAllSequencers         = locationServiceUtil.listAkkaLocationsBy(Sequencer)
 
-  private def getAgentStatus(agents: Map[AgentId, List[SeqCompLocation]]): Future[List[AgentStatus]] =
-    Future.traverse(agents.toList) {
-      case (agentId, seqCompLocations) => getSeqCompsStatus(seqCompLocations).map(AgentStatus(agentId, _))
+  private def getAgentStatus(
+      agents: Map[AgentId, List[SeqCompLocation]],
+      sequencers: List[SequencerLocation]
+  ): List[AgentStatus] =
+    agents.toList.map {
+      case (agentId, seqCompLocations) => AgentStatus(agentId, getSeqCompsStatus(seqCompLocations, sequencers))
     }
 
-  private def getSeqCompsStatus(seqComps: List[SeqCompLocation]): Future[List[SequenceComponentStatus]] =
-    Future.traverse(seqComps)(sequenceComponentUtil.getSequenceComponentStatus)
+  private def getSeqCompsStatus(
+      seqComps: List[SeqCompLocation],
+      sequencers: List[SequencerLocation]
+  ): List[SequenceComponentStatus] =
+    seqComps.map(seqComp =>
+      SequenceComponentStatus(
+        seqComp.connection.componentId,
+        sequencers.find(_.metadata.getSequenceComponentPrefix.contains(seqComp.prefix))
+      )
+    )
 
   private def provisionOn(agentLocations: List[AgentLocation], provisionConfig: ProvisionConfig) = {
     Future

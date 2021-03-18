@@ -11,4 +11,6 @@ object Types {
   type AgentPrefix   = Prefix
   type AgentLocation = AkkaLocation
   type AgentId       = ComponentId
+
+  type SequencerLocation = AkkaLocation
 }

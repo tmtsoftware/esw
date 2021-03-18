@@ -67,9 +67,8 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
   private lazy val sequenceComponentAllocator = new SequenceComponentAllocator()
   private lazy val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator)
   private lazy val agentAllocator             = new AgentAllocator()
-  private lazy val agentUtil =
-    new AgentUtil(locationServiceUtil, sequenceComponentUtil, agentAllocator, versionManager, versionConfPath, simulation)
-  private lazy val sequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
+  private lazy val agentUtil                  = new AgentUtil(locationServiceUtil, agentAllocator, versionManager, simulation)
+  private lazy val sequencerUtil              = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
   private lazy val obsModeConfig =
     Await.result(
