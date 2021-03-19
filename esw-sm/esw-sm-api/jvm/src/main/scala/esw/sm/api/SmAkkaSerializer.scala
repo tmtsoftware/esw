@@ -24,7 +24,6 @@ class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
   register[ShutdownSequencersResponse]
   register[ObsModesDetailsResponse]
   register[ConfigureResponse]
-  register[AgentStatusResponse]
   register[SequenceManagerState]
   register[ProvisionResponse]
   register[ResourcesStatusResponse]

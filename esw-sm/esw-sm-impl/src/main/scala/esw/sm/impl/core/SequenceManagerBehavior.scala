@@ -193,21 +193,8 @@ class SequenceManagerBehavior(
       case GetSequenceManagerState(replyTo) =>
         currentState.tap(state => logger.info(s"Sequence Manager response Success: Sequence Manager state $state"));
         replyTo ! currentState
-      case GetAllAgentStatus(replyTo)  => getAllAgentStatus(replyTo)
       case GetResources(replyTo)       => getResourcesStatus(replyTo)
       case GetObsModesDetails(replyTo) => getObsModesDetails.foreach(replyTo ! _)
-    }
-
-  private def getAllAgentStatus(replyTo: ActorRef[AgentStatusResponse]): Future[Unit] =
-    agentUtil.getAllAgentStatus.map { response =>
-      response match {
-        case AgentStatusResponse.Success(agentStatus, seqCompsWithoutAgent) =>
-          logger.info(
-            s"Sequence Manager response Success: Agent Status $agentStatus and Sequence Component without agent $seqCompsWithoutAgent"
-          )
-        case failure: AgentStatusResponse.Failure => logger.error(s"Sequence Manager response Error: ${failure.getMessage}")
-      }
-      replyTo ! response
     }
 
   private def getObsModesDetails: Future[ObsModesDetailsResponse] = {

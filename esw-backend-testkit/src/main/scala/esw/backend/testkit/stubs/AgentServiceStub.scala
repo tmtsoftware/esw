@@ -1,16 +1,21 @@
 package esw.backend.testkit.stubs
 
+import java.net.URI
+import java.nio.file.Path
+
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.backend.auth.MockedAuth
-import csw.location.api.models.ComponentId
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.models._
 import esw.agent.service.app.AgentServiceWiring
 import esw.ocs.testkit.utils.LocationUtils
 
-import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentServiceStubImpl extends AgentServiceApi {
@@ -34,6 +39,25 @@ class AgentServiceStubImpl extends AgentServiceApi {
   ): Future[SpawnContainersResponse] = Future.successful(Completed(Map.empty))
 
   override def killComponent(componentId: ComponentId): Future[KillResponse] = Future.successful(Killed)
+
+  override def getAgentStatus: Future[AgentStatusResponse] = {
+    val sequenceComponentStatus = SequenceComponentStatus(
+      ComponentId(Prefix(ESW, "seqcomp1"), SequenceComponent),
+      Some(
+        AkkaLocation(
+          AkkaConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer)),
+          new URI(""),
+          Metadata().withSequenceComponentPrefix(Prefix(ESW, "seqcomp1"))
+        )
+      )
+    )
+    Future.successful(
+      AgentStatusResponse.Success(
+        List(AgentStatus(ComponentId(Prefix(ESW, "agent1"), Machine), List(sequenceComponentStatus))),
+        List.empty
+      )
+    )
+  }
 }
 
 class AgentServiceStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])

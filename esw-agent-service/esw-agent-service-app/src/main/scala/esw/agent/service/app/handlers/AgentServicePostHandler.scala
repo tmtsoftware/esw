@@ -7,6 +7,7 @@ import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs._
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.{
+  GetAgentStatus,
   KillComponent,
   SpawnContainers,
   SpawnSequenceComponent,
@@ -33,6 +34,8 @@ class AgentServicePostHandler(agentService: AgentServiceApi, securityDirective: 
 
       case KillComponent(componentId) =>
         sPost(complete(killComponent(componentId)))
+
+      case GetAgentStatus => complete(getAgentStatus)
     }
 
   private def sPost(route: => Route): Route = securityDirective.sPost(AuthPolicies.eswUserRolePolicy)(_ => route)

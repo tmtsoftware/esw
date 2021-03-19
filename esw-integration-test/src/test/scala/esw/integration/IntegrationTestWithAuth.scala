@@ -1,5 +1,8 @@
 package esw.integration
 
+import java.io.File
+import java.nio.file.{Files, Path, Paths}
+
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -16,7 +19,7 @@ import esw.agent.akka.app.AgentSettings
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
-import esw.agent.service.api.models.{Completed, Failed, Killed, Spawned}
+import esw.agent.service.api.models._
 import esw.agent.service.app.{AgentServiceApp, AgentServiceWiring}
 import esw.commons.utils.files.FileUtils
 import esw.commons.utils.location.LocationServiceUtil
@@ -28,18 +31,26 @@ import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
+import esw.sm.api.models.{ObsModeDetails, ProvisionConfig, Resource, Resources, Sequencers}
 import esw.sm.api.models.ResourceStatus.{Available, InUse}
-import esw.sm.api.models._
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.{
+  ConfigureResponse,
+  ObsModesDetailsResponse,
+  ProvisionResponse,
+  ResourceStatusResponse,
+  ResourcesStatusResponse,
+  RestartSequencerResponse,
+  ShutdownSequenceComponentResponse,
+  ShutdownSequencersResponse,
+  StartSequencerResponse
+}
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
-import esw.sm.api.protocol._
 import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
@@ -357,6 +368,48 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       // verify that container is killed
       intercept[RuntimeException](resolveAkkaLocation(Prefix(Container, "TestContainer"), ComponentType.Container))
+    }
+
+    "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349, ESW-332, ESW-367, ESW-481" in {
+      locationService.unregisterAll().futureValue
+      registerKeycloak()
+
+      val eswAgentPrefix  = getRandomAgentPrefix(ESW)
+      val irisAgentPrefix = getRandomAgentPrefix(IRIS)
+      // start required agents
+      spawnAgent(AgentSettings(eswAgentPrefix, channel, versionConfPath))
+      spawnAgent(AgentSettings(irisAgentPrefix, channel, versionConfPath))
+
+      val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
+
+      agentService.spawnSequenceComponent(eswAgentPrefix, "primary", ocsVersionOpt).futureValue
+      agentService.spawnSequenceComponent(irisAgentPrefix, "primary", ocsVersionOpt).futureValue
+
+      sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT).futureValue
+
+      val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
+
+      val expectedStatus = Set(
+        AgentStatus(
+          ComponentId(irisAgentPrefix, Machine),
+          List(
+            SequenceComponentStatus(ComponentId(Prefix(IRIS, "primary"), SequenceComponent), Some(sequencerLocation))
+          )
+        ),
+        AgentStatus(
+          ComponentId(eswAgentPrefix, Machine),
+          List(
+            SequenceComponentStatus(ComponentId(Prefix(ESW, "primary"), SequenceComponent), None)
+          )
+        )
+      )
+
+      val actualResponse = agentService.getAgentStatus.futureValue.asInstanceOf[AgentStatusResponse.Success]
+      actualResponse.agentStatus.toSet should ===(expectedStatus)
+      actualResponse.seqCompsWithoutAgent should ===(List.empty)
+
+      sequenceManager.shutdownAllSequenceComponents().futureValue
+      TestSetup.cleanup()
     }
   }
 
@@ -859,48 +912,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
       configTestKit.deleteServerFiles()
       configTestKit.terminateServer()
-      TestSetup.cleanup()
-    }
-
-    "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349, ESW-332, ESW-367" in {
-      locationService.unregisterAll().futureValue
-      registerKeycloak()
-
-      val eswAgentPrefix  = getRandomAgentPrefix(ESW)
-      val irisAgentPrefix = getRandomAgentPrefix(IRIS)
-      // start required agents
-      spawnAgent(AgentSettings(eswAgentPrefix, channel, versionConfPath))
-      spawnAgent(AgentSettings(irisAgentPrefix, channel, versionConfPath))
-
-      val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
-
-      agentService.spawnSequenceComponent(eswAgentPrefix, "primary", ocsVersionOpt).futureValue
-      agentService.spawnSequenceComponent(irisAgentPrefix, "primary", ocsVersionOpt).futureValue
-
-      sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT).futureValue
-
-      val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
-
-      val expectedStatus = Set(
-        AgentStatus(
-          ComponentId(irisAgentPrefix, Machine),
-          List(
-            SequenceComponentStatus(ComponentId(Prefix(IRIS, "primary"), SequenceComponent), Some(sequencerLocation))
-          )
-        ),
-        AgentStatus(
-          ComponentId(eswAgentPrefix, Machine),
-          List(
-            SequenceComponentStatus(ComponentId(Prefix(ESW, "primary"), SequenceComponent), None)
-          )
-        )
-      )
-
-      val actualResponse = sequenceManager.getAgentStatus.futureValue.asInstanceOf[AgentStatusResponse.Success]
-      actualResponse.agentStatus.toSet should ===(expectedStatus)
-      actualResponse.seqCompsWithoutAgent should ===(List.empty)
-
-      sequenceManager.shutdownAllSequenceComponents().futureValue
       TestSetup.cleanup()
     }
 

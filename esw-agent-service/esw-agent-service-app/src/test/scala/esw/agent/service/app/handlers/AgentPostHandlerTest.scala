@@ -1,5 +1,7 @@
 package esw.agent.service.app.handlers
 
+import java.nio.file.Path
+
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -11,12 +13,7 @@ import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models._
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest.{
-  KillComponent,
-  SpawnContainers,
-  SpawnSequenceComponent,
-  SpawnSequenceManager
-}
+import esw.agent.service.api.protocol.AgentServiceRequest._
 import esw.commons.auth.AuthPolicies
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
@@ -24,7 +21,6 @@ import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
 import msocket.security.models.AccessToken
 
-import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with AgentServiceCodecs with ClientHttpCodecs {
@@ -162,6 +158,28 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
       post(stopComponentRequest) ~> route ~> check {
         verify(securityDirective).sPost(AuthPolicies.eswUserRolePolicy)
         responseAs[KillResponse] should ===(failedResponse)
+      }
+    }
+  }
+
+  "GetAgentStatus" must {
+    val getAgentStatusRequest = GetAgentStatus
+
+    "be able get agent status | ESW-481" in {
+      val response = AgentStatusResponse.Success(List.empty, List.empty)
+      when(agentService.getAgentStatus).thenReturn(Future.successful(response))
+
+      post(getAgentStatusRequest) ~> route ~> check {
+        responseAs[AgentStatusResponse] should ===(response)
+      }
+    }
+
+    "be able to send failure response when location service error | ESW-481" in {
+      val failedResponse = AgentStatusResponse.LocationServiceError(randomString(20))
+      when(agentService.getAgentStatus).thenReturn(Future.successful(failedResponse))
+
+      post(getAgentStatusRequest) ~> route ~> check {
+        responseAs[AgentStatusResponse] should ===(failedResponse)
       }
     }
   }

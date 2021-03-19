@@ -123,15 +123,6 @@ class SequenceManagerImplTest extends ActorTestSuit {
       }
     }
 
-    "getAgentStatus | ESW-349, ESW-362" in {
-      val agentStatusResponse = mock[AgentStatusResponse]
-      withBehavior {
-        case SequenceManagerMsg.GetAllAgentStatus(replyTo) => replyTo ! agentStatusResponse
-      } check { sm =>
-        sm.getAgentStatus.futureValue should ===(agentStatusResponse)
-      }
-    }
-
     "provision | ESW-346, ESW-362" in {
       val provisionResponse = mock[ProvisionResponse]
       val provisionConfig   = ProvisionConfig((Prefix(randomSubsystem, randomString5), randomInt(5)))

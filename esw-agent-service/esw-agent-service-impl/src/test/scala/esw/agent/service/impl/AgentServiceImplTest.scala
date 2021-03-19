@@ -8,8 +8,9 @@ import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata, TcpLocation}
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.models.{Completed, Failed, Killed, SpawnResponse}
+import esw.agent.service.api.models._
 import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.BaseTestSuite
@@ -20,11 +21,12 @@ class AgentServiceImplTest extends BaseTestSuite {
 
   private implicit val testSystem: ActorSystem[_] = ActorSystem(SpawnProtocol(), "test")
   private val locationService                     = mock[LocationServiceUtil]
+  private val agentStatusUtil                     = mock[AgentStatusUtil]
   private val agentClientMock                     = mock[AgentClient]
   private val agentPrefix                         = mock[Prefix]
   private val version                             = Some(randomString(10))
 
-  private val agentService = new AgentServiceImpl(locationService) {
+  private val agentService = new AgentServiceImpl(locationService, agentStatusUtil) {
     override private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
       Future.successful(Right(agentClientMock))
   }
@@ -54,7 +56,7 @@ class AgentServiceImplTest extends BaseTestSuite {
 
         when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
-        val agentService = new AgentServiceImpl(locationService)
+        val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
 
         agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue should ===(Failed(expectedErrorMsg))
 
@@ -83,7 +85,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val expectedErrorMsg = "error"
         when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
-        val agentService = new AgentServiceImpl(locationService)
+        val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
 
         agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, version).futureValue should ===(
           Failed(expectedErrorMsg)
@@ -114,7 +116,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val expectedErrorMsg = "error"
         when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
-        val agentService = new AgentServiceImpl(locationService)
+        val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
 
         agentService.spawnContainers(agentPrefix, hostConfigPath, isConfigLocal).futureValue should ===(
           Failed(expectedErrorMsg)
@@ -150,7 +152,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         when(locationService.list(componentId)).thenReturn(Future.successful(List(componentLocation)))
         when(locationService.find(agentConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
-        val agentService = new AgentServiceImpl(locationService)
+        val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
         agentService.killComponent(componentId).futureValue should ===(Failed(expectedErrorMsg))
 
         verify(locationService).find(agentConnection)
@@ -191,7 +193,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val location        = AkkaLocation(akkaConnection, URI.create("some"), Metadata.empty)
         when(locationService.find(akkaConnection)).thenReturn(Future.successful(Right(location)))
 
-        val agentService = new AgentServiceImpl(locationService)
+        val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
         agentService.agentClient(agentPrefix).futureValue
         verify(locationService).find(akkaConnection)
       }
@@ -202,7 +204,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
         when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound("error"))))
 
-        val agentService = new AgentServiceImpl(locationService)
+        val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
 
         agentService.agentClient(agentPrefix).leftValue should ===("error")
 
@@ -210,5 +212,20 @@ class AgentServiceImplTest extends BaseTestSuite {
       }
     }
 
+    "getAgentStatus API" must {
+      "be able to get agent status" in {
+        val agentStatusResponse = AgentStatusResponse.Success(
+          List(AgentStatus(ComponentId(Prefix(ESW, "agent1"), Machine), List.empty[SequenceComponentStatus])),
+          List.empty
+        )
+
+        when(agentStatusUtil.getAllAgentStatus).thenReturn(Future.successful(agentStatusResponse))
+
+        val response = agentService.getAgentStatus.futureValue
+
+        response should ===(agentStatusResponse)
+        verify(agentStatusUtil).getAllAgentStatus
+      }
+    }
   }
 }

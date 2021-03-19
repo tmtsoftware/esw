@@ -4,7 +4,7 @@ import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.backend.auth.MockedAuth
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
+import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
@@ -50,19 +50,6 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
 
   override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
     Future.successful(ShutdownSequenceComponentResponse.Success)
-
-  override def getAgentStatus: Future[AgentStatusResponse] =
-    Future.successful(
-      AgentStatusResponse.Success(
-        List(
-          AgentStatus(
-            ComponentId(Prefix(IRIS, "Agent"), Machine),
-            List(SequenceComponentStatus(ComponentId(Prefix(IRIS, "IRIS_123"), SequenceComponent), None))
-          )
-        ),
-        List(SequenceComponentStatus(ComponentId(Prefix(ESW, "ESW_45"), SequenceComponent), None))
-      )
-    )
 
   override def getResources: Future[ResourcesStatusResponse] =
     Future.successful(

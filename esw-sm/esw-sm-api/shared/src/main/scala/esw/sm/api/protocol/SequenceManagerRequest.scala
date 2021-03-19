@@ -23,7 +23,5 @@ object SequenceManagerRequest {
   case class ShutdownSequenceComponent(prefix: Prefix) extends SequenceManagerRequest
   case object ShutdownAllSequenceComponents            extends SequenceManagerRequest
 
-  case object GetAgentStatus extends SequenceManagerRequest
-
   case object GetResources extends SequenceManagerRequest
 }

@@ -183,16 +183,6 @@ class SequenceManagerRequestHandlerTest
       }
     }
 
-    "return agent status for all running agents | ESW-349, ESW-332" in {
-      val response = AgentStatusResponse.Success(List.empty[AgentStatus], List.empty)
-      when(sequenceManagerApi.getAgentStatus).thenReturn(Future.successful(response))
-
-      Post("/post-endpoint", GetAgentStatus.narrow) ~> route ~> check {
-        verify(sequenceManagerApi).getAgentStatus
-        responseAs[AgentStatusResponse] should ===(response)
-      }
-    }
-
     "return resource status for resources | ESW-467" in {
       val response = ResourcesStatusResponse.Success(List.empty[ResourceStatusResponse])
 
