@@ -1,6 +1,7 @@
 package esw.sm.impl.utils
 
 import java.net.URI
+
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
@@ -16,7 +17,7 @@ import esw.ocs.api.models.SequenceComponentState.Running
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
-import esw.sm.api.models.{SequenceComponentStatus, Sequencers}
+import esw.sm.api.models.Sequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
@@ -360,27 +361,6 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
         verify(mockSeqCompApi).restartScript()
       }
     }
-  }
-
-  "getSequenceComponentStatus" must {
-    "return mapping of Sequence component to sequencer script running  | ESW-349" in {
-      val eswSeqCompApi = mock[SequenceComponentApi]
-
-      val seqCompUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
-        override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentApi = eswSeqCompApi
-      }
-
-      val eswSeqCompId      = ComponentId(Prefix(ESW, "primary"), SequenceComponent)
-      val eswSeqCompLoc     = akkaLocation(eswSeqCompId)
-      val sequencerLocation = Some(akkaLocation(ComponentId(Prefix(ESW, "darknight"), Sequencer)))
-      val eswSeqCompStatus  = SequenceComponentStatus(eswSeqCompId, sequencerLocation)
-
-      when(eswSeqCompApi.status).thenReturn(Future.successful(GetStatusResponse(sequencerLocation)))
-
-      seqCompUtil.getSequenceComponentStatus(eswSeqCompLoc).futureValue should ===(eswSeqCompStatus)
-      verify(eswSeqCompApi).status
-    }
-
   }
 
   private def akkaLocation(componentId: ComponentId): AkkaLocation =

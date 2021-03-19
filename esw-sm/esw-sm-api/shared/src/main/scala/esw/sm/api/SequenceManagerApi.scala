@@ -92,13 +92,6 @@ trait SequenceManagerApi {
   def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse]
 
   /**
-   * Gives information of all running agents, sequence components running on those agents as well as orphan sequence
-   * components (agent unknown) and sequencers running on sequence components.
-   * @return a future of [[esw.sm.api.protocol.AgentStatusResponse]] which completes with Success or Failure response ADT
-   */
-  def getAgentStatus: Future[AgentStatusResponse]
-
-  /**
    * Gives information of all resources which are being used by obsMode in given sequence manager config file
    * each resource will have its status [[esw.sm.api.models.ResourceStatus]] and obsMode if it is in use
    * @return a future of [[esw.sm.api.protocol.ResourcesStatusResponse]] which completes with Success or Failure response ADT

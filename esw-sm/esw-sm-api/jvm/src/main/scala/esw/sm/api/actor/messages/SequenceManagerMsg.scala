@@ -42,7 +42,6 @@ object SequenceManagerMsg {
 
   case class GetObsModesDetails(replyTo: ActorRef[ObsModesDetailsResponse])   extends CommonMessage
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState]) extends CommonMessage
-  case class GetAllAgentStatus(replyTo: ActorRef[AgentStatusResponse])        extends CommonMessage
   case class GetResources(replyTo: ActorRef[ResourcesStatusResponse])         extends CommonMessage
 
   private[sm] case class ProcessingComplete[T <: SmResponse](res: T) extends SequenceManagerMsg

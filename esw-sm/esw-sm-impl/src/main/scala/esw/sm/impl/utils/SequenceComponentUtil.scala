@@ -13,7 +13,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
-import esw.sm.api.models.{SequenceComponentStatus, Sequencers}
+import esw.sm.api.models.Sequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol._
@@ -74,11 +74,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
       .mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
   def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = sequenceComponentApi(loc).restartScript()
-
-  def getSequenceComponentStatus(seqCompLocation: SeqCompLocation): Future[SequenceComponentStatus] =
-    sequenceComponentApi(seqCompLocation).status.map(s =>
-      SequenceComponentStatus(seqCompLocation.connection.componentId, s.response)
-    )
 
   private def shutdown(
       prefix: SeqCompPrefix

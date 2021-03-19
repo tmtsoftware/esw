@@ -37,7 +37,6 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     ModelType[RestartSequencerResponse](restartSequencerSuccess, loadScriptError, locationServiceError, unhandled),
     ModelType[ShutdownSequencersResponse](shutdownSequencerSuccess, locationServiceError, unhandled),
     ModelType[ShutdownSequenceComponentResponse](shutdownSequenceComponentSuccess, locationServiceError, unhandled),
-    ModelType[AgentStatusResponse](agentStatusSuccess, locationServiceError, unhandled),
     ModelType(sequencerPrefix),
     ModelType(obsMode),
     ModelType(Subsystem),
@@ -59,7 +58,6 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     requestType(shutdownAllSequencers)
     requestType(shutdownSequenceComponent)
     requestType(shutdownAllSequenceComponents)
-    requestType(getAgentStatus)
     requestType(getResourcesStatus)
   }
 
@@ -75,7 +73,6 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     Endpoint(objectName(ShutdownAllSequencers), name[ShutdownSequencersResponse]),
     Endpoint(name[ShutdownSequenceComponent], name[ShutdownSequenceComponentResponse]),
     Endpoint(objectName(ShutdownAllSequenceComponents), name[ShutdownSequenceComponentResponse]),
-    Endpoint(objectName(GetAgentStatus), name[AgentStatusResponse]),
     Endpoint(objectName(GetResources), name[ResourcesStatusResponse])
   )
 

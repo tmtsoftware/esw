@@ -92,7 +92,6 @@ object CommonFailure {
       with ShutdownSequencersResponse.Failure
       with ShutdownSequenceComponentResponse.Failure
       with ProvisionResponse.Failure
-      with AgentStatusResponse.Failure
       with ObsModesDetailsResponse.Failure {
     override def msg: String = s"Failed with location service error: $reason"
   }
@@ -115,15 +114,6 @@ object ProvisionResponse {
   }
 }
 
-sealed trait AgentStatusResponse extends SmResponse
-
-object AgentStatusResponse {
-  case class Success(agentStatus: List[AgentStatus], seqCompsWithoutAgent: List[SequenceComponentStatus])
-      extends AgentStatusResponse
-
-  sealed trait Failure extends SmFailure with AgentStatusResponse
-}
-
 final case class Unhandled(state: String, messageType: String, msg: String)
     extends ConfigureResponse.Failure
     with StartSequencerResponse.Failure
@@ -131,7 +121,6 @@ final case class Unhandled(state: String, messageType: String, msg: String)
     with ShutdownSequencersResponse.Failure
     with ShutdownSequenceComponentResponse.Failure
     with ProvisionResponse.Failure
-    with AgentStatusResponse.Failure
 
 object Unhandled {
   def apply(state: String, messageType: String): Unhandled =
