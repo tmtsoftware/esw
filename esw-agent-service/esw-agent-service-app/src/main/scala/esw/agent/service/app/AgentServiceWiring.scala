@@ -17,7 +17,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.app.handlers.AgentServicePostHandler
-import esw.agent.service.impl.AgentServiceImpl
+import esw.agent.service.impl.{AgentServiceImpl, AgentStatusUtil}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import msocket.http.post.PostRouteFactory
@@ -41,8 +41,9 @@ class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(agentActorSystem)
   private[esw] lazy val securityDirective   = SecurityDirectives(agentActorSystem.settings.config, locationService)
 
-  private val locationServiceUtil        = new LocationServiceUtil(locationService)
-  lazy val agentService: AgentServiceApi = new AgentServiceImpl(locationServiceUtil)
+  private lazy val locationServiceUtil   = new LocationServiceUtil(locationService)
+  private lazy val agentStatusUtil       = new AgentStatusUtil(locationServiceUtil)
+  lazy val agentService: AgentServiceApi = new AgentServiceImpl(locationServiceUtil, agentStatusUtil)
 
   import LabelExtractor.Implicits.default
   private lazy val route: Route =

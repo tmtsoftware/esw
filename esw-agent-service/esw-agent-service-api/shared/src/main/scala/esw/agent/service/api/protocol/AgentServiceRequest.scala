@@ -1,9 +1,9 @@
 package esw.agent.service.api.protocol
 
+import java.nio.file.Path
+
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
-
-import java.nio.file.Path
 
 sealed trait AgentServiceRequest
 
@@ -18,4 +18,6 @@ object AgentServiceRequest {
   case class SpawnContainers(agentPrefix: Prefix, hostConfigPath: String, isConfigLocal: Boolean) extends AgentServiceRequest
 
   case class KillComponent(componentId: ComponentId) extends AgentServiceRequest
+
+  case object GetAgentStatus extends AgentServiceRequest
 }

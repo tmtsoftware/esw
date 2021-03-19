@@ -1,5 +1,7 @@
 package esw.agent.service.impl
 
+import java.nio.file.Path
+
 import akka.actor.typed.ActorSystem
 import csw.location.api.models.{ComponentId, Location}
 import csw.prefix.models.Prefix
@@ -10,10 +12,11 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 
-import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
 
-class AgentServiceImpl(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) extends AgentServiceApi {
+class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil: AgentStatusUtil)(implicit
+    actorSystem: ActorSystem[_]
+) extends AgentServiceApi {
 
   private implicit val ec: ExecutionContext = actorSystem.executionContext
 
@@ -56,6 +59,8 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil)(implicit actorS
       }
       .mapToAdt(identity, Failed)
   }
+
+  override def getAgentStatus: Future[AgentStatusResponse] = agentStatusUtil.getAllAgentStatus
 
   private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
     AgentClient.make(agentPrefix, locationServiceUtil).mapLeft(e => e.msg)

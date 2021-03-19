@@ -1,10 +1,11 @@
 package esw.agent.service.api
 
+import java.nio.file.Path
+
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
-import esw.agent.service.api.models.{KillResponse, SpawnContainersResponse, SpawnResponse}
+import esw.agent.service.api.models.{AgentStatusResponse, KillResponse, SpawnContainersResponse, SpawnResponse}
 
-import java.nio.file.Path
 import scala.concurrent.Future
 
 /**
@@ -62,4 +63,11 @@ trait AgentServiceApi {
    * @return [[esw.agent.service.api.models.SpawnResponse]] as a Future value
    */
   def killComponent(componentId: ComponentId): Future[KillResponse]
+
+  /**
+   * Gives information of all running agents, sequence components running on those agents as well as orphan sequence
+   * components (agent unknown) and sequencers running on sequence components.
+   * @return a future of [[esw.agent.service.api.models.AgentStatusResponse]] which completes with Success or Failure response ADT
+   */
+  def getAgentStatus: Future[AgentStatusResponse]
 }

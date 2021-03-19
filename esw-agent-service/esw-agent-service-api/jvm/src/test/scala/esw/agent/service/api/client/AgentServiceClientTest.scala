@@ -1,24 +1,20 @@
 package esw.agent.service.api.client
 
+import java.nio.file.Path
+
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.codecs.AgentServiceCodecs
-import esw.agent.service.api.models.{KillResponse, SpawnContainersResponse, SpawnResponse}
+import esw.agent.service.api.models.{AgentStatusResponse, KillResponse, SpawnContainersResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest.{
-  KillComponent,
-  SpawnContainers,
-  SpawnSequenceComponent,
-  SpawnSequenceManager
-}
+import esw.agent.service.api.protocol.AgentServiceRequest._
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
-import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
@@ -91,6 +87,20 @@ class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
       ).thenReturn(Future.successful(killResponse))
 
       agentServiceClient.killComponent(componentId).futureValue shouldBe killResponse
+    }
+
+    "return AgentStatusResponse for GetAgentStatus request | ESW-481" in {
+      val getAgentStatusRequest = GetAgentStatus
+      val agentStatusResponse   = mock[AgentStatusResponse]
+
+      when(
+        postClient.requestResponse[AgentStatusResponse](argEq(getAgentStatusRequest))(
+          any[Decoder[AgentStatusResponse]](),
+          any[Encoder[AgentStatusResponse]]()
+        )
+      ).thenReturn(Future.successful(agentStatusResponse))
+
+      agentServiceClient.getAgentStatus.futureValue shouldBe agentStatusResponse
     }
   }
 
