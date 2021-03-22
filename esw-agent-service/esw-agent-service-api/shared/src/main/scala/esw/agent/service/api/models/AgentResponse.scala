@@ -23,6 +23,6 @@ object AgentStatusResponse {
   case class Success(agentStatus: List[AgentStatus], seqCompsWithoutAgent: List[SequenceComponentStatus])
       extends AgentStatusResponse
 
-  sealed trait Failure                         extends AgentStatusResponse
-  case class LocationServiceError(msg: String) extends Failure
+  sealed trait Failure                            extends AgentStatusResponse
+  case class LocationServiceError(reason: String) extends Failure
 }
