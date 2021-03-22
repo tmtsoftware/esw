@@ -56,11 +56,11 @@ class Wiring(cmd: Command) {
 
   private val VersionConf =
     s"""
-       |scripts = a332c0280d
-       |
-       |esw = 0.1.0-SNAPSHOT
-       |
-       |""".stripMargin
+      |scripts = bbef4b5dcfd
+      |
+      |esw = 0.1.0-SNAPSHOT
+      |
+      |""".stripMargin
 
   private val versionConfigData = ConfigData.fromString(VersionConf)
 
