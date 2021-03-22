@@ -1,5 +1,5 @@
-# get access token for esw-user
-POST http://localhost:8081/auth/realms/TMT/protocol/openid-connect/token
+###get access token for esw-user
+POST http://{{host}}:8081/auth/realms/TMT/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 client_id=tmt-frontend-app&grant_type=password&username=esw-user&password=esw-user
@@ -9,18 +9,42 @@ client_id=tmt-frontend-app&grant_type=password&username=esw-user&password=esw-us
 
 
 ############### config Service #############
-#save smObsModeConfig file
-PUT http://192.168.0.100:5000/config/tmt/esw/smProvisionConfig.json
+###save smObsModeConfig file
+POST http://{{host}}:5000/config/smObsModeConfig.conf
+Content-Type: application/octet-stream
+Authorization: Bearer {{access_token}}
+
+{
+  "esw-sm": {
+    "obsModes": {
+      "IRIS_Darknight": {
+        "resources": ["IRIS", "TCS", "NFIRAOS"],
+        "sequencers": ["IRIS", "ESW", "TCS"]
+      },
+      "IRIS_Cal": {
+        "resources": ["IRIS", "NSCU", "NFIRAOS"],
+        "sequencers": ["IRIS", "ESW", "AOESW"]
+      },
+      "WFOS_Cal": {
+        "resources": ["WFOS"],
+        "sequencers": ["WFOS", "ESW"]
+      }
+    }
+  }
+}
+
+###save smProvisionConfig file
+PUT http://{{host}}:5000/config/tmt/esw/smProvisionConfig.json
 Content-Type: application/octet-stream
 Authorization: Bearer {{access_token}}
 
 \"{\"ESW.primary\":1,\"IRIS.primary\":1}\"
 
-############### config Service #############
-#save smObsModeConfig file
-POST http://192.168.0.100:5000/config/tmt/osw/version.conf
+
+###save smObsModeConfig file
+#### To Add version config. this API call will also mark it as active version
+POST http://{{host}}:5000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
-Authorization: Bearer {{access_token}}
 
 {
   "scripts": {
@@ -28,33 +52,28 @@ Authorization: Bearer {{access_token}}
   }
 }
 
-#### To Add version config. this API call will also mark it as active version
-POST http://<your-ip>:4000/config/tmt/osw/version.conf
-Content-Type: application/octet-stream
-
-{
-  scripts="0.1.0-SNAPSHOT"
-}
-
 ##### To check active config
-GET http://192.168.0.100:5000/active-config/tmt/esw/smProvisionConfig.json
+GET http://{{host}}:5000/active-config/tmt/esw/smProvisionConfig.json
 
 #### To update version config
-PUT http://192.168.0.100:5000/config/tmt/osw/version.conf
+PUT http://{{host}}:5000/config/tmt/osw/version.conf
 Content-Type: application/octet-stream
 Authorization: Bearer {{access_token}}
 
 {
-  scripts="0.1.0-SNAPSHOT"
+  "scripts": {
+    "version": "0.3.0"
+  }
 }
 
+
 ##### To make it active version of the config. id is returned from first/second call
-PUT http://<your-ip>:4000/active-version/tmt/osw/version.conf?id=[id]&comment=abcd
+PUT http://{{host}}:5000/active-version/tmt/osw/version.conf?id=[id]&comment=abcd
 Authorization: Bearer {{access_token}}
 
 
 ##### To check if config is updated and marked as active
-GET http://192.168.0.103:5000/active-config/tmt/osw/version.conf
+GET http://{{host}}:5000/active-config/tmt/osw/version.conf
 
 ##### To check if config is updated and marked as active
 POST http://192.168.0.103:53354/post-endpoint
