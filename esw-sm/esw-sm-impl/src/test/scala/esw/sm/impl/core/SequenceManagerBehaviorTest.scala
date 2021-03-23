@@ -494,6 +494,26 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
     }
 
+    "return set of Observer modes that are all configurable if location service returns empty list | ESW-466" in {
+      val errorMessage = "Sequencer not found"
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+        .thenReturn(Future.successful(Right(List())))
+
+      val probe = TestProbe[ObsModesDetailsResponse]()
+
+      smRef ! GetObsModesDetails(probe.ref)
+
+      val expectedMessage = ObsModesDetailsResponse.Success(
+        Set(
+          ObsModeDetails(clearSkies, Configurable, Resources(tcsResource, irisResource), clearSkiesSequencers),
+          ObsModeDetails(darkNight, Configurable, Resources(nscuResource, tcsResource), darkNightSequencers),
+          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOSequencers)
+        )
+      )
+      probe.expectMessage(expectedMessage)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+    }
+
     "return set of Observation modes with their respective statuses | ESW-466" in {
       val akkaLocation = AkkaLocation(
         AkkaConnection(ComponentId(Prefix(ESW, clearSkies.name), Sequencer)),
