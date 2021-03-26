@@ -311,6 +311,15 @@ class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest wit
         status should ===(StatusCodes.InternalServerError)
       }
     }
+
+    "return SequencerStateResponse for GetSequencerState | ESW-482" in {
+      when(sequencer.getSequencerState).thenReturn(Future.successful(SequencerStateResponse.Offline))
+
+      Post("/post-endpoint", GetSequencerState.narrow) ~> route ~> check {
+        verify(sequencer).getSequencerState
+        responseAs[SequencerStateResponse] should ===(SequencerStateResponse.Offline)
+      }
+    }
   }
 
 }

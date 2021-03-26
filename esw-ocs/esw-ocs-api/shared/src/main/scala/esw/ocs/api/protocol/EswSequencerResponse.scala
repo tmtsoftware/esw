@@ -16,6 +16,7 @@ sealed trait GoOnlineResponse         extends EswSequencerResponse
 sealed trait GoOfflineResponse        extends EswSequencerResponse
 sealed trait DiagnosticModeResponse   extends EswSequencerResponse
 sealed trait OperationsModeResponse   extends EswSequencerResponse
+sealed trait SequencerStateResponse   extends EswSequencerResponse
 
 sealed trait SequencerSubmitResponse extends EswSequencerResponse {
   def toSubmitResponse(runId: Id = Id("IdNotAvailable")): SubmitResponse =
@@ -72,4 +73,12 @@ sealed trait EditorError extends GenericResponse
 object EditorError {
   case object CannotOperateOnAnInFlightOrFinishedStep extends EditorError with PauseResponse
   final case class IdDoesNotExist(id: Id)             extends EditorError with RemoveBreakpointResponse
+}
+
+object SequencerStateResponse {
+  case object Idle       extends SequencerStateResponse
+  case object Loaded     extends SequencerStateResponse
+  case object InProgress extends SequencerStateResponse
+  case object Offline    extends SequencerStateResponse
+  case object Processing extends SequencerStateResponse
 }

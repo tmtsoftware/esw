@@ -77,4 +77,6 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
   override def query(runId: Id): Future[SubmitResponse] = Future.successful(Started(runId))
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = Future.successful(Started(runId))
+
+  override def getSequencerState: Future[SequencerStateResponse] = ???
 }

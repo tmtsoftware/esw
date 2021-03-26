@@ -1,7 +1,5 @@
 package esw.ocs.api.client
 
-import java.net.URI
-
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
@@ -21,6 +19,7 @@ import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
+import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -334,6 +333,18 @@ class SequencerClientTest extends BaseTestSuite with SequencerServiceCodecs {
           .requestResponse[AkkaLocation](argsEq(GetSequenceComponent))(any[Decoder[AkkaLocation]](), any[Encoder[AkkaLocation]]())
       ).thenReturn(Future.successful(sequenceComponentLocation))
       sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
+    }
+
+    "call postClient with GetSequencerState request | ESW-482" in {
+      val sequencerStateResponse = mock[SequencerStateResponse]
+      when(
+        postClient.requestResponse[SequencerStateResponse](argsEq(GetSequencerState))(
+          any[Decoder[SequencerStateResponse]](),
+          any[Encoder[SequencerStateResponse]]()
+        )
+      ).thenReturn(Future.successful(sequencerStateResponse))
+
+      sequencer.getSequencerState.futureValue should ===(sequencerStateResponse)
     }
   }
 }

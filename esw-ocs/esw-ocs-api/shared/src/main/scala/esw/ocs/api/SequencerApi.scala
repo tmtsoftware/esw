@@ -35,8 +35,8 @@ trait SequencerApi extends SequencerCommandService {
   def goOffline(): Future[GoOfflineResponse]
   def abortSequence(): Future[OkOrUnhandledResponse]
   def stop(): Future[OkOrUnhandledResponse]
+  def getSequencerState: Future[SequencerStateResponse]
 
   def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse]
   def operationsMode(): Future[OperationsModeResponse]
-
 }

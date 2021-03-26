@@ -95,4 +95,7 @@ class SequencerClient(
     postClient.requestResponse[OperationsModeResponse](OperationsMode)
 
   override def getSequenceComponent: Future[AkkaLocation] = postClient.requestResponse[AkkaLocation](GetSequenceComponent)
+
+  override def getSequencerState: Future[SequencerStateResponse] =
+    postClient.requestResponse[SequencerStateResponse](GetSequencerState)
 }

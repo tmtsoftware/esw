@@ -37,6 +37,7 @@ class SequencerPostHandler(
       case Reset                     => sPost(complete(reset()))
       case Pause                     => sPost(complete(pause))
       case Resume                    => sPost(complete(resume))
+      case GetSequencerState         => complete(getSequencerState)
 
       case IsAvailable   => complete(isAvailable)
       case IsOnline      => complete(isOnline)

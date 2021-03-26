@@ -15,9 +15,9 @@ import esw.constants.SequencerTimeouts
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
-import esw.ocs.api.actor.messages.SequencerState.{Idle, Offline}
+import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.{SequencerStateResponse, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,6 +46,7 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
     sequencer ? AbortSequence
   }
+
   override def stop(): Future[OkOrUnhandledResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
     sequencer ? Stop
@@ -56,6 +57,15 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
   override def isOnline: Future[Boolean] = getState.map(_ != Offline)
 
   private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
+
+  def getSequencerState: Future[SequencerStateResponse] =
+    getState.map {
+      case Idle       => SequencerStateResponse.Idle
+      case Loaded     => SequencerStateResponse.Loaded
+      case InProgress => SequencerStateResponse.InProgress
+      case Offline    => SequencerStateResponse.Offline
+      case _          => SequencerStateResponse.Processing
+    }
 
   // commands
 

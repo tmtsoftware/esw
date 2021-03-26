@@ -1,7 +1,5 @@
 package esw.ocs.api.actor.client
 
-import java.net.URI
-
 import akka.actor.typed.ActorRef
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
@@ -15,11 +13,12 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline}
+import esw.ocs.api.actor.messages.SequencerState._
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
+import java.net.URI
 import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
@@ -277,4 +276,30 @@ class SequencerImplTest extends ActorTestSuit {
       s.getSequenceComponent.futureValue should ===(getSequenceComponentResponse)
     }
   }
+
+  "getSequencerState should return same state for Idle, InProgress, Loaded, Offline state | ESW-482" in {
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! Idle
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Idle) }
+
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! InProgress
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.InProgress) }
+
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! Loaded
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Loaded) }
+
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! Offline
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Offline) }
+
+  }
+
+  "getSequencerState should return Processing for any intermediate sequencer state" in {
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! GoingOffline
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Processing) }
+  }
+
 }
