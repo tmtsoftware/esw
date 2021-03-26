@@ -78,6 +78,97 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil, agentUtil)
   }
 
+  "Sequence Manager " must {
+
+    "be able to handle next messages if the previous Provision call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [29000] ms"
+      val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
+      when(sequenceComponentUtil.shutdownAllSequenceComponents())
+        .thenReturn(future(500.millis, ShutdownSequenceComponentResponse.Success))
+
+      when(agentUtil.provision(provisionConfig)).thenReturn(Future.failed(new Exception(exceptionReason)))
+
+      val provisionResponseProbe = TestProbe[ProvisionResponse]()
+
+      assertState(Idle)
+      smRef ! Provision(provisionConfig, provisionResponseProbe.ref)
+      assertState(Processing)
+      assertState(Idle)
+
+      verify(agentUtil).provision(provisionConfig)
+      verify(sequenceComponentUtil).shutdownAllSequenceComponents()
+      provisionResponseProbe.expectMessage(
+        ProcessingTimeout(s"Sequence Manager Operation(Provision) failed due to: $exceptionReason")
+      )
+    }
+
+    "be able to handle next messages if the previous Configure call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [7000] ms"
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
+      when(sequencerUtil.startSequencers(darkNight, darkNightSequencers))
+        .thenReturn(Future.failed(new Exception(exceptionReason)))
+
+      val configureProbe = TestProbe[ConfigureResponse]()
+      assertState(Idle)
+      smRef ! Configure(darkNight, configureProbe.ref)
+      assertState(Processing)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      configureProbe.expectMessage(ProcessingTimeout(s"Sequence Manager Operation(Configure) failed due to: $exceptionReason"))
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(sequencerUtil).startSequencers(darkNight, darkNightSequencers)
+    }
+
+    "be able to handle next messages if the previous ShutdownSequencer call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [10000] ms"
+      when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(Future.failed(new Exception(exceptionReason)))
+
+      val testProbe = TestProbe[ShutdownSequencersResponse]()
+      assertState(Idle)
+      smRef ! ShutdownSequencer(ESW, darkNight, testProbe.ref)
+      assertState(Processing)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      testProbe.expectMessage(ProcessingTimeout(s"Sequence Manager Operation(ShutdownSequencer) failed due to: $exceptionReason"))
+      verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
+    }
+
+    "be able to handle next messages if the previous RestartSequencer call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [10000] ms"
+      when(sequencerUtil.restartSequencer(ESW, darkNight)).thenReturn(Future.failed(new Exception(exceptionReason)))
+
+      val testProbe = TestProbe[RestartSequencerResponse]()
+      assertState(Idle)
+      smRef ! RestartSequencer(ESW, darkNight, testProbe.ref)
+      assertState(Processing)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      testProbe.expectMessage(ProcessingTimeout(s"Sequence Manager Operation(RestartSequencer) failed due to: $exceptionReason"))
+      verify(sequencerUtil).restartSequencer(ESW, darkNight)
+    }
+
+    "be able to handle next messages if the previous ShutdownSequenceComponent call times-out due to downstream error | ESW-473" in {
+      val prefix          = Prefix(ESW, "primary")
+      val exceptionReason = "Ask timed out after [10000] ms"
+      when(sequenceComponentUtil.shutdownSequenceComponent(prefix)).thenReturn(Future.failed(new Exception(exceptionReason)))
+
+      val testProbe = TestProbe[ShutdownSequenceComponentResponse]()
+      assertState(Idle)
+      smRef ! ShutdownSequenceComponent(prefix, testProbe.ref)
+      assertState(Processing)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      testProbe.expectMessage(
+        ProcessingTimeout(s"Sequence Manager Operation(ShutdownSequenceComponent) failed due to: $exceptionReason")
+      )
+      verify(sequenceComponentUtil).shutdownSequenceComponent(prefix)
+    }
+  }
+
   "Configure" must {
 
     "transition sm from Idle -> Processing -> Idle state and return location of master sequencer | ESW-164, ESW-178, ESW-342" in {

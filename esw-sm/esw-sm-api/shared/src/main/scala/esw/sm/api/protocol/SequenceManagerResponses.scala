@@ -12,6 +12,16 @@ sealed trait SmFailure extends Exception with SmResponse {
   def msg: String
   override def getMessage: String = msg
 }
+case class ProcessingTimeout(reason: String)
+    extends SmFailure
+    with ProvisionResponse.Failure
+    with ConfigureResponse.Failure
+    with StartSequencerResponse.Failure
+    with ShutdownSequencersResponse.Failure
+    with RestartSequencerResponse.Failure
+    with ShutdownSequenceComponentResponse.Failure {
+  override def msg: String = reason
+}
 
 sealed trait ConfigureResponse extends SmResponse
 
