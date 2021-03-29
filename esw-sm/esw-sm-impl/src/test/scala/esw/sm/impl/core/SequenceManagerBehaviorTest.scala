@@ -79,7 +79,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   private def failedFuture(reason: String) = {
-    Thread.sleep(1000)
+    Thread.sleep(2000)
     Future.failed(new Exception(reason))
   }
 

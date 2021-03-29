@@ -293,7 +293,6 @@ class SequenceManagerBehavior(
   private implicit class FutureOps[T](private val future: Future[T]) {
 
     def recoverWithProcessingError[Msg](msgType: Msg, selfRef: SelfRef): Future[Any] = {
-      println("In recover with processing error")
       val msg = msgType.getClass.getSimpleName
       future.recover {
         case NonFatal(ex) =>
