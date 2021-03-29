@@ -78,6 +78,11 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil, agentUtil)
   }
 
+  private def failedFuture(reason: String) = {
+    Thread.sleep(1000)
+    Future.failed(new Exception(reason))
+  }
+
   "Sequence Manager " must {
 
     "be able to handle next messages if the previous Provision call times-out due to downstream error | ESW-473" in {
@@ -86,7 +91,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       when(sequenceComponentUtil.shutdownAllSequenceComponents())
         .thenReturn(future(500.millis, ShutdownSequenceComponentResponse.Success))
 
-      when(agentUtil.provision(provisionConfig)).thenReturn(Future.failed(new Exception(exceptionReason)))
+      when(agentUtil.provision(provisionConfig)).thenReturn(failedFuture(exceptionReason))
 
       val provisionResponseProbe = TestProbe[ProvisionResponse]()
 
@@ -106,7 +111,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val exceptionReason = "Ask timed out after [7000] ms"
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(darkNight, darkNightSequencers))
-        .thenReturn(Future.failed(new Exception(exceptionReason)))
+        .thenReturn(failedFuture(exceptionReason))
 
       val configureProbe = TestProbe[ConfigureResponse]()
       assertState(Idle)
@@ -122,7 +127,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "be able to handle next messages if the previous ShutdownSequencer call times-out due to downstream error | ESW-473" in {
       val exceptionReason = "Ask timed out after [10000] ms"
-      when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(Future.failed(new Exception(exceptionReason)))
+      when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(failedFuture(exceptionReason))
 
       val testProbe = TestProbe[ShutdownSequencersResponse]()
       assertState(Idle)
@@ -136,11 +141,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "be able to handle next messages if the previous RestartSequencer call times-out due to downstream error | ESW-473" in {
-      val exceptionReason = "Ask timed out after [10000] ms"
-      val akkaLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNight.name), Sequencer)), new URI("uri"), Metadata.empty)
-      when(locationServiceUtil.findSequencer(ESW, darkNight.name)).thenReturn(future(1.seconds, Right(akkaLocation)))
-      when(sequencerUtil.restartSequencer(ESW, darkNight)).thenReturn(Future.failed(new Exception(exceptionReason)))
+      val exceptionReason = "Ask timed out after [15000] ms"
+      when(sequencerUtil.restartSequencer(ESW, darkNight)).thenReturn(failedFuture(exceptionReason))
 
       val testProbe = TestProbe[RestartSequencerResponse]()
       assertState(Idle)
@@ -155,11 +157,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "be able to handle next messages if the previous ShutdownSequenceComponent call times-out due to downstream error | ESW-473" in {
       val prefix          = Prefix(ESW, "primary")
-      val connection      = AkkaConnection(ComponentId(prefix, SequenceComponent))
-      val location        = AkkaLocation(connection, new URI("uri"), Metadata.empty)
-      val exceptionReason = "Ask timed out after [10000] ms"
-      when(locationServiceUtil.find(connection)).thenReturn(future(1.seconds, Right(location)))
-      when(sequenceComponentUtil.shutdownSequenceComponent(prefix)).thenReturn(Future.failed(new Exception(exceptionReason)))
+      val exceptionReason = "Ask timed out after [8000] ms"
+      when(sequenceComponentUtil.shutdownSequenceComponent(prefix)).thenReturn(failedFuture(exceptionReason))
 
       val testProbe = TestProbe[ShutdownSequenceComponentResponse]()
       assertState(Idle)
