@@ -1,6 +1,6 @@
 package esw.sm.impl.core
 
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
+import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
@@ -40,12 +40,12 @@ class SequenceManagerBehavior(
   import SequenceManagerBehavior._
   import actorSystem.executionContext
 
-  def setup: SMBehavior = Behaviors.setup(ctx => idle(ctx.self, ctx))
+  def setup: SMBehavior = Behaviors.setup(ctx => idle(ctx.self))
 
-  private def idle(self: SelfRef, ctx: ActorContext[SequenceManagerMsg]): SMBehavior =
+  private def idle(self: SelfRef) =
     receive[SequenceManagerIdleMsg](Idle) {
-      case c @ Configure(obsMode, replyTo) => configure(obsMode, c, self, ctx, replyTo)
-      case p @ Provision(config, replyTo)  => provision(config, p, self, ctx, replyTo)
+      case c @ Configure(obsMode, replyTo) => configure(obsMode, c, self, replyTo)
+      case p @ Provision(config, replyTo)  => provision(config, p, self, replyTo)
 
       // Shutdown sequencers
       case shutdown @ ShutdownSequencer(subsystem, obsMode, replyTo) =>
@@ -53,32 +53,32 @@ class SequenceManagerBehavior(
           .shutdownSequencer(subsystem, obsMode)
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError(shutdown, self)
-        processing(self, ctx, replyTo)
+        processing(self, replyTo)
 
       case shutdown @ ShutdownSubsystemSequencers(subsystem, replyTo) =>
         sequencerUtil
           .shutdownSubsystemSequencers(subsystem)
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError(shutdown, self)
-        processing(self, ctx, replyTo)
+        processing(self, replyTo)
 
       case shutdown @ ShutdownObsModeSequencers(obsMode, replyTo) =>
         sequencerUtil
           .shutdownObsModeSequencers(obsMode)
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError(shutdown, self)
-        processing(self, ctx, replyTo)
+        processing(self, replyTo)
 
       case shutdown @ ShutdownAllSequencers(replyTo) =>
         sequencerUtil
           .shutdownAllSequencers()
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError(shutdown, self)
-        processing(self, ctx, replyTo)
+        processing(self, replyTo)
 
-      case start @ StartSequencer(subsystem, obsMode, replyTo) => startSequencer(obsMode, subsystem, start, self, ctx, replyTo)
+      case start @ StartSequencer(subsystem, obsMode, replyTo) => startSequencer(obsMode, subsystem, start, self, replyTo)
       case restart @ RestartSequencer(subsystem, obsMode, replyTo) =>
-        restartSequencer(subsystem, obsMode, restart, self, ctx, replyTo)
+        restartSequencer(subsystem, obsMode, restart, self, replyTo)
 
       case shutdown @ ShutdownSequenceComponent(prefix, replyTo) =>
         sequenceComponentUtil
@@ -86,21 +86,20 @@ class SequenceManagerBehavior(
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError(shutdown, self)
 
-        processing(self, ctx, replyTo)
+        processing(self, replyTo)
 
       case shutdown @ ShutdownAllSequenceComponents(replyTo) =>
         sequenceComponentUtil
           .shutdownAllSequenceComponents()
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError(shutdown, self)
-        processing(self, ctx, replyTo)
+        processing(self, replyTo)
     }
 
   private def configure[Msg](
       obsMode: ObsMode,
       msgType: Msg,
       self: SelfRef,
-      ctx: ActorContext[SequenceManagerMsg],
       replyTo: ActorRef[ConfigureResponse]
   ): SMBehavior = {
     // getRunningObsModes finds the currently running observation modes
@@ -111,7 +110,7 @@ class SequenceManagerBehavior(
     runningObsModesF
       .map(self ! ProcessingComplete(_))
       .recoverWithProcessingError(msgType, self)
-    processing(self, ctx, replyTo)
+    processing(self, replyTo)
 
   }
 
@@ -141,7 +140,6 @@ class SequenceManagerBehavior(
       subsystem: Subsystem,
       msgType: Msg,
       self: SelfRef,
-      ctx: ActorContext[SequenceManagerMsg],
       replyTo: ActorRef[StartSequencerResponse]
   ): SMBehavior = {
 
@@ -155,7 +153,7 @@ class SequenceManagerBehavior(
       }
       .map(self ! ProcessingComplete(_))
       .recoverWithProcessingError(msgType, self)
-    processing(self, ctx, replyTo)
+    processing(self, replyTo)
   }
 
   private def restartSequencer[Msg](
@@ -163,21 +161,19 @@ class SequenceManagerBehavior(
       obsMode: ObsMode,
       msgType: Msg,
       self: SelfRef,
-      ctx: ActorContext[SequenceManagerMsg],
       replyTo: ActorRef[RestartSequencerResponse]
   ): SMBehavior = {
     val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode)
     restartResponseF
       .map(self ! ProcessingComplete(_))
       .recoverWithProcessingError(msgType, self)
-    processing(self, ctx, replyTo)
+    processing(self, replyTo)
   }
 
   private def provision[Msg](
       config: ProvisionConfig,
       msgType: Msg,
       self: SelfRef,
-      ctx: ActorContext[SequenceManagerMsg],
       replyTo: ActorRef[ProvisionResponse]
   ): SMBehavior = {
 
@@ -194,25 +190,24 @@ class SequenceManagerBehavior(
       }
       .recoverWithProcessingError(msgType, self)
 
-    processing(self, ctx, replyTo)
+    processing(self, replyTo)
   }
 
   // processing some message, waiting for ProcessingComplete message
   // Within this period, reject all the other messages except common messages
   private def processing[T <: SmResponse](
       self: SelfRef,
-      ctx: ActorContext[SequenceManagerMsg],
       replyTo: ActorRef[T]
   ): SMBehavior =
-    receive[ProcessingComplete[T]](Processing)(msg => replyAndGoToIdle(self, ctx, replyTo, msg.res))
+    receive[ProcessingComplete[T]](Processing)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
-  private def replyAndGoToIdle[T](self: SelfRef, ctx: ActorContext[SequenceManagerMsg], replyTo: ActorRef[T], msg: T) = {
+  private def replyAndGoToIdle[T](self: SelfRef, replyTo: ActorRef[T], msg: T) = {
     msg match {
       case failure: SmFailure => logger.error(s"Sequence Manager response Error: ${failure.getMessage} ******* $msg")
       case success            => logger.info(s"Sequence Manager response Success: $success")
     }
     replyTo ! msg
-    idle(self, ctx)
+    idle(self)
   }
 
   private def receive[T <: SequenceManagerMsg: ClassTag](state: SequenceManagerState)(handler: T => SMBehavior): SMBehavior =

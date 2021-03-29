@@ -137,6 +137,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "be able to handle next messages if the previous RestartSequencer call times-out due to downstream error | ESW-473" in {
       val exceptionReason = "Ask timed out after [10000] ms"
+      val akkaLocation =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, darkNight.name), Sequencer)), new URI("uri"), Metadata.empty)
+      when(locationServiceUtil.findSequencer(ESW, darkNight.name)).thenReturn(future(1.seconds, Right(akkaLocation)))
       when(sequencerUtil.restartSequencer(ESW, darkNight)).thenReturn(Future.failed(new Exception(exceptionReason)))
 
       val testProbe = TestProbe[RestartSequencerResponse]()
@@ -152,7 +155,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "be able to handle next messages if the previous ShutdownSequenceComponent call times-out due to downstream error | ESW-473" in {
       val prefix          = Prefix(ESW, "primary")
+      val connection      = AkkaConnection(ComponentId(prefix, SequenceComponent))
+      val location        = AkkaLocation(connection, new URI("uri"), Metadata.empty)
       val exceptionReason = "Ask timed out after [10000] ms"
+      when(locationServiceUtil.find(connection)).thenReturn(future(1.seconds, Right(location)))
       when(sequenceComponentUtil.shutdownSequenceComponent(prefix)).thenReturn(Future.failed(new Exception(exceptionReason)))
 
       val testProbe = TestProbe[ShutdownSequenceComponentResponse]()
@@ -586,7 +592,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return set of Observer modes that are all configurable if location service returns empty list | ESW-466" in {
-      val errorMessage = "Sequencer not found"
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Right(List())))
 
