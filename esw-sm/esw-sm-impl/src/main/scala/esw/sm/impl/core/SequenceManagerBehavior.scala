@@ -44,64 +44,58 @@ class SequenceManagerBehavior(
 
   private def idle(self: SelfRef) =
     receive[SequenceManagerIdleMsg](Idle) {
-      case c @ Configure(obsMode, replyTo) => configure(obsMode, c, self, replyTo)
-      case p @ Provision(config, replyTo)  => provision(config, p, self, replyTo)
+      case Configure(obsMode, replyTo) => configure(obsMode, self, replyTo)
+      case Provision(config, replyTo)  => provision(config, self, replyTo)
 
       // Shutdown sequencers
-      case shutdown @ ShutdownSequencer(subsystem, obsMode, replyTo) =>
+      case ShutdownSequencer(subsystem, obsMode, replyTo) =>
         sequencerUtil
           .shutdownSequencer(subsystem, obsMode)
           .map(self ! ProcessingComplete(_))
-          .recoverWithProcessingError(shutdown, self)
+          .recoverWithProcessingError[ShutdownSequencer](self)
         processing(self, replyTo)
 
-      case shutdown @ ShutdownSubsystemSequencers(subsystem, replyTo) =>
+      case ShutdownSubsystemSequencers(subsystem, replyTo) =>
         sequencerUtil
           .shutdownSubsystemSequencers(subsystem)
           .map(self ! ProcessingComplete(_))
-          .recoverWithProcessingError(shutdown, self)
+          .recoverWithProcessingError(self)
         processing(self, replyTo)
 
-      case shutdown @ ShutdownObsModeSequencers(obsMode, replyTo) =>
+      case ShutdownObsModeSequencers(obsMode, replyTo) =>
         sequencerUtil
           .shutdownObsModeSequencers(obsMode)
           .map(self ! ProcessingComplete(_))
-          .recoverWithProcessingError(shutdown, self)
+          .recoverWithProcessingError[ShutdownObsModeSequencers](self)
         processing(self, replyTo)
 
-      case shutdown @ ShutdownAllSequencers(replyTo) =>
+      case ShutdownAllSequencers(replyTo) =>
         sequencerUtil
           .shutdownAllSequencers()
           .map(self ! ProcessingComplete(_))
-          .recoverWithProcessingError(shutdown, self)
+          .recoverWithProcessingError[ShutdownAllSequencers](self)
         processing(self, replyTo)
 
-      case start @ StartSequencer(subsystem, obsMode, replyTo) => startSequencer(obsMode, subsystem, start, self, replyTo)
-      case restart @ RestartSequencer(subsystem, obsMode, replyTo) =>
-        restartSequencer(subsystem, obsMode, restart, self, replyTo)
+      case StartSequencer(subsystem, obsMode, replyTo)   => startSequencer(obsMode, subsystem, self, replyTo)
+      case RestartSequencer(subsystem, obsMode, replyTo) => restartSequencer(subsystem, obsMode, self, replyTo)
 
-      case shutdown @ ShutdownSequenceComponent(prefix, replyTo) =>
+      case ShutdownSequenceComponent(prefix, replyTo) =>
         sequenceComponentUtil
           .shutdownSequenceComponent(prefix)
           .map(self ! ProcessingComplete(_))
-          .recoverWithProcessingError(shutdown, self)
+          .recoverWithProcessingError[ShutdownSequenceComponent](self)
 
         processing(self, replyTo)
 
-      case shutdown @ ShutdownAllSequenceComponents(replyTo) =>
+      case ShutdownAllSequenceComponents(replyTo) =>
         sequenceComponentUtil
           .shutdownAllSequenceComponents()
           .map(self ! ProcessingComplete(_))
-          .recoverWithProcessingError(shutdown, self)
+          .recoverWithProcessingError[ShutdownAllSequenceComponents](self)
         processing(self, replyTo)
     }
 
-  private def configure[Msg](
-      obsMode: ObsMode,
-      msgType: Msg,
-      self: SelfRef,
-      replyTo: ActorRef[ConfigureResponse]
-  ): SMBehavior = {
+  private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
     // getRunningObsModes finds the currently running observation modes
     val runningObsModesF = getRunningObsModes.flatMapToAdt(
       configuredObsModes => configureResources(obsMode, configuredObsModes),
@@ -109,7 +103,7 @@ class SequenceManagerBehavior(
     )
     runningObsModesF
       .map(self ! ProcessingComplete(_))
-      .recoverWithProcessingError(msgType, self)
+      .recoverWithProcessingError[Configure](self)
     processing(self, replyTo)
 
   }
@@ -135,10 +129,9 @@ class SequenceManagerBehavior(
 
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
 
-  private def startSequencer[Msg](
+  private def startSequencer(
       obsMode: ObsMode,
       subsystem: Subsystem,
-      msgType: Msg,
       self: SelfRef,
       replyTo: ActorRef[StartSequencerResponse]
   ): SMBehavior = {
@@ -152,30 +145,24 @@ class SequenceManagerBehavior(
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
       .map(self ! ProcessingComplete(_))
-      .recoverWithProcessingError(msgType, self)
+      .recoverWithProcessingError[StartSequencer](self)
     processing(self, replyTo)
   }
 
-  private def restartSequencer[Msg](
+  private def restartSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
-      msgType: Msg,
       self: SelfRef,
       replyTo: ActorRef[RestartSequencerResponse]
   ): SMBehavior = {
     val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode)
     restartResponseF
       .map(self ! ProcessingComplete(_))
-      .recoverWithProcessingError(msgType, self)
+      .recoverWithProcessingError[RestartSequencer](self)
     processing(self, replyTo)
   }
 
-  private def provision[Msg](
-      config: ProvisionConfig,
-      msgType: Msg,
-      self: SelfRef,
-      replyTo: ActorRef[ProvisionResponse]
-  ): SMBehavior = {
+  private def provision(config: ProvisionConfig, self: SelfRef, replyTo: ActorRef[ProvisionResponse]): SMBehavior = {
 
     // shutdown all running seq comps and then provision the new once
     sequenceComponentUtil
@@ -185,10 +172,10 @@ class SequenceManagerBehavior(
           agentUtil
             .provision(config)
             .map(self ! ProcessingComplete(_))
-            .recoverWithProcessingError(msgType, self)
+            .recoverWithProcessingError[Provision](self)
         case failure: ShutdownSequenceComponentResponse.Failure => self ! ProcessingComplete(failure)
       }
-      .recoverWithProcessingError(msgType, self)
+      .recoverWithProcessingError[Provision](self)
 
     processing(self, replyTo)
   }
@@ -292,8 +279,8 @@ class SequenceManagerBehavior(
 
   private implicit class FutureOps[T](private val future: Future[T]) {
 
-    def recoverWithProcessingError[Msg](msgType: Msg, selfRef: SelfRef): Future[Any] = {
-      val msg = msgType.getClass.getSimpleName
+    def recoverWithProcessingError[Msg <: SequenceManagerMsg: ClassTag](selfRef: SelfRef): Future[Any] = {
+      val msg = scala.reflect.classTag[Msg].runtimeClass.getSimpleName
       future.recover {
         case NonFatal(ex) =>
           val reason = s"Sequence Manager Operation($msg) failed due to: ${ex.getMessage}"
