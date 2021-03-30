@@ -12,7 +12,7 @@ sealed trait SmFailure extends Exception with SmResponse {
   def msg: String
   override def getMessage: String = msg
 }
-case class ProcessingTimeout(reason: String)
+case class FailedResponse(reason: String)
     extends SmFailure
     with ProvisionResponse.Failure
     with ConfigureResponse.Failure
