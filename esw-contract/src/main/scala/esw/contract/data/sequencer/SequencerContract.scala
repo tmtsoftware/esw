@@ -9,6 +9,7 @@ import csw.params.commands.SequenceCommand
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerStateResponse._
 import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
 
@@ -33,7 +34,8 @@ object SequencerContract extends SequencerData with SequencerServiceCodecs {
     ModelType(akkaLocation),
     ModelType[StepList](stepList),
     ModelType[Step](step),
-    ModelType[StepStatus](pendingStepStatus, inFlightStepStatus, successStepStatus, failureStepStatus)
+    ModelType[StepStatus](pendingStepStatus, inFlightStepStatus, successStepStatus, failureStepStatus),
+    ModelType[SequencerStateResponse](Idle, Running, Offline, Loaded, Processing)
   )
 
   private val httpRequests = new RequestSet[SequencerRequest] {
@@ -57,6 +59,7 @@ object SequencerContract extends SequencerData with SequencerServiceCodecs {
     requestType(diagnosticMode)
     requestType(operationsMode)
     requestType(getSequenceComponent)
+    requestType(getSequencerState)
   }
 
   private val websocketRequests = new RequestSet[SequencerStreamRequest] {
@@ -85,7 +88,8 @@ object SequencerContract extends SequencerData with SequencerServiceCodecs {
     Endpoint(objectName(GoOffline), name[GoOfflineResponse]),
     Endpoint(name[DiagnosticMode], name[DiagnosticModeResponse]),
     Endpoint(objectName(OperationsMode), name[OperationsModeResponse]),
-    Endpoint(objectName(GetSequenceComponent), name[AkkaLocation])
+    Endpoint(objectName(GetSequenceComponent), name[AkkaLocation]),
+    Endpoint(objectName(GetSequencerState), name[SequencerStateResponse])
   )
 
   private val webSocketEndpoints: List[Endpoint] = List(

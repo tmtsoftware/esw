@@ -1,8 +1,5 @@
 package esw.contract.data.sequencer
 
-import java.net.URI
-import java.time.Instant
-
 import csw.contract.data.command.CommandData
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
@@ -13,6 +10,9 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
+
+import java.net.URI
+import java.time.Instant
 
 trait SequencerData extends CommandData {
   val observeSequenceCommand: Observe       = Observe(prefix, commandName, Some(obsId))
@@ -62,5 +62,6 @@ trait SequencerData extends CommandData {
   val inFlightStepStatus: StepStatus                  = StepStatus.InFlight
   val successStepStatus: StepStatus                   = StepStatus.Finished.Success
   val failureStepStatus: StepStatus                   = StepStatus.Finished.Failure("message")
+  val getSequencerState: GetSequencerState.type       = GetSequencerState
 
 }
