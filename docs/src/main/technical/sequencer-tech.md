@@ -94,7 +94,7 @@ In this state, the Sequencer can only receive a Sequence, `goOffline`, or `shutd
 * **Loaded:** A Sequencer is in loaded state when a Sequence is received and ready for execution, but execution of the Sequence hasn't started.
 A separate `start` command is expected to start execution of the Sequence.
 All sequence editor actions (for e.g. add, remove, reset) are accepted in this state.
-From this state, the Sequencer can go to the `InProgress` state
+From this state, the Sequencer can go to the `Running` state
 on receiving a `start` command, or it could go to the `Offline` state if `goOffline` command is sent. On receiving a `reset` command,
 which discards all the pending steps, the Sequencer will go to `Idle` state.
 

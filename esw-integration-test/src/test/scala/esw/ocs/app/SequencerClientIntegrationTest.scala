@@ -230,7 +230,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val startedResponse = ocsSequencer.startSequence().futureValue
     startedResponse shouldBe a[Started]
 
-    //assert that AbortSequence is accepted in InProgress state
+    //assert that AbortSequence is accepted in Running state
     ocsSequencer.abortSequence().futureValue should ===(Ok)
 
     val expectedSteps = List(
@@ -253,7 +253,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val startedResponse = ocsSequencer.startSequence().futureValue
     startedResponse shouldBe a[Started]
 
-    //assert that Stop is accepted in InProgress state
+    //assert that Stop is accepted in Running state
     ocsSequencer.stop().futureValue should ===(Ok)
 
     val expectedSteps = List(

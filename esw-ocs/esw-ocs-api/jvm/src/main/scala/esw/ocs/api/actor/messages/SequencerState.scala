@@ -14,7 +14,7 @@ object SequencerState extends Enum[SequencerState[SequencerMsg]] {
 
   case object Idle             extends SequencerState[IdleMessage]
   case object Loaded           extends SequencerState[SequenceLoadedMessage]
-  case object InProgress       extends SequencerState[InProgressMessage]
+  case object Running          extends SequencerState[RunningMessage]
   case object Offline          extends SequencerState[OfflineMessage]
   case object GoingOnline      extends SequencerState[GoingOnlineMessage]
   case object GoingOffline     extends SequencerState[GoingOfflineMessage]

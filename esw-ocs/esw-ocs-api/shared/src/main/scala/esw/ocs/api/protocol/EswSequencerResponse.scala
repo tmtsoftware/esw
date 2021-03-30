@@ -78,7 +78,7 @@ object EditorError {
 object SequencerStateResponse {
   case object Idle       extends SequencerStateResponse
   case object Loaded     extends SequencerStateResponse
-  case object InProgress extends SequencerStateResponse
+  case object Running    extends SequencerStateResponse
   case object Offline    extends SequencerStateResponse
   case object Processing extends SequencerStateResponse
 }

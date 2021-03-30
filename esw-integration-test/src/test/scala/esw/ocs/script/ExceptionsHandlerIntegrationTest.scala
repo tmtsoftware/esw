@@ -63,14 +63,14 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       }
     }
 
-//    ********* Test cases of InProgress state *************
-    val inProgressStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
+//    ********* Test cases of Running state *************
+    val runningStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
       ("sequencer msg", "failure msg"),
       (Stop(TestProbe[OkOrUnhandledResponse]().ref), "handle-stop-failed"),
       (AbortSequence(TestProbe[OkOrUnhandledResponse]().ref), "handle-abort-failed")
     )
 
-    forAll(inProgressStateTestCases) { (msg, failureMessage) =>
+    forAll(runningStateTestCases) { (msg, failureMessage) =>
       s"invoke exception handler when $failureMessage | ESW-139, CSW-81" in {
         val sequencerRef = spawnSequencerRef(ocsSubsystem, ocsObsMode)
         val sequencer    = new SequencerImpl(sequencerRef)
@@ -84,7 +84,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
         sequencer.submit(longRunningSetupSequence)
         Thread.sleep(500)
-        // Pause sequence, so it will remain in InProgress state and then other inProgressState msgs can be processed
+        // Pause sequence, so it will remain in Running state and then other RunningState msgs can be processed
         sequencer.pause
         sequencerRef ! msg
 

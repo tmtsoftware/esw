@@ -161,12 +161,12 @@ Stopping and aborting are meant to handle early termination of observing sequenc
 should stop as soon as possible and save the data if possible. Stop indicates that the current observe should stop at the end of the current step.
 In both cases, the observation is over and no subsequent steps can be executed.
 
-Stop and abort commands are accepted only if the Sequencer is in `InProgress` state, which means it is executing a sequence.
+Stop and abort commands are accepted only if the Sequencer is in `Running` state, which means it is executing a sequence.
 If this command is sent in any other state, an `Unhandled` response is returned. In all other cases, an `Ok` response is sent.
 
 ### Aborting a Sequence
 
-On receiving the abort command in the `InProgress` state, the Sequencer will execute the @ref:[abort sequence handlers](../constructs/handlers.md#abort-sequence-handler)
+On receiving the abort command in the `Running` state, the Sequencer will execute the @ref:[abort sequence handlers](../constructs/handlers.md#abort-sequence-handler)
 and on completion of execution of handlers (whether successful or failed), the Sequencer will discard all the `pending` steps
 and return an `Ok` response.  
 

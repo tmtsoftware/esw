@@ -15,7 +15,7 @@ import esw.constants.SequencerTimeouts
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
-import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
+import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.{SequencerStateResponse, _}
 
@@ -60,11 +60,11 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   def getSequencerState: Future[SequencerStateResponse] =
     getState.map {
-      case Idle       => SequencerStateResponse.Idle
-      case Loaded     => SequencerStateResponse.Loaded
-      case InProgress => SequencerStateResponse.InProgress
-      case Offline    => SequencerStateResponse.Offline
-      case _          => SequencerStateResponse.Processing
+      case Idle    => SequencerStateResponse.Idle
+      case Loaded  => SequencerStateResponse.Loaded
+      case Running => SequencerStateResponse.Running
+      case Offline => SequencerStateResponse.Offline
+      case _       => SequencerStateResponse.Processing
     }
 
   // commands

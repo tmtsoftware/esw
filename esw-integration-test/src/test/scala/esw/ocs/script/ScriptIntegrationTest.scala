@@ -192,7 +192,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val eventKey  = EventKey(Prefix("tcs.test"), EventName("abort.success"))
       val testProbe = createTestProbe(Set(eventKey))
 
-      // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
+      // Submit sequence to OCS as AbortSequence is accepted only in Running State
       val command1 = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
       val command2 = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3 = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
@@ -223,7 +223,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val testProbe = createTestProbe(Set(eventKey))
 
-      // Submit sequence to OCS as Stop is accepted only in InProgress State
+      // Submit sequence to OCS as Stop is accepted only in Running State
       val command1 = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
       val command2 = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3 = Setup(Prefix("TCS.test"), CommandName("command-2"), None)

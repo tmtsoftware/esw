@@ -4,9 +4,9 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequencerSubmitResponse, SubmitResult, Unhandled}
 import esw.ocs.api.actor.messages.SequencerMessages.{LoadSequence, SubmitSequenceInternal}
 import esw.ocs.api.models.ObsMode
+import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequencerSubmitResponse, SubmitResult, Unhandled}
 import esw.ocs.testkit.EswTestKit
 
 class SequencerBehaviorIntegrationTest extends EswTestKit {
@@ -27,7 +27,7 @@ class SequencerBehaviorIntegrationTest extends EswTestKit {
 
       // response received by irisSequencer
       submitResponseProbe.expectMessageType[SubmitResult]
-      loadSequenceResponseProbe.expectMessage(Unhandled("InProgress", "LoadSequence"))
+      loadSequenceResponseProbe.expectMessage(Unhandled("Running", "LoadSequence"))
     }
   }
 }

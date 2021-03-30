@@ -29,7 +29,7 @@ Content-Length: 174
   "Invalid": {
     "runId": "IdNotAvailable",
     "issue": {
-      "UnsupportedCommandInStateIssue": "Sequencer can not accept 'SubmitSequenceInternal' message in 'InProgress' state"
+      "UnsupportedCommandInStateIssue": "Sequencer can not accept 'SubmitSequenceInternal' message in 'Running' state"
     }
   }
 }

@@ -48,7 +48,7 @@ class SequencerBehavior(
     state match {
       case Idle             => idle
       case Loaded           => loaded
-      case InProgress       => inProgress
+      case Running          => running
       case Offline          => offline
       case GoingOnline      => goingOnline(_, Offline)
       case GoingOffline     => goingOffline(_, Idle)
@@ -82,16 +82,16 @@ class SequencerBehavior(
       case LoadSequence(sequence, replyTo) => load(sequence, replyTo, data)
     }
 
-  private def inProgress(data: SequencerData): Behavior[SequencerMsg] =
-    receive(InProgress, data) {
+  private def running(data: SequencerData): Behavior[SequencerMsg] =
+    receive(Running, data) {
       case AbortSequence(replyTo) => abortSequence(data, replyTo)
       case Stop(replyTo)          => stop(data, replyTo)
-      case msg: EditorAction      => handleEditorAction(msg, data, currentState = InProgress)
-      case Pause(replyTo)         => inProgress(data.updateStepListResult(replyTo, data.stepList.map(_.pause)))
-      case Resume(replyTo)        => inProgress(data.updateStepList(replyTo, data.stepList.map(_.resume)))
-      case PullNext(replyTo)      => inProgress(data.pullNextStep(replyTo))
-      case StepSuccess(_)         => inProgress(data.stepSuccess(InProgress))
-      case StepFailure(reason, _) => inProgress(data.stepFailure(reason, InProgress))
+      case msg: EditorAction      => handleEditorAction(msg, data, currentState = Running)
+      case Pause(replyTo)         => running(data.updateStepListResult(replyTo, data.stepList.map(_.pause)))
+      case Resume(replyTo)        => running(data.updateStepList(replyTo, data.stepList.map(_.resume)))
+      case PullNext(replyTo)      => running(data.pullNextStep(replyTo))
+      case StepSuccess(_)         => running(data.stepSuccess(Running))
+      case StepFailure(reason, _) => running(data.stepFailure(reason, Running))
       case _: GoIdle              => idle(data) // this is received on sequence completion
     }
 
@@ -129,7 +129,7 @@ class SequencerBehavior(
     }
   }
 
-  // This can only be received in Idle or InProgress state.
+  // This can only be received in Idle or Running state.
   // Starts executing the goOffline handlers and changes state to intermediate state GoingOffline
   // On successful execution of handlers, state will change to Offline, otherwise to the previous state
   private def goOffline(
@@ -156,9 +156,9 @@ class SequencerBehavior(
         replyTo ! GoOfflineHookFailed; currentBehavior(data)
     }
 
-  // Only called from InProgress state. Method starts executing abort handlers and changes state to
+  // Only called from Running state. Method starts executing abort handlers and changes state to
   // intermediate state AbortingSequence. On completion of handlers, pending steps will be discarded and
-  // state will change to InProgress.
+  // state will change to Running.
   private def abortSequence(data: SequencerData, replyTo: ActorRef[OkOrUnhandledResponse]): Behavior[SequencerMsg] = {
     script.executeAbort().onComplete(_ => data.self ! AbortSequenceComplete(replyTo))
     abortingSequence(data)
@@ -169,12 +169,12 @@ class SequencerBehavior(
       case AbortSequenceComplete(replyTo) =>
         import data._
         val maybeStepList = stepList.map(_.discardPending)
-        inProgress(updateStepList(replyTo, maybeStepList))
+        running(updateStepList(replyTo, maybeStepList))
     }
 
-  // Only called from InProgress state. Method starts executing stop handlers and changes state to
+  // Only called from Running state. Method starts executing stop handlers and changes state to
   // intermediate state Stopping. On completion of handlers, pending steps will be discarded and
-  // state will change to InProgress
+  // state will change to Running
   private def stop(data: SequencerData, replyTo: ActorRef[OkOrUnhandledResponse]): Behavior[SequencerMsg] = {
     script.executeStop().onComplete(_ => data.self ! StopComplete(replyTo))
     stopping(data)
@@ -185,7 +185,7 @@ class SequencerBehavior(
       case StopComplete(replyTo) =>
         import data._
         val maybeStepList = stepList.map(_.discardPending)
-        inProgress(updateStepList(replyTo, maybeStepList))
+        running(updateStepList(replyTo, maybeStepList))
     }
 
   // This is a common message and can be received in any state. This will do the following things
@@ -248,7 +248,7 @@ class SequencerBehavior(
     loaded(data.createStepList(sequence))
   }
 
-  // Loads and starts the sequence execution. Changes Sequencer state to InProgress.
+  // Loads and starts the sequence execution. Changes Sequencer state to Running.
   private def submitSequence(
       sequence: Sequence,
       data: SequencerData,
@@ -263,7 +263,7 @@ class SequencerBehavior(
 
   private def submitting(data: SequencerData): Behavior[SequencerMsg] =
     receive[SubmitMessage](Submitting, data) {
-      case SubmitSuccessful(sequence, replyTo) => inProgress(data.createStepList(sequence).startSequence(replyTo))
+      case SubmitSuccessful(sequence, replyTo) => running(data.createStepList(sequence).startSequence(replyTo))
       case SubmitFailed(replyTo)               => replyTo ! NewSequenceHookFailed(SequenceFailedToSubmitMessage); idle(data)
     }
 
@@ -280,7 +280,7 @@ class SequencerBehavior(
 
   private def startingSequence(data: SequencerData): Behavior[SequencerMsg] =
     receive[StartingMessage](Starting, data) {
-      case StartingSuccessful(replyTo) => inProgress(data.startSequence(replyTo))
+      case StartingSuccessful(replyTo) => running(data.startSequence(replyTo))
       case StartingFailed(replyTo) =>
         replyTo ! NewSequenceHookFailed(SequenceFailedToStartMessage); loaded(data)
     }
@@ -304,12 +304,12 @@ class SequencerBehavior(
 
       case ReadyToExecuteNext(replyTo) => stateMachine(state)(data.readyToExecuteNext(replyTo))
       case MaybeNext(replyTo) =>
-        if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
+        if (state == Running) replyTo ! data.stepList.flatMap(_.nextExecutable)
         else replyTo ! None
         Behaviors.same
     }
 
-  // handles all the sequence editor messages. These messages are supported only in Loaded and InProgress state,
+  // handles all the sequence editor messages. These messages are supported only in Loaded and Running state,
   // State remains the same only except the Reset message in Loaded state, where it changes to Idle.
   private def handleEditorAction(
       editorAction: EditorAction,

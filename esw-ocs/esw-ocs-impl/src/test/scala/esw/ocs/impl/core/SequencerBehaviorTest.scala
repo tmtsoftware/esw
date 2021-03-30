@@ -17,7 +17,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
+import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
@@ -69,7 +69,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       val probe = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(probe.ref)
-      assertSequencerState(InProgress)
+      assertSequencerState(Running)
       pullAllStepsAndAssertSequenceIsFinished()
       val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
@@ -140,7 +140,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val startedResponse = sequenceResult.toSubmitResponse()
 
       verify(script).executeNewSequenceHandler() // ESW-303: verifies newSequenceHandler is called
-      assertSequencerState(InProgress)
+      assertSequencerState(Running)
 
       startPullNext()
       val errorMessage = "Some error"
@@ -197,7 +197,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       seqResProbe.expectMessage(Completed(startedResponse.runId))
     }
 
-    "return Sequence result with Completed when sequencer is inProgress state | ESW-145, ESW-154, ESW-221, ESW-303" in {
+    "return Sequence result with Completed when sequencer is in Running state | ESW-145, ESW-154, ESW-221, ESW-303" in {
       val sequence1      = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.loaded(sequence1)
       import sequencerSetup._
@@ -211,7 +211,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       startedResponse shouldBe a[Started]
 
       startPullNext()
-      assertSequencerState(InProgress)
+      assertSequencerState(Running)
 
       val seqResProbe = TestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
@@ -247,11 +247,11 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertCurrentSequence(StepList(sequence))
     }
 
-    "return sequence when in inProgress state | ESW-157" in {
+    "return sequence when in Running state | ESW-157" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndStartSequenceThenAssertRunning()
       startPullNext()
 
       val expectedSteps = List(
@@ -266,7 +266,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndStartSequenceThenAssertRunning()
 
       pullAllStepsAndAssertSequenceIsFinished()
 
@@ -286,8 +286,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       assertSequencerState(Idle)
 
-      loadAndStartSequenceThenAssertInProgress()
-      assertSequencerState(InProgress)
+      loadAndStartSequenceThenAssertRunning()
+      assertSequencerState(Running)
 
       pullAllStepsAndAssertSequenceIsFinished()
       assertSequencerState(Idle)
@@ -315,7 +315,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
     }
 
     "add commands when sequence is in progress | ESW-114" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val probe = TestProbe[OkOrUnhandledResponse]()
@@ -343,8 +343,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertCurrentSequence(StepList(updatedSequence))
     }
 
-    "add steps before first pending step in InProgress state | ESW-113" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "add steps before first pending step in Running state | ESW-113" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val probe = TestProbe[OkOrUnhandledResponse]()
@@ -361,8 +361,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
   }
 
   "Pause" must {
-    "pause sequencer when it is InProgress | ESW-104" in {
-      val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
+    "pause sequencer when it is in Running | ESW-104" in {
+      val sequencerSetup = SequencerTestSetup.runningWithFirstCommandComplete(sequence)
       import sequencerSetup._
 
       val beforePauseStepList = Some(
@@ -391,8 +391,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
   }
 
   "Resume" must {
-    "resume a paused sequence when sequencer is InProgress | ESW-105" in {
-      val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
+    "resume a paused sequence when sequencer is in Running state | ESW-105" in {
+      val sequencerSetup = SequencerTestSetup.runningWithFirstCommandComplete(sequence)
       import sequencerSetup._
 
       val expectedPausedSteps = List(
@@ -444,8 +444,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       replaceAndAssertResponse(invalidId, List(command3, command4), IdDoesNotExist(invalidId))
     }
 
-    "fail if finished step is tried to be replaced in InProgress state| ESW-108" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "fail if finished step is tried to be replaced in Running state| ESW-108" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       finishStepWithSuccess()
@@ -457,8 +457,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       replaceAndAssertResponse(step2.id, List(command3, command4), CannotOperateOnAnInFlightOrFinishedStep)
     }
 
-    "fail if inflight step is tried to be replaced in InProgress state | ESW-108" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "fail if inflight step is tried to be replaced in Running state | ESW-108" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val step1 = getSequence().get.steps.head
@@ -468,8 +468,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       replaceAndAssertResponse(step1.id, List(command3, command4), CannotOperateOnAnInFlightOrFinishedStep)
     }
 
-    "replace pending step in InProgress state | ESW-108" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "replace pending step in Running state | ESW-108" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val expectedSteps = List(
@@ -508,8 +508,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertCurrentSequence(expectedSequence)
     }
 
-    "delete steps when sequencer is InProgress | ESW-112" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "delete steps when sequencer is Running | ESW-112" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val expectedSteps    = List(Step(command1, InFlight, hasBreakpoint = false))
@@ -524,8 +524,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertCurrentSequence(expectedSequence)
     }
 
-    "cannot delete inFlight steps when sequencer is InProgress | ESW-112" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "cannot delete inFlight steps when sequencer is Running | ESW-112" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val expectedSteps    = List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
@@ -563,8 +563,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertCurrentSequence(expectedSequenceAfterInsertion)
     }
 
-    "insert steps after provided id when sequencer is in InProgress state | ESW-111" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "insert steps after provided id when sequencer is in Running state | ESW-111" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val cmdsToInsert = List(command3, command4)
@@ -585,8 +585,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertCurrentSequence(expectedSequenceAfterInsertion)
     }
 
-    "fail with CannotOperateOnAnInFlightOrFinishedStep when trying to insert before a InFlight step in InProgress state | ESW-111" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "fail with CannotOperateOnAnInFlightOrFinishedStep when trying to insert before a InFlight step in Running state | ESW-111" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       startPullNext()
@@ -622,8 +622,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertCurrentSequence(expectedSequenceAfterRemovingBreakPoint)
     }
 
-    "add and delete breakpoint to/from provided id when step status is Pending and sequencer is in InProgress state | ESW-106, ESW-107" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "add and delete breakpoint to/from provided id when step status is Pending and sequencer is in Running state | ESW-106, ESW-107" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val expectedSequenceAfterAddingBreakpoint =
@@ -653,41 +653,41 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertCurrentSequence(None)
     }
 
-    "discard pending steps in InProgress state" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "discard pending steps in Running state" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       resetAndAssertResponse(Ok)
-      assertSequencerState(InProgress)
+      assertSequencerState(Running)
       assertCurrentSequence(Some(StepList(List(Step(command1, status = InFlight, hasBreakpoint = false)))))
     }
   }
 
   "AbortSequence" must {
-    "abort the given sequence in InProgress state | ESW-155, ESW-137" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "abort the given sequence in Running state | ESW-155, ESW-137" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
-      abortSequenceAndAssertResponse(Ok, InProgress)
+      abortSequenceAndAssertResponse(Ok, Running)
     }
   }
 
   "Stop" must {
-    "stop the given sequence in InProgress state | ESW-156, ESW-138" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+    "stop the given sequence in Running state | ESW-156, ESW-138" in {
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
-      stopAndAssertResponse(Ok, InProgress)
+      stopAndAssertResponse(Ok, Running)
     }
 
-    "stop given inProgress sequence when it is paused | ESW-138" in {
-      val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
+    "stop given running sequence when it is paused | ESW-138" in {
+      val sequencerSetup = SequencerTestSetup.runningWithFirstCommandComplete(sequence)
       import sequencerSetup._
 
       pauseAndAssertResponse(Ok)
       assertEngineCanExecuteNext(isReadyToExecuteNext = false)
 
-      stopAndAssertResponse(Ok, InProgress)
+      stopAndAssertResponse(Ok, Running)
     }
   }
 
@@ -773,7 +773,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
     "return Ok immediately when a new step is available for execution" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndStartSequenceThenAssertRunning()
 
       val probe = TestProbe[Ok.type]()
       sequencerActor ! ReadyToExecuteNext(probe.ref)
@@ -783,7 +783,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
     "wait till completion of current command" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndStartSequenceThenAssertRunning()
 
       startPullNext()
 
@@ -820,7 +820,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       sequencerActor ! ReadyToExecuteNext(probe.ref)
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndStartSequenceThenAssertRunning()
       probe.expectMessage(Ok)
     }
 
@@ -833,14 +833,14 @@ class SequencerBehaviorTest extends BaseTestSuite {
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndStartSequenceThenAssertRunning()
       probe.expectMessage(Ok)
     }
 
     "wait till sequence is resumed in case of a paused sequence" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndStartSequenceThenAssertRunning()
       startPullNext()
 
       pauseAndAssertResponse(Ok)
@@ -856,14 +856,14 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
   "MayBeNext" must {
     "return next pending command" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       mayBeNextAndAssertResponse(Some(Step(command2)))
     }
 
     "return None if sequencer is paused" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
       pauseAndAssertResponse(Ok)
 
@@ -878,7 +878,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
     }
 
     "return None if there's no pending step to be executed" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(Sequence(command1))
+      val sequencerSetup = SequencerTestSetup.running(Sequence(command1))
       import sequencerSetup._
 
       mayBeNextAndAssertResponse(None)
@@ -888,7 +888,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
   "Update" must {
     "update the given step with successful response | ESW-241" in {
       val sequence       = Sequence(command1)
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val probe = TestProbe[OkOrUnhandledResponse]()
@@ -901,7 +901,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
     "update the given step with error response | ESW-241" in {
       val sequence       = Sequence(command1)
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
 
       val message = "some"
@@ -937,7 +937,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
   "LogControlMessages" must {
     "set and get log level for component name | ESW-183, ESW-127" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      val sequencerSetup = SequencerTestSetup.running(sequence)
       import sequencerSetup._
       val logMetadataProbe = TestProbe[LogMetadata]()
 
@@ -965,7 +965,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
     val testCases: TableFor2[String, SequencerTestSetup] = Table.apply(
       ("state", "sequencer setup"),
-      (InProgress.entryName, SequencerTestSetup.inProgress(sequence)),
+      (Running.entryName, SequencerTestSetup.running(sequence)),
       (Idle.entryName, SequencerTestSetup.idle(sequence)),
       (Loaded.entryName, SequencerTestSetup.loaded(sequence)),
       (Offline.entryName, SequencerTestSetup.offline(sequence))
@@ -1033,12 +1033,12 @@ class SequencerBehaviorTest extends BaseTestSuite {
     )
   }
 
-  "InProgress -> Unhandled | ESW-145, ESW-154, ESW-194" in {
-    val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+  "Running -> Unhandled | ESW-145, ESW-154, ESW-194" in {
+    val sequencerSetup = SequencerTestSetup.running(sequence)
     import sequencerSetup._
 
     assertUnhandled(
-      InProgress,
+      Running,
       LoadSequence(sequence, _),
       StartSequence, //ESW-154
       SubmitSequenceInternal(sequence, _),
@@ -1095,12 +1095,12 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertSequencerState(Loaded)
     }
 
-    "Idle -> InProgress | ESW-141" in {
+    "Idle -> Running | ESW-141" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      loadAndStartSequenceThenAssertInProgress()
-      assertSequencerState(InProgress) // transition to InProgress
+      loadAndStartSequenceThenAssertRunning()
+      assertSequencerState(Running) // transition to Running
     }
 
     "Loaded -> Offline | ESW-141" in {
@@ -1112,7 +1112,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertSequencerState(Offline) // transition to offline
     }
 
-    "Loaded -> InProgress | ESW-141" in {
+    "Loaded -> Running | ESW-141" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
@@ -1122,7 +1122,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       sequencerActor ! StartSequence(replyTo.ref)
       startPullNext()
 
-      assertSequencerState(InProgress) // transition to InProgress
+      assertSequencerState(Running) // transition to Running
     }
 
     "Loaded -> Idle | ESW-141" in {
@@ -1136,12 +1136,12 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertSequencerState(Idle) // transition to Idle
     }
 
-    "InProgress -> Idle | ESW-141" in {
+    "Running -> Idle | ESW-141" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      loadAndStartSequenceThenAssertInProgress()
-      assertSequencerState(InProgress) // Initial state InProgres
+      loadAndStartSequenceThenAssertRunning()
+      assertSequencerState(Running) // Initial state Running
 
       pullAllStepsAndAssertSequenceIsFinished()
       assertSequencerState(Idle) // transition to Idle
@@ -1179,10 +1179,10 @@ class SequencerBehaviorTest extends BaseTestSuite {
       probe.expectTerminated(sequencerActor)
     }
 
-    "InProgress -> Shutdown | ESW-141" in {
+    "Running -> Shutdown | ESW-141" in {
       // actor system is needed as Shutdown message terminates the actorSystem of Sequencer
       val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
-      val sequencerSetup                             = SequencerTestSetup.inProgress(sequence)(system)
+      val sequencerSetup                             = SequencerTestSetup.running(sequence)(system)
       import sequencerSetup._
 
       val probe = TestProbe[Ok.type]()(system)

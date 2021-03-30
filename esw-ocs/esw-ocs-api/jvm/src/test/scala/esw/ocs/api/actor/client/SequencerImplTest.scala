@@ -277,14 +277,14 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  "getSequencerState should return same state for Idle, InProgress, Loaded, Offline state | ESW-482" in {
+  "getSequencerState should return same state for Idle, Running, Loaded, Offline state | ESW-482" in {
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Idle
     } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Idle) }
 
     withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! InProgress
-    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.InProgress) }
+      case GetSequencerState(replyTo) => replyTo ! Running
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Running) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Loaded

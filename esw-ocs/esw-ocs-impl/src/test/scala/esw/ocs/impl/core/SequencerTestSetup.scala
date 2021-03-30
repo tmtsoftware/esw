@@ -18,7 +18,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress}
+import esw.ocs.api.actor.messages.SequencerState.{Idle, Running}
 import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
@@ -74,7 +74,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     probe.expectMessage(expected)
   }
 
-  def loadAndStartSequenceThenAssertInProgress(): Assertion = {
+  def loadAndStartSequenceThenAssertRunning(): Assertion = {
     val probe = TestProbe[SequencerSubmitResponse]()
 
     when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
@@ -180,7 +180,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val stepList = p.expectMessageType[Option[StepList]]
     expectedState match {
       case Idle                            => stepList shouldBe None
-      case InProgress                      => stepList.get.nextPending shouldBe None
+      case Running                         => stepList.get.nextPending shouldBe None
       case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
     }
     verify(script, timeout(1000)).executeAbort()
@@ -210,7 +210,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val stepList = p.expectMessageType[Option[StepList]]
     expectedState match {
       case Idle                            => stepList shouldNot be(None)
-      case InProgress                      => stepList shouldNot be(None)
+      case Running                         => stepList shouldNot be(None)
       case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after Stop")
     }
     verify(script, timeout(1000)).executeStop()
@@ -388,18 +388,18 @@ object SequencerTestSetup {
     sequencerSetup
   }
 
-  def inProgress(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
+  def running(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
-    sequencerSetup.loadAndStartSequenceThenAssertInProgress()
+    sequencerSetup.loadAndStartSequenceThenAssertRunning()
     sequencerSetup.startPullNext()
     sequencerSetup
   }
 
-  def inProgressWithFirstCommandComplete(
+  def runningWithFirstCommandComplete(
       sequence: Sequence
   )(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
-    sequencerSetup.loadAndStartSequenceThenAssertInProgress()
+    sequencerSetup.loadAndStartSequenceThenAssertRunning()
     sequencerSetup.startPullNext()
     sequencerSetup.finishStepWithSuccess()
     sequencerSetup

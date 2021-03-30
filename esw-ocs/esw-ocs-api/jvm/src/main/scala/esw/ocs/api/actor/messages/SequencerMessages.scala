@@ -24,7 +24,7 @@ object SequencerMessages {
   // Having state specific messages enables exhaustive match (compile time safety) while handling messages in SequencerBehavior
   sealed trait IdleMessage           extends UnhandleableSequencerMessage
   sealed trait SequenceLoadedMessage extends UnhandleableSequencerMessage
-  sealed trait InProgressMessage     extends UnhandleableSequencerMessage
+  sealed trait RunningMessage        extends UnhandleableSequencerMessage
   sealed trait OfflineMessage        extends UnhandleableSequencerMessage
   sealed trait GoingOnlineMessage    extends UnhandleableSequencerMessage
   sealed trait GoingOfflineMessage   extends UnhandleableSequencerMessage
@@ -32,7 +32,7 @@ object SequencerMessages {
   sealed trait StopMessage           extends UnhandleableSequencerMessage
   sealed trait SubmitMessage         extends UnhandleableSequencerMessage
   sealed trait StartingMessage       extends UnhandleableSequencerMessage
-  sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
+  sealed trait EditorAction          extends SequenceLoadedMessage with RunningMessage
 
   // startup msgs
   final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[OkOrUnhandledResponse])
@@ -72,20 +72,20 @@ object SequencerMessages {
   final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[RemoveBreakpointResponse])                    extends EditorAction
   final case class Reset(replyTo: ActorRef[OkOrUnhandledResponse])                                          extends EditorAction
 
-  // inProgress msgs
-  final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
-  final case class Stop(replyTo: ActorRef[OkOrUnhandledResponse])          extends InProgressMessage
-  final case class Pause(replyTo: ActorRef[PauseResponse])                 extends InProgressMessage
-  final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])        extends InProgressMessage
+  // running msgs
+  final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends RunningMessage
+  final case class Stop(replyTo: ActorRef[OkOrUnhandledResponse])          extends RunningMessage
+  final case class Pause(replyTo: ActorRef[PauseResponse])                 extends RunningMessage
+  final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])        extends RunningMessage
 
   // engine & internal
-  final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse]) extends IdleMessage with InProgressMessage
+  final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse]) extends IdleMessage with RunningMessage
   // this is an internal message and replyTo is not used anywhere
-  final private[esw] case class StepSuccess(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
+  final private[esw] case class StepSuccess(replyTo: ActorRef[OkOrUnhandledResponse]) extends RunningMessage
   // this is an internal message and replyTo is not used anywhere
-  final private[esw] case class StepFailure(reason: String, replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
+  final private[esw] case class StepFailure(reason: String, replyTo: ActorRef[OkOrUnhandledResponse]) extends RunningMessage
 
-  final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends InProgressMessage
+  final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends RunningMessage
   final private[esw] case class GoOfflineSuccess(replyTo: ActorRef[GoOfflineResponse])          extends GoingOfflineMessage
   final private[esw] case class GoOfflineFailed(replyTo: ActorRef[GoOfflineResponse])           extends GoingOfflineMessage
   final private[esw] case class GoOnlineSuccess(replyTo: ActorRef[GoOnlineResponse])            extends GoingOnlineMessage
