@@ -37,18 +37,6 @@ This module consists of Kotlin counterpart of the Script DSL.
 This handler module is responsible for providing HTTP routes for Sequencer HTTP server. Sequencer provides
 an HTTP and Akka interface. The HTTP routes are defined and implemented here.
 
-## Sequencer Interfaces
-
-Sequencer exposes its interface in three ways:
-
-1. Akka interface - Sequencer is registered as an Akka-based component. One can resolve Sequencer and use the Akka client to interact with Sequencer.
-2. HTTP direct interface - Each Sequencer also exposes an HTTP-based interface as an embedded Sequencer
-Server (direct and unprotected usage). This access provides routes that allow user to directly control the Sequencer without any auth protection.
-UI applications are supposed to use Gateway interface described below to interact with Sequencer as Gateway provided auth protection layer.
-3. HTTP Gateway interface - It is also possible to interact with Sequencer using the UI Application Gateway (as outside network interface).
-Being outside network interface, this access requires user to be authenticated and authorized. The Gateway hosts the Sequencer API,
-which communicates with the Sequencer via the Akka interface. Please refer to the Gateway documentation for @ref[more information](../uisupport/gateway.md).
-
 ## Implementation Details
 
 Sequencer framework uses Akka Actor as core implementation (Sequencer Actor).
@@ -129,6 +117,191 @@ Every operation in a Script needs to be asynchronous and non-blocking in nature,
 This ensures that state inside the Script can be accessed/modified at any place inside with the guarantee of thread safety. If there is need to have
 CPU intensive or blocking operations in Script, patterns supporting these needs to be followed which uses another Execution Context so that Script StrandEC is not blocked.
 The scripting DSL provides special constructs for background processing.
+
+## Sequencer Interfaces
+
+Sequencer exposes its interface in three ways:
+
+1. Akka interface - Sequencer is registered as an Akka-based component. One can resolve Sequencer and use the Akka client to interact with Sequencer.
+2. HTTP direct interface - Each Sequencer also exposes an HTTP-based interface as an embedded Sequencer
+Server (direct and unprotected usage). This access provides routes that allow user to directly control the Sequencer without any auth protection.
+UI applications are supposed to use Gateway interface described below to interact with Sequencer as Gateway provided auth protection layer.
+3. HTTP Gateway interface - It is also possible to interact with Sequencer using the UI Application Gateway (as outside network interface).
+Being outside network interface, this access requires user to be authenticated and authorized. The Gateway hosts the Sequencer API,
+which communicates with the Sequencer via the Akka interface. Please refer to the Gateway documentation for @ref[more information](../uisupport/gateway.md).
+
+Following snippet shows instantiating Akka Interface to interact with Sequencer:
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #instantiate-akka-interface }
+
+Following snippet shows instantiating HTTP direct Interface to interact with Sequencer:
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #instantiate-http-direct-interface }
+
+For interacting using HTTP Gateway interface, please refer @ref[here](./gateway-tech.md)
+
+## Interacting with Sequencer
+One can use any of [Sequencer Interface](#SequencerInterfaces) to interact with Sequencer. APIs to interact with Sequencer are
+broadly categorised as following.
+
+* Sequencer Command Service - Provided as a part of CSW. Provides way to submit sequence and receive response.
+* Sequence Editor APIs - Provided as a part of ESW. Provided way to edit sequence submitted to Sequencer.
+* Sequencer Lifecycle APIs - Provided as a part of ESW. Provided way to send lifecycle commands to Sequencer.
+* Other APIs - Provided as a part of ESW.
+
+### Sequencer Command Service
+
+Commands can be sent to Sequencer to submit sequence and response is received in return.
+
+[Sequencer Interface](#SequencerInterface) exposes APIs on top of @extref[Sequencer Command Service](csw:services/sequencer-command-service). Sequencer Command
+Service provides way to submit sequence to Sequencer and receive started or final response. Sequencer Command Service is provided as
+a part of CSW and details about using Sequencer Command Service can be found @extref[here](csw:services/sequencer-command-service).
+
+### Sequence Editor APIs
+
+Sequence Editor APIs allow actions to edit sequence such as add more steps, delete/replace existing steps, Add/remove breakpoint
+in sequence. For using Sequence Editor actions, sequencer must be running a sequence. If Sequencer is not running any sequence then,
+Sequencer will return [[esw.ocs.api.protocol.Unhandled]] response.
+
+* add
+This API allows to add more steps to sequence. Steps will be added in the end of sequence.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #add }
+
+* prepend
+This API allows to add more steps to sequence. Steps will be added after currently running step of sequence.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #prepend }
+
+* getSequence
+This API allows returns Sequence running in Sequencer if any.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #getSequence }
+
+* replace
+This API allows to replace particular step in the sequence with more steps.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #replace }
+
+* insertAfter
+This API allows to insert more steps after particular step in the sequence.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #insertAfter }
+
+* delete
+This API allows to delete particular step in the sequence.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #delete }
+
+* add and remove breakpoint
+These APIs allows to add and remove breakpoint for particular step in the sequence.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #addRemoveBreakpoint }
+
+* reset
+These APIs allows to discard all pending steps in the sequence.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #reset }
+
+* pause and resume sequence
+These APIs allows to pause and resume sequence. This essentially adds/removes breakpoint at first pending step in sequence
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #pause-resume }
+
+### Sequencer Lifecycle APIs
+
+Sequencer Lifecycle APIs allow to send lifecycle commands to Sequencer such as goOnline, abortSequence etc.
+
+Certain commands are restricted depending on state of Sequencer. For example, goOnline command is handled only when Sequencer is
+in Offline state. If goOnline is sent otherwise it will return [[esw.ocs.api.protocol.Unhandled]] response with error msg.
+For details refer @ref:[Sequencer Lifecycle Section](#sequencer-lifecycle)
+
+* isAvailable
+
+This API allows to check if Sequencer is in Idle state or not. It returns true if Sequencer is in Idle state.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #isAvailable }
+
+* online/offline
+
+These APIs allow to send goOnline/goOffline mode commands to Sequencer. `isOnline` command returns true if Sequencer is online.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #online-offline }
+
+* abortSequence
+
+This API allow to abort running sequence. This essentially discards pending steps from sequence and also call `onAbortSequence` handler
+written in script.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #abortSequence }
+
+* Stop
+
+This API allow to stop sequence. This essentially discards pending steps from sequence and also call `onStop` handler
+written in script.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #stop }
+
+* getSequencerState
+
+Sequencer is implememted as state machine. It accepts/discards msgs based on Sequencer State. This API allow returns current sequencer state.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #getSequencerState }
+
+* diagnosticMode
+
+This API allow to send diagnosticMode command to Sequencer. This calls `onDiagnosticMode` handler written in script
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #diagnosticMode }
+
+* operationsMode
+
+This API allow to send operationsMode command to Sequencer. This calls `onOperationsMode` handler written in script
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #operationsMode }
+
+### Other APIs
+
+* loadSequence
+
+This API allows to load sequence in Sequencer. Loaded Sequence does not start execution unless `StartSequence` Command is received.
+One can replace already loaded sequence by firing another `loadSequence` command.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #loadSequence }
+
+* startSequence
+
+This API allows to start execution of previously loaded sequence in Sequencer. This return `SubmitResponse` which is `Started` in case
+of success.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #startSequence }
+
+* getSequenceComponent
+
+This API allows to get location of Sequence Component running the Sequencer.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #getSequenceComponent }
 
 
 ## Running Sequencer
