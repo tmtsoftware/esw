@@ -118,6 +118,10 @@ This ensures that state inside the Script can be accessed/modified at any place 
 CPU intensive or blocking operations in Script, patterns supporting these needs to be followed which uses another Execution Context so that Script StrandEC is not blocked.
 The scripting DSL provides special constructs for background processing.
 
+Scripting Support is implemented using Kotlin. `onSetup` and `onObserve` handlers are provided which will be used by script writers to write behaviour when `Setup`
+and `Observe` commands are received. Specific `onSetup` handler will be picked based on command name specified in handler. For more details
+about scripting please refer @ref:[here](../scripts/scripts-index.md)
+
 ## Sequencer Interfaces
 
 Sequencer exposes its interface in three ways:
@@ -141,6 +145,11 @@ Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #instantiate-http-direct-interface }
 
 For interacting using HTTP Gateway interface, please refer @ref[here](./gateway-tech.md)
+
+@@@note
+Sequencer Http direct interface is not supposed to be used from anywhere as it is unprotected and also bind to inside network ip.
+@@@
+
 
 ## Interacting with Sequencer
 One can use any of [Sequencer Interface](#SequencerInterfaces) to interact with Sequencer. APIs to interact with Sequencer are
