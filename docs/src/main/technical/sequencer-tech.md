@@ -152,7 +152,7 @@ Sequencer Http direct interface is not supposed to be used from anywhere as it i
 
 
 ## Interacting with Sequencer
-One can use any of [Sequencer Interface](#SequencerInterfaces) to interact with Sequencer. APIs to interact with Sequencer are
+One can use Akka Interface or HTTP Gateway interface to interact with Sequencer. APIs to interact with Sequencer are
 broadly categorised as following.
 
 * Sequencer Command Service - Provided as a part of CSW. Provides way to submit sequence and receive response.
@@ -164,7 +164,7 @@ broadly categorised as following.
 
 Commands can be sent to Sequencer to submit sequence and response is received in return.
 
-[Sequencer Interface](#SequencerInterface) exposes APIs on top of @extref[Sequencer Command Service](csw:services/sequencer-command-service). Sequencer Command
+@ref:[Sequencer Interface](#sequencer-interfaces) exposes APIs on top of @extref[Sequencer Command Service](csw:services/sequencer-command-service). Sequencer Command
 Service provides way to submit sequence to Sequencer and receive started or final response. Sequencer Command Service is provided as
 a part of CSW and details about using Sequencer Command Service can be found @extref[here](csw:services/sequencer-command-service).
 
@@ -172,7 +172,7 @@ a part of CSW and details about using Sequencer Command Service can be found @ex
 
 Sequence Editor APIs allow actions to edit sequence such as add more steps, delete/replace existing steps, Add/remove breakpoint
 in sequence. For using Sequence Editor actions, sequencer must be running a sequence. If Sequencer is not running any sequence then,
-Sequencer will return [[esw.ocs.api.protocol.Unhandled]] response.
+Sequencer will return `Unhandled` response.
 
 * add
 This API allows to add more steps to sequence. Steps will be added in the end of sequence.
@@ -233,7 +233,7 @@ Scala
 Sequencer Lifecycle APIs allow to send lifecycle commands to Sequencer such as goOnline, abortSequence etc.
 
 Certain commands are restricted depending on state of Sequencer. For example, goOnline command is handled only when Sequencer is
-in Offline state. If goOnline is sent otherwise it will return [[esw.ocs.api.protocol.Unhandled]] response with error msg.
+in Offline state. If goOnline is sent otherwise it will return `Unhandled` response with error msg.
 For details refer @ref:[Sequencer Lifecycle Section](#sequencer-lifecycle)
 
 * isAvailable
