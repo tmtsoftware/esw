@@ -205,9 +205,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-169, ESW-168, ESW-170, ESW-179, ESW-178" in {
       // this simulates that ClearSkies observation is running
-      val akkaLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, clearSkies.name), Sequencer)), new URI("uri"), Metadata.empty)
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
+      val location = akkaLocation(ComponentId(Prefix(ESW, clearSkies.name), Sequencer))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
       val probe = TestProbe[ConfigureResponse]()
 
       // r2 is a conflicting resource between DarkNight and ClearSkies observations
@@ -219,9 +218,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164, ESW-178" in {
-      val akkaLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, randomObsMode.name), Sequencer)), new URI("uri"), Metadata.empty)
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
+      val location = akkaLocation(ComponentId(Prefix(ESW, randomObsMode.name), Sequencer))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
       val probe = TestProbe[ConfigureResponse]()
 
       smRef ! Configure(randomObsMode, probe.ref)
@@ -607,12 +605,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return set of Observation modes with their respective statuses | ESW-466" in {
-      val akkaLocation = AkkaLocation(
-        AkkaConnection(ComponentId(Prefix(ESW, clearSkies.name), Sequencer)),
-        new URI("uri"),
-        Metadata.empty
-      )
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
+      val location = akkaLocation(ComponentId(Prefix(ESW, clearSkies.name), Sequencer))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
 
       val obsModesDetailsResponseProbe = TestProbe[ObsModesDetailsResponse]()
       smRef ! GetObsModesDetails(obsModesDetailsResponseProbe.ref)

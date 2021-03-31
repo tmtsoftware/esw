@@ -284,7 +284,6 @@ class SequenceManagerBehavior(
       future.recover {
         case NonFatal(ex) =>
           val reason = s"Sequence Manager Operation($msg) failed due to: ${ex.getMessage}"
-          logger.error(reason, ex = ex)
           selfRef ! ProcessingComplete(FailedResponse(reason))
       }
     }
