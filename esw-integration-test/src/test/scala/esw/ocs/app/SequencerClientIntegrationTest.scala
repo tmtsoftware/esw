@@ -315,6 +315,12 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     sequenceComponentImpl.unloadScript()
   }
 
+  "GetSequencerState | ESW-482" in {
+    ocsSequencer.goOffline().futureValue should ===(Ok)
+
+    ocsSequencer.getSequencerState.futureValue should ===(SequencerStateResponse.Offline)
+  }
+
   private def compareStepList(actual: Option[StepList], expected: Option[StepList]): Unit = {
     if (expected.isEmpty) actual should ===(None)
     else {
