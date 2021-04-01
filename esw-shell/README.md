@@ -174,13 +174,13 @@ To AlarmService
 
 ## Interacting with Sequence Manager
 
-Handler to running sequence manager can be obtained using:
+Handler to running Sequence Manager can be obtained using:
 
 ```bash
 val sm = sequenceManager()
 ```
 
-All sequence manager APIs can be called upon the handle. For example:
+All Sequence Manager APIs can be called upon the handle. For example:
 
 ```bash
 val configureResponse = sequenceManager.configure(ObsMode("darknight")).get

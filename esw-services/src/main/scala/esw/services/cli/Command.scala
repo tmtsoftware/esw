@@ -31,11 +31,11 @@ object Command {
       @HelpMessage("Command role mapping file path for gateway. If provided, this will be used instead of default.")
       commandRoleConfig: Option[Path],
       @ExtraName("s")
-      @HelpMessage("Start sequence manager with default obsMode config.")
+      @HelpMessage("Start Sequence Manager with default obsMode config.")
       sequenceManager: Boolean = false,
-      @HelpMessage("ObsMode config file path for gateway. If provided, this will be used instead of default.")
+      @HelpMessage("ObsMode config file path for Sequence Manager. If provided, this will be used instead of default.")
       obsModeConfig: Option[Path],
-      @HelpMessage("Enable simulation mode for sequence manager")
+      @HelpMessage("Enable simulation mode for Sequence Manager")
       simulation: Boolean = false
   ) extends Command
 

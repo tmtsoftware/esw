@@ -100,6 +100,6 @@ For example, using the example above:
 //cd to installation directory
 cd /tmt/apps
 
-// run sequence manager
+// run Sequence Manager
 ./gateway-server -J-Dcsw-logging.component-log-levels.ESW.EswGateway=TRACE start -p 8090 -l -c command-role-mapping.conf
 ```

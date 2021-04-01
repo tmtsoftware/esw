@@ -67,6 +67,6 @@ For example, using the example above:
 //cd to installation directory
 cd /tmt/apps
 
-// run sequence manager
+// run Sequence Manager
 ./agent-service-app -J-Dcsw-logging.component-log-levels.ESW.agent_service=TRACE start
 ```

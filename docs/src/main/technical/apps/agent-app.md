@@ -66,6 +66,6 @@ For example, using the example above:
 //cd to installation directory
 cd /tmt/apps
 
-// run sequence manager
+// run Sequence Manager
 ./agent-app -J-Dcsw-logging.component-log-levels.TCS.primary_machine=TRACE start -p "tcs.primary_machine"
 ```

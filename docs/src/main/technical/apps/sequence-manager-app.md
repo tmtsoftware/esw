@@ -48,8 +48,8 @@ Start command supports following arguments:
 
 - `-o` : Config file path which has mapping of sequencers and resources needed for different observing modes
 - `-l` : optional argument (true if config is to be read locally or false if from remote server) default value is false
-- `-a` : optional argument: agentPrefix on which sequence manager will be spawned, ex: ESW.agent1, IRIS.agent2 etc.
-          This argument is used when Sequence Manager is spawned using Agent. For starting standalone sequence manager for testing or on local
+- `-a` : optional argument: agentPrefix on which Sequence Manager will be spawned, ex: ESW.agent1, IRIS.agent2 etc.
+          This argument is used when Sequence Manager is spawned using Agent. For starting standalone Sequence Manager for testing or on local
           this argument is not needed.
 
 This command starts Sequence Manager as well as its HTTP server.
@@ -58,12 +58,12 @@ This command starts Sequence Manager as well as its HTTP server.
 //cd to installation directory
 cd /tmt/apps
 
-// run sequence manager
+// run Sequence Manager
 ./sequence-manager start -o obsmode.conf
 ```
 
 @@@note
-Refer to supported arguments section or `./sequence-manager start --help` for starting sequence manager with specific arguments
+Refer to supported arguments section or `./sequence-manager start --help` for starting Sequence Manager with specific arguments
 @@@
 
 ## Setting the Log Level
@@ -81,7 +81,7 @@ For example, using the example above:
 //cd to installation directory
 cd /tmt/apps
 
-// run sequence manager
+// run Sequence Manager
 ./sequence-manager -J-Dcsw-logging.component-log-levels.ESW.sequence_manager=TRACE start -o obsmode.conf
 ```
 

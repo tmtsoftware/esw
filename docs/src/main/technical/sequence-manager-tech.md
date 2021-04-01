@@ -175,7 +175,7 @@ result in an inconsistent system. For example,
 configure Observing_Mode_1 msg is received by Sequence Manager Actor. Let's assume that this requires starting ESW, IRIS and TCS sequencers.
 Configure flow has checked for resource conflict. No conflict is there so configure goes ahead with processing. During this processing,
 if any other msg like startSequencer for IRIS subsystem and Observing_Mode_2 is received then this will result in inconsistent behaviour.
-To avoid these cases, certain msgs are accepted only when sequence manager is idle. When any one of idle state msg is received, sequence manager
+To avoid these cases, certain msgs are accepted only when Sequence Manager is idle. When any one of idle state msg is received, Sequence Manager
 goes into processing state where it accepts only common msgs (read state msgs which will not cause any inconsistency). In processing state, actor waits
 for processing complete msg. Once processing complete msg is received, actor goes back to idle state and ready to process any of idle state msg. Both idle
 and processing state can handle common msgs without any state change.
@@ -188,9 +188,9 @@ For running Sequence Manager, please refer @ref:[this](./apps/sequence-manager-a
 Simulation mode for SM is mainly for testing the functionality/scenarios of apps interacting with SM.
 
 ### Approach followed:
-* In this approach we will be spawning actual sequence manager, agents, sequence-components and sequencers(simulation mode).
+* In this approach we will be spawning actual Sequence Manager, agents, sequence-components and sequencers(simulation mode).
 
-* When the sequence manager is started using the esw-services with the simulation flag, the following things are done.
+* When the Sequence Manager is started using the esw-services with the simulation flag, the following things are done.
     
     1. If a obs-mode config is provided using -o flag, it is used and if not then a default config is used.
     2. Three agents are spawned automatically(ESW, TCS, IRIS)
