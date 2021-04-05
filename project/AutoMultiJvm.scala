@@ -1,7 +1,7 @@
 import com.typesafe.sbt.MultiJvmPlugin.autoImport._
 import com.typesafe.sbt.SbtMultiJvm
-import sbt.Keys.{artifacts, fork, moduleName, packageBin, packagedArtifacts}
-import sbt.{Def, _}
+import sbt.Keys.fork
+import sbt._
 import sbtassembly.AssemblyKeys._
 import sbtassembly.MergeStrategy
 
@@ -9,15 +9,15 @@ object AutoMultiJvm extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] =
     SbtMultiJvm.multiJvmSettings ++ Seq(
-      multiNodeHosts in MultiJvm := multiNodeHostNames,
-      fork in MultiJvm := true,
-      assemblyMergeStrategy in assembly in MultiJvm := {
+      MultiJvm / multiNodeHosts := multiNodeHostNames,
+      MultiJvm / fork := true,
+      MultiJvm / assembly / assemblyMergeStrategy := {
         case "application.conf"                     => MergeStrategy.concat
         case x if x.contains("versions.properties") => MergeStrategy.discard
         case x if x.contains("schema")              => MergeStrategy.last
         case x if x.contains("main.kotlin_module")  => MergeStrategy.concat
         case x =>
-          val oldStrategy = (assemblyMergeStrategy in assembly in MultiJvm).value
+          val oldStrategy = (MultiJvm / assembly / assemblyMergeStrategy).value
           oldStrategy(x)
       }
     )

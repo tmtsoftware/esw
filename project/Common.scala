@@ -1,9 +1,8 @@
-import com.timushev.sbt.updates.UpdatesPlugin.autoImport._
 import com.typesafe.sbt.site.SitePlugin.autoImport.siteDirectory
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
 import org.tmt.sbt.docs.DocKeys._
-import sbt._
 import sbt.Keys._
+import sbt._
 import sbt.librarymanagement.ScmInfo
 import sbtunidoc.GenJavadocPlugin.autoImport.unidocGenjavadocVersion
 
@@ -22,7 +21,7 @@ object Common {
       )
     else Seq(Tests.Argument("-oDF"))
 
-  val jsTestArg              = testOptions in Test := Seq(Tests.Argument("-oDF"))
+  val jsTestArg              = Test / testOptions := Seq(Tests.Argument("-oDF"))
   val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
 
   lazy val CommonSettings: Seq[Setting[_]] =
@@ -59,8 +58,8 @@ object Common {
         // -Y options are rarely needed, please look for -W equivalents
       ),
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
-      testOptions in Test ++= reporterOptions,
-      publishArtifact in (Test, packageBin) := true,
+      Test / testOptions ++= reporterOptions,
+      Test / packageBin / publishArtifact := true,
       version := {
         sys.props.get("prod.publish") match {
           case Some("true") => version.value
@@ -68,9 +67,9 @@ object Common {
         }
       },
       fork := true,
-      fork in Test := false,
+      Test / fork := false,
       isSnapshot := !sys.props.get("prod.publish").contains("true"),
-      javaOptions in Test ++= Seq("-Dakka.actor.serialize-messages=on"),
+      Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),
       cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
       scalafmtOnCompile := true,
       unidocGenjavadocVersion := "0.16",

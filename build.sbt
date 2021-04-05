@@ -98,7 +98,7 @@ lazy val `esw-ocs-impl` = project
   .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value,
-    fork in Test := true
+    Test / fork := true
   )
   .dependsOn(
     `esw-ocs-api`.jvm,
@@ -120,7 +120,7 @@ lazy val `esw-ocs-dsl-kt` = project
   .in(file("esw-ocs/esw-ocs-dsl-kt"))
   .enablePlugins(KotlinPlugin, MaybeCoverage)
   .settings(
-    fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
+    Test / fork := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := EswKeys.kotlinVersion,
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
@@ -198,7 +198,7 @@ lazy val `esw-http-core` = project
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
-  .settings(fork in Test := true)
+  .settings(Test / fork := true)
   .enablePlugins(AutoMultiJvm)
   .dependsOn(
     `esw-gateway-server`,
