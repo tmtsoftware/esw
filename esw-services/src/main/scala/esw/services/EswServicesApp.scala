@@ -6,7 +6,6 @@ import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 import esw.commons.cli.EswCommandApp
 import esw.services.cli.Command
-import esw.services.cli.Command._
 
 import scala.util.control.NonFatal
 
@@ -18,13 +17,7 @@ object EswServicesApp extends EswCommandApp[Command] {
 
   val hostname: String = Networks().hostname
 
-  override def run(command: Command, args: RemainingArgs): Unit =
-    command match {
-      case s: Start           => run(s)
-      case StartEngUIServices => run(StartEngUIServices)
-    }
-
-  def run(command: Command): Unit = {
+  override def run(command: Command, args: RemainingArgs): Unit = {
     val wiring = new Wiring(command)
     try {
       LoggingSystemFactory.start(appName, appVersion, hostname, wiring.actorSystem)

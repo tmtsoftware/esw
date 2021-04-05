@@ -102,7 +102,23 @@ components.
 6. Agent `ESW.sm_machine` (For Sequence Manager)
 7. Agent service
 8. Gateway
-9. Sequence Manager in simulation mode
+9. Sequence Manager (can run in simulation mode depending on the flag)
+
+### Available options: 
+
+For Sequence Manager:
+- `--sm-simulation-mode`: runs Sequence Manager in simulation mode.
+
+###Examples
+--sm-simulation-mode
+1. Start all backend services needed for engineering UI along with sequence manager
+```bash
+sbt "esw-services/run start-eng-ui-services"
+```
+2. Start all backend services needed for engineering UI along with sequence manager in simulation mode
+```bash
+sbt "esw-services/run start-eng-ui-services --sm-simulation-mode"
+```
 
 This setup ensures that all backend services needed to test out `esw-ocs-eng-ui` are up and running.
 

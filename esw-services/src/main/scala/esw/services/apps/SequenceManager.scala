@@ -1,7 +1,5 @@
 package esw.services.apps
 
-import java.nio.file.Path
-
 import akka.actor.typed.ActorSystem
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.location.api.models.ComponentId
@@ -18,6 +16,7 @@ import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
 import esw.services.internal.ManagedService
 
+import java.nio.file.Path
 import scala.concurrent.{Await, ExecutionContext}
 
 class SequenceManager(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) {
@@ -47,8 +46,7 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
 
   private def startSM(obsModeConfigPath: Path, simulation: Boolean): SpawnResponse = {
     smAgent.start()
-
-    val spawnResponse = locationService
+    val spawnResponseF = locationService
       .resolve(AkkaConnection(ComponentId(smAgentPrefix, Machine)), CommonTimeouts.ResolveLocation)
       .flatMap {
         case Some(agentLocation) =>
@@ -59,7 +57,11 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
             s"Spawn sequence manager failed: failed to locate agent $smAgentPrefix for spawning sequence manager"
           )
       }
-    Await.result(spawnResponse, CommonTimeouts.Wiring)
+    val spawnResponse = Await.result(spawnResponseF, CommonTimeouts.Wiring)
+    if (simulation) {
+      GREEN.println(s"Sequence manager running in simulation mode.")
+    }
+    spawnResponse
   }
 
   private def stopSM(): Unit = {

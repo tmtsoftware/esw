@@ -1,11 +1,11 @@
 package esw.services.cli
 
-import java.nio.file.Path
-
 import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, ExtraName, HelpMessage}
 import csw.prefix.models.Prefix
 import esw.sm.app.SequenceManagerAppCommand
+
+import java.nio.file.Path
 
 sealed trait Command
 
@@ -79,6 +79,9 @@ object Command {
   }
 
   @CommandName("start-eng-ui-services")
-  @HelpMessage("starts ESW services needed by ocs eng ui")
-  final case object StartEngUIServices extends Command
+  @HelpMessage("starts ESW services needed by ocs eng ui.\n")
+  final case class StartEngUIServices(
+      @HelpMessage("Enable simulation mode for sequence manager")
+      smSimulationMode: Boolean = false
+  ) extends Command
 }

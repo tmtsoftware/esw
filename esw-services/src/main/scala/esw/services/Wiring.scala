@@ -1,7 +1,5 @@
 package esw.services
 
-import java.nio.file.Path
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.config.api.scaladsl.ConfigService
@@ -23,8 +21,10 @@ import esw.constants.CommonTimeouts
 import esw.gateway.server.GatewayWiring
 import esw.services.apps.{Agent, AgentService, Gateway, SequenceManager}
 import esw.services.cli.Command
-import esw.services.cli.Command.Start
+import esw.services.cli.Command.{Start, StartEngUIServices}
 import esw.services.internal.ManagedService
+
+import java.nio.file.Path
 
 class Wiring(cmd: Command) {
 
@@ -34,8 +34,8 @@ class Wiring(cmd: Command) {
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   private lazy val serviceList: List[ManagedService[_]] = cmd match {
-    case s: Start                   => getServiceListForStart(s)
-    case Command.StartEngUIServices => getServiceListForEngUIBackend
+    case s: Start              => getServiceListForStart(s)
+    case s: StartEngUIServices => getServiceListForEngUIBackend(s)
   }
 
   private lazy val configService: ConfigService = ConfigClientFactory.adminApi(actorSystem, locationService, tokenFactory)
@@ -53,10 +53,9 @@ class Wiring(cmd: Command) {
   private val configData            = ConfigData.fromString(FileUtils.readResource("smObsModeConfig.conf"))
   private val provisionData         = ConfigData.fromString(FileUtils.readResource("smProvisionConfig.json"))
   private lazy val configServiceExt = new ConfigServiceExt(configService)
-
   private val VersionConf =
     s"""
-      |scripts = bbef4b5dcfd
+      |scripts = 77a91b13ee6
       |
       |esw = 0.1.0-SNAPSHOT
       |
@@ -84,7 +83,7 @@ class Wiring(cmd: Command) {
     serviceList
   }
 
-  private def getServiceListForEngUIBackend: List[ManagedService[_]] = {
+  private def getServiceListForEngUIBackend(command: StartEngUIServices): List[ManagedService[_]] = {
     // start agents as per provision config
     val agentApp1: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(ESW, "machine1"), systemConfig)
     val agentApp2: ManagedService[AgentWiring] = Agent.service(enable = true, Prefix(AOESW, "machine1"), systemConfig)
@@ -97,7 +96,7 @@ class Wiring(cmd: Command) {
     val gatewayService: ManagedService[GatewayWiring] = Gateway.service(enable = true, None)
 
     val smService: ManagedService[SpawnResponse] =
-      new SequenceManager(locationService).service(enable = true, None, simulation = true)
+      new SequenceManager(locationService).service(enable = true, None, simulation = command.smSimulationMode)
 
     val serviceList = List(agentApp1, agentApp2, agentApp3, agentApp4, agentApp5, agentService, gatewayService, smService)
     serviceList
