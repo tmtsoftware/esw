@@ -6,7 +6,7 @@ import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 import esw.commons.cli.EswCommandApp
 import esw.services.cli.Command
-
+import esw.sm.app.SequenceManagerAppCommand.prefixParser
 import scala.util.control.NonFatal
 
 object EswServicesApp extends EswCommandApp[Command] {

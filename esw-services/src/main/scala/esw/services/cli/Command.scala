@@ -1,17 +1,13 @@
 package esw.services.cli
 
-import caseapp.core.argparser.SimpleArgParser
+import java.nio.file.Path
+
 import caseapp.{CommandName, ExtraName, HelpMessage}
 import csw.prefix.models.Prefix
-import esw.sm.app.SequenceManagerAppCommand
-
-import java.nio.file.Path
 
 sealed trait Command
 
 object Command {
-
-  implicit val prefixParser: SimpleArgParser[Prefix] = SequenceManagerAppCommand.prefixParser
 
   @CommandName("start")
   @HelpMessage("starts all the ESW services by default if no other option is provided")
