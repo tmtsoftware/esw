@@ -1,8 +1,8 @@
 # esw-services
 
-`esw-services` acts like a single application to startup all ESW services on development environment. The main objective 
-of `esw-services` is to have a user-friendly way of simulating the prod like ESW environment which would provide users with 
-a platform to test various ESW services and interactions of other apps with these services. You can use `esw-services` to 
+`esw-services` acts like a single application to startup all ESW services on development environment. The main objective
+of `esw-services` is to have a user-friendly way of simulating the prod like ESW environment which would provide users with
+a platform to test various ESW services and interactions of other apps with these services. You can use `esw-services` to
 start following apps/services:
 
 1. Agent app
@@ -10,10 +10,10 @@ start following apps/services:
 3. Gateway
 4. Sequence Manager (in or out of simulation mode)
 
-Services started up using `esw-services` can be interacted with using `esw-shell`, `esw-ocs-eng-ui`, or by directly 
+Services started up using `esw-services` can be interacted with using `esw-shell`, `esw-ocs-eng-ui`, or by directly
 accessing the HTTP endpoints.
 
-*NOTE: All apps/services started via `esw-services` are part of same JVM process.* 
+*NOTE: All apps/services started via `esw-services` are part of same JVM process.*
 
 
 ## Pre-requisites for running esw-services
@@ -44,7 +44,7 @@ If you are not building csw from the sources, you can run `csw-services` as foll
 
 ## How to use esw-services
 
-Without specifying any options i.e. `sbt "esw-services/run start"`, all the apps/services will be started. Which means, 
+Without specifying any options i.e. `sbt "esw-services/run start"`, all the apps/services will be started. Which means,
 two agents (`ESW.primary` and `ESW.sm_machine`), Agent service, Gateway, and Sequence Manager will be started.
 
 *NOTE: By default, agent `ESW.sm_machine` is spawned to be used for Sequence Manager operations.*
@@ -66,7 +66,7 @@ For Sequence Manager (SM):
 - `--obs-mode-config`: Start SM with this observation mode config file
 - `--simulation`: Start SM in simulation mode
 
-*NOTE: Starting Sequence Manager automatically starts `ESW.sm_machine` agent in order to support provisioning of sequence 
+*NOTE: Starting Sequence Manager automatically starts `ESW.sm_machine` agent in order to support provisioning of sequence
 components.
 
 ### Examples
@@ -75,7 +75,7 @@ components.
 ```bash
 `sbt "esw-services/run start --agent --agent-prefix TCS.machine3"`
 ```
-   
+
 2. Start just gateway service with custom command role config path:
 ```bash
 `sbt "esw-services/run start --gateway --command-role-config ~/command_role.conf"`
@@ -90,9 +90,10 @@ components.
 
 - Run `sbt "csw-services/run start -c -k"` inside csw repository.
 - Run `sbt "esw-services/run start-eng-ui-services"` inside esw repository.
+- Run `sbt "esw-services/run start-eng-ui-services --help"` to get more information.
 - Run `npm start` inside esw-ocs-eng-ui repository.
 
-`start-eng-ui-services` is a special command designed specifically to create a setup that would let users test out the 
+`start-eng-ui-services` is a special command designed specifically to create a setup that would let users test out the
 `esw-ocs-eng-ui` app. This sets up the following:
 1. Agent `ESW.machine1`
 2. Agent `AOESW.machine1`
@@ -102,15 +103,15 @@ components.
 6. Agent `ESW.sm_machine` (For Sequence Manager)
 7. Agent service
 8. Gateway
-9. Sequence Manager (can run in simulation mode depending on the flag)
+9. Sequence Manager (in or out of simulation mode depending on the flag: sm-simulation-mode)
 
-### Available options: 
+### Available options:
 
 For Sequence Manager:
 - `--sm-simulation-mode`: runs Sequence Manager in simulation mode.
 
 ###Examples
---sm-simulation-mode
+
 1. Start all backend services needed for engineering UI along with sequence manager
 ```bash
 sbt "esw-services/run start-eng-ui-services"
