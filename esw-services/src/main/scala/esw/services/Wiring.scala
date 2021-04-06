@@ -55,7 +55,7 @@ class Wiring(cmd: Command) {
   private lazy val configServiceExt = new ConfigServiceExt(configService)
   private val VersionConf =
     s"""
-      |scripts = 77a91b13ee6
+      |scripts = 56a5375
       |
       |esw = 0.1.0-SNAPSHOT
       |
