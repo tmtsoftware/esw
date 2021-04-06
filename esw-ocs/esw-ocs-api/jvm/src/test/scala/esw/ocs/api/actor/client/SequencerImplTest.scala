@@ -296,9 +296,29 @@ class SequencerImplTest extends ActorTestSuit {
 
   }
 
-  "getSequencerState should return Processing for any intermediate sequencer state" in {
+  "getSequencerState should return Processing for any intermediate sequencer state | ESW-482" in {
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! GoingOffline
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Processing) }
+
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! GoingOnline
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Processing) }
+
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! AbortingSequence
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Processing) }
+
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! Stopping
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Processing) }
+
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! Submitting
+    } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Processing) }
+
+    withBehavior {
+      case GetSequencerState(replyTo) => replyTo ! Starting
     } check { s => s.getSequencerState.futureValue should ===(SequencerStateResponse.Processing) }
   }
 
