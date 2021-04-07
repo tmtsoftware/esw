@@ -280,7 +280,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
   }
 
   "GetSequencerState" must {
-    "return current state of the sequencer" in {
+    "return current state of the sequencer | ESW-482" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
