@@ -13,7 +13,8 @@ start following apps/services:
 Services started up using `esw-services` can be interacted with using `esw-shell`, `esw-ocs-eng-ui`, or by directly
 accessing the HTTP endpoints.
 
-*NOTE: All apps/services started via `esw-services` are part of same JVM process.*
+*NOTE: All apps/services started via `esw-services` are part of same JVM process, except Sequence Manager which is a separate 
+JVM process.*
 
 
 ## Pre-requisites for running esw-services
@@ -67,7 +68,7 @@ For Sequence Manager (SM):
 - `--simulation`: Start SM in simulation mode
 
 *NOTE: Starting Sequence Manager automatically starts `ESW.sm_machine` agent in order to support provisioning of sequence
-components.
+components. This agent is also responsible for starting Sequence Manager.*
 
 ### Examples
 
