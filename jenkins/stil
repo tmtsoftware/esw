@@ -20,7 +20,7 @@ pipeline {
                 sh "curl -s https://get.sdkman.io | bash"
                 sh "source ~/.sdkman/bin/sdkman-init.sh"
                 sh "sdk install kotlin"
-                sh "sudo ln -s $(which kotlinc) /usr/local/bin/kotlinc"
+                sh "sudo ln -s ${which kotlinc} /usr/local/bin/kotlinc"
             }
         }
 
