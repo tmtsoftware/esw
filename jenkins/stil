@@ -15,6 +15,12 @@ pipeline {
             }
         }
 
+        stage('Install Kotlin') {
+            steps {
+                sh "source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sudo ln -s ${which kotlinc} /usr/local/bin/kotlinc"
+            }
+        }
+
         stage('Build') {
             steps {
                 sh "sbt scalafmtCheck"
@@ -26,7 +32,7 @@ pipeline {
         stage('Test') {
 
             steps {
-                sh "source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test"
+                sh "sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test"
                 sh "sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test"
             }
 
