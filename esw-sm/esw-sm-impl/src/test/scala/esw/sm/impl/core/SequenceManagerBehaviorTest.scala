@@ -125,6 +125,21 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil).startSequencers(darkNight, darkNightSequencers)
     }
 
+    "be able to handle next messages if the previous StartSequencer call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [7000] ms"
+      val connection      = HttpConnection(ComponentId(Prefix(ESW, darkNight.name), Sequencer))
+      when(locationServiceUtil.find(connection)).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
+
+      val testProbe = TestProbe[StartSequencerResponse]()
+      assertState(Idle)
+      smRef ! StartSequencer(ESW, darkNight, testProbe.ref)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      testProbe.expectMessage(FailedResponse(s"Sequence Manager Operation(StartSequencer) failed due to: $exceptionReason"))
+      verify(locationServiceUtil).find(connection)
+    }
+
     "be able to handle next messages if the previous ShutdownSequencer call times-out due to downstream error | ESW-473" in {
       val exceptionReason = "Ask timed out after [10000] ms"
       when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
@@ -137,6 +152,54 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       testProbe.expectMessage(FailedResponse(s"Sequence Manager Operation(ShutdownSequencer) failed due to: $exceptionReason"))
       verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
+    }
+
+    "be able to handle next messages if the previous ShutdownSubsystemSequencers call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [10000] ms"
+      when(sequencerUtil.shutdownSubsystemSequencers(ESW)).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
+
+      val testProbe = TestProbe[ShutdownSequencersResponse]()
+      assertState(Idle)
+      smRef ! ShutdownSubsystemSequencers(ESW, testProbe.ref)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      testProbe.expectMessage(
+        FailedResponse(s"Sequence Manager Operation(ShutdownSubsystemSequencers) failed due to: $exceptionReason")
+      )
+      verify(sequencerUtil).shutdownSubsystemSequencers(ESW)
+    }
+
+    "be able to handle next messages if the previous ShutdownObsModeSequencers call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [10000] ms"
+      when(sequencerUtil.shutdownObsModeSequencers(darkNight)).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
+
+      val testProbe = TestProbe[ShutdownSequencersResponse]()
+      assertState(Idle)
+      smRef ! ShutdownObsModeSequencers(darkNight, testProbe.ref)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      testProbe.expectMessage(
+        FailedResponse(s"Sequence Manager Operation(ShutdownObsModeSequencers) failed due to: $exceptionReason")
+      )
+      verify(sequencerUtil).shutdownObsModeSequencers(darkNight)
+    }
+
+    "be able to handle next messages if the previous ShutdownAllSequencers call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [10000] ms"
+      when(sequencerUtil.shutdownAllSequencers()).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
+
+      val testProbe = TestProbe[ShutdownSequencersResponse]()
+      assertState(Idle)
+      smRef ! ShutdownAllSequencers(testProbe.ref)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      testProbe.expectMessage(
+        FailedResponse(s"Sequence Manager Operation(ShutdownAllSequencers) failed due to: $exceptionReason")
+      )
+      verify(sequencerUtil).shutdownAllSequencers()
     }
 
     "be able to handle next messages if the previous RestartSequencer call times-out due to downstream error | ESW-473" in {
@@ -168,6 +231,22 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         FailedResponse(s"Sequence Manager Operation(ShutdownSequenceComponent) failed due to: $exceptionReason")
       )
       verify(sequenceComponentUtil).shutdownSequenceComponent(prefix)
+    }
+
+    "be able to handle next messages if the previous ShutdownAllSequenceComponents call times-out due to downstream error | ESW-473" in {
+      val exceptionReason = "Ask timed out after [8000] ms"
+      when(sequenceComponentUtil.shutdownAllSequenceComponents()).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
+
+      val testProbe = TestProbe[ShutdownSequenceComponentResponse]()
+      assertState(Idle)
+      smRef ! ShutdownAllSequenceComponents(testProbe.ref)
+      // goes back to idle after exception
+      assertState(Idle)
+
+      testProbe.expectMessage(
+        FailedResponse(s"Sequence Manager Operation(ShutdownAllSequenceComponents) failed due to: $exceptionReason")
+      )
+      verify(sequenceComponentUtil).shutdownAllSequenceComponents()
     }
   }
 

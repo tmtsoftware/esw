@@ -59,7 +59,7 @@ class SequenceManagerBehavior(
         sequencerUtil
           .shutdownSubsystemSequencers(subsystem)
           .map(self ! ProcessingComplete(_))
-          .recoverWithProcessingError(self)
+          .recoverWithProcessingError[ShutdownSubsystemSequencers](self)
         processing(self, replyTo)
 
       case ShutdownObsModeSequencers(obsMode, replyTo) =>
