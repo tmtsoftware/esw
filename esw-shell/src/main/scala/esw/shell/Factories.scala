@@ -24,7 +24,7 @@ import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext}
 
 class Factories(val locationUtils: LocationServiceUtil, configServiceExt: ConfigServiceExt)(implicit
     val actorSystem: ActorSystem[_]
@@ -35,20 +35,25 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
   // ============= CSW ============
   def assemblyCommandService(prefix: String): CommandService =
     CommandServiceFactory.make(locationUtils.findAkkaLocation(prefix, Assembly).map(_.throwLeft).await())
+
   def hcdCommandService(prefix: String): CommandService =
     CommandServiceFactory.make(
       locationUtils.findAkkaLocation(prefix, HCD).map(_.throwLeft).await()
     )
-  def spawnSimulatedHCD(hcdPrefix: String, agentPrefix: String): Future[SpawnContainersResponse] = {
+
+  def spawnSimulatedHCD(hcdPrefix: String, agentPrefix: String): SpawnContainersResponse = {
     val client = agentClient(agentPrefix)
-    Container.spawnSimulatedComponent(hcdPrefix, HCD, client)
+    Container.spawnSimulatedComponent(hcdPrefix, HCD, client).await()
   }
+
   def spawnSimulatedHCD(prefix: String): ActorRef[ComponentMessage] =
     eswTestKit.spawnHCD(Prefix(prefix), new SimulatedComponentBehaviourFactory())
-  def spawnSimulatedAssembly(assemblyPrefix: String, agentPrefix: String): Future[SpawnContainersResponse] = {
+
+  def spawnSimulatedAssembly(assemblyPrefix: String, agentPrefix: String): SpawnContainersResponse = {
     val client = agentClient(agentPrefix)
-    Container.spawnSimulatedComponent(assemblyPrefix, HCD, client)
+    Container.spawnSimulatedComponent(assemblyPrefix, HCD, client).await()
   }
+
   def spawnSimulatedAssembly(prefix: String): ActorRef[ComponentMessage] =
     eswTestKit.spawnAssembly(Prefix(prefix), new SimulatedComponentBehaviourFactory())
 
@@ -58,12 +63,16 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
       locationUtils.findSequencer(subsystem, obsMode).map(_.throwLeft).await().sequencerRef
     new SequencerImpl(sequencerRef)
   }
+
   def adminApi: AdminApi = new AdminImpl(locationUtils.locationService)
+
   def agentClient(agentPrefix: String): AgentClient =
     new AgentClient(
       locationUtils.findAkkaLocation(agentPrefix, Machine).map(_.throwLeft).await()
     )
+
   def sequenceManager(): SequenceManagerApi = new SequenceManager(locationUtils, configServiceExt).service
+
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse =
     new SequenceManager(locationUtils, configServiceExt).provision(config, sequencerScriptsVersion)
 }
