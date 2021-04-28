@@ -1,5 +1,6 @@
 package esw.ocs.api.client
 
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
 import csw.location.api.models.AkkaLocation
@@ -11,7 +12,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerRequest._
-import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
+import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
 import esw.ocs.api.protocol._
 import msocket.api.Transport
 
@@ -96,6 +97,11 @@ class SequencerClient(
 
   override def getSequenceComponent: Future[AkkaLocation] = postClient.requestResponse[AkkaLocation](GetSequenceComponent)
 
-  override def getSequencerState: Future[SequencerStateResponse] =
-    postClient.requestResponse[SequencerStateResponse](GetSequencerState)
+  override def getSequencerState: Future[ExternalSequencerState] =
+    postClient.requestResponse[ExternalSequencerState](GetSequencerState)
+
+  override def subscribeSequencerState(): Source[SequencerStateResponse, Unit] =
+    websocketClient
+      .requestStream[SequencerStateResponse](SubscribeSequencerState)
+      .mapMaterializedValue(_ => ()) // todo:come back to  this
 }

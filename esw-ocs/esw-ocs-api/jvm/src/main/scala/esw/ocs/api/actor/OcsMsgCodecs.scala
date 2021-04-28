@@ -12,5 +12,5 @@ import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 trait OcsMsgCodecs extends MessageCodecs with CommonCodecs with OcsCodecs {
   implicit lazy val eswSequencerMessageCodec: Codec[EswSequencerRemoteMessage]       = deriveAllCodecs
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentRemoteMsg]     = deriveAllCodecs
-  implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerState[SequencerMsg]] = enumCodec[SequencerState[SequencerMsg]]
+  implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerState[SequencerMsg]] = deriveAllCodecs
 }

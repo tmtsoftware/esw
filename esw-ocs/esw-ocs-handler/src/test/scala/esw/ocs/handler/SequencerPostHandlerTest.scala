@@ -313,11 +313,11 @@ class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest wit
     }
 
     "return SequencerStateResponse for GetSequencerState | ESW-482" in {
-      when(sequencer.getSequencerState).thenReturn(Future.successful(SequencerStateResponse.Offline))
+      when(sequencer.getSequencerState).thenReturn(Future.successful(ExternalSequencerState.Offline))
 
       Post("/post-endpoint", GetSequencerState.narrow) ~> route ~> check {
         verify(sequencer).getSequencerState
-        responseAs[SequencerStateResponse] should ===(SequencerStateResponse.Offline)
+        responseAs[ExternalSequencerState] should ===(ExternalSequencerState.Offline)
       }
     }
   }

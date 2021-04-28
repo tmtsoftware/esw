@@ -64,7 +64,8 @@ class SequencerBehavior(
   private lazy val SequenceFailedToSubmitMessage = "New sequence handler failed to submit successfully"
   // ******************* Sequencer Behaviors **************
 
-  private def idle(data: SequencerData): Behavior[SequencerMsg] =
+  private def idle(data: SequencerData): Behavior[SequencerMsg] = {
+    data.notifyStateSubscribers(Idle)
     receive(Idle, data) {
       case GoOffline(replyTo)                        => goOffline(replyTo, data, Idle)
       case GoOnline(replyTo)                         => goOnline(replyTo, data, Idle)
@@ -72,8 +73,10 @@ class SequencerBehavior(
       case SubmitSequenceInternal(sequence, replyTo) => submitSequence(sequence, data, replyTo)
       case PullNext(replyTo)                         => idle(data.pullNextStep(replyTo)) // registers a subscriber for Step
     }
+  }
 
-  private def loaded(data: SequencerData): Behavior[SequencerMsg] =
+  private def loaded(data: SequencerData): Behavior[SequencerMsg] = {
+    data.notifyStateSubscribers(Loaded)
     receive(Loaded, data) {
       case GoOffline(replyTo)              => goOffline(replyTo, data, Loaded)
       case GoOnline(replyTo)               => goOnline(replyTo, data, Loaded)
@@ -81,8 +84,10 @@ class SequencerBehavior(
       case StartSequence(replyTo)          => startSequence(data, replyTo)
       case LoadSequence(sequence, replyTo) => load(sequence, replyTo, data)
     }
+  }
 
-  private def running(data: SequencerData): Behavior[SequencerMsg] =
+  private def running(data: SequencerData): Behavior[SequencerMsg] = {
+    data.notifyStateSubscribers(Running)
     receive(Running, data) {
       case AbortSequence(replyTo) => abortSequence(data, replyTo)
       case Stop(replyTo)          => stop(data, replyTo)
@@ -94,12 +99,15 @@ class SequencerBehavior(
       case StepFailure(reason, _) => running(data.stepFailure(reason, Running))
       case _: GoIdle              => idle(data) // this is received on sequence completion
     }
+  }
 
-  private def offline(data: SequencerData): Behavior[SequencerMsg] =
+  private def offline(data: SequencerData): Behavior[SequencerMsg] = {
+    data.notifyStateSubscribers(Offline)
     receive(Offline, data) {
       case GoOnline(replyTo)  => goOnline(replyTo, data, Offline)
       case GoOffline(replyTo) => goOffline(replyTo, data, Offline)
     }
+  }
 
   // Starts executing GoOnline handlers of script and changes state to intermediate state GoingOnline
   // On successful execution of handlers, state will change to Idle.
@@ -302,6 +310,10 @@ class SequencerBehavior(
           .map(replyTo ! _.get)
         Behaviors.same
 
+      case SubscribeSequencerState(replyTo) =>
+//        replyTo ! SequencerStateResponse(data.stepList.getOrElse(StepList(List.empty)), state.toExternal) // initial msg
+        stateMachine(state)(data.addStateSubscriber(replyTo))
+
       case ReadyToExecuteNext(replyTo) => stateMachine(state)(data.readyToExecuteNext(replyTo))
       case MaybeNext(replyTo) =>
         if (state == Running) replyTo ! data.stepList.flatMap(_.nextExecutable)
@@ -350,13 +362,14 @@ class SequencerBehavior(
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = SequencerTimeouts.LongTimeout
       debug(s"Sequencer in State: $state, received Message: $msg")
+      println(s"Sequencer in State: $state, received Message: $msg")
 
       msg match {
         // ********* ESW Sequencer Messages *******
         case msg: CommonMessage => handleCommonMessage(msg, state, data)
         case msg: StateMessage  => stateHandler(msg)
         case msg: UnhandleableSequencerMessage =>
-          msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
+          msg.replyTo ! Unhandled(state.getClass.getSimpleName, msg.getClass.getSimpleName); Behaviors.same
 
         // ********* CSW Sequencer Messages *******
         // SubmitSequence is a CSW SequencerMsg, to be able to handle it only in Idle State, a corresponding Internal message is created

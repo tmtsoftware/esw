@@ -21,7 +21,10 @@ trait OcsCodecsBase extends ParamCodecs with LocationCodecs with BasicCodecs {
   implicit lazy val stepStatusCodec: Codec[StepStatus] = deriveAllCodecs
 
   //ObsMode Codecs
-  implicit lazy val obsModeCodec: Codec[ObsMode] = deriveCodec
+  implicit lazy val obsModeCodec: Codec[ObsMode]                               = deriveCodec
+  implicit lazy val externalSequencerStateCodec: Codec[ExternalSequencerState] = deriveAllCodecs
+
+  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse] = deriveCodec
 
   //EswSequencerResponse Codecs
   lazy val responseCodecValue: Codec[EswSequencerResponse] = deriveAllCodecs
@@ -29,7 +32,6 @@ trait OcsCodecsBase extends ParamCodecs with LocationCodecs with BasicCodecs {
   //SequenceComponentResponse Codecs
   implicit lazy val loadScriptResponseCodec: Codec[ScriptResponseOrUnhandled] = deriveAllCodecs
   implicit lazy val okOrUnhandledCodec: Codec[OkOrUnhandled]                  = deriveAllCodecs
-  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]          = deriveCodec
 
   implicit lazy val scriptErrorCodec: Codec[ScriptError] = deriveAllCodecs
 }

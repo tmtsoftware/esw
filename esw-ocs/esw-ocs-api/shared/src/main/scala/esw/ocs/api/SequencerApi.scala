@@ -1,5 +1,6 @@
 package esw.ocs.api
 
+import akka.stream.scaladsl.Source
 import csw.command.api.scaladsl.SequencerCommandService
 import csw.location.api.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
@@ -35,7 +36,8 @@ trait SequencerApi extends SequencerCommandService {
   def goOffline(): Future[GoOfflineResponse]
   def abortSequence(): Future[OkOrUnhandledResponse]
   def stop(): Future[OkOrUnhandledResponse]
-  def getSequencerState: Future[SequencerStateResponse]
+  def getSequencerState: Future[ExternalSequencerState]
+  def subscribeSequencerState(): Source[SequencerStateResponse, Unit]
 
   def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse]
   def operationsMode(): Future[OperationsModeResponse]

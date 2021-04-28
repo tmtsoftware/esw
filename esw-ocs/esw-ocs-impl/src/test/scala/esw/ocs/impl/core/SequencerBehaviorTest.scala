@@ -965,10 +965,10 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
     val testCases: TableFor2[String, SequencerTestSetup] = Table.apply(
       ("state", "sequencer setup"),
-      (Running.entryName, SequencerTestSetup.running(sequence)),
-      (Idle.entryName, SequencerTestSetup.idle(sequence)),
-      (Loaded.entryName, SequencerTestSetup.loaded(sequence)),
-      (Offline.entryName, SequencerTestSetup.offline(sequence))
+      (Running.getClass.getSimpleName, SequencerTestSetup.running(sequence)),
+      (Idle.getClass.getSimpleName, SequencerTestSetup.idle(sequence)),
+      (Loaded.getClass.getSimpleName, SequencerTestSetup.loaded(sequence)),
+      (Offline.getClass.getSimpleName, SequencerTestSetup.offline(sequence))
     )
 
     forAll(testCases) { (stateName, testSetup) =>

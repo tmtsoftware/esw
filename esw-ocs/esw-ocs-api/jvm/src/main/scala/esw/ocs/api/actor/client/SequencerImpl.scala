@@ -2,6 +2,9 @@ package esw.ocs.api.actor.client
 
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.Source
+import akka.stream.typed.scaladsl.ActorSource
 import akka.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
 import csw.command.client.messages.sequencer.SequencerMsg
@@ -17,7 +20,7 @@ import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.{SequencerStateResponse, _}
+import esw.ocs.api.protocol.{ExternalSequencerState, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -58,16 +61,26 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
-  def getSequencerState: Future[SequencerStateResponse] =
+  def getSequencerState: Future[ExternalSequencerState] =
     getState.map {
-      case Idle    => SequencerStateResponse.Idle
-      case Loaded  => SequencerStateResponse.Loaded
-      case Running => SequencerStateResponse.Running
-      case Offline => SequencerStateResponse.Offline
-      case _       => SequencerStateResponse.Processing
+      case Idle    => ExternalSequencerState.Idle
+      case Loaded  => ExternalSequencerState.Loaded
+      case Running => ExternalSequencerState.Running
+      case Offline => ExternalSequencerState.Offline
+      case _       => ExternalSequencerState.Processing
     }
 
-  // commands
+  override def subscribeSequencerState(): Source[SequencerStateResponse, Unit] =
+    ActorSource
+      .actorRef[SequencerStateResponse](
+        PartialFunction.empty,
+        PartialFunction.empty,
+        16,
+        OverflowStrategy.dropHead
+      )
+      .mapMaterializedValue { sequencer ! SubscribeSequencerState(_) }
+
+  // todo : unsubscribe commands
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
     sequencer ? (LoadSequence(sequence, _))

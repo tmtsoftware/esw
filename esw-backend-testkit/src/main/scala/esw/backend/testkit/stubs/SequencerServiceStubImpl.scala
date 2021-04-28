@@ -1,6 +1,7 @@
 package esw.backend.testkit.stubs
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.location.api.models.AkkaLocation
 import csw.location.api.scaladsl.LocationService
@@ -22,8 +23,9 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   override implicit def actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
 
-  private val runId: Id = Id("123")
-  private val stepList  = StepList(Sequence(Setup(Prefix("CSW.IRIS"), CommandName("command-1"), None)))
+  private val runId: Id      = Id("123")
+  private val stepList       = StepList(Sequence(Setup(Prefix("CSW.IRIS"), CommandName("command-1"), None)))
+  private val sequencerState = ExternalSequencerState.Running
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = Future.successful(Ok)
 
@@ -78,5 +80,9 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = Future.successful(Started(runId))
 
-  override def getSequencerState: Future[SequencerStateResponse] = Future.successful(SequencerStateResponse.Running)
+  override def getSequencerState: Future[ExternalSequencerState] = Future.successful(sequencerState)
+
+  override def subscribeSequencerState(): Source[SequencerStateResponse, Unit] =
+    Source(List(SequencerStateResponse(stepList, sequencerState))).mapMaterializedValue(_ => ())
+
 }

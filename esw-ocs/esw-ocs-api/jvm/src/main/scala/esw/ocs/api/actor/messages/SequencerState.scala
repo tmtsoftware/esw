@@ -1,17 +1,24 @@
 package esw.ocs.api.actor.messages
 
 import csw.command.client.messages.sequencer.SequencerMsg
-import enumeratum.{Enum, EnumEntry}
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.protocol.ExternalSequencerState
 
-import scala.collection.immutable.IndexedSeq
+sealed trait SequencerState[+T <: SequencerMsg] extends OcsAkkaSerializable {
+  def toExternal: ExternalSequencerState = {
+    import SequencerState._
+    this match {
+      case _: Idle.type    => ExternalSequencerState.Idle
+      case _: Loaded.type  => ExternalSequencerState.Loaded
+      case _: Running.type => ExternalSequencerState.Running
+      case _: Offline.type => ExternalSequencerState.Offline
+      case _               => ExternalSequencerState.Processing
+    }
+  }
+}
 
-sealed trait SequencerState[+T <: SequencerMsg] extends EnumEntry with OcsAkkaSerializable
-object SequencerState extends Enum[SequencerState[SequencerMsg]] {
-
-  override def values: IndexedSeq[SequencerState[SequencerMsg]] = findValues
-
+object SequencerState {
   case object Idle             extends SequencerState[IdleMessage]
   case object Loaded           extends SequencerState[SequenceLoadedMessage]
   case object Running          extends SequencerState[RunningMessage]

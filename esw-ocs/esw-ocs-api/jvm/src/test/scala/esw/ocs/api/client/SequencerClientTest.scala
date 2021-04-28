@@ -336,11 +336,11 @@ class SequencerClientTest extends BaseTestSuite with SequencerServiceCodecs {
     }
 
     "call postClient with GetSequencerState request | ESW-482" in {
-      val sequencerStateResponse = mock[SequencerStateResponse]
+      val sequencerStateResponse = mock[ExternalSequencerState]
       when(
-        postClient.requestResponse[SequencerStateResponse](argsEq(GetSequencerState))(
-          any[Decoder[SequencerStateResponse]](),
-          any[Encoder[SequencerStateResponse]]()
+        postClient.requestResponse[ExternalSequencerState](argsEq(GetSequencerState))(
+          any[Decoder[ExternalSequencerState]](),
+          any[Encoder[ExternalSequencerState]]()
         )
       ).thenReturn(Future.successful(sequencerStateResponse))
 

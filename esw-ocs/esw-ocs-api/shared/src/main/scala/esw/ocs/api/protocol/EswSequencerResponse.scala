@@ -4,7 +4,7 @@ import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Error, Invalid, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
-import esw.ocs.api.models.Step
+import esw.ocs.api.models.{Step, StepList}
 
 sealed trait EswSequencerResponse     extends OcsAkkaSerializable
 sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name
@@ -16,7 +16,6 @@ sealed trait GoOnlineResponse         extends EswSequencerResponse
 sealed trait GoOfflineResponse        extends EswSequencerResponse
 sealed trait DiagnosticModeResponse   extends EswSequencerResponse
 sealed trait OperationsModeResponse   extends EswSequencerResponse
-sealed trait SequencerStateResponse   extends EswSequencerResponse
 
 sealed trait SequencerSubmitResponse extends EswSequencerResponse {
   def toSubmitResponse(runId: Id = Id("IdNotAvailable")): SubmitResponse =
@@ -75,10 +74,14 @@ object EditorError {
   final case class IdDoesNotExist(id: Id)             extends EditorError with RemoveBreakpointResponse
 }
 
-object SequencerStateResponse {
-  case object Idle       extends SequencerStateResponse
-  case object Loaded     extends SequencerStateResponse
-  case object Running    extends SequencerStateResponse
-  case object Offline    extends SequencerStateResponse
-  case object Processing extends SequencerStateResponse
+// todo: remove this if possible and Use SequencerState
+sealed trait ExternalSequencerState
+object ExternalSequencerState {
+  case object Idle       extends ExternalSequencerState
+  case object Loaded     extends ExternalSequencerState
+  case object Running    extends ExternalSequencerState
+  case object Offline    extends ExternalSequencerState
+  case object Processing extends ExternalSequencerState
 }
+
+case class SequencerStateResponse(stepList: StepList, sequencerState: ExternalSequencerState) extends EswSequencerResponse

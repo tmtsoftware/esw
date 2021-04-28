@@ -105,4 +105,6 @@ final case class StepList private[ocs] (steps: List[Step]) extends OcsAkkaSerial
 object StepList {
   def apply(sequence: Sequence): StepList =
     StepList(sequence.commands.toList.map(Step.apply))
+
+  private[esw] def empty = StepList(List.empty)
 }
