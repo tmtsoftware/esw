@@ -9,6 +9,7 @@ import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
+import msocket.api.Subscription
 
 import scala.concurrent.Future
 
@@ -37,7 +38,7 @@ trait SequencerApi extends SequencerCommandService {
   def abortSequence(): Future[OkOrUnhandledResponse]
   def stop(): Future[OkOrUnhandledResponse]
   def getSequencerState: Future[ExternalSequencerState]
-  def subscribeSequencerState(): Source[SequencerStateResponse, Unit]
+  def subscribeSequencerState(): Source[SequencerStateResponse, Subscription]
 
   def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse]
   def operationsMode(): Future[OperationsModeResponse]

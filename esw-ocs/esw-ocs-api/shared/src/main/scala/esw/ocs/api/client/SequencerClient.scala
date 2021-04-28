@@ -14,7 +14,7 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
 import esw.ocs.api.protocol._
-import msocket.api.Transport
+import msocket.api.{Subscription, Transport}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -100,8 +100,8 @@ class SequencerClient(
   override def getSequencerState: Future[ExternalSequencerState] =
     postClient.requestResponse[ExternalSequencerState](GetSequencerState)
 
-  override def subscribeSequencerState(): Source[SequencerStateResponse, Unit] =
+  override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =
     websocketClient
       .requestStream[SequencerStateResponse](SubscribeSequencerState)
-      .mapMaterializedValue(_ => ()) // todo:come back to  this
+  // todo:come back to  this
 }

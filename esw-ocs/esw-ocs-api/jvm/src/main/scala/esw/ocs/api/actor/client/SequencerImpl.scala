@@ -2,7 +2,7 @@ package esw.ocs.api.actor.client
 
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.stream.OverflowStrategy
+import akka.stream.{KillSwitches, OverflowStrategy}
 import akka.stream.scaladsl.Source
 import akka.stream.typed.scaladsl.ActorSource
 import akka.util.Timeout
@@ -21,6 +21,7 @@ import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.{ExternalSequencerState, _}
+import msocket.api.Subscription
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -70,7 +71,7 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
       case _       => ExternalSequencerState.Processing
     }
 
-  override def subscribeSequencerState(): Source[SequencerStateResponse, Unit] =
+  override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =
     ActorSource
       .actorRef[SequencerStateResponse](
         PartialFunction.empty,
@@ -79,6 +80,7 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
         OverflowStrategy.dropHead
       )
       .mapMaterializedValue { sequencer ! SubscribeSequencerState(_) }
+      .viaMat(KillSwitches.single)((_, switch) => () => switch.shutdown())
 
   // todo : unsubscribe commands
 
