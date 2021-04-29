@@ -1,5 +1,6 @@
 package esw.ocs.api.client
 
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
@@ -12,11 +13,12 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerRequest._
-import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
+import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
 import esw.ocs.api.protocol.{GoOnlineResponse, OkOrUnhandledResponse, SequencerRequest, _}
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
+import msocket.jvm.SourceExtension.WithSubscription
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import java.net.URI
@@ -31,6 +33,18 @@ class SequencerClientTest extends BaseTestSuite with SequencerServiceCodecs {
   private val sequencer       = new SequencerClient(postClient, websocketClient)
 
   "SequencerClient" must {
+
+    "call websocketClient with SubscribeSequencerState request  | ESW-213" in {
+
+      val source = Source.empty[SequencerStateResponse].withSubscription()
+      when(
+        websocketClient.requestStream[SequencerStateResponse](argsEq(SubscribeSequencerState))(
+          any[Decoder[SequencerStateResponse]](),
+          any[Encoder[SequencerStateResponse]]())
+      ).thenReturn(source)
+
+      sequencer.subscribeSequencerState() should ===(source)
+    }
 
     "call postClient with GetSequence request | ESW-222, ESW-362" in {
       val maybeStepList = mock[Option[StepList]]

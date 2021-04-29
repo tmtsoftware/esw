@@ -43,6 +43,46 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
+  "SubscribeSequencerState" must {
+    "send a message to the subscriber giving back the SequencerStateResponse | ESW-213" in {
+
+      val sequence       = Sequence(command1)
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+      val subscriberProbe = TestProbe[SequencerStateResponse]()
+      val testProbe       = TestProbe[Any]()
+
+      sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
+      subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
+
+      loadSequenceAndAssertResponse(Ok)
+      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Loaded)
+
+      when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
+      sequencerActor ! StartSequence(testProbe.ref)
+      startPullNext()
+      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Running)
+
+      finishStepWithSuccess()
+      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Running)
+
+      sequencerActor ! GoIdle(testProbe.ref)
+      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Idle)
+
+      when(script.executeGoOffline()).thenReturn(Future.successful(Done))
+      goOfflineAndAssertResponse(Ok)
+      val offlineResponse = subscriberProbe.receiveMessage()
+      offlineResponse.sequencerState shouldEqual ExternalSequencerState.Offline
+      compareStepList(offlineResponse.stepList, StepList(List.empty))
+
+      goOnlineAndAssertResponse(Ok, Future.successful(Done))
+      val onlineResponse = subscriberProbe.receiveMessage()
+      onlineResponse.sequencerState shouldEqual ExternalSequencerState.Idle
+      compareStepList(onlineResponse.stepList, StepList(List.empty))
+
+    }
+  }
+
   "LoadSequence" must {
     "load the given sequence in idle state | ESW-145, ESW-141" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)

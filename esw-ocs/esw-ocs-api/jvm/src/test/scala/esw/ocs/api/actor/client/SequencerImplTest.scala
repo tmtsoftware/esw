@@ -1,6 +1,7 @@
 package esw.ocs.api.actor.client
 
 import akka.actor.typed.ActorRef
+import akka.stream.scaladsl.Sink
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
@@ -19,6 +20,7 @@ import esw.ocs.api.protocol._
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import java.net.URI
+import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
@@ -42,6 +44,18 @@ class SequencerImplTest extends ActorTestSuit {
   private val hint                      = "engineering"
 
   private def randomString5 = Random.nextString(5)
+
+  "subscribe sequencer state should create an actor source that emits the state response | ESW-213" in {
+    val sequencerStateResponse = mock[SequencerStateResponse]
+    withBehavior {
+      case SubscribeSequencerState(replyTo) => replyTo ! sequencerStateResponse
+    } check { sequencerImpl =>
+      val source = sequencerImpl.subscribeSequencerState()
+      val future = source.take(1).runWith(Sink.head)
+      val result = Await.result(future, 3.seconds)
+      result === (sequencerStateResponse)
+    }
+  }
 
   "getSequence | ESW-222, ESW-362" in {
     val getSequenceResponse = mock[Option[StepList]]
