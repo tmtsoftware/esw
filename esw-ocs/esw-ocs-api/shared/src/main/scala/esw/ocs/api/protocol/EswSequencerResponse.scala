@@ -4,7 +4,7 @@ import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Error, Invalid, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{ExternalSequencerState, Step, StepList}
 
 sealed trait EswSequencerResponse     extends OcsAkkaSerializable
 sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name
@@ -72,16 +72,6 @@ sealed trait EditorError extends GenericResponse
 object EditorError {
   case object CannotOperateOnAnInFlightOrFinishedStep extends EditorError with PauseResponse
   final case class IdDoesNotExist(id: Id)             extends EditorError with RemoveBreakpointResponse
-}
-
-// todo: remove this if possible and Use SequencerState
-sealed trait ExternalSequencerState
-object ExternalSequencerState {
-  case object Idle       extends ExternalSequencerState
-  case object Loaded     extends ExternalSequencerState
-  case object Running    extends ExternalSequencerState
-  case object Offline    extends ExternalSequencerState
-  case object Processing extends ExternalSequencerState
 }
 
 case class SequencerStateResponse(stepList: StepList, sequencerState: ExternalSequencerState) extends EswSequencerResponse

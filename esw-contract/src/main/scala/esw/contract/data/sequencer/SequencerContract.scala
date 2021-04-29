@@ -7,9 +7,9 @@ import csw.location.api.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.models.{ExternalSequencerState, Step, StepList, StepStatus}
 import esw.ocs.api.protocol.SequencerRequest._
-import esw.ocs.api.protocol.ExternalSequencerState._
+import esw.ocs.api.models.ExternalSequencerState._
 import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
 

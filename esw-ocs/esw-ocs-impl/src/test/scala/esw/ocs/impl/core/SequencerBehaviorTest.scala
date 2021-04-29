@@ -19,7 +19,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{ExternalSequencerState, Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
 import esw.testcommons.BaseTestSuite

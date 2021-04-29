@@ -11,7 +11,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.StepList
+import esw.ocs.api.models.{ExternalSequencerState, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription

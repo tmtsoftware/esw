@@ -7,7 +7,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.models.StepList
+import esw.ocs.api.models.{ExternalSequencerState, StepList}
 import esw.ocs.api.protocol._
 import msocket.api.Subscription
 

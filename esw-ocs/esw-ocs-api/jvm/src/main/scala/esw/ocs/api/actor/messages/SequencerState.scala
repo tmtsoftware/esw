@@ -3,7 +3,7 @@ package esw.ocs.api.actor.messages
 import csw.command.client.messages.sequencer.SequencerMsg
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.codecs.OcsAkkaSerializable
-import esw.ocs.api.protocol.ExternalSequencerState
+import esw.ocs.api.models.ExternalSequencerState
 
 sealed trait SequencerState[+T <: SequencerMsg] extends OcsAkkaSerializable {
   def toExternal: ExternalSequencerState = {

@@ -13,7 +13,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.TestHelper.Narrower
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.StepList
+import esw.ocs.api.models.{ExternalSequencerState, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.api.protocol._

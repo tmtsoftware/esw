@@ -20,7 +20,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState.{Idle, Running}
 import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{ExternalSequencerState, Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
 import org.mockito.MockitoSugar

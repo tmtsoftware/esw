@@ -11,7 +11,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.StepList
+import esw.ocs.api.models.{ExternalSequencerState, StepList}
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
 import esw.ocs.api.protocol.{GoOnlineResponse, OkOrUnhandledResponse, SequencerRequest, _}
@@ -40,7 +40,8 @@ class SequencerClientTest extends BaseTestSuite with SequencerServiceCodecs {
       when(
         websocketClient.requestStream[SequencerStateResponse](argsEq(SubscribeSequencerState))(
           any[Decoder[SequencerStateResponse]](),
-          any[Encoder[SequencerStateResponse]]())
+          any[Encoder[SequencerStateResponse]]()
+        )
       ).thenReturn(source)
 
       sequencer.subscribeSequencerState() should ===(source)
