@@ -2,7 +2,7 @@ package esw.ocs.api.actor.client
 
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.stream.{KillSwitches, OverflowStrategy}
+import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import akka.stream.typed.scaladsl.ActorSource
 import akka.util.Timeout
