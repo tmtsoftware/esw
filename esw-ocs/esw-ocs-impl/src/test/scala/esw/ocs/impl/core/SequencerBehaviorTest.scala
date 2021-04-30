@@ -45,7 +45,6 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
   "SubscribeSequencerState" must {
     "send a message to the subscriber giving back the SequencerStateResponse | ESW-213" in {
-
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
@@ -60,13 +59,18 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
       sequencerActor ! StartSequence(testProbe.ref)
-      startPullNext()
+      val response = testProbe.receiveMessage()
+      response shouldBe a[SubmitResult]
+      // sequence will be in pending state, as PullNext is not done yet
       assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Running)
 
-      finishStepWithSuccess()
+      startPullNext() // after pull next first pending step will be set InFlight
       assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Running)
 
-      sequencerActor ! GoIdle(testProbe.ref)
+      finishStepWithSuccess() // InFlight step will be set to success
+      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Running)
+
+      sequencerActor ! GoIdle(testProbe.ref) // Goes Idle after Sequence completion
       assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Idle)
 
       when(script.executeGoOffline()).thenReturn(Future.successful(Done))
