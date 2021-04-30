@@ -6,9 +6,9 @@ import akka.stream.scaladsl.Source
 import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
-import esw.gateway.impl.SourceExtensions.RichSource
 import esw.ocs.testkit.utils.BaseTestSuite
 import msocket.api.Subscription
+import msocket.jvm.SourceExtension.WithSubscription
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong

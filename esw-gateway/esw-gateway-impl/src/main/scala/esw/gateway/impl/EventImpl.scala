@@ -10,7 +10,7 @@ import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
 import esw.gateway.api.protocol._
-import esw.gateway.impl.SourceExtensions.RichSource
+import msocket.jvm.SourceExtension.WithSubscription
 import msocket.api.Subscription
 
 import scala.concurrent.{ExecutionContext, Future}
