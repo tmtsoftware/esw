@@ -78,6 +78,8 @@ object Command {
   @HelpMessage("starts ESW services needed by ocs eng ui.\n")
   final case class StartEngUIServices(
       @HelpMessage("Enable simulation mode for sequence manager")
-      smSimulationMode: Boolean = false
+      smSimulationMode: Boolean = false,
+      @HelpMessage("Specify sequencer-scripts version")
+      scriptsVersion: Option[String] = None
   ) extends Command
 }

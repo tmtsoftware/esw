@@ -53,9 +53,17 @@ class Wiring(cmd: Command) {
   private val configData            = ConfigData.fromString(FileUtils.readResource("smObsModeConfig.conf"))
   private val provisionData         = ConfigData.fromString(FileUtils.readResource("smProvisionConfig.json"))
   private lazy val configServiceExt = new ConfigServiceExt(configService)
+
+  private val sequencerScriptsSha = "56a5375"
+
+  private val scriptVersion = cmd match {
+    case s: Start              => sequencerScriptsSha
+    case s: StartEngUIServices => s.scriptsVersion.getOrElse(sequencerScriptsSha)
+  }
+
   private val VersionConf =
     s"""
-      |scripts = 56a5375
+      |scripts = ${scriptVersion}
       |
       |esw = 0.1.0-SNAPSHOT
       |

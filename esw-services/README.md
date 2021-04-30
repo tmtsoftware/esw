@@ -125,8 +125,9 @@ components. This agent is also responsible for starting Sequence Manager._
 For Sequence Manager:
 
 - `--sm-simulation-mode`: runs Sequence Manager in simulation mode.
+- `--scripts-version`: specify which version of sequencer-scripts to use [optional][default version : specific sha].  
 
-###Examples
+### Examples
 
 1. Start all backend services needed for engineering UI along with sequence manager
 
@@ -134,7 +135,13 @@ For Sequence Manager:
 sbt "esw-services/run start-eng-ui-services"
 ```
 
-2. Start all backend services needed for engineering UI along with sequence manager in simulation mode
+2. Start all backend services with specific sequencer-scripts version
+
+```bash
+sbt "esw-services/run start-eng-ui-services --scripts-version 0.1.0-SNAPSHOT"
+```
+
+3. Start all backend services needed for engineering UI along with sequence manager in simulation mode
 
 ```bash
 sbt "esw-services/run start-eng-ui-services --sm-simulation-mode"
