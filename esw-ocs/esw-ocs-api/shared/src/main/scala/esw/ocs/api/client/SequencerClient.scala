@@ -10,7 +10,7 @@ import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.{ExternalSequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
 import esw.ocs.api.protocol._
@@ -97,8 +97,8 @@ class SequencerClient(
 
   override def getSequenceComponent: Future[AkkaLocation] = postClient.requestResponse[AkkaLocation](GetSequenceComponent)
 
-  override def getSequencerState: Future[ExternalSequencerState] =
-    postClient.requestResponse[ExternalSequencerState](GetSequencerState)
+  override def getSequencerState: Future[SequencerState] =
+    postClient.requestResponse[SequencerState](GetSequencerState)
 
   override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =
     websocketClient.requestStream[SequencerStateResponse](SubscribeSequencerState)

@@ -19,7 +19,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.models.{ExternalSequencerState, Step, StepList}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
 import esw.testcommons.BaseTestSuite
@@ -55,33 +55,33 @@ class SequencerBehaviorTest extends BaseTestSuite {
       subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
 
       loadSequenceAndAssertResponse(Ok)
-      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Loaded)
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Loaded)
 
       when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
       sequencerActor ! StartSequence(testProbe.ref)
       val response = testProbe.receiveMessage()
       response shouldBe a[SubmitResult]
       // sequence will be in pending state, as PullNext is not done yet
-      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Running)
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)
 
       startPullNext() // after pull next first pending step will be set InFlight
-      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Running)
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)
 
       finishStepWithSuccess() // InFlight step will be set to success
-      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Running)
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)
 
       sequencerActor ! GoIdle(testProbe.ref) // Goes Idle after Sequence completion
-      assertSequencerState(subscriberProbe.receiveMessage(), ExternalSequencerState.Idle)
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Idle)
 
       when(script.executeGoOffline()).thenReturn(Future.successful(Done))
       goOfflineAndAssertResponse(Ok)
       val offlineResponse = subscriberProbe.receiveMessage()
-      offlineResponse.sequencerState shouldEqual ExternalSequencerState.Offline
+      offlineResponse.sequencerState shouldEqual SequencerState.Offline
       compareStepList(offlineResponse.stepList, StepList(List.empty))
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
       val onlineResponse = subscriberProbe.receiveMessage()
-      onlineResponse.sequencerState shouldEqual ExternalSequencerState.Idle
+      onlineResponse.sequencerState shouldEqual SequencerState.Idle
       compareStepList(onlineResponse.stepList, StepList(List.empty))
 
     }

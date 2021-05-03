@@ -19,7 +19,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.InternalSequencerState
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Loaded, Offline, Running}
-import esw.ocs.api.models.{ExternalSequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol._
 import msocket.api.Subscription
 import msocket.jvm.SourceExtension.RichSource
@@ -63,13 +63,13 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   private def getState: Future[InternalSequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
-  def getSequencerState: Future[ExternalSequencerState] =
+  def getSequencerState: Future[SequencerState] =
     getState.map {
-      case Idle    => ExternalSequencerState.Idle
-      case Loaded  => ExternalSequencerState.Loaded
-      case Running => ExternalSequencerState.Running
-      case Offline => ExternalSequencerState.Offline
-      case _       => ExternalSequencerState.Processing
+      case Idle    => SequencerState.Idle
+      case Loaded  => SequencerState.Loaded
+      case Running => SequencerState.Running
+      case Offline => SequencerState.Offline
+      case _       => SequencerState.Processing
     }
 
   override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =

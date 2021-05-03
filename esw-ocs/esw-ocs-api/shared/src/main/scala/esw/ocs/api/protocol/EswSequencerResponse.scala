@@ -4,7 +4,7 @@ import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Error, Invalid, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
-import esw.ocs.api.models.{ExternalSequencerState, Step, StepList}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 
 sealed trait EswSequencerResponse     extends OcsAkkaSerializable
 sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name
@@ -74,4 +74,4 @@ object EditorError {
   final case class IdDoesNotExist(id: Id)             extends EditorError with RemoveBreakpointResponse
 }
 
-case class SequencerStateResponse(stepList: StepList, sequencerState: ExternalSequencerState) extends EswSequencerResponse
+case class SequencerStateResponse(stepList: StepList, sequencerState: SequencerState) extends EswSequencerResponse

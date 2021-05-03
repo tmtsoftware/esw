@@ -15,7 +15,7 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.InternalSequencerState._
-import esw.ocs.api.models.{ExternalSequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol._
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
@@ -294,46 +294,46 @@ class SequencerImplTest extends ActorTestSuit {
   "getSequencerState should return same state for Idle, Running, Loaded, Offline state | ESW-482" in {
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Idle
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Idle) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Idle) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Running
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Running) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Running) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Loaded
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Loaded) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Loaded) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Offline
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Offline) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Offline) }
 
   }
 
   "getSequencerState should return Processing for any intermediate sequencer state | ESW-482" in {
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! GoingOffline
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Processing) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! GoingOnline
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Processing) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! AbortingSequence
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Processing) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Stopping
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Processing) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Submitting
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Processing) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
     withBehavior {
       case GetSequencerState(replyTo) => replyTo ! Starting
-    } check { s => s.getSequencerState.futureValue should ===(ExternalSequencerState.Processing) }
+    } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
   }
 
 }

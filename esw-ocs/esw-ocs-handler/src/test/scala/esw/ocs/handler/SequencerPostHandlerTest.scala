@@ -13,7 +13,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.TestHelper.Narrower
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.{ExternalSequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.api.protocol._
@@ -313,11 +313,11 @@ class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest wit
     }
 
     "return SequencerStateResponse for GetSequencerState | ESW-482" in {
-      when(sequencer.getSequencerState).thenReturn(Future.successful(ExternalSequencerState.Offline))
+      when(sequencer.getSequencerState).thenReturn(Future.successful(SequencerState.Offline))
 
       Post("/post-endpoint", GetSequencerState.narrow) ~> route ~> check {
         verify(sequencer).getSequencerState
-        responseAs[ExternalSequencerState] should ===(ExternalSequencerState.Offline)
+        responseAs[SequencerState] should ===(SequencerState.Offline)
       }
     }
   }

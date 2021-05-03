@@ -18,7 +18,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.actor.messages.InternalSequencerState.{Loaded, Offline}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.{ExternalSequencerState, ObsMode, Step, StepList}
+import esw.ocs.api.models.{SequencerState, ObsMode, Step, StepList}
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.EswTestKit
@@ -318,7 +318,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   "GetSequencerState | ESW-482" in {
     ocsSequencer.goOffline().futureValue should ===(Ok)
 
-    ocsSequencer.getSequencerState.futureValue should ===(ExternalSequencerState.Offline)
+    ocsSequencer.getSequencerState.futureValue should ===(SequencerState.Offline)
   }
 
   private def compareStepList(actual: Option[StepList], expected: Option[StepList]): Unit = {

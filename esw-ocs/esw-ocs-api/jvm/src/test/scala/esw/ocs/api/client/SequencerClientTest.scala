@@ -11,7 +11,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.{ExternalSequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol.SequencerRequest._
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
 import esw.ocs.api.protocol.{GoOnlineResponse, OkOrUnhandledResponse, SequencerRequest, _}
@@ -351,11 +351,11 @@ class SequencerClientTest extends BaseTestSuite with SequencerServiceCodecs {
     }
 
     "call postClient with GetSequencerState request | ESW-482" in {
-      val sequencerStateResponse = mock[ExternalSequencerState]
+      val sequencerStateResponse = mock[SequencerState]
       when(
-        postClient.requestResponse[ExternalSequencerState](argsEq(GetSequencerState))(
-          any[Decoder[ExternalSequencerState]](),
-          any[Encoder[ExternalSequencerState]]()
+        postClient.requestResponse[SequencerState](argsEq(GetSequencerState))(
+          any[Decoder[SequencerState]](),
+          any[Encoder[SequencerState]]()
         )
       ).thenReturn(Future.successful(sequencerStateResponse))
 

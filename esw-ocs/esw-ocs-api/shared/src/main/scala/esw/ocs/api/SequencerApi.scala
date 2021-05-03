@@ -7,7 +7,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.models.{ExternalSequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol._
 import msocket.api.Subscription
 
@@ -37,7 +37,7 @@ trait SequencerApi extends SequencerCommandService {
   def goOffline(): Future[GoOfflineResponse]
   def abortSequence(): Future[OkOrUnhandledResponse]
   def stop(): Future[OkOrUnhandledResponse]
-  def getSequencerState: Future[ExternalSequencerState]
+  def getSequencerState: Future[SequencerState]
   def subscribeSequencerState(): Source[SequencerStateResponse, Subscription]
 
   def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse]

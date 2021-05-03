@@ -11,7 +11,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.{ExternalSequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription
@@ -27,7 +27,7 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   private val runId: Id      = Id("123")
   private val stepList       = StepList(Sequence(Setup(Prefix("CSW.IRIS"), CommandName("command-1"), None)))
-  private val sequencerState = ExternalSequencerState.Running
+  private val sequencerState = SequencerState.Running
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = Future.successful(Ok)
 
@@ -82,7 +82,7 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = Future.successful(Started(runId))
 
-  override def getSequencerState: Future[ExternalSequencerState] = Future.successful(sequencerState)
+  override def getSequencerState: Future[SequencerState] = Future.successful(sequencerState)
 
   override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =
     Source(List(SequencerStateResponse(stepList, sequencerState))).withSubscription()

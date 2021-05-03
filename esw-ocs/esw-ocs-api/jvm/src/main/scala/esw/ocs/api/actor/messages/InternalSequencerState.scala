@@ -3,20 +3,20 @@ package esw.ocs.api.actor.messages
 import csw.command.client.messages.sequencer.SequencerMsg
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.codecs.OcsAkkaSerializable
-import esw.ocs.api.models.ExternalSequencerState
+import esw.ocs.api.models.SequencerState
 
 sealed trait InternalSequencerState[+T <: SequencerMsg] extends OcsAkkaSerializable {
 
   def name: String = this.getClass.getSimpleName.dropRight(1) // remove $ from class name
 
-  def toExternal: ExternalSequencerState = {
+  def toExternal: SequencerState = {
     import InternalSequencerState._
     this match {
-      case _: Idle.type    => ExternalSequencerState.Idle
-      case _: Loaded.type  => ExternalSequencerState.Loaded
-      case _: Running.type => ExternalSequencerState.Running
-      case _: Offline.type => ExternalSequencerState.Offline
-      case _               => ExternalSequencerState.Processing
+      case _: Idle.type    => SequencerState.Idle
+      case _: Loaded.type  => SequencerState.Loaded
+      case _: Running.type => SequencerState.Running
+      case _: Offline.type => SequencerState.Offline
+      case _               => SequencerState.Processing
     }
   }
 }
