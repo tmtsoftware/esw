@@ -17,8 +17,8 @@ import csw.time.core.models.UTCTime
 import esw.constants.SequencerTimeouts
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.SequencerState
-import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline, Running}
+import esw.ocs.api.actor.messages.InternalSequencerState
+import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.models.{ExternalSequencerState, StepList}
 import esw.ocs.api.protocol._
 import msocket.api.Subscription
@@ -61,7 +61,7 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def isOnline: Future[Boolean] = getState.map(_ != Offline)
 
-  private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
+  private def getState: Future[InternalSequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
   def getSequencerState: Future[ExternalSequencerState] =
     getState.map {

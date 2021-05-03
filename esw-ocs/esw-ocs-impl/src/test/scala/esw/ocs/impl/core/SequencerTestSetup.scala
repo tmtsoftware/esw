@@ -18,8 +18,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.SequencerState.{Idle, Running}
-import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Running}
+import esw.ocs.api.actor.messages.{SequenceComponentMsg, InternalSequencerState}
 import esw.ocs.api.models.{ExternalSequencerState, Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
@@ -194,7 +194,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
   def abortSequenceAndAssertResponse(
       response: OkOrUnhandledResponse,
-      expectedState: SequencerState[SequencerMsg]
+      expectedState: InternalSequencerState[SequencerMsg]
   ): TestProbe[OkOrUnhandledResponse] = {
     val probe                          = TestProbe[OkOrUnhandledResponse]()
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
@@ -214,9 +214,9 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     sequencerActor ! GetSequence(p.ref)
     val stepList = p.expectMessageType[Option[StepList]]
     expectedState match {
-      case Idle                            => stepList shouldBe None
-      case Running                         => stepList.get.nextPending shouldBe None
-      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
+      case Idle                                    => stepList shouldBe None
+      case Running                                 => stepList.get.nextPending shouldBe None
+      case x: InternalSequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
     }
     verify(script, timeout(1000)).executeAbort()
     probe
@@ -224,7 +224,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
   def stopAndAssertResponse(
       response: OkOrUnhandledResponse,
-      expectedState: SequencerState[SequencerMsg]
+      expectedState: InternalSequencerState[SequencerMsg]
   ): TestProbe[OkOrUnhandledResponse] = {
     val probe                          = TestProbe[OkOrUnhandledResponse]()
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
@@ -244,9 +244,9 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     sequencerActor ! GetSequence(p.ref)
     val stepList = p.expectMessageType[Option[StepList]]
     expectedState match {
-      case Idle                            => stepList shouldNot be(None)
-      case Running                         => stepList shouldNot be(None)
-      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after Stop")
+      case Idle                                    => stepList shouldNot be(None)
+      case Running                                 => stepList shouldNot be(None)
+      case x: InternalSequencerState[SequencerMsg] => assert(false, s"$x is not valid state after Stop")
     }
     verify(script, timeout(1000)).executeStop()
     probe
@@ -337,8 +337,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     probe.expectMessageType[Option[Step]]
   }
 
-  def assertSequencerState(response: SequencerState[SequencerMsg]): SequencerState[SequencerMsg] = {
-    val probe = TestProbe[SequencerState[SequencerMsg]]()
+  def assertSequencerState(response: InternalSequencerState[SequencerMsg]): InternalSequencerState[SequencerMsg] = {
+    val probe = TestProbe[InternalSequencerState[SequencerMsg]]()
     eventually {
       sequencerActor ! GetSequencerState(probe.ref)
       probe.expectMessage(response)
@@ -346,7 +346,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
-      state: SequencerState[SequencerMsg],
+      state: InternalSequencerState[SequencerMsg],
       msg: ActorRef[T] => UnhandleableSequencerMessage
   ): Unit = {
     val probe            = TestProbe[T]()
@@ -356,7 +356,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
-      state: SequencerState[SequencerMsg],
+      state: InternalSequencerState[SequencerMsg],
       msgs: (ActorRef[T] => UnhandleableSequencerMessage)*
   ): Unit =
     msgs.foreach(assertUnhandled(state, _))

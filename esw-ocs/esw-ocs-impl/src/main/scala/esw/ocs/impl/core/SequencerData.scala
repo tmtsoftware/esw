@@ -7,7 +7,7 @@ import csw.params.commands.CommandResponse._
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import esw.ocs.api.actor.messages.SequencerMessages.GoIdle
-import esw.ocs.api.actor.messages.SequencerState
+import esw.ocs.api.actor.messages.InternalSequencerState
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
@@ -92,15 +92,15 @@ private[core] case class SequencerData(
         .sendNextPendingStepIfAvailable()
   }
 
-  def stepSuccess(state: SequencerState[SequencerMsg]): SequencerData = changeStepStatus(Success)
+  def stepSuccess(state: InternalSequencerState[SequencerMsg]): SequencerData = changeStepStatus(Success)
 
-  def stepFailure(message: String, state: SequencerState[SequencerMsg]): SequencerData =
+  def stepFailure(message: String, state: InternalSequencerState[SequencerMsg]): SequencerData =
     changeStepStatus(Failure(message))
 
   def addStateSubscriber(subscriber: ActorRef[SequencerStateResponse]): SequencerData =
     copy(sequencerStateSubscribers = sequencerStateSubscribers + subscriber)
 
-  def notifyStateSubscribers(state: SequencerState[SequencerMsg]): SequencerData = {
+  def notifyStateSubscribers(state: InternalSequencerState[SequencerMsg]): SequencerData = {
     sequencerStateSubscribers.foreach(_ ! SequencerStateResponse(stepList.getOrElse(StepList.empty), state.toExternal))
     this
   }

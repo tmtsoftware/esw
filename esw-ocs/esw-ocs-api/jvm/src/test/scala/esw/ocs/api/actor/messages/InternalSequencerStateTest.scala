@@ -1,9 +1,9 @@
 package esw.ocs.api.actor.messages
 
-import esw.ocs.api.actor.messages.SequencerState._
+import esw.ocs.api.actor.messages.InternalSequencerState._
 import esw.testcommons.BaseTestSuite
 
-class SequencerStateTest extends BaseTestSuite {
+class InternalSequencerStateTest extends BaseTestSuite {
 
   "name should return name of the state" in {
     Idle.name shouldEqual "Idle"

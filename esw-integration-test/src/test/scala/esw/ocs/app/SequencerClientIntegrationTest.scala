@@ -15,7 +15,7 @@ import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.actor.messages.SequencerState.{Loaded, Offline}
+import esw.ocs.api.actor.messages.InternalSequencerState.{Loaded, Offline}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{ExternalSequencerState, ObsMode, Step, StepList}

@@ -19,8 +19,8 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.constants.SequencerTimeouts
 import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.SequencerState
-import esw.ocs.api.actor.messages.SequencerState._
+import esw.ocs.api.actor.messages.InternalSequencerState
+import esw.ocs.api.actor.messages.InternalSequencerState._
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
@@ -44,7 +44,7 @@ class SequencerBehavior(
   import logger._
 
   // Mapping of Sequencer state against corresponding state's behavior
-  private def stateMachine(state: SequencerState[_]): SequencerData => Behavior[SequencerMsg] =
+  private def stateMachine(state: InternalSequencerState[_]): SequencerData => Behavior[SequencerMsg] =
     state match {
       case Idle             => idle
       case Loaded           => loaded
@@ -114,7 +114,7 @@ class SequencerBehavior(
   private def goOnline(
       replyTo: ActorRef[GoOnlineResponse],
       data: SequencerData,
-      currentState: SequencerState[SequencerMsg]
+      currentState: InternalSequencerState[SequencerMsg]
   ): Behavior[SequencerMsg] = {
     script.executeGoOnline().onComplete {
       case Success(_) =>
@@ -127,7 +127,7 @@ class SequencerBehavior(
     goingOnline(data, currentState)
   }
 
-  private def goingOnline(data: SequencerData, currentState: SequencerState[SequencerMsg]): Behavior[SequencerMsg] = {
+  private def goingOnline(data: SequencerData, currentState: InternalSequencerState[SequencerMsg]): Behavior[SequencerMsg] = {
     val currentBehavior = stateMachine(currentState)
     receive(GoingOnline, data) {
       case GoOnlineSuccess(replyTo) =>
@@ -143,7 +143,7 @@ class SequencerBehavior(
   private def goOffline(
       replyTo: ActorRef[GoOfflineResponse],
       data: SequencerData,
-      currentState: SequencerState[SequencerMsg]
+      currentState: InternalSequencerState[SequencerMsg]
   ): Behavior[SequencerMsg] = {
     script.executeGoOffline().onComplete {
       case Success(_) =>
@@ -156,7 +156,7 @@ class SequencerBehavior(
     goingOffline(data, currentState)
   }
 
-  private def goingOffline(data: SequencerData, currentState: SequencerState[SequencerMsg]): Behavior[SequencerMsg] =
+  private def goingOffline(data: SequencerData, currentState: InternalSequencerState[SequencerMsg]): Behavior[SequencerMsg] =
     receive(GoingOffline, data) {
       case GoOfflineSuccess(replyTo) => replyTo ! Ok; offline(data.copy(stepList = None))
       case GoOfflineFailed(replyTo) =>
@@ -295,7 +295,7 @@ class SequencerBehavior(
 
   private def handleCommonMessage[T <: SequencerMsg](
       message: CommonMessage,
-      state: SequencerState[T],
+      state: InternalSequencerState[T],
       data: SequencerData
   ): Behavior[SequencerMsg] =
     message match {
@@ -326,7 +326,7 @@ class SequencerBehavior(
   private def handleEditorAction(
       editorAction: EditorAction,
       data: SequencerData,
-      currentState: SequencerState[SequencerMsg]
+      currentState: InternalSequencerState[SequencerMsg]
   ): Behavior[SequencerMsg] = {
     import data._
     val currentBehavior = stateMachine(currentState)
@@ -356,7 +356,7 @@ class SequencerBehavior(
   // Returns a State handler which is combination of handlers of - Common message + CSW messages + State specific messages
   // (handler taken as parameter). All other messages will be treated as Unhandled.
   private def receive[StateMessage <: SequencerMsg: ClassTag](
-      state: SequencerState[StateMessage],
+      state: InternalSequencerState[StateMessage],
       data: SequencerData
   )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     Behaviors.receive { (ctx, msg) =>
