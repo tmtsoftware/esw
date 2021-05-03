@@ -6,10 +6,11 @@ import csw.contract.generator._
 import csw.location.api.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
+import esw.ocs.api.actor.messages.SequencerMessages.SubscribeSequencerState
 import esw.ocs.api.codecs.SequencerServiceCodecs
+import esw.ocs.api.models.SequencerState._
 import esw.ocs.api.models.{SequencerState, Step, StepList, StepStatus}
 import esw.ocs.api.protocol.SequencerRequest._
-import esw.ocs.api.models.SequencerState._
 import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
 
@@ -64,6 +65,7 @@ object SequencerContract extends SequencerData with SequencerServiceCodecs {
 
   private val websocketRequests = new RequestSet[SequencerStreamRequest] {
     requestType(sequencerQueryFinal)
+    requestType(subscribeSequencerState)
   }
 
   private val httpEndpoints: List[Endpoint] = List(
@@ -93,7 +95,8 @@ object SequencerContract extends SequencerData with SequencerServiceCodecs {
   )
 
   private val webSocketEndpoints: List[Endpoint] = List(
-    Endpoint(name[QueryFinal], name[SubmitResponse])
+    Endpoint(name[QueryFinal], name[SubmitResponse]),
+    Endpoint(name[SubscribeSequencerState], name[SequencerStateResponse])
   )
 
   private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("sequencer-service/README.md"))
