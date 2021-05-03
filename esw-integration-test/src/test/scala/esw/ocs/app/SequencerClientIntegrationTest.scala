@@ -77,11 +77,11 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
     ocsSequencer.goOffline().futureValue should ===(Ok)
-    ocsSequencer.loadSequence(sequence).futureValue should ===(Unhandled(Offline.getClass.getSimpleName, "LoadSequence"))
+    ocsSequencer.loadSequence(sequence).futureValue should ===(Unhandled(Offline.name, "LoadSequence"))
     val invalidId = Id("IdNotAvailable")
 
     val invalidStartResponse =
-      Invalid(invalidId, UnsupportedCommandInStateIssue(Unhandled(Offline.getClass.getSimpleName, "StartSequence").msg))
+      Invalid(invalidId, UnsupportedCommandInStateIssue(Unhandled(Offline.name, "StartSequence").msg))
     ocsSequencer.startSequence().futureValue should ===(invalidStartResponse)
 
     ocsSequencer.queryFinal(invalidId).futureValue shouldBe a[Invalid]
@@ -186,7 +186,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     ocsSequencer.isOnline.futureValue should ===(false)
 
     // assert ocs sequencer does not accept editor commands in offline state
-    ocsSequencer.add(List(command3)).futureValue should ===(Unhandled(Offline.getClass.getSimpleName, "Add"))
+    ocsSequencer.add(List(command3)).futureValue should ===(Unhandled(Offline.name, "Add"))
 
     Thread.sleep(1000) // wait till goOffline msg from sequencer1 reaches to sequencer2
 
@@ -225,7 +225,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     ocsSequencer.loadSequence(sequence).futureValue should ===(Ok)
 
     //assert that it does not accept AbortSequence in loaded state
-    ocsSequencer.abortSequence().futureValue should ===(Unhandled(Loaded.getClass.getSimpleName, "AbortSequence"))
+    ocsSequencer.abortSequence().futureValue should ===(Unhandled(Loaded.name, "AbortSequence"))
 
     val startedResponse = ocsSequencer.startSequence().futureValue
     startedResponse shouldBe a[Started]
@@ -248,7 +248,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     ocsSequencer.loadSequence(sequence).futureValue should ===(Ok)
 
     //assert that it does not accept Stop in loaded state
-    ocsSequencer.stop().futureValue should ===(Unhandled(Loaded.getClass.getSimpleName, "Stop"))
+    ocsSequencer.stop().futureValue should ===(Unhandled(Loaded.name, "Stop"))
 
     val startedResponse = ocsSequencer.startSequence().futureValue
     startedResponse shouldBe a[Started]

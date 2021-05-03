@@ -362,14 +362,13 @@ class SequencerBehavior(
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = SequencerTimeouts.LongTimeout
       debug(s"Sequencer in State: $state, received Message: $msg")
-      println(s"Sequencer in State: $state, received Message: $msg")
 
       msg match {
         // ********* ESW Sequencer Messages *******
         case msg: CommonMessage => handleCommonMessage(msg, state, data)
         case msg: StateMessage  => stateHandler(msg)
         case msg: UnhandleableSequencerMessage =>
-          msg.replyTo ! Unhandled(state.getClass.getSimpleName, msg.getClass.getSimpleName); Behaviors.same
+          msg.replyTo ! Unhandled(state.name, msg.getClass.getSimpleName); Behaviors.same
 
         // ********* CSW Sequencer Messages *******
         // SubmitSequence is a CSW SequencerMsg, to be able to handle it only in Idle State, a corresponding Internal message is created

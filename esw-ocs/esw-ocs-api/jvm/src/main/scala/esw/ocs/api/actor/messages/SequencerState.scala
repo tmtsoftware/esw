@@ -6,6 +6,9 @@ import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.ExternalSequencerState
 
 sealed trait SequencerState[+T <: SequencerMsg] extends OcsAkkaSerializable {
+
+  def name: String = this.getClass.getSimpleName.dropRight(1) // remove $ from class name
+
   def toExternal: ExternalSequencerState = {
     import SequencerState._
     this match {
