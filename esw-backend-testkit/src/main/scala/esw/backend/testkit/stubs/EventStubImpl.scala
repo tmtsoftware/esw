@@ -8,7 +8,7 @@ import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
 import esw.ocs.testkit.utils.BaseTestSuite
 import msocket.api.Subscription
-import msocket.jvm.SourceExtension.WithSubscription
+import msocket.jvm.SourceExtension.RichSource
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong

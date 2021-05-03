@@ -15,7 +15,7 @@ import esw.ocs.api.models.{ExternalSequencerState, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription
-import msocket.jvm.SourceExtension.WithSubscription
+import msocket.jvm.SourceExtension.RichSource
 
 import scala.concurrent.Future
 

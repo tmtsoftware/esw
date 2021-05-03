@@ -22,7 +22,7 @@ import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline, Running
 import esw.ocs.api.models.{ExternalSequencerState, StepList}
 import esw.ocs.api.protocol._
 import msocket.api.Subscription
-import msocket.jvm.SourceExtension.WithSubscription
+import msocket.jvm.SourceExtension.RichSource
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -82,8 +82,7 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
       )
       .mapMaterializedValue { sequencer ! SubscribeSequencerState(_) }
       .withSubscription()
-//      .distinctUntilChange // todo: expose it from event service
-
+      .distinctUntilChanged
   // todo : unsubscribe commands
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =

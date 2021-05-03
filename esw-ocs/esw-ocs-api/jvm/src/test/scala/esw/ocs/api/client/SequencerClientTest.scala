@@ -18,7 +18,7 @@ import esw.ocs.api.protocol.{GoOnlineResponse, OkOrUnhandledResponse, SequencerR
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
-import msocket.jvm.SourceExtension.WithSubscription
+import msocket.jvm.SourceExtension.RichSource
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import java.net.URI
