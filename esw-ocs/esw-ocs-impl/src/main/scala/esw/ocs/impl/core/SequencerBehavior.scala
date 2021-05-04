@@ -65,7 +65,6 @@ class SequencerBehavior(
   // ******************* Sequencer Behaviors **************
 
   private def idle(data: SequencerData): Behavior[SequencerMsg] = {
-    data.notifyStateSubscribers(Idle)
     receive(Idle, data) {
       case GoOffline(replyTo)                        => goOffline(replyTo, data, Idle)
       case GoOnline(replyTo)                         => goOnline(replyTo, data, Idle)
@@ -76,7 +75,6 @@ class SequencerBehavior(
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = {
-    data.notifyStateSubscribers(Loaded)
     receive(Loaded, data) {
       case GoOffline(replyTo)              => goOffline(replyTo, data, Loaded)
       case GoOnline(replyTo)               => goOnline(replyTo, data, Loaded)
@@ -87,7 +85,6 @@ class SequencerBehavior(
   }
 
   private def running(data: SequencerData): Behavior[SequencerMsg] = {
-    data.notifyStateSubscribers(Running)
     receive(Running, data) {
       case AbortSequence(replyTo) => abortSequence(data, replyTo)
       case Stop(replyTo)          => stop(data, replyTo)
@@ -102,7 +99,6 @@ class SequencerBehavior(
   }
 
   private def offline(data: SequencerData): Behavior[SequencerMsg] = {
-    data.notifyStateSubscribers(Offline)
     receive(Offline, data) {
       case GoOnline(replyTo)  => goOnline(replyTo, data, Offline)
       case GoOffline(replyTo) => goOffline(replyTo, data, Offline)
@@ -311,7 +307,6 @@ class SequencerBehavior(
         Behaviors.same
 
       case SubscribeSequencerState(replyTo) =>
-//        replyTo ! SequencerStateResponse(data.stepList.getOrElse(StepList(List.empty)), state.toExternal) // initial msg
         stateMachine(state)(data.addStateSubscriber(replyTo))
 
       case ReadyToExecuteNext(replyTo) => stateMachine(state)(data.readyToExecuteNext(replyTo))
@@ -358,7 +353,9 @@ class SequencerBehavior(
   private def receive[StateMessage <: SequencerMsg: ClassTag](
       state: InternalSequencerState[StateMessage],
       data: SequencerData
-  )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
+  )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] = {
+    data.notifyStateSubscribers(state)
+
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = SequencerTimeouts.LongTimeout
       debug(s"Sequencer in State: $state, received Message: $msg")
@@ -388,4 +385,5 @@ class SequencerBehavior(
         case _ => Behaviors.unhandled
       }
     }
+  }
 }

@@ -62,10 +62,11 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val response = testProbe.receiveMessage()
       response shouldBe a[SubmitResult]
       // sequence will be in pending state, as PullNext is not done yet
-      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Processing) // step Pending with Processing
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)    // step Pending with Running
 
-      startPullNext() // after pull next first pending step will be set InFlight
-      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)
+      startPullNext()                                                                // after pull next first pending step will be set InFlight
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running) // step Inflight with Running
 
       finishStepWithSuccess() // InFlight step will be set to success
       assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)
@@ -75,11 +76,15 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       when(script.executeGoOffline()).thenReturn(Future.successful(Done))
       goOfflineAndAssertResponse(Ok)
+      subscriberProbe.receiveMessage().sequencerState shouldEqual SequencerState.Processing // GoingOffline with Processing
+
       val offlineResponse = subscriberProbe.receiveMessage()
       offlineResponse.sequencerState shouldEqual SequencerState.Offline
       compareStepList(offlineResponse.stepList, StepList(List.empty))
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
+      subscriberProbe.receiveMessage().sequencerState shouldEqual SequencerState.Processing // GoingOnline with Processing
+
       val onlineResponse = subscriberProbe.receiveMessage()
       onlineResponse.sequencerState shouldEqual SequencerState.Idle
       compareStepList(onlineResponse.stepList, StepList(List.empty))

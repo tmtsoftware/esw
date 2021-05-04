@@ -4,13 +4,16 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.protocol.SequencerStreamRequest
-import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
+import esw.ocs.api.models.SequencerState.Idle
+import esw.ocs.api.models.StepList
+import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
+import esw.ocs.api.protocol.{SequencerStateResponse, SequencerStreamRequest}
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
@@ -19,10 +22,11 @@ import msocket.http.CborByteString
 import msocket.http.post.ClientHttpCodecs
 import msocket.http.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.http.ws.WebsocketRouteFactory
+import msocket.jvm.SourceExtension.RichSource
+import msocket.jvm.metrics.LabelExtractor
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
-import msocket.jvm.metrics.LabelExtractor
 
 class SequencerWebsocketHandlerTest
     extends BaseTestSuite
@@ -42,10 +46,14 @@ class SequencerWebsocketHandlerTest
   lazy val route: Route =
     new WebsocketRouteFactory[SequencerStreamRequest]("websocket-endpoint", websocketHandlerFactory).make()
 
-  private val wsClient = WSProbe()
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(sequencer)
+  }
 
   "SequencerWebsocketHandler" must {
     "return final submit response of sequence for QueryFinal request | ESW-101" in {
+      val wsClient                  = WSProbe()
       val id                        = Id("some")
       implicit val timeout: Timeout = Timeout(10.seconds)
       val completedResponse         = Completed(id)
@@ -57,6 +65,22 @@ class SequencerWebsocketHandlerTest
 
         val response = decodeMessage[SubmitResponse](wsClient)
         response shouldEqual completedResponse
+
+      }
+    }
+
+    "return a sequencer stream for SubscribeSequencerState | ESW-213" in {
+      val wsClient               = WSProbe()
+      val sequencerStateResponse = SequencerStateResponse(StepList(List.empty), Idle)
+      val source                 = Source.repeat(sequencerStateResponse).withSubscription()
+      when(sequencer.subscribeSequencerState()).thenReturn(source)
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(ContentType.Json.strictMessage(SubscribeSequencerState: SequencerStreamRequest))
+        isWebSocketUpgrade shouldBe true
+
+        val response = decodeMessage[SequencerStateResponse](wsClient)
+        response shouldEqual sequencerStateResponse
+        source.preMaterialize()._1.cancel()
 
       }
     }
