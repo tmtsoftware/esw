@@ -306,8 +306,8 @@ class SequencerBehavior(
           .map(replyTo ! _.get)
         Behaviors.same
 
-      case SubscribeSequencerState(replyTo) =>
-        stateMachine(state)(data.addStateSubscriber(replyTo))
+      case SubscribeSequencerState(replyTo)   => stateMachine(state)(data.addStateSubscriber(replyTo))
+      case UnsubscribeSequencerState(replyTo) => stateMachine(state)(data.removeStateSubscriber(replyTo))
 
       case ReadyToExecuteNext(replyTo) => stateMachine(state)(data.readyToExecuteNext(replyTo))
       case MaybeNext(replyTo) =>

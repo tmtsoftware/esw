@@ -47,8 +47,10 @@ object SequencerMessages {
   final case class GetSequence(replyTo: ActorRef[Option[StepList]])                           extends CommonRemoteMessage
   final case class GetSequencerState(replyTo: ActorRef[InternalSequencerState[SequencerMsg]]) extends CommonRemoteMessage
   final case class GetSequenceComponent(replyTo: ActorRef[AkkaLocation])                      extends CommonRemoteMessage
-  final case class SubscribeSequencerState(replyTo: ActorRef[SequencerStateResponse])         extends CommonRemoteMessage
+  final case class SubscribeSequencerState(subscriber: ActorRef[SequencerStateResponse])      extends CommonRemoteMessage
 
+  final private[esw] case class UnsubscribeSequencerState(subscriber: ActorRef[SequencerStateResponse])
+      extends CommonRemoteMessage
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[Ok.type]) extends CommonMessage
   final private[esw] case class MaybeNext(replyTo: ActorRef[Option[Step]])     extends CommonMessage
 

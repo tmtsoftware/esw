@@ -16,9 +16,9 @@ import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.constants.SequencerTimeouts
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.InternalSequencerState
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Loaded, Offline, Running}
+import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol._
 import msocket.api.Subscription
@@ -80,10 +80,12 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
         16,
         OverflowStrategy.dropHead
       )
-      .mapMaterializedValue { sequencer ! SubscribeSequencerState(_) }
+      .watchTermination() { (ref, doneF) =>
+        sequencer ! SubscribeSequencerState(ref)
+        doneF.onComplete(_ => sequencer ! UnsubscribeSequencerState(ref))
+      }
       .withSubscription()
       .distinctUntilChanged
-  // todo : unsubscribe commands
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
     sequencer ? (LoadSequence(sequence, _))

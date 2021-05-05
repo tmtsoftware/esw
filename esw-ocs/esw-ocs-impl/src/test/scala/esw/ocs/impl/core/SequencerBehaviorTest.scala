@@ -90,6 +90,24 @@ class SequencerBehaviorTest extends BaseTestSuite {
       compareStepList(onlineResponse.stepList, StepList(List.empty))
 
     }
+
+    "remove subscriber from Sequencer data on receiving UnsubscribeSequencerState | ESW-213" in {
+      val sequence       = Sequence(command1)
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+      val subscriberProbe = TestProbe[SequencerStateResponse]()
+      val testProbe       = TestProbe[Any]()
+
+      sequencerActor ! SubscribeSequencerState(subscriberProbe.ref) // add the subscriber in sequencer data
+      subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
+
+      sequencerActor ! UnsubscribeSequencerState(subscriberProbe.ref) // remove the subscriber from sequencer data
+
+      // subscriber probe should not receive any message
+      when(script.executeGoOffline()).thenReturn(Future.successful(Done))
+      goOfflineAndAssertResponse(Ok)
+      subscriberProbe.expectNoMessage()
+    }
   }
 
   "LoadSequence" must {

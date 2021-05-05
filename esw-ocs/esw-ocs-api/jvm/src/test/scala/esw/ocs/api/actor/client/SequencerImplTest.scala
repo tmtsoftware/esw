@@ -13,8 +13,8 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
-import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.InternalSequencerState._
+import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol._
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
@@ -45,15 +45,31 @@ class SequencerImplTest extends ActorTestSuit {
 
   private def randomString5 = Random.nextString(5)
 
-  "subscribe sequencer state should create an actor source that emits the state response | ESW-213" in {
+  "subscribeSequencerState should create an actor source that emits the state response | ESW-213" in {
     val sequencerStateResponse = mock[SequencerStateResponse]
     withBehavior {
       case SubscribeSequencerState(replyTo) => replyTo ! sequencerStateResponse
     } check { sequencerImpl =>
-      val source = sequencerImpl.subscribeSequencerState()
-      val future = source.take(1).runWith(Sink.head)
-      val result = Await.result(future, 3.seconds)
-      result === (sequencerStateResponse)
+      val resStream = sequencerImpl.subscribeSequencerState()
+      Await.result(resStream.runWith(Sink.head), 3.seconds) shouldEqual sequencerStateResponse
+    }
+  }
+  "cancelling the source should unsubscribe from the sequencer state  | ESW-213" in {
+    val sequencerStateResponse    = mock[SequencerStateResponse]
+    var subscriber: ActorRef[_]   = null
+    var unsubscribed: ActorRef[_] = null
+    withBehavior {
+      case SubscribeSequencerState(replyTo) =>
+        subscriber = replyTo
+        replyTo ! sequencerStateResponse
+      case UnsubscribeSequencerState(replyTo) =>
+        unsubscribed = replyTo
+    } check { sequencerImpl =>
+      val (subscription, resStream) = sequencerImpl.subscribeSequencerState().preMaterialize()
+      Await.result(resStream.runWith(Sink.head), 3.seconds) shouldEqual sequencerStateResponse
+
+      subscription.cancel()
+      eventually(subscriber shouldEqual unsubscribed)
     }
   }
 
