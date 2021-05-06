@@ -24,7 +24,8 @@ import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 class Factories(val locationUtils: LocationServiceUtil, configServiceExt: ConfigServiceExt)(implicit
     val actorSystem: ActorSystem[_]
@@ -43,7 +44,7 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
 
   def spawnSimulatedHCD(hcdPrefix: String, agentPrefix: String): SpawnContainersResponse = {
     val client = agentClient(agentPrefix)
-    Container.spawnSimulatedComponent(hcdPrefix, HCD, client).await()
+    Container.spawnSimulatedComponent(hcdPrefix, HCD, client).await(20.seconds)
   }
 
   def spawnSimulatedHCD(prefix: String): ActorRef[ComponentMessage] =
@@ -51,7 +52,7 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
 
   def spawnSimulatedAssembly(assemblyPrefix: String, agentPrefix: String): SpawnContainersResponse = {
     val client = agentClient(agentPrefix)
-    Container.spawnSimulatedComponent(assemblyPrefix, Assembly, client).await()
+    Container.spawnSimulatedComponent(assemblyPrefix, Assembly, client).await(20.seconds)
   }
 
   def spawnSimulatedAssembly(prefix: String): ActorRef[ComponentMessage] =
