@@ -51,7 +51,7 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
 
   def spawnSimulatedAssembly(assemblyPrefix: String, agentPrefix: String): SpawnContainersResponse = {
     val client = agentClient(agentPrefix)
-    Container.spawnSimulatedComponent(assemblyPrefix, HCD, client).await()
+    Container.spawnSimulatedComponent(assemblyPrefix, Assembly, client).await()
   }
 
   def spawnSimulatedAssembly(prefix: String): ActorRef[ComponentMessage] =
