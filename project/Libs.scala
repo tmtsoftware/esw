@@ -2,6 +2,10 @@ import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 import sbt.Def.{setting => dep}
 import sbt._
 
+import java.io.FileReader
+import java.util.Properties
+import scala.util.Using
+
 object Libs {
   private val MSocketVersion = "ab4b74a"
 
@@ -29,7 +33,7 @@ object Libs {
 object Csw {
   private val Org = "com.github.tmtsoftware.csw"
 
-  private val Version = "c761b32"
+  private val Version = BuildProperties.read("csw.version")
 
   val `csw-aas-http`        = Org %% "csw-aas-http"        % Version
   val `csw-alarm-api`       = Org %% "csw-alarm-api"       % Version
@@ -92,4 +96,13 @@ object Kotlin {
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8"    % "1.4.2"
   val kotlintest        = "io.kotest"             % "kotest-assertions-core-jvm" % "4.3.2"
   val mockk             = "io.mockk"              % "mockk"                      % "1.10.5"
+}
+
+object BuildProperties {
+  def read(key: String): String =
+    Using.resource(new FileReader("project/build.properties")) { reader =>
+      val prop = new Properties()
+      prop.load(reader)
+      prop.getProperty(key)
+    }
 }
