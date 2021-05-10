@@ -37,53 +37,52 @@ This module consists of Kotlin counterpart of the Script DSL.
 This handler module is responsible for providing HTTP routes for Sequencer HTTP server. Sequencer provides
 an HTTP and Akka interface. The HTTP routes are defined and implemented here.
 
+## Sequence execution process
+
+#### Starting a Sequencer
+[Sequencer wiring]($github.base_url$/esw-ocs/esw-ocs-app/src/main/scala/esw/ocs/app/wiring/SequencerWiring.scala) creates an execution [Engine]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/core/Engine.scala) which is responsible for processing each step.
+When Engine is initialized, Kotlin Script is loaded into it via reflection.
+After initialization, Sequencer's Akka and HTTP connection is registered to Location Service.  
+
+@@@note
+Engine is a continuous running loop, it pulls next step once current step is finished.
+@@@
+
+#### Loading and Running a sequence in Sequencer
+
+* During initialization of Sequencer, it is set to IDLE state and initialized with empty data in Sequence Data like empty Step List,etc.
+* Once initialized, user can either **Load a sequence** or **Submit a sequence**, in both cases list of commands will be converted to richer model of list of Steps.
+    * **Load a Sequence**: Here, `Sequence Data`(described below) will be initialized with Sequence Steps.
+      Once initialized, user can give startSequence command to start the execution of steps.
+    * **Submit a Sequence**: Sequence Data will be initialized with Sequence Steps, and it will also start the sequence execution.
+
+    After any of above flow, Sequencer will go into RUNNING state.
+
+`Sequence Data` has different fields as follows:
+
+* `stepList` - This will store steps of the Sequence
+* `runId` - This is runId of Sequence
+* `sequenceResponseSubscribers` - This is a list of Subscribers who is interested in response either via **submitting a sequence** or **querying response**.
+    * When subscriber has submitted the sequence, we can use submitAndWait API and get response once Sequence is completed with Success/Failure
+    * For other Subscribers(who has not submitted the sequence), they can also get response using queryFinal API, for this they need to provide runId of Sequence
+
+Execution of a single Step  
+
+Engine pulls one step at  a time, and it is executed using command @ref:[handler](../scripts/dsl/constructs/handlers.md) in the script.
+Command handler is selected based upon type and name of command present in Step.
+
+#### Completion of a Sequence
+Once every step is executed, it is marked as Finished with Success or Failure.
+If any of step is Failed, Sequence is terminated and Error response is sent to all Subscribers.
+If all steps are completed with Success, then Success response is sent to all Subscribers.
+
+
 ## Implementation Details
 
 Sequencer framework uses Akka Actor as core implementation (Sequencer Actor).
 The following figure explains the architecture of the Sequencer framework. Sequencer is registered with Location Service. The future
 SOSS Planning Tool or ESW.HCMS Script Monitoring Tool will use the Location of the top-level Sequencer returned by Sequence Manager
 to resolve the top-level Sequencer, and will send the Observation's Sequence to top-level Sequencer.
-
-The Sequence execution process can be broadly described as below.
-
-1. Starting a Sequence
-
-   * [Sequencer wiring]($github.base_url$/esw-ocs/esw-ocs-app/src/main/scala/esw/ocs/app/wiring/SequencerWiring.scala) creates an execution [Engine]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/core/Engine.scala) which is responsible for processing each step.
-   When Engine is initialized, Kotlin Script is loaded into it via reflection.
-   After initialization, Sequencer's Akka and HTTP connection is registered to Location Service.
-   NOTE: Engine is a continuous running loop, it pulls next step once current step is finished.
-
-2. Loading and Running a sequence in Sequencer
-
-   * During initialization of Sequencer, it is set to IDLE state and initialized with empty data in Sequence Data like empty Step List,etc.  
-   Sequence Data has different fields as follows:  
-   stepList - This will store steps of the Sequence  
-   runId - This is runId of Sequence  
-   sequenceResponseSubscribers - This is a list of Subscribers who is interested in response either via submitting a sequence or querying response.
-     * For first use case when subscriber has submitted the sequence, it uses submitAndWait API and gets response once Sequence is completed with Success/Failure
-     * For second use case, other Subscribers(who has not submitted the sequence) can also get response using queryFinal API, for this they need to provide runId of Sequence
-
-    Once initialized, user can either `Load a sequence` or `Submit a sequence`, in both cases list of commands will be converted to richer model of list of Steps.
-
-   * Load a Sequence
-     * Here, Sequence Data(described above) will be initialized with Sequence Steps.
-        Once initialized, user can give startSequence command to start the execution of steps.
-   * Submit a Sequence
-     * Sequence Data will be initialized with Sequence Steps, and it will also start the sequence execution.  
-
-    After any of above flow, Sequencer will go into RUNNING state.
-
-   Execution of a single Step
-   Engine pulls one step at a time, and it is executed using command @ref:[handler](../scripts/dsl/constructs/handlers.md) in the script.
-   Command handler is selected based upon type and name of command present in Step.
-
-3. Completion of a Sequence
-
-   Once every step is executed, it is marked as Finished with Success or Failure.
-   If any of step is Failed, Sequence is terminated and Error response is sent to all Subscribers.
-   If all steps are completed with Success, then Success response is sent to all Subscribers.
-
----
 
 Engine and Sequencer Actor are core parts of Framework. The framework part is the same for every Sequencer,
 but the Script can vary. The Script defines the behaviour of the Sequencer for each step within a Sequence.
