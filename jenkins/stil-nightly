@@ -90,5 +90,5 @@ def sendNotification(String buildStatus = 'STARTED') {
         color = 'RED'
         colorCode = '#FF0000'
     }
-    slackSend(channel: "#esw-build", color: colorCode, message: summary)
+    slackSend(channel: "#ci-nightly", color: colorCode, message: summary)
 }
