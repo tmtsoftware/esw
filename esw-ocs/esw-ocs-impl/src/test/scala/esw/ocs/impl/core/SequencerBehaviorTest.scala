@@ -3,7 +3,7 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
+import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequence}
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.location.api.models.AkkaLocation
 import csw.logging.client.commons.LogAdminUtil
@@ -44,7 +44,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   "SubscribeSequencerState" must {
-    "send a message to the subscriber giving back the SequencerStateResponse | ESW-213" in {
+    "send a message to the subscriber giving back the SequencerStateResponse when LoadSequence, StartSequence are received | ESW-213" in {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
@@ -57,7 +57,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       loadSequenceAndAssertResponse(Ok)
       assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Loaded)
 
-      when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
+      when(script.executeNewSequenceHandler()).thenAnswer(Future.successful(Done))
       sequencerActor ! StartSequence(testProbe.ref)
       val response = testProbe.receiveMessage()
       response shouldBe a[SubmitResult]
@@ -74,21 +74,95 @@ class SequencerBehaviorTest extends BaseTestSuite {
       sequencerActor ! GoIdle(testProbe.ref) // Goes Idle after Sequence completion
       assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Idle)
 
+    }
+    "send a message to the subscriber giving back the SequencerStateResponse when GoOffline, GoOnline are received | ESW-213" in {
+      val sequence       = Sequence(command1)
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+      val subscriberProbe = TestProbe[SequencerStateResponse]()
+
+      sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
+      subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
+
       when(script.executeGoOffline()).thenReturn(Future.successful(Done))
       goOfflineAndAssertResponse(Ok)
-      subscriberProbe.receiveMessage().sequencerState shouldEqual SequencerState.Processing // GoingOffline with Processing
+      subscriberProbe
+        .receiveMessage()
+        .sequencerState shouldEqual SequencerState.Processing // GoingOffline will be converted to Processing
 
       val offlineResponse = subscriberProbe.receiveMessage()
+      // Offline state tested
       offlineResponse.sequencerState shouldEqual SequencerState.Offline
       compareStepList(offlineResponse.stepList, StepList(List.empty))
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
-      subscriberProbe.receiveMessage().sequencerState shouldEqual SequencerState.Processing // GoingOnline with Processing
+      subscriberProbe
+        .receiveMessage()
+        .sequencerState shouldEqual SequencerState.Processing // GoingOnline will be converted to Processing
 
       val onlineResponse = subscriberProbe.receiveMessage()
       onlineResponse.sequencerState shouldEqual SequencerState.Idle
       compareStepList(onlineResponse.stepList, StepList(List.empty))
+    }
 
+    "send a message to the subscriber giving back the SequencerStateResponse when SubmitSequence, AbortSequence are received | ESW-213" in {
+
+      val sequence       = Sequence(command1, command2, command3, command4)
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+      val subscriberProbe = TestProbe[SequencerStateResponse]()
+      val testProbe       = TestProbe[Any]()
+
+      sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
+      subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
+
+      when(script.executeNewSequenceHandler()).thenAnswer(Future.successful(Done))
+      when(script.executeAbort()).thenReturn(Future.successful(Done))
+
+      sequencerActor ! SubmitSequence(sequence, testProbe.ref)
+      subscriberProbe
+        .receiveMessage()
+        .sequencerState shouldEqual SequencerState.Processing // Submitting will be converted to Processing
+      val response = subscriberProbe.receiveMessage()
+      assertSequencerState(response, SequencerState.Running)
+
+      sequencerActor ! AbortSequence(testProbe.ref)
+      subscriberProbe
+        .receiveMessage()
+        .sequencerState shouldEqual SequencerState.Processing // AbortingSequence will be converted to Processing
+      val abortResponse = subscriberProbe.receiveMessage()
+      abortResponse.sequencerState shouldEqual SequencerState.Running
+      abortResponse.stepList.isEmpty shouldBe true
+
+    }
+
+    "send a message to the subscriber giving back the SequencerStateResponse when SubmitSequence, Stop are received | ESW-213" in {
+
+      val sequence       = Sequence(command1, command2, command3, command4)
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+      val subscriberProbe = TestProbe[SequencerStateResponse]()
+      val testProbe       = TestProbe[Any]()
+
+      sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
+      subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
+
+      when(script.executeNewSequenceHandler()).thenAnswer(Future.successful(Done))
+      when(script.executeStop()).thenReturn(Future.successful(Done))
+
+      sequencerActor ! SubmitSequence(sequence, testProbe.ref)
+      subscriberProbe
+        .receiveMessage()
+        .sequencerState shouldEqual SequencerState.Processing // Submitting will be converted to Processing
+      assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)
+
+      sequencerActor ! Stop(testProbe.ref)
+      subscriberProbe
+        .receiveMessage()
+        .sequencerState shouldEqual SequencerState.Processing // Stopping will be converted to Processing
+      val stopResponse = subscriberProbe.receiveMessage()
+      stopResponse.sequencerState shouldEqual SequencerState.Running
+      stopResponse.stepList.isEmpty shouldBe true
     }
 
     "remove subscriber from Sequencer data on receiving UnsubscribeSequencerState | ESW-213" in {
@@ -96,7 +170,6 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
       val subscriberProbe = TestProbe[SequencerStateResponse]()
-      val testProbe       = TestProbe[Any]()
 
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref) // add the subscriber in sequencer data
       subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)

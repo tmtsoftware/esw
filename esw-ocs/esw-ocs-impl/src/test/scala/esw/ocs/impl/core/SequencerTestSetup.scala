@@ -68,32 +68,6 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
   private val completionPromise = Promise[SubmitResponse]()
 
-//  def subscribeSequencerStateAndAssertResponse(expectedMessage: SequencerStateResponse): Unit = {
-//    val subscriberProbe = TestProbe[SequencerStateResponse]()
-//    val testProbe       = TestProbe[Any]()
-//
-//    sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
-//    expectedMessage.sequencerState shouldEqual  subscriberProbe.receiveMessage().sequencerState
-//
-//    sequencerActor ! LoadSequence(sequence, testProbe.ref)
-//    val expectedNextMessage = SequencerStateResponse(StepList(sequence), Loaded)
-//    expectedNextMessage.sequencerState shouldEqual  subscriberProbe.receiveMessage().sequencerState
-//
-//    when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
-//    sequencerActor ! StartSequence(testProbe.ref)
-//    startPullNext()
-//
-//     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//     val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
-//
-//    val expectedSteps = List(
-//      Step(sequence.commandscommand1, InFlight, hasBreakpoint = false),
-//      Step(command2, Pending, hasBreakpoint = false)
-//    )
-//    println(subscriberProbe.receiveMessages(5))
-//
-//  }
-
   def loadSequenceAndAssertResponse(expected: OkOrUnhandledResponse): Unit = {
     val probe = TestProbe[OkOrUnhandledResponse]()
     sequencerActor ! LoadSequence(sequence, probe.ref)
