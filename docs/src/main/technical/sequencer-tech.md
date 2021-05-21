@@ -40,9 +40,11 @@ an HTTP and Akka interface. The HTTP routes are defined and implemented here.
 ## Sequence execution process
 
 #### Starting a Sequencer
-[Sequencer wiring]($github.base_url$/esw-ocs/esw-ocs-app/src/main/scala/esw/ocs/app/wiring/SequencerWiring.scala) creates an execution [Engine]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/core/Engine.scala) which is responsible for processing each step.
-When Engine is initialized, Kotlin Script is loaded into it via reflection.
-After initialization, Sequencer's Akka and HTTP connection is registered to Location Service.  
+When we do load script from a sequence component, it creates a [Sequencer Wiring]($github.base_url$/esw-ocs/esw-ocs-app/src/main/scala/esw/ocs/app/wiring/SequencerWiring.scala). 
+Sequencer Wiring passes the Kotlin script class name as string parameter to [Script Loader]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/script/ScriptLoader.scala), 
+which uses Java reflection APIs to dynamically load script class with given name and create its instance. This loaded script is then passed to
+an execution [Engine]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/core/Engine.scala) which is responsible for processing each step.
+After initialization, Sequencer's Akka and HTTP connection is registered to Location Service.
 
 #### Loading and Running a sequence in Sequencer
 
