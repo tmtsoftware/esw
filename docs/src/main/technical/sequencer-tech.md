@@ -215,48 +215,56 @@ Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #add }
 
 * prepend
+
 This API allows to add more steps to sequence. Steps will be added after currently running step of sequence.
 
 Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #prepend }
 
 * getSequence
+
 This API allows returns Sequence running in Sequencer if any.
 
 Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #getSequence }
 
 * replace
+
 This API allows to replace particular step in the sequence with more steps.
 
 Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #replace }
 
 * insertAfter
+
 This API allows to insert more steps after particular step in the sequence.
 
 Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #insertAfter }
 
 * delete
+
 This API allows to delete particular step in the sequence.
 
 Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #delete }
 
 * add and remove breakpoint
+
 These APIs allows to add and remove breakpoint for particular step in the sequence.
 
 Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #addRemoveBreakpoint }
 
 * reset
+
 These APIs allows to discard all pending steps in the sequence.
 
 Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #reset }
 
 * pause and resume sequence
+
 These APIs allows to pause and resume sequence. This essentially adds/removes breakpoint at first pending step in sequence
 
 Scala
@@ -320,6 +328,14 @@ This API allow to send operationsMode command to Sequencer. This calls `onOperat
 
 Scala
 : @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #operationsMode }
+
+* subscribeSequencerState
+
+This API allows subscribing to state of Sequencer. It returns a Source of `SequencerStateResponse` which contains current `SequencerState` and `StepList`.
+The `Subscription` can be used to unsubscribe.
+
+Scala
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #subscribeSequencerState }
 
 ### Other APIs
 

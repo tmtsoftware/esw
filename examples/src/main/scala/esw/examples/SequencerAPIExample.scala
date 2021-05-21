@@ -1,6 +1,7 @@
 package esw.examples
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.stream.scaladsl.Source
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
@@ -15,6 +16,8 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.StepList
+import esw.ocs.api.protocol.SequencerStateResponse
+import msocket.api.Subscription
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -130,6 +133,11 @@ object SequencerAPIExample extends App {
   //#operationsMode
   sequencer.operationsMode()
   //#operationsMode
+
+  //#subscribeSequencerState
+  val sequencerStateS: Source[SequencerStateResponse, Subscription] =
+    sequencer.subscribeSequencerState()
+  //#subscribeSequencerState
 
   //#loadSequence
   val sequence: Sequence = Sequence(
