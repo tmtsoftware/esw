@@ -135,7 +135,7 @@ object SequencerAPIExample extends App {
   //#operationsMode
 
   //#subscribeSequencerState
-  val sequencerStateS: Source[SequencerStateResponse, Subscription] =
+  val sequencerStateSource: Source[SequencerStateResponse, Subscription] =
     sequencer.subscribeSequencerState()
   //#subscribeSequencerState
 

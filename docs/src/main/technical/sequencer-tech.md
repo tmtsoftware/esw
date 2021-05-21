@@ -209,6 +209,7 @@ in sequence. For using Sequence Editor actions, sequencer must be running a sequ
 Sequencer will return `Unhandled` response.
 
 * add
+
 This API allows to add more steps to sequence. Steps will be added in the end of sequence.
 
 Scala
