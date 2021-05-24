@@ -1,7 +1,5 @@
 package esw.contract.data.sequencemanager
 
-import java.net.URI
-
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
@@ -17,6 +15,8 @@ import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, SpawningSequ
 import esw.sm.api.protocol.SequenceManagerRequest.{GetObsModesDetails, _}
 import esw.sm.api.protocol.StartSequencerResponse._
 import esw.sm.api.protocol._
+
+import java.net.URI
 
 trait SequenceManagerData {
   private val agentPrefix               = Prefix(ESW, "agent")
@@ -83,6 +83,11 @@ trait SequenceManagerData {
   val locationServiceError: LocationServiceError                                       = LocationServiceError("location service error")
   val sequenceComponentNotAvailable: SequenceComponentNotAvailable                     = SequenceComponentNotAvailable(List(ESW))
   val unhandled: Unhandled                                                             = Unhandled("state", "messageType")
+
+  def failedResponse(sequenceManagerRequest: String): FailedResponse =
+    FailedResponse(
+      s"Sequence Manager Operation($sequenceManagerRequest) failed due to: Ask timed out after [10000] ms"
+    )
 
   val getResourcesStatus: SequenceManagerRequest.GetResources.type = GetResources
 

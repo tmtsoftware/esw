@@ -20,9 +20,16 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       failedToStartSequencers,
       locationServiceError,
       sequenceComponentNotAvailable,
-      unhandled
+      unhandled,
+      failedResponse(name[Configure])
     ),
-    ModelType[ProvisionResponse](provisionSuccess, couldNotFindMachines, spawningSequenceComponentsFailed, unhandled),
+    ModelType[ProvisionResponse](
+      provisionSuccess,
+      couldNotFindMachines,
+      spawningSequenceComponentsFailed,
+      unhandled,
+      failedResponse(name[Provision])
+    ),
     ModelType[ObsModeDetails](configuredObsMode),
     ModelType[ObsModeStatus](ObsModeStatus.Configurable, ObsModeStatus.Configured, ObsModeStatus.NonConfigurable),
     ModelType[ObsModesDetailsResponse](ObsModesDetailsSuccess, locationServiceError),
@@ -32,11 +39,28 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       loadScriptError,
       sequenceComponentNotAvailable,
       locationServiceError,
-      unhandled
+      unhandled,
+      failedResponse(name[StartSequencer])
     ),
-    ModelType[RestartSequencerResponse](restartSequencerSuccess, loadScriptError, locationServiceError, unhandled),
-    ModelType[ShutdownSequencersResponse](shutdownSequencerSuccess, locationServiceError, unhandled),
-    ModelType[ShutdownSequenceComponentResponse](shutdownSequenceComponentSuccess, locationServiceError, unhandled),
+    ModelType[RestartSequencerResponse](
+      restartSequencerSuccess,
+      loadScriptError,
+      locationServiceError,
+      unhandled,
+      failedResponse(name[RestartSequencer])
+    ),
+    ModelType[ShutdownSequencersResponse](
+      shutdownSequencerSuccess,
+      locationServiceError,
+      unhandled,
+      failedResponse(name[ShutdownSequencer])
+    ),
+    ModelType[ShutdownSequenceComponentResponse](
+      shutdownSequenceComponentSuccess,
+      locationServiceError,
+      unhandled,
+      failedResponse(name[ShutdownSequenceComponent])
+    ),
     ModelType(sequencerPrefix),
     ModelType(obsMode),
     ModelType(Subsystem),

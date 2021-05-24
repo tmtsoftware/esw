@@ -92,6 +92,7 @@ object ShutdownSequenceComponentResponse {
   sealed trait Failure extends SmFailure with ShutdownSequenceComponentResponse
 }
 
+// todo refactor this
 sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure
 
 object CommonFailure {
