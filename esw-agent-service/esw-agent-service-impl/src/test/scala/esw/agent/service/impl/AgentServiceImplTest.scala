@@ -1,8 +1,5 @@
 package esw.agent.service.impl
 
-import java.net.URI
-import java.nio.file.Path
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
@@ -11,10 +8,12 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models._
-import esw.commons.utils.location.EswLocationError.LocationNotFound
+import esw.commons.utils.location.EswLocationError._
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.BaseTestSuite
 
+import java.net.URI
+import java.nio.file.Path
 import scala.concurrent.Future
 
 class AgentServiceImplTest extends BaseTestSuite {
@@ -29,6 +28,13 @@ class AgentServiceImplTest extends BaseTestSuite {
   private val agentService = new AgentServiceImpl(locationService, agentStatusUtil) {
     override private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
       Future.successful(Right(agentClientMock))
+
+    override private[impl] def makeAgentClient(akkaLocation: AkkaLocation) = agentClientMock
+  }
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(locationService, agentStatusUtil, agentClientMock)
   }
 
   override protected def afterAll(): Unit = {
@@ -129,60 +135,48 @@ class AgentServiceImplTest extends BaseTestSuite {
     "killComponent API" must {
       val componentId     = mock[ComponentId]
       val componentPrefix = mock[Prefix]
+      val hostname        = "xyz"
       when(componentId.prefix).thenReturn(componentPrefix)
+      when(componentId.componentType).thenReturn(Machine)
 
       val componentConnection = AkkaConnection(componentId)
-      val agentPrefixStr      = "IRIS.filterWheel"
-      val agentPrefix         = Prefix(agentPrefixStr)
-      val componentLocation   = AkkaLocation(componentConnection, new URI("xyz"), Metadata().withAgentPrefix(agentPrefix))
+      val componentLocation   = AkkaLocation(componentConnection, new URI(s"http://$hostname"), Metadata.empty)
+      val agentLocation       = AkkaLocation(componentConnection, new URI(hostname), Metadata.empty)
 
       "be able to kill component for the given componentId | ESW-361, ESW-367" in {
         when(agentClientMock.killComponent(componentLocation)).thenReturn(Future.successful(Killed))
-        when(locationService.list(componentId)).thenReturn(Future.successful(List(componentLocation)))
-        agentService.killComponent(componentId).futureValue
+        when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
+          .thenReturn(Future.successful(Right(componentLocation)))
+        when(locationService.findAgentByHostname(hostname)).thenReturn(Future.successful(Right(agentLocation)))
 
-        verify(locationService).list(componentId)
+        agentService.killComponent(componentId).futureValue should ===(Killed)
+
+        verify(locationService).findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
         verify(agentClientMock).killComponent(componentLocation)
       }
 
       "give error message when agent is not there| ESW-361" in {
-        val agentConnection  = AkkaConnection(ComponentId(agentPrefix, Machine))
         val expectedErrorMsg = "error"
 
-        when(locationService.list(componentId)).thenReturn(Future.successful(List(componentLocation)))
-        when(locationService.find(agentConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+        when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
+          .thenReturn(Future.successful(Right(componentLocation)))
+        when(locationService.findAgentByHostname(hostname))
+          .thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
         val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
         agentService.killComponent(componentId).futureValue should ===(Failed(expectedErrorMsg))
 
-        verify(locationService).find(agentConnection)
+        verify(locationService).findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
       }
 
-      "be able to return an error if component location does not contain agent prefix | ESW-361, ESW-367" in {
-        val compLocWithoutAgentPrefix = AkkaLocation(componentConnection, new URI("xyz"), Metadata.empty)
-        when(locationService.list(componentId)).thenReturn(Future.successful(List(compLocWithoutAgentPrefix)))
+      "be able to return an error if component is not there | ESW-361, ESW-367" in {
+        val expectedErrorMsg = "error"
+        when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
+          .thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
-        agentService.killComponent(componentId).futureValue should ===(
-          Failed(s"$compLocWithoutAgentPrefix metadata does not contain agent prefix")
-        )
-      }
+        agentService.killComponent(componentId).futureValue should ===(Failed(expectedErrorMsg))
 
-      "be able to return an error if component locations do not contain agent prefix | ESW-361, ESW-367" in {
-        val compLocWithoutAgentPrefix = AkkaLocation(componentConnection, new URI("xyz"), Metadata.empty)
-
-        val componentTcpConnection       = TcpConnection(componentId)
-        val compLocWithoutAgentPrefixTwo = TcpLocation(componentTcpConnection, new URI("xyz"), Metadata.empty)
-
-        when(locationService.list(componentId))
-          .thenReturn(Future.successful(List(compLocWithoutAgentPrefix, compLocWithoutAgentPrefixTwo)))
-
-        println(agentService.killComponent(componentId).futureValue)
-        agentService.killComponent(componentId).futureValue should ===(
-          Failed(
-            s"$compLocWithoutAgentPrefix metadata does not contain agent prefix," +
-              s"$compLocWithoutAgentPrefixTwo metadata does not contain agent prefix"
-          )
-        )
+        verify(locationService).findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
       }
     }
 

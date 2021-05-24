@@ -419,4 +419,41 @@ class LocationServiceUtilTest extends BaseTestSuite {
       verify(locationService).find(akkaConnection)
     }
   }
+
+  "findAgentByHostname" must {
+    val hostname = "host"
+    val uri      = new URI("xyz")
+
+    "return a machine location which matches the given hostname " in {
+      val location = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_1"), Machine)), uri, Metadata.empty)
+
+      when(locationService.list(hostname)).thenReturn(Future.successful(List(location)))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.findAgentByHostname(hostname).rightValue should ===(location)
+      verify(locationService).list(hostname)
+    }
+
+    "return a LocationNotFound when no matching host is found" in {
+      when(locationService.list(hostname)).thenReturn(Future.successful(List()))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.findAgentByHostname(hostname).leftValue should ===(
+        LocationNotFound(s"No agent running on host: $hostname")
+      )
+
+      verify(locationService).list(hostname)
+    }
+
+    "return a RegistrationListingFailed when location service call throws exception" in {
+      when(locationService.list(hostname)).thenReturn(Future.failed(cswRegistrationListingFailed))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.findAgentByHostname(hostname).leftValue should ===(
+        RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
+      )
+
+      verify(locationService).list(hostname)
+    }
+  }
 }
