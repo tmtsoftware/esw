@@ -1,7 +1,6 @@
 package esw.services.cli
 
 import java.nio.file.Path
-
 import caseapp.{CommandName, ExtraName, HelpMessage}
 import csw.prefix.models.Prefix
 
@@ -80,6 +79,8 @@ object Command {
       @HelpMessage("Enable simulation mode for sequence manager")
       smSimulationMode: Boolean = false,
       @HelpMessage("Specify sequencer-scripts version")
-      scriptsVersion: Option[String] = None
+      scriptsVersion: Option[String] = None,
+      @HelpMessage("Specify esw version")
+      eswVersion: Option[String] = None
   ) extends Command
 }
