@@ -1,7 +1,7 @@
 package esw.agent.service.impl
 
 import akka.actor.typed.ActorSystem
-import csw.location.api.models.{AkkaLocation, ComponentId, Location}
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
@@ -45,14 +45,13 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil
     agentClient(agentPrefix).flatMapRight(_.spawnContainers(hostConfigPath, isConfigLocal)).mapToAdt(identity, Failed)
 
   override def killComponent(componentId: ComponentId): Future[KillResponse] = {
-    val compLocation = locationServiceUtil.findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
-
-    val agentLocation = compLocation.flatMapE { location =>
-      locationServiceUtil.findAgentByHostname(location.uri.getHost)
-    }
-    val agentClient = agentLocation.mapRight(location => makeAgentClient(location))
-    compLocation
-      .flatMapE { cl => agentClient.flatMapRight { c => c.killComponent(cl) } }
+    val compLocationE = locationServiceUtil.findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
+    compLocationE
+      .flatMapE { compLocation =>
+        val agentLocation = locationServiceUtil.findAgentByHostname(compLocation.uri.getHost)
+        val agentClient   = agentLocation.mapRight(makeAgentClient)
+        agentClient.flatMapRight(_.killComponent(compLocation))
+      }
       .mapToAdt(identity, e => Failed(e.msg))
   }
 
@@ -62,7 +61,4 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil
     AgentClient.make(agentPrefix, locationServiceUtil).mapLeft(e => e.msg)
 
   private[impl] def makeAgentClient(akkaLocation: AkkaLocation): AgentClient = new AgentClient(akkaLocation)
-
-  private def getAgentPrefix(location: Location): Either[String, Prefix] =
-    location.metadata.getAgentPrefix.toRight(s"$location metadata does not contain agent prefix")
 }

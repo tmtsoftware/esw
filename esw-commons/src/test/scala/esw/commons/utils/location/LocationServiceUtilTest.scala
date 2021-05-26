@@ -1,7 +1,5 @@
 package esw.commons.utils.location
 
-import java.net.URI
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
@@ -24,6 +22,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.testcommons.BaseTestSuite
 
+import java.net.URI
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -421,16 +420,17 @@ class LocationServiceUtilTest extends BaseTestSuite {
   }
 
   "findAgentByHostname" must {
-    val hostname = "host"
-    val uri      = new URI("xyz")
+    val hostname = "192.168.1.3"
+    val uri      = new URI(s"http://$hostname:76543/iris")
 
-    "return a machine location which matches the given hostname " in {
-      val location = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_1"), Machine)), uri, Metadata.empty)
+    "return a machine location which matches the given hostname" in {
+      val location1 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_1"), Machine)), uri, Metadata.empty)
+      val location2 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_2"), Machine)), uri, Metadata.empty)
 
-      when(locationService.list(hostname)).thenReturn(Future.successful(List(location)))
+      when(locationService.list(hostname)).thenReturn(Future.successful(List(location1, location2)))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.findAgentByHostname(hostname).rightValue should ===(location)
+      locationServiceUtil.findAgentByHostname(hostname).rightValue should ===(location1)
       verify(locationService).list(hostname)
     }
 

@@ -2,8 +2,8 @@ package esw.agent.service.impl
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.Machine
-import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata, TcpLocation}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentClient
@@ -135,13 +135,17 @@ class AgentServiceImplTest extends BaseTestSuite {
     "killComponent API" must {
       val componentId     = mock[ComponentId]
       val componentPrefix = mock[Prefix]
-      val hostname        = "xyz"
+      val hostname        = "192.168.1.3"
       when(componentId.prefix).thenReturn(componentPrefix)
       when(componentId.componentType).thenReturn(Machine)
 
       val componentConnection = AkkaConnection(componentId)
-      val componentLocation   = AkkaLocation(componentConnection, new URI(s"http://$hostname"), Metadata.empty)
-      val agentLocation       = AkkaLocation(componentConnection, new URI(hostname), Metadata.empty)
+      val componentLocation = AkkaLocation(
+        componentConnection,
+        new URI(s"akka://iris-system@$hostname:59405/user/iris#663907945"),
+        Metadata.empty
+      )
+      val agentLocation = AkkaLocation(componentConnection, new URI(hostname), Metadata.empty)
 
       "be able to kill component for the given componentId | ESW-361, ESW-367" in {
         when(agentClientMock.killComponent(componentLocation)).thenReturn(Future.successful(Killed))
@@ -155,7 +159,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         verify(agentClientMock).killComponent(componentLocation)
       }
 
-      "give error message when agent is not there| ESW-361" in {
+      "give error message when agent is not there | ESW-361" in {
         val expectedErrorMsg = "error"
 
         when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
