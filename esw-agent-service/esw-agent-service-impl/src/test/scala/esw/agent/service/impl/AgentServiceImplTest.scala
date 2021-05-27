@@ -147,7 +147,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       )
       val agentLocation = AkkaLocation(componentConnection, new URI(hostname), Metadata.empty)
 
-      "be able to kill component for the given componentId | ESW-361, ESW-367" in {
+      "be able to kill component for the given componentId | ESW-361, ESW-367, ESW-480" in {
         when(agentClientMock.killComponent(componentLocation)).thenReturn(Future.successful(Killed))
         when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
           .thenReturn(Future.successful(Right(componentLocation)))
@@ -159,7 +159,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         verify(agentClientMock).killComponent(componentLocation)
       }
 
-      "give error message when agent is not there | ESW-361" in {
+      "give error message when agent is not there | ESW-361, ESW-480" in {
         val expectedErrorMsg = "error"
 
         when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
@@ -173,7 +173,7 @@ class AgentServiceImplTest extends BaseTestSuite {
         verify(locationService).findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
       }
 
-      "be able to return an error if component is not there | ESW-361, ESW-367" in {
+      "be able to return an error if component is not there | ESW-361, ESW-367, ESW-480" in {
         val expectedErrorMsg = "error"
         when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
           .thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))

@@ -423,7 +423,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
     val hostname = "192.168.1.3"
     val uri      = new URI(s"http://$hostname:76543/iris")
 
-    "return a machine location which matches the given hostname" in {
+    "return a machine location which matches the given hostname | ESW-480" in {
       val location1 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_1"), Machine)), uri, Metadata.empty)
       val location2 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_2"), Machine)), uri, Metadata.empty)
 
@@ -434,7 +434,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
       verify(locationService).list(hostname)
     }
 
-    "return a LocationNotFound when no matching host is found" in {
+    "return a LocationNotFound when no matching host is found | ESW-480" in {
       when(locationService.list(hostname)).thenReturn(Future.successful(List()))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
@@ -445,7 +445,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
       verify(locationService).list(hostname)
     }
 
-    "return a RegistrationListingFailed when location service call throws exception" in {
+    "return a RegistrationListingFailed when location service call throws exception | ESW-480" in {
       when(locationService.list(hostname)).thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
