@@ -64,10 +64,19 @@ After initialization, Sequencer's Akka and HTTP connection is registered to Loca
     * When subscriber has submitted the sequence using `submitAndWait` API, it will get response once Sequence is completed with Success/Failure
     * For other Subscribers(who has not submitted the sequence), they can also get same response using `queryFinal` API, for this they need to provide runId of Sequence
 
-Execution of a single Step  
+##### Mapping between steps and script handlers
 
-Engine pulls one step at  a time, and it is executed using command @ref:[handler](../scripts/dsl/constructs/handlers.md) in the script.
-Command handler is selected based upon type and name of command present in Step.
+A Kotlin script file contains multiple command names and associated handler blocks with them.
+```
+onSetup("commandName") { 
+  ...handler block of command
+}
+```
+When a Script is loaded, [ScriptDsl]($github.base_url$/esw-ocs/esw-ocs-dsl/src/main/scala/esw/ocs/dsl/script/ScriptDsl.scala) stores all command names with respective handler code blocks, 
+you can think of it like a map with command name as key and handler code block as its value.
+
+The sequence submitted by a client to sequencer contains list of commands that need to be executed. These commands are stored as richer model of steps.
+When a step is picked for execution by Engine, its corresponding code block is picked from mapping in ScriptDsl and that block is executed.
 
 @@@note
 Engine is a continuous running loop, it pulls next step once current step is finished.
