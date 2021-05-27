@@ -1,7 +1,5 @@
 package esw.commons.utils.location
 
-import java.net.URI
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
@@ -24,6 +22,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.testcommons.BaseTestSuite
 
+import java.net.URI
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -417,6 +416,44 @@ class LocationServiceUtilTest extends BaseTestSuite {
       )
 
       verify(locationService).find(akkaConnection)
+    }
+  }
+
+  "findAgentByHostname" must {
+    val hostname = "192.168.1.3"
+    val uri      = new URI(s"http://$hostname:76543/iris")
+
+    "return a machine location which matches the given hostname | ESW-480" in {
+      val location1 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_1"), Machine)), uri, Metadata.empty)
+      val location2 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_2"), Machine)), uri, Metadata.empty)
+
+      when(locationService.list(hostname)).thenReturn(Future.successful(List(location1, location2)))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.findAgentByHostname(hostname).rightValue should ===(location1)
+      verify(locationService).list(hostname)
+    }
+
+    "return a LocationNotFound when no matching host is found | ESW-480" in {
+      when(locationService.list(hostname)).thenReturn(Future.successful(List()))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.findAgentByHostname(hostname).leftValue should ===(
+        LocationNotFound(s"No agent running on host: $hostname")
+      )
+
+      verify(locationService).list(hostname)
+    }
+
+    "return a RegistrationListingFailed when location service call throws exception | ESW-480" in {
+      when(locationService.list(hostname)).thenReturn(Future.failed(cswRegistrationListingFailed))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.findAgentByHostname(hostname).leftValue should ===(
+        RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
+      )
+
+      verify(locationService).list(hostname)
     }
   }
 }

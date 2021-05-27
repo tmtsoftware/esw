@@ -1,17 +1,15 @@
 package esw.agent.service.impl
 
-import java.nio.file.Path
-
 import akka.actor.typed.ActorSystem
-import csw.location.api.models.{ComponentId, Location}
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.models._
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 
+import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
 
 class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil: AgentStatusUtil)(implicit
@@ -47,17 +45,14 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil
     agentClient(agentPrefix).flatMapRight(_.spawnContainers(hostConfigPath, isConfigLocal)).mapToAdt(identity, Failed)
 
   override def killComponent(componentId: ComponentId): Future[KillResponse] = {
-    locationServiceUtil
-      .list(componentId)
-      .flatMap { locations =>
-        Future.traverse(locations) { location =>
-          Future.successful(getAgentPrefix(location)).flatMapE(agentClient).flatMapRight(_.killComponent(location))
-        }
+    val compLocationE = locationServiceUtil.findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
+    compLocationE
+      .flatMapE { compLocation =>
+        val agentLocation = locationServiceUtil.findAgentByHostname(compLocation.uri.getHost)
+        val agentClient   = agentLocation.mapRight(makeAgentClient)
+        agentClient.flatMapRight(_.killComponent(compLocation))
       }
-      .map { responses =>
-        responses.sequence.map(_ => Killed).left.map(_.mkString(","))
-      }
-      .mapToAdt(identity, Failed)
+      .mapToAdt(identity, e => Failed(e.msg))
   }
 
   override def getAgentStatus: Future[AgentStatusResponse] = agentStatusUtil.getAllAgentStatus
@@ -65,6 +60,5 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil
   private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
     AgentClient.make(agentPrefix, locationServiceUtil).mapLeft(e => e.msg)
 
-  private def getAgentPrefix(location: Location): Either[String, Prefix] =
-    location.metadata.getAgentPrefix.toRight(s"$location metadata does not contain agent prefix")
+  private[impl] def makeAgentClient(akkaLocation: AkkaLocation): AgentClient = new AgentClient(akkaLocation)
 }

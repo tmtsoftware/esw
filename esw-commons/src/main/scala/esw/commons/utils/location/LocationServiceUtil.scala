@@ -9,12 +9,7 @@ import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt._
-import esw.commons.utils.location.EswLocationError.{
-  FindLocationError,
-  LocationNotFound,
-  RegistrationError,
-  RegistrationListingFailed
-}
+import esw.commons.utils.location.EswLocationError._
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,7 +43,6 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
         case e: OtherLocationIsRegistered => EswLocationError.OtherLocationIsRegistered(e.msg)
         case x                            => throw new MatchError(x)
       }
-
   def list(componentId: ComponentId): Future[List[Location]] = {
     locationService.list.map(_.filter(loc => loc.connection.componentId == componentId))
   }
@@ -98,6 +92,17 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
             )
           )
       }
+
+  def findAgentByHostname(hostName: String): Future[Either[FindLocationError, AkkaLocation]] =
+    locationService
+      .list(hostName)
+      .map { locations =>
+        locations
+          .find(_.connection.componentId.componentType == ComponentType.Machine)
+          .collect { case a: AkkaLocation => a }
+          .toRight(LocationNotFound(s"No agent running on host: $hostName"))
+      }
+      .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
   def findAkkaLocation(prefix: String, componentType: ComponentType): Future[Either[FindLocationError, AkkaLocation]] =
     find(AkkaConnection(ComponentId(Prefix(prefix), componentType)))

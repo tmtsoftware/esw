@@ -299,7 +299,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
   }
 
   "AgentService" must {
-    "start and kill sequence component on the given agent | ESW-361, ESW-367" in {
+    "start and kill sequence component on the given agent | ESW-361, ESW-367, ESW-480" in {
       val seqCompName   = "ESW_1"
       val seqCompPrefix = Prefix(agentPrefix.subsystem, seqCompName)
 
@@ -316,7 +316,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       intercept[RuntimeException](resolveSequenceComponent(seqCompPrefix))
     }
 
-    "start and kill sequence manager on the given agent | ESW-361, ESW-367" in {
+    "start and kill sequence manager on the given agent | ESW-361, ESW-367, ESW-480" in {
       val smPrefix = Prefix(ESW, "sequence_manager")
 
       // spawn sequence manager
