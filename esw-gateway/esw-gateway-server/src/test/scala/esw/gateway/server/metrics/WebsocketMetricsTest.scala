@@ -71,6 +71,7 @@ class WebsocketMetricsTest
     "msg",
     "hostname",
     "app_name",
+    "username",
     "command_msg",
     "sequencer_msg",
     "subscribed_event_keys",
@@ -78,10 +79,13 @@ class WebsocketMetricsTest
     "subsystem"
   )
 
+  private val appName  = randomString(10)
+  private val username = randomString(10)
   private def labels(
       msg: String,
       hostname: String = "unknown",
-      appName: String = "unknown",
+      appName: String = appName,
+      username: String = username,
       commandMsg: String = "",
       sequencerMsg: String = "",
       subscribedEventKeys: String = "",
@@ -92,6 +96,7 @@ class WebsocketMetricsTest
       msg,
       hostname,
       appName,
+      username,
       commandMsg,
       sequencerMsg,
       subscribedEventKeys,
@@ -110,7 +115,7 @@ class WebsocketMetricsTest
     val p        = Promise[Res]()
     withMock(p)
 
-    WS("/websocket-endpoint", wsClient.flow) ~> wsRoute ~> check {
+    WS(s"/websocket-endpoint?App-Name=$appName&Username=$username", wsClient.flow) ~> wsRoute ~> check {
       getGaugeValue shouldBe 0
       getCounterValue shouldBe 0
       wsClient.sendMessage(ContentType.Json.strictMessage(req))
@@ -123,7 +128,7 @@ class WebsocketMetricsTest
     }
   }
 
-  "increment websocket gauge on every Command QueryFinal request and decrement it on completion | ESW-197" in {
+  "increment websocket gauge on every Command QueryFinal request and decrement it on completion | ESW-197, ESW-386" in {
     val queryFinalLabelNames        = labels(msg = "ComponentCommand", commandMsg = "QueryFinal")
     def commandGaugeValue: Double   = getGaugeValue(queryFinalLabelNames)
     def commandCounterValue: Double = getCounterValue(queryFinalLabelNames)
@@ -137,7 +142,7 @@ class WebsocketMetricsTest
     }
   }
 
-  "increment websocket gauge on every Sequencer QueryFinal request and decrement it on completion | ESW-197" in {
+  "increment websocket gauge on every Sequencer QueryFinal request and decrement it on completion | ESW-197, ESW-386" in {
     val seqQueryFinalLabelNames       = labels(msg = "SequencerCommand", sequencerMsg = "QueryFinal")
     def sequencerGaugeValue: Double   = getGaugeValue(seqQueryFinalLabelNames)
     def sequencerCounterValue: Double = getCounterValue(seqQueryFinalLabelNames)
@@ -158,7 +163,7 @@ class WebsocketMetricsTest
     }
   }
 
-  "increment websocket gauge on every Subscribe request and counter per message passing through ws, decrement gauge on completion | ESW-197" in {
+  "increment websocket gauge on every Subscribe request and counter per message passing through ws, decrement gauge on completion | ESW-197, ESW-386" in {
     val eventKey = EventKey("tcs.event.key")
     val subscribeLabelNames =
       labels(msg = "Subscribe", subscribedEventKeys = GatewayStreamRequestLabels.createLabel(Set(eventKey)))
@@ -171,7 +176,7 @@ class WebsocketMetricsTest
     val eventStream        = rawStream.mapMaterializedValue(_ => mock[EventSubscription])
     when(eventSubscriber.subscribe(Set(eventKey), 100.millis, RateLimiterMode)).thenReturn(eventStream)
 
-    WS("/websocket-endpoint", wsClient.flow) ~> wsRoute ~> check {
+    WS(s"/websocket-endpoint?App-Name=$appName&Username=$username", wsClient.flow) ~> wsRoute ~> check {
       subscribeGaugeValue shouldBe 0
       wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
       isWebSocketUpgrade shouldBe true

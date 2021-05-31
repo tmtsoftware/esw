@@ -22,6 +22,7 @@ import esw.ocs.api.protocol.SequencerRequest.Pause
 import esw.testcommons.BaseTestSuite
 import io.prometheus.client.CollectorRegistry
 import msocket.api.ContentType
+import msocket.http.post.headers.{AppNameHeader, UserNameHeader}
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
 import org.scalatest.prop.Tables.Table
@@ -53,23 +54,28 @@ class PostMetricsTest
   private val componentId     = ComponentId(prefix, Assembly)
   private val eventKey        = EventKey(prefix, EventName("event"))
 
-  private def post[E: ToEntityMarshaller](entity: E): HttpRequest = Post("/post-endpoint", entity)
+  private def post[E: ToEntityMarshaller](entity: E, appName: String, username: String): HttpRequest =
+    Post("/post-endpoint", entity).withHeaders(new AppNameHeader(appName), new UserNameHeader(username))
 
   private val labelNames = List(
     "msg",
     "hostname",
     "app_name",
+    "username",
     "command_msg",
     "sequencer_msg"
   )
 
+  private val appName  = randomString(10)
+  private val username = randomString(10)
   def labelValues(
       msg: String,
       hostName: String = "unknown",
-      appName: String = "unknown",
+      appName: String = appName,
+      username: String = username,
       commandMsg: String = "",
       sequencerMsg: String = ""
-  ): List[String] = List(msg, hostName, appName, commandMsg, sequencerMsg)
+  ): List[String] = List(msg, hostName, appName, username, commandMsg, sequencerMsg)
 
   Table(
     ("PostRequest", "Labels"),
@@ -78,7 +84,7 @@ class PostMetricsTest
     (GetEvent(Set(eventKey)), labelValues("GetEvent"))
   ).foreach {
     case (request, labels) =>
-      s"increment http counter on every ${LabelExtractor.createLabel(request)} request | ESW-197" in {
+      s"increment http counter on every ${LabelExtractor.createLabel(request)} request | ESW-197, ESW-386" in {
         runCounterTest(request, labels)
       }
   }
@@ -91,7 +97,7 @@ class PostMetricsTest
     def counterValue = getCounterValue(labels)
 
     counterValue shouldBe 0
-    (1 to 1).foreach(_ => post(postRequest) ~> postRoute)
+    (1 to 1).foreach(_ => post(postRequest, appName, username) ~> postRoute)
     counterValue shouldBe 1
   }
 
