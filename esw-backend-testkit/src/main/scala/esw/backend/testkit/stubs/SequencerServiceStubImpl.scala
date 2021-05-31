@@ -15,7 +15,8 @@ import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription
-import msocket.jvm.SourceExtension.RichSource
+import msocket.jvm.SourceExtension.{RichSource}
+import scala.concurrent.duration.{DurationLong}
 
 import scala.concurrent.Future
 
@@ -84,7 +85,15 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   override def getSequencerState: Future[SequencerState] = Future.successful(sequencerState)
 
-  override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =
-    Source(List(SequencerStateResponse(stepList, sequencerState))).withSubscription()
+  override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] = {
+    val response1 = SequencerStateResponse(stepList, SequencerState.Running)
+    val response2 = SequencerStateResponse(stepList, SequencerState.Idle)
+
+    val futureStream = future(2.seconds, Source(List(response2, response1)))
+    Source
+      .futureSource(futureStream)
+      .mapMaterializedValue(_ => () => ())
+      .withSubscription()
+  }
 
 }
