@@ -1170,7 +1170,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
     )
   }
 
-  "Loaded -> Unhandled | ESW-145, ESW-155, ESW-194, ESW-156" in {
+  "Loaded -> Unhandled | ESW-145, ESW-155, ESW-194, ESW-156, ESW-512" in {
     val sequencerSetup = SequencerTestSetup.loaded(sequence)
     import sequencerSetup._
 
@@ -1180,7 +1180,6 @@ class SequencerBehaviorTest extends BaseTestSuite {
       AbortSequenceComplete,
       Stop, //ESW-156
       StopComplete,
-      SubmitSequenceInternal(sequence, _),
       StepSuccess,
       GoOnlineSuccess,
       GoOnlineFailed,
