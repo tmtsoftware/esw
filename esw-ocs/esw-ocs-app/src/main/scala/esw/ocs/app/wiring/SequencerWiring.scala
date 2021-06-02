@@ -1,6 +1,7 @@
 package esw.ocs.app.wiring
 
 import akka.Done
+import akka.actor.CoordinatedShutdown
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
@@ -67,7 +68,7 @@ private[ocs] class SequencerWiring(
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
   lazy val actorRuntime              = new ActorRuntime(actorSystem)
-  import actorRuntime.{ec, typedSystem}
+  import actorRuntime.{coordinatedShutdown, ec, typedSystem}
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
@@ -161,6 +162,11 @@ private[ocs] class SequencerWiring(
           locationServiceUtil.register(registration).mapLeft(e => LocationServiceError(e.msg)),
           CommonTimeouts.Wiring
         )
+
+        coordinatedShutdown.addTask(
+          CoordinatedShutdown.PhaseBeforeServiceUnbind,
+          s"calling shutdown for sequencer ${prefix.toString()}"
+        )(() => Future(shutDown()))
 
         logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
         if (enableThreadMonitoring) {

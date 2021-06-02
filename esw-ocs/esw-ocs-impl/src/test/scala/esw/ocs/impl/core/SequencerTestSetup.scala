@@ -21,6 +21,7 @@ import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Running}
 import esw.ocs.api.actor.messages.{SequenceComponentMsg, InternalSequencerState}
 import esw.ocs.api.models.{SequencerState, Step, StepList}
+import esw.ocs.api.protocol.SequencerResponse.{SequencerStateResponse, SequencerStopped}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
 import org.mockito.MockitoSugar
@@ -145,9 +146,14 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     }
   }
 
-  def assertSequencerState(actual: SequencerStateResponse, expectedState: SequencerState) = {
-    actual.sequencerState shouldEqual expectedState
-    assertCurrentSequence(actual.stepList)
+  def assertSequencerState(actual: SequencerResponse, expectedState: SequencerState) = {
+    actual match {
+      case SequencerStateResponse(stepList, sequencerState) =>
+        sequencerState shouldEqual expectedState
+        assertCurrentSequence(stepList)
+      case SequencerStopped =>
+        throw new AssertionError("SequencerStopped response is not expected")
+    }
   }
 
   def assertCurrentSequence(expected: StepList): Unit = assertCurrentSequence(Some(expected))

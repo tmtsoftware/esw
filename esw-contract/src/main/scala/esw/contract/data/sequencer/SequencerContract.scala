@@ -11,6 +11,7 @@ import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.SequencerState._
 import esw.ocs.api.models.{SequencerState, Step, StepList, StepStatus}
 import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerResponse.SequencerStateResponse
 import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
 import esw.ocs.api.protocol._
 

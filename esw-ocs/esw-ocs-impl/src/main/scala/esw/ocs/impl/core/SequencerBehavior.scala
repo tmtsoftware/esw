@@ -18,9 +18,9 @@ import csw.params.commands.Sequence
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.constants.SequencerTimeouts
-import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.InternalSequencerState
 import esw.ocs.api.actor.messages.InternalSequencerState._
+import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
@@ -201,8 +201,11 @@ class SequencerBehavior(
   // On completion of the first 3 tasks, the actor system will be terminated and Sequencer actor will be stopped.
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
+    // before unregistering and stopping the service send a message to all the subscribers
+    data.notifyStateSubscribers(None)
     // run the futures in parallel and wait for all of them to complete
     // once all finished, send ShutdownComplete self message irrespective of any failures
+
     val f1 = locationService.unregister(AkkaConnection(componentId))
     val f2 = script.executeShutdown() // execute shutdown handlers of script
     val f3 = shutdownHttpService()
@@ -355,7 +358,7 @@ class SequencerBehavior(
       state: InternalSequencerState[StateMessage],
       data: SequencerData
   )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] = {
-    data.notifyStateSubscribers(state)
+    data.notifyStateSubscribers(Some(state))
 
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = SequencerTimeouts.LongTimeout

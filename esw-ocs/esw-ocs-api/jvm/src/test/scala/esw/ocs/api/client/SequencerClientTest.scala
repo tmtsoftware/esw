@@ -13,6 +13,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerResponse.SequencerStateResponse
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
 import esw.ocs.api.protocol.{GoOnlineResponse, OkOrUnhandledResponse, SequencerRequest, _}
 import esw.testcommons.BaseTestSuite
