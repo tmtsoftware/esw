@@ -76,11 +76,12 @@ class SequencerBehavior(
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = {
     receive(Loaded, data) {
-      case GoOffline(replyTo)              => goOffline(replyTo, data, Loaded)
-      case GoOnline(replyTo)               => goOnline(replyTo, data, Loaded)
-      case msg: EditorAction               => handleEditorAction(msg, data, currentState = Loaded)
-      case StartSequence(replyTo)          => startSequence(data, replyTo)
-      case LoadSequence(sequence, replyTo) => load(sequence, replyTo, data)
+      case GoOffline(replyTo)                        => goOffline(replyTo, data, Loaded)
+      case GoOnline(replyTo)                         => goOnline(replyTo, data, Loaded)
+      case msg: EditorAction                         => handleEditorAction(msg, data, currentState = Loaded)
+      case StartSequence(replyTo)                    => startSequence(data, replyTo)
+      case LoadSequence(sequence, replyTo)           => load(sequence, replyTo, data)
+      case SubmitSequenceInternal(sequence, replyTo) => submitSequence(sequence, data, replyTo)
     }
   }
 

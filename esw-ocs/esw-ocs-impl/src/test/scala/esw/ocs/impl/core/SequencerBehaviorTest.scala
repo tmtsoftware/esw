@@ -293,6 +293,22 @@ class SequencerBehaviorTest extends BaseTestSuite {
       error.runId should ===(startedResponse.runId)
       error.message should fullyMatch regex "StepId: .*, CommandName: command-1, reason: Some error"
     }
+
+    "submit a sequence when sequencer is loaded | ESW-512" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+
+      val probe = TestProbe[SequencerSubmitResponse]()
+      sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
+      assertSequencerState(Running)
+      pullAllStepsAndAssertSequenceIsFinished()
+      val sequenceResult = probe.expectMessageType[SubmitResult]
+      sequenceResult.submitResponse shouldBe a[Started]
+
+      verify(script).executeNewSequenceHandler()
+    }
   }
 
   "QueryFinal" must {

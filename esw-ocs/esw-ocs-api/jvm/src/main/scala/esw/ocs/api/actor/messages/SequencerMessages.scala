@@ -39,8 +39,10 @@ object SequencerMessages {
       extends IdleMessage
       with SequenceLoadedMessage
 
-  final case class StartSequence(replyTo: ActorRef[SequencerSubmitResponse])                              extends SequenceLoadedMessage
-  final case class SubmitSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse]) extends IdleMessage
+  final case class StartSequence(replyTo: ActorRef[SequencerSubmitResponse]) extends SequenceLoadedMessage
+  final case class SubmitSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse])
+      extends IdleMessage
+      with SequenceLoadedMessage
 
   // common msgs
   final case class Shutdown(replyTo: ActorRef[Ok.type])                                       extends CommonRemoteMessage
