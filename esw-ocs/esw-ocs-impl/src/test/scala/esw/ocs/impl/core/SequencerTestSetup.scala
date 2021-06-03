@@ -75,6 +75,15 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     probe.expectMessage(expected)
   }
 
+  def submitSequenceAndAssertStartedResponse(): SubmitResponse = {
+    val probe = TestProbe[SubmitResponse]()
+    sequencerActor ! SubmitSequence(sequence, probe.ref)
+    assertSequencerState(Running)
+    val sequenceResult = probe.expectMessageType[SubmitResponse]
+    sequenceResult shouldBe a[Started]
+    sequenceResult
+  }
+
   def loadAndStartSequenceThenAssertRunning(): Assertion = {
     val probe = TestProbe[SequencerSubmitResponse]()
 

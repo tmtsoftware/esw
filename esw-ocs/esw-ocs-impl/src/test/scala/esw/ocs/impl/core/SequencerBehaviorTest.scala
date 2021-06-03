@@ -263,13 +263,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val probe = TestProbe[SequencerSubmitResponse]()
-      sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
-
+      submitSequenceAndAssertStartedResponse()
       pullAllStepsAndAssertSequenceIsFinished()
-      val sequenceResult = probe.expectMessageType[SubmitResult]
-      sequenceResult.submitResponse shouldBe a[Started]
-
       verify(script).executeNewSequenceHandler() // ESW-303: varifies newSequenceHandler is called
     }
 
@@ -295,13 +290,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val client = TestProbe[SequencerSubmitResponse]()
-      sequencerActor ! SubmitSequenceInternal(sequence1, client.ref)
-
-      val sequenceResult = client.expectMessageType[SubmitResult]
-      sequenceResult.submitResponse shouldBe a[Started]
-      val startedResponse = sequenceResult.toSubmitResponse()
-
+      val startedResponse = submitSequenceAndAssertStartedResponse()
       verify(script).executeNewSequenceHandler() // ESW-303: verifies newSequenceHandler is called
       assertSequencerState(Running)
 
@@ -323,13 +312,8 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val probe = TestProbe[SequencerSubmitResponse]()
-      sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
-      assertSequencerState(Running)
+      submitSequenceAndAssertStartedResponse()
       pullAllStepsAndAssertSequenceIsFinished()
-      val sequenceResult = probe.expectMessageType[SubmitResult]
-      sequenceResult.submitResponse shouldBe a[Started]
-
       verify(script).executeNewSequenceHandler()
     }
   }
