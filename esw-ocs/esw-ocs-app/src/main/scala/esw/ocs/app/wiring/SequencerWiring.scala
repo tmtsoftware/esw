@@ -165,8 +165,8 @@ private[ocs] class SequencerWiring(
 
         coordinatedShutdown.addTask(
           CoordinatedShutdown.PhaseBeforeServiceUnbind,
-          s"calling shutdown for sequencer ${prefix.toString()}"
-        )(() => Future(shutDown()))
+          s"${prefix.toString()}-cleanup"
+        )(() => cleanupResources())
 
         logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
         if (enableThreadMonitoring) {
@@ -185,9 +185,12 @@ private[ocs] class SequencerWiring(
     }
 
     override def shutDown(): Done = {
-      Await.result(sequencerRef ? Shutdown, CommonTimeouts.Wiring)
+      Await.result(CoordinatedShutdown(actorSystem).run(CoordinatedShutdown.actorSystemTerminateReason), CommonTimeouts.Wiring)
+    }
+
+    private def cleanupResources() = {
       redisClient.shutdown()
-      terminateActorSystem()
+      (sequencerRef ? Shutdown).map(_ => Done)
     }
   }
 

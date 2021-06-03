@@ -31,7 +31,7 @@ object AgentTimeouts {
     DurationToWaitForComponentRegistration <= SpawnComponent,
     "SpawnComponent composes over DurationToWaitForComponentRegistration. DurationToWaitForComponentRegistration should be lesser"
   )
-  val KillComponent: FiniteDuration = 3.seconds
+  val KillComponent: FiniteDuration = 8.seconds
 }
 
 object SequenceComponentTimeouts {
