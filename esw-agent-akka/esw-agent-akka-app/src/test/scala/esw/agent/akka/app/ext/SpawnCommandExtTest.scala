@@ -67,7 +67,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
     val spawnSeqMgrSimulationCmd =
       s"cs launch --channel $channel sequence-manager:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
     val spawnContainerCmd =
-      s"cs launch ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath} -a $agentPrefix"
+      s"cs launch ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath}"
 
     "SpawnCommand.executableCommandStr" must {
       Table(

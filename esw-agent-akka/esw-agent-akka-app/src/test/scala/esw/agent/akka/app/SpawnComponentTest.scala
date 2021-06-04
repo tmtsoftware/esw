@@ -242,9 +242,7 @@ class SpawnComponentTest extends AgentSetup {
           s"$appName",
           "--",
           "--local",
-          s"$confPath",
-          "-a",
-          s"$agentPrefix"
+          s"$confPath"
         )
 
       "reply 'SpawnContainersResponse' and spawn containers on agent spawn | ESW-379" in {
@@ -283,9 +281,7 @@ class SpawnComponentTest extends AgentSetup {
             "--",
             "--local",
             "--standalone",
-            "confPath2.conf",
-            "-a",
-            s"$agentPrefix"
+            "confPath2.conf"
           ),
           componentPrefixTwo
         )
@@ -333,9 +329,7 @@ class SpawnComponentTest extends AgentSetup {
             "--",
             "--local",
             "--standalone",
-            "confPath2.conf",
-            "-a",
-            s"$agentPrefix"
+            "confPath2.conf"
           ),
           componentPrefixTwo
         )
@@ -356,9 +350,7 @@ class SpawnComponentTest extends AgentSetup {
             "--",
             "--local",
             "--standalone",
-            "confPath2.conf",
-            "-a",
-            s"$agentPrefix"
+            "confPath2.conf"
           )
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
           .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
