@@ -30,7 +30,7 @@ object SpawnCommandExt {
             else Future.successful(version)
           smVersion.map(Coursier.smApp(_).launch(coursierChannel, args))
         case SpawnContainer(_, _, config) =>
-          Future.successful(Coursier.containerApp(config).launch(List("jitpack"), config.appName, args))
+          Future.successful(Coursier.containerApp(config).launch(List("jitpack"), config.appName, command.commandArgs()))
       }
     }
   }
