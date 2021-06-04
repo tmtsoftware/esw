@@ -12,7 +12,7 @@ class SequencerWebsocketHandler(sequencerApi: SequencerApi) extends StreamReques
 
   override def handle(request: SequencerStreamRequest): Future[StreamResponse] =
     request match {
-      case QueryFinal(sequenceId, timeout)                => future(sequencerApi.queryFinal(sequenceId)(timeout))
+      case QueryFinal(sequenceId, timeout)                => response(sequencerApi.queryFinal(sequenceId)(timeout))
       case SequencerStreamRequest.SubscribeSequencerState => stream(sequencerApi.subscribeSequencerState())
     }
 }
