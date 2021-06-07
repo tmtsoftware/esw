@@ -35,7 +35,7 @@ class HttpServiceTest extends EswTestKit {
     super.afterEach()
   }
 
-  class TestSetup(_servicePort: Int, prefix:Option[Prefix] = None) {
+  class TestSetup(_servicePort: Int, prefix: Option[Prefix] = None) {
     val actorSystem: ActorSystem[SpawnProtocol.Command] =
       ActorSystemFactory.remote(SpawnProtocol(), "http-core-server-system")
     actorRuntime = new ActorRuntime(actorSystem)
@@ -125,7 +125,7 @@ class HttpServiceTest extends EswTestKit {
       val testSetup      = new TestSetup(_servicePort, Some(getRandomAgentPrefix(ESW)))
       import testSetup._
 
-      val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
+      val httpService = new HttpService(logger, locationService, route, settings, actorRuntime, NetworkType.Outside)
       val metadata    = Metadata().add("key1", "value")
 
       SocketUtils.isAddressInUse(insideHostname, _servicePort) shouldBe false
