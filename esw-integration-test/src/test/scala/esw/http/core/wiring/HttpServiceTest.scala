@@ -12,6 +12,8 @@ import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.{Networks, SocketUtils}
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.duration.DurationInt
@@ -33,12 +35,12 @@ class HttpServiceTest extends EswTestKit {
     super.afterEach()
   }
 
-  class TestSetup(_servicePort: Int) {
+  class TestSetup(_servicePort: Int, prefix:Option[Prefix] = None) {
     val actorSystem: ActorSystem[SpawnProtocol.Command] =
       ActorSystemFactory.remote(SpawnProtocol(), "http-core-server-system")
     actorRuntime = new ActorRuntime(actorSystem)
     val config: Config = actorSystem.settings.config
-    val settings       = new Settings(Some(_servicePort), None, config, ComponentType.Service)
+    val settings       = new Settings(Some(_servicePort), prefix, config, ComponentType.Service)
     val loggerFactory  = new LoggerFactory(settings.httpConnection.prefix)
     val logger: Logger = loggerFactory.getLogger
   }
@@ -120,7 +122,7 @@ class HttpServiceTest extends EswTestKit {
     "start the http server on inside network | ESW-511" in {
       val insideHostname = Networks(NetworkType.Inside.envKey).hostname
       val _servicePort   = 4008
-      val testSetup      = new TestSetup(_servicePort)
+      val testSetup      = new TestSetup(_servicePort, Some(getRandomAgentPrefix(ESW)))
       import testSetup._
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
