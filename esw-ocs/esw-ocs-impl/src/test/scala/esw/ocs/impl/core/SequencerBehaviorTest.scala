@@ -22,7 +22,7 @@ import esw.ocs.api.models.SequencerState.Processing
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.protocol.SequencerResponse.{SequencerStateResponse, SequencerStopped}
+import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
 import esw.ocs.api.protocol._
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -50,7 +50,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      val subscriberProbe = TestProbe[SequencerResponse]()
+      val subscriberProbe = TestProbe[SequencerStateSubscriptionResponse]()
       val testProbe       = TestProbe[Any]()
 
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
@@ -81,7 +81,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      val subscriberProbe = TestProbe[SequencerResponse]()
+      val subscriberProbe = TestProbe[SequencerStateSubscriptionResponse]()
 
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
       subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
@@ -113,7 +113,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequence       = Sequence(command1, command2, command3, command4)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      val subscriberProbe = TestProbe[SequencerResponse]()
+      val subscriberProbe = TestProbe[SequencerStateSubscriptionResponse]()
       val testProbe       = TestProbe[Any]()
 
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
@@ -147,7 +147,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequence       = Sequence(command1, command2, command3, command4)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      val subscriberProbe = TestProbe[SequencerResponse]()
+      val subscriberProbe = TestProbe[SequencerStateSubscriptionResponse]()
       val testProbe       = TestProbe[Any]()
 
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
@@ -177,7 +177,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      val subscriberProbe = TestProbe[SequencerResponse]()
+      val subscriberProbe = TestProbe[SequencerStateSubscriptionResponse]()
 
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref) // add the subscriber in sequencer data
       subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
@@ -193,7 +193,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      val subscriberProbe = TestProbe[SequencerResponse]()
+      val subscriberProbe = TestProbe[SequencerStateSubscriptionResponse]()
       val testProbe       = TestProbe[Ok]()
 
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref) // add the subscriber in sequencer data
@@ -202,7 +202,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       sequencerActor ! Shutdown(testProbe.ref)
 
       // subscriber probe should receive SequencerStopped message
-      subscriberProbe.receiveMessage() shouldEqual SequencerStopped
+      subscriberProbe.receiveMessage() shouldEqual SequencerShuttingDown
 
     }
   }

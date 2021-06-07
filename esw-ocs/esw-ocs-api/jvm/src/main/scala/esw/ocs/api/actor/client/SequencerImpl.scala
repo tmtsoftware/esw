@@ -20,7 +20,7 @@ import esw.ocs.api.actor.messages.InternalSequencerState
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.models.{SequencerState, StepList}
-import esw.ocs.api.protocol.SequencerResponse.{SequencerStateResponse, SequencerStopped}
+import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
 import esw.ocs.api.protocol._
 import msocket.api.Subscription
 import msocket.jvm.SourceExtension.RichSource
@@ -75,9 +75,9 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =
     ActorSource
-      .actorRef[SequencerResponse](
+      .actorRef[SequencerStateSubscriptionResponse](
         completionMatcher = {
-          case SequencerStopped =>
+          case SequencerShuttingDown =>
         },
         PartialFunction.empty,
         16,

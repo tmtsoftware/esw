@@ -12,8 +12,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.SequencerState.Idle
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.SequencerResponse.SequencerStateResponse
-import esw.ocs.api.protocol.SequencerStreamRequest
+import esw.ocs.api.protocol.{SequencerStateResponse, SequencerStreamRequest}
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder

@@ -16,7 +16,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.SequencerResponse.SequencerStateResponse
+import esw.ocs.api.protocol.SequencerStateResponse
 import msocket.api.Subscription
 
 import scala.concurrent.Await

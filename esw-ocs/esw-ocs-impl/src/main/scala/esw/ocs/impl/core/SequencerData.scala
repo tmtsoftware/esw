@@ -11,7 +11,7 @@ import esw.ocs.api.actor.messages.SequencerMessages.GoIdle
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
-import esw.ocs.api.protocol.SequencerResponse.{SequencerStateResponse, SequencerStopped}
+import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
 import esw.ocs.api.protocol._
 
 private[core] case class SequencerData(
@@ -22,7 +22,7 @@ private[core] case class SequencerData(
     self: ActorRef[SequencerMsg],
     actorSystem: ActorSystem[_],
     sequenceResponseSubscribers: Set[ActorRef[SubmitResponse]],
-    sequencerStateSubscribers: Set[ActorRef[SequencerResponse]]
+    sequencerStateSubscribers: Set[ActorRef[SequencerStateSubscriptionResponse]]
 ) {
 
   def isSequenceLoaded: Boolean = stepList.isDefined
@@ -98,20 +98,18 @@ private[core] case class SequencerData(
   def stepFailure(message: String, state: InternalSequencerState[SequencerMsg]): SequencerData =
     changeStepStatus(Failure(message))
 
-  def addStateSubscriber(subscriber: ActorRef[SequencerResponse]): SequencerData =
+  def addStateSubscriber(subscriber: ActorRef[SequencerStateSubscriptionResponse]): SequencerData =
     copy(sequencerStateSubscribers = sequencerStateSubscribers + subscriber)
 
-  def removeStateSubscriber(subscriber: ActorRef[SequencerResponse]): SequencerData =
+  def removeStateSubscriber(subscriber: ActorRef[SequencerStateSubscriptionResponse]): SequencerData =
     copy(sequencerStateSubscribers = sequencerStateSubscribers - subscriber)
 
-  def notifyStateSubscribers(state: Option[InternalSequencerState[SequencerMsg]]): SequencerData = {
-    state match {
-      case Some(value) =>
-        sequencerStateSubscribers.foreach(_ ! SequencerStateResponse(stepList.getOrElse(StepList.empty), value.toExternal))
-      case None => sequencerStateSubscribers.foreach(x => x ! SequencerStopped)
-    }
+  def notifyStateChange(state: InternalSequencerState[SequencerMsg]): SequencerData = {
+    sequencerStateSubscribers.foreach(_ ! SequencerStateResponse(stepList.getOrElse(StepList.empty), state.toExternal))
     this
   }
+
+  def notifySequencerShutdown(): Unit = sequencerStateSubscribers.foreach(x => x ! SequencerShuttingDown)
 
   private def sendInvalidResponse(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData = {
     replyTo ! Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))

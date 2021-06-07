@@ -12,7 +12,6 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.{SequencerState, StepList}
-import esw.ocs.api.protocol.SequencerResponse.SequencerStateResponse
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription

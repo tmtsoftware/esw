@@ -74,8 +74,8 @@ object EditorError {
   final case class IdDoesNotExist(id: Id)             extends EditorError with RemoveBreakpointResponse
 }
 
-sealed trait SequencerResponse extends EswSequencerResponse
-object SequencerResponse {
-  case class SequencerStateResponse(stepList: StepList, sequencerState: SequencerState) extends SequencerResponse
-  case object SequencerStopped                                                          extends SequencerResponse
+private[ocs] sealed trait SequencerStateSubscriptionResponse extends EswSequencerResponse
+private[ocs] object SequencerStateSubscriptionResponse {
+  case object SequencerShuttingDown extends SequencerStateSubscriptionResponse
 }
+case class SequencerStateResponse(stepList: StepList, sequencerState: SequencerState) extends SequencerStateSubscriptionResponse

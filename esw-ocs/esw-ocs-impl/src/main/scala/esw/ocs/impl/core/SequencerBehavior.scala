@@ -202,7 +202,7 @@ class SequencerBehavior(
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
     // before unregistering and stopping the service send a message to all the subscribers
-    data.notifyStateSubscribers(None)
+    data.notifySequencerShutdown()
     // run the futures in parallel and wait for all of them to complete
     // once all finished, send ShutdownComplete self message irrespective of any failures
 
@@ -358,7 +358,7 @@ class SequencerBehavior(
       state: InternalSequencerState[StateMessage],
       data: SequencerData
   )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] = {
-    data.notifyStateSubscribers(Some(state))
+    data.notifyStateChange(state)
 
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = SequencerTimeouts.LongTimeout

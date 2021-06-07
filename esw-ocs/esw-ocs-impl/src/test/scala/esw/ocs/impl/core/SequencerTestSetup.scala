@@ -17,11 +17,11 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
-import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Running}
-import esw.ocs.api.actor.messages.{SequenceComponentMsg, InternalSequencerState}
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.{InternalSequencerState, SequenceComponentMsg}
 import esw.ocs.api.models.{SequencerState, Step, StepList}
-import esw.ocs.api.protocol.SequencerResponse.{SequencerStateResponse, SequencerStopped}
+import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
 import org.mockito.MockitoSugar
@@ -155,12 +155,12 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     }
   }
 
-  def assertSequencerState(actual: SequencerResponse, expectedState: SequencerState) = {
+  private[ocs] def assertSequencerState(actual: SequencerStateSubscriptionResponse, expectedState: SequencerState) = {
     actual match {
       case SequencerStateResponse(stepList, sequencerState) =>
         sequencerState shouldEqual expectedState
         assertCurrentSequence(stepList)
-      case SequencerStopped =>
+      case SequencerShuttingDown =>
         throw new AssertionError("SequencerStopped response is not expected")
     }
   }
