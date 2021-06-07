@@ -132,7 +132,7 @@ private[ocs] class SequencerWiring(
 
   private lazy val metadata          = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
   private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
-  private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime)
+  private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime, NetworkType.Inside)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(metadata)
 
   private val shutdownHttpService: () => Future[Done] = () =>

@@ -88,7 +88,7 @@ class HttpServiceTest extends EswTestKit {
       import testSetup._
 
       val httpService     = new HttpService(logger, locationService, route, settings, actorRuntime)
-      val address         = s"[/${hostname}:${_servicePort}]"
+      val address         = s"[/$hostname:${_servicePort}]"
       val expectedMessage = s"Bind failed because of java.net.BindException: $address Address already in use"
 
       val bindException = intercept[Exception] { httpService.startAndRegisterServer().futureValue }
@@ -115,6 +115,29 @@ class HttpServiceTest extends EswTestKit {
 
       otherLocationIsRegistered.getCause shouldBe a[OtherLocationIsRegistered]
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false
+    }
+
+    "start the http server on inside network | ESW-511" in {
+      val insideHostname = Networks(NetworkType.Inside.envKey).hostname
+      val _servicePort   = 4008
+      val testSetup      = new TestSetup(_servicePort)
+      import testSetup._
+
+      val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
+      val metadata    = Metadata().add("key1", "value")
+
+      SocketUtils.isAddressInUse(insideHostname, _servicePort) shouldBe false
+
+      val (_, registrationResult) = httpService.startAndRegisterServer(metadata).futureValue
+
+      locationService.find(settings.httpConnection).futureValue.get.connection shouldBe settings.httpConnection
+      val location = registrationResult.location
+      location.uri.getHost should ===(insideHostname)
+      location.connection should ===(settings.httpConnection)
+      location.metadata should ===(metadata)
+      //should not bind to all but specific hostname IP
+      SocketUtils.isAddressInUse(insideHostname, _servicePort) should ===(true)
+      SocketUtils.isAddressInUse("localhost", _servicePort) should ===(false)
     }
   }
 

@@ -30,7 +30,8 @@ class HttpService(
     locationService: LocationService,
     route: Route,
     settings: Settings,
-    actorRuntime: ActorRuntime
+    actorRuntime: ActorRuntime,
+    networkType: NetworkType = NetworkType.Outside
 ) {
 
   import actorRuntime._
@@ -62,7 +63,7 @@ class HttpService(
   }
 
   private def startServer() = {
-    val _host = Networks(NetworkType.Outside.envKey).hostname
+    val _host = Networks(networkType.envKey).hostname
     val _port = settings.port
     Http().newServerAt(_host, _port).bind(applicationRoute)
   }
@@ -72,7 +73,7 @@ class HttpService(
       connection = connection,
       port = binding.localAddress.getPort,
       path = "",
-      NetworkType.Outside,
+      networkType,
       metadata
     )
 

@@ -8,7 +8,8 @@ import csw.command.client.SequencerCommandServiceImpl
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models._
+import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Subsystem.{CSW, ESW}
@@ -28,12 +29,13 @@ class SequencerAppIntegrationTest extends EswTestKit {
   override def afterEach(): Unit = locationService.unregisterAll()
 
   "SequenceComponent command" must {
-    "start sequence component with provided subsystem and prefix and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214, ESW-366, ESW-481" in {
+    "start sequence component with provided subsystem and prefix and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214, ESW-366, ESW-481, ESW-511" in {
       val name: String            = "primary"
       val agentPrefix             = Prefix(ESW, "agent1")
       val expectedSequencerPrefix = Prefix(ESW, "darknight")
       val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
       val expectedMetadata        = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
+      val insideHostname          = Networks(NetworkType.Inside.envKey).hostname
 
       // start Sequence Component
       SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "-a", agentPrefix.toString()))
@@ -58,6 +60,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // verify that loaded sequencer is started and able to process sequence command
       val response          = probe.expectMessageType[SequencerLocation]
       val sequencerLocation = response.location
+
+      //verify sequencer is registered on inside network
+      sequencerLocation.uri.getHost should ===(insideHostname)
 
       //verify sequencerName has SequenceComponentName
       val actualSequencerPrefix: Prefix = sequencerLocation.prefix
