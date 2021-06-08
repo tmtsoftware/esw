@@ -11,11 +11,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: laughedelic/coursier-setup@v1
-        with:
-          jvm: 11
-      - uses: coursier/cache-action@v5
-
       - name: Paradox Validate Links
         run: sbtn docs/paradoxValidateLinks
 
