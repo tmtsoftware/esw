@@ -1,4 +1,4 @@
-name: nightly
+name: Paradox Link Check
 
 on:
   workflow_dispatch:
@@ -26,4 +26,4 @@ jobs:
         with:
           job-status: ${{ job.status }}
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          channel: ci-nightly
+          channel: ci-dev
