@@ -19,7 +19,7 @@ object AgentCliCommand {
 
   @CommandName("start")
   final case class StartCommand(
-      @HelpMessage("Required: Prefix of machine. tcs.primary_machine, ocs.machine1 etc")
+      @HelpMessage("Required: Prefix of machine. tcs.primary_machine, esw.machine1 etc")
       @Short("p")
       prefix: String,
       @HelpMessage("Optional: Path of host config for this agent")

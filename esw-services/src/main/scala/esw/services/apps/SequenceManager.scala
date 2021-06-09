@@ -13,10 +13,11 @@ import esw.agent.akka.app.AgentWiring
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.files.FileUtils
-import esw.constants.CommonTimeouts
+import esw.constants.{AgentTimeouts, CommonTimeouts}
 import esw.services.internal.ManagedService
 
 import java.nio.file.Path
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext}
 
 class SequenceManager(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) {
@@ -57,10 +58,8 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
             s"Spawn sequence manager failed: failed to locate agent $smAgentPrefix for spawning sequence manager"
           )
       }
-    val spawnResponse = Await.result(spawnResponseF, CommonTimeouts.Wiring)
-    if (simulation) {
-      GREEN.println(s"Sequence manager running in simulation mode.")
-    }
+    val spawnResponse = Await.result(spawnResponseF, CommonTimeouts.ResolveLocation + AgentTimeouts.SpawnComponent + 2.seconds)
+    if (simulation) GREEN.println(s"Sequence manager running in simulation mode.")
     spawnResponse
   }
 
