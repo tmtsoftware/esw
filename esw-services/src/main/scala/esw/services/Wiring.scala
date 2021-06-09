@@ -54,7 +54,7 @@ class Wiring(cmd: Command) {
   private lazy val provisionData         = ConfigData.fromString(FileUtils.readResource("smProvisionConfig.json"))
   private lazy val configServiceExt      = new ConfigServiceExt(configService)
 
-  private lazy val sequencerScriptsSha = "ddba86ef59"
+  private lazy val sequencerScriptsSha = "153b6748e0"
   private lazy val eswVersionDefault   = "0.1.0-SNAPSHOT"
 
   private lazy val (scriptVersion, eswVersion) = cmd match {
