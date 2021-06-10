@@ -21,6 +21,7 @@ import kotlinx.coroutines.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.time.milliseconds
+import kotlin.time.seconds
 
 class FsmImplTest {
 
@@ -45,6 +46,7 @@ class FsmImplTest {
     private var initFlag = false
     private val initState: suspend FsmStateScope.(Params) -> Unit = { initFlag = true }
     private var parameterSet = Params(setOf())
+
     // instantiating to not to deal with nullable
     private var fsm = FsmImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
 
@@ -176,14 +178,15 @@ class FsmImplTest {
     fun `after should execute given lambda after specified time | ESW-142`() = runBlocking {
         var flag = false
         coroutineScope.launch {
-            fsm.after(100.milliseconds) {
+            fsm.after(2.seconds) {
                 flag = true
             }
         }
 
+        delay(1000)
         flag shouldBe false
-        delay(100)
-        eventually(60.milliseconds) { flag shouldBe true }
+        delay(1000)
+        eventually(200.milliseconds) { flag shouldBe true }
     }
 
     @Test
