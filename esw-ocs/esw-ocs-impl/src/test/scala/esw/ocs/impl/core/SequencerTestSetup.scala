@@ -160,7 +160,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
         sequencerState shouldEqual expectedState
         assertCurrentSequence(stepList)
       case SequencerShuttingDown =>
-        throw new AssertionError("SequencerStopped response is not expected")
+        throw new AssertionError("SequencerShuttingDown response is not expected")
     }
   }
 

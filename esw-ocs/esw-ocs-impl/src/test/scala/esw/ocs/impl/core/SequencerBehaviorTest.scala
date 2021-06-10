@@ -189,7 +189,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       subscriberProbe.expectNoMessage()
     }
 
-    "send SequencerStopped response to the subscriber on receiving Shutdown message | ESW-213" in {
+    "send SequencerShuttingDown response to the subscriber on receiving Shutdown message | ESW-213" in {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
@@ -201,7 +201,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       sequencerActor ! Shutdown(testProbe.ref)
 
-      // subscriber probe should receive SequencerStopped message
+      // subscriber probe should receive SequencerShuttingDown message
       subscriberProbe.receiveMessage() shouldEqual SequencerShuttingDown
 
     }
