@@ -122,7 +122,7 @@ lazy val `esw-ocs-dsl-kt` = project
   .settings(
     Test / fork := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := EswKeys.kotlinVersion,
-    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+    kotlincOptions ++= Seq("-Xopt-in=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
   .dependsOn(`esw-ocs-dsl`)

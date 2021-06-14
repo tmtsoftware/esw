@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.Duration
 import kotlin.time.milliseconds
 
 class EventServiceDslTest : EventServiceDsl {
@@ -107,7 +108,7 @@ class EventServiceDslTest : EventServiceDsl {
 
     inner class TestSetup {
         val key = "TCS.test.eventkey1"
-        val duration = 10.milliseconds
+        val duration = Duration.milliseconds(10)
 
         val event: Event = mockk<ObserveEvent>()
         val eventKeys = HashSet<EventKey>()

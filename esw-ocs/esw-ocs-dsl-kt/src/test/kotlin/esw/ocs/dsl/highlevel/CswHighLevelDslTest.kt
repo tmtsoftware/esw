@@ -39,7 +39,7 @@ class CswHighLevelDslTest {
 
     init {
         every { config.getConfig("csw-alarm") }.returns(alarmConfig)
-        every { alarmConfig.getDuration("refresh-interval") }.returns(2.seconds.toJavaDuration())
+        every { alarmConfig.getDuration("refresh-interval") }.returns(Duration.seconds(2).toJavaDuration())
         every { cswServices.locationService }.returns(iLocationService)
         every { iLocationService.asScala() }.returns(locationService)
     }
@@ -57,7 +57,7 @@ class CswHighLevelDslTest {
         override val sequencerObserveEvent: SequencerObserveEvent = SequencerObserveEvent(Prefix(prefix))
         override val actorSystem: ActorSystem<SpawnProtocol.Command> = system
 
-        private val defaultTimeoutDuration: Duration = 5.seconds
+        private val defaultTimeoutDuration: Duration = Duration.seconds(5)
 
         @Test
         fun `Assembly should resolve the RichComponent with given name and assembly component type | ESW-245`() = runBlocking {

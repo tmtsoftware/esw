@@ -20,6 +20,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration
 import kotlin.time.milliseconds
 import kotlin.time.seconds
 
@@ -41,7 +42,7 @@ class FsmImplTest {
     private val inProgress = "INPROGRESS"
     private val invalid = "INVALIDSTATE"
     private val testMachineName = "test-state-machine"
-    private val timeout = 100.milliseconds
+    private val timeout = Duration.milliseconds(100)
 
     private var initFlag = false
     private val initState: suspend FsmStateScope.(Params) -> Unit = { initFlag = true }
@@ -178,7 +179,7 @@ class FsmImplTest {
     fun `after should execute given lambda after specified time | ESW-142`() = runBlocking {
         var flag = false
         coroutineScope.launch {
-            fsm.after(2.seconds) {
+            fsm.after(Duration.seconds(2)) {
                 flag = true
             }
         }

@@ -4,12 +4,13 @@ import esw.ocs.dsl.core.script
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import java.math.BigInteger
+import kotlin.time.Duration
 import kotlin.time.milliseconds
 
 //#call-compute-intensive
 script {
 
-    loopAsync(100.milliseconds) {
+    loopAsync(Duration.milliseconds(100)) {
         // loop represents the computation running on the main script thread.
     }
 

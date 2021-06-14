@@ -49,7 +49,7 @@ class FsmImpl(
     private val fsmJob: CompletableJob = Job(coroutineScope.coroutineContext[Job])
 
     override fun state(name: String, block: suspend FsmStateScope.(params: Params) -> Unit) {
-        states += name.toUpperCase() to block
+        states += name.uppercase() to block
     }
 
     override suspend fun become(state: String, params: Params) {
@@ -59,7 +59,7 @@ class FsmImpl(
             debug("[FSM] : $name - changing state to : $currentState")
             this.params = params
             coroutineScope.launch(fsmJob) {
-                states[currentState?.toUpperCase()]?.invoke(this@FsmImpl, params)
+                states[currentState?.uppercase()]?.invoke(this@FsmImpl, params)
             }.join()
         } else throw InvalidStateException(state)
     }
@@ -94,7 +94,7 @@ class FsmImpl(
     }
 
     override suspend fun after(duration: Duration, body: suspend () -> Unit) {
-        delay(duration.toLongMilliseconds())
+        delay(duration.inWholeMilliseconds)
         body()
     }
 

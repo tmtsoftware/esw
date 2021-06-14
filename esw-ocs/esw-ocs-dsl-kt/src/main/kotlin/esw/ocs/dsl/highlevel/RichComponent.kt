@@ -173,7 +173,7 @@ class RichComponent(
             if (!resumeOnError) block().onFailedTerminate()
             else block()
 
-    private fun Duration.toTimeout(): Timeout = Timeout(toLongNanoseconds(), TimeUnit.NANOSECONDS)
+    private fun Duration.toTimeout(): Timeout = Timeout(inWholeNanoseconds, TimeUnit.NANOSECONDS)
 
     private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(commandUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
     private suspend fun componentRef(): ActorRef<ComponentMessage> = commandUtil.jResolveComponentRef(prefix, componentType).await()

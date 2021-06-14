@@ -4,6 +4,7 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.highlevel.models.LGSF
 import esw.ocs.dsl.params.booleanKey
+import kotlin.time.Duration
 import kotlin.time.seconds
 
 FsmScript("INIT") {
@@ -54,6 +55,6 @@ FsmScript("INIT") {
         //do some actions to stop
 
         //send stop command to downstream sequencer
-        Sequencer(LGSF, ObsMode("darknight"), 10.seconds).stop()
+        Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10)).stop()
     }
 }
