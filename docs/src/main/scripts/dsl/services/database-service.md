@@ -31,7 +31,7 @@ Kotlin
 
 ## Create a Database Connection (Read/Write Access)
 
-This API allows creating a connection to a database with read/write access.  User name and password credentials 
+This API allows creating a connection to a database with read/write access.  Username and password credentials 
 should be stored in environment variables, and the names of these environment variables are passed as method parameters.  
 If the correct write access credentials can be obtained from these environment variables, then a database connection will be created
 with write access. It returns a Jooq `DSLContext` or fails with a DatabaseException.

@@ -34,8 +34,7 @@ The Sequence Component registers itself with the Location Service when started. 
 find the Sequence Component and send it commands. Sequence Component is started with a Subsystem and an optional name.
 While the Subsystem for a Sequence Component identifies to which subsystem the Sequence Component belongs, a Sequence
 Component can load Scripts for any subsystem, and therefore become a Sequencer for any subsystem.  For example, if for
-some reason the IRIS Sequence Component is not reachable, an IRIS Script can be loaded into an ESW Sequence Component
-and it can then be used as the IRIS Instrument Sequencer.
+some reason the IRIS Sequence Component is not reachable, an IRIS Script can be loaded into an ESW Sequence Component, and it can then be used as the IRIS Instrument Sequencer.
 
 Sequence Component will be registered as Akka Connection in Location Service.
 The following table describes the registration of a Sequence Component in the Location Service:

@@ -14,8 +14,8 @@ example shows the structure of a handler-oriented script.
 
 ```
 script {
-    val wfosSequencer = Sequencer(WFOS, "wfos.bluearm", 10.seconds)
-    val wfosBlueDetAssembly = Assembly(WFOS, "blueDetectorAssembly", 10.seconds)
+    val wfosSequencer = Sequencer(WFOS, "wfos.bluearm", Duration.seconds(10))
+    val wfosBlueDetAssembly = Assembly(WFOS, "blueDetectorAssembly", Duration.seconds(10))
     var wfosState = IDLE
 
     onSetup("wfos-command-1") {

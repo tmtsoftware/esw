@@ -119,7 +119,7 @@ Kotlin
 ### Loading in FSM Script
 
 A Reusable Script cannot be directly imported at the top-level of an FSM script. It can only be imported in a 
-particular State of the FSM script.  THe `loadScripts` command and the logic from the loaded script is limited to that particular State. 
+particular State of the FSM script.  THe `loadScripts` command, and the logic from the loaded script is limited to that particular State. 
 The example below shows loading a reusable script into a State.
 
 Kotlin

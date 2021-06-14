@@ -72,7 +72,7 @@ Kotlin
 Filters locations based on provided `ConnectionType`. A DSL is provided to specify the type, which can be one of:
 `AkkaType`, `HttpType`, `TcpType`.
 
-The following example demonstrates a use case where the script locks all of the Akka Type components i.e. Assemblies and HCD's.
+The following example demonstrates a use case where the script locks all the Akka Type components i.e. Assemblies and HCD's.
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-connection-type }
@@ -91,7 +91,7 @@ import esw.ocs.dsl.highlevel.models.*
 
 Filters locations based on the provided hostname (or IP address).
 
-In the following example, all of the components running on `IRIS` (hostname: **10.1.1.1**) machine are listed.
+In the following example, all the components running on `IRIS` (hostname: **10.1.1.1**) machine are listed.
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-hostname }
@@ -101,7 +101,7 @@ Kotlin
 Filters locations based on the provided prefix string.  As with the CSW Location Service, the method filters for all 
 locations with prefixes that start with the provided string.
 
-In the following example, it receives a list of all of the components registered with prefixes that start with: `IRIS.filter.`
+In the following example, it receives a list of all the components registered with prefixes that start with: `IRIS.filter.`
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-prefix }

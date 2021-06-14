@@ -29,7 +29,7 @@ Kotlin
 The HCD DSL method creates a Command Service DSL entity for an HCD with the provided `Prefix` that can be used to send commands from a script, 
 such as sending Setups or Observes or lifecycle methods e.g. goOnline, goOffline, lock HCD etc. This DSL method provides a default timeout
 which will be used for commands like submitAndWait, queryFinal etc., but also allows adding an HCD-specific default timeout. The built-in timeout
-is 10.seconds. Commands requiring a timeout also allow command-specific timeouts.
+is 10 seconds. Commands requiring a timeout also allow command-specific timeouts.
 
 HCD takes the following parameters:
 

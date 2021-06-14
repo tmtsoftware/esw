@@ -1,7 +1,6 @@
 # Starting Sequence Manager Using sequence-manager
 
-`sequence-manager` is a command line application that facilitates starting Sequence Manager
-and the HTTP server that is part of Sequence Manager using the `coursier` dependency management
+`sequence-manager` is a command line application that facilitates starting Sequence Manager, and the HTTP server that is part of Sequence Manager using the `coursier` dependency management
 application. The `coursier` tool is described with full documentation
 at the [coursier site](https://get-coursier.io).
 
@@ -91,7 +90,7 @@ cd /tmt/apps
 
 ## 1. Install `coursier` and the TMT Apps channel
 
-The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
+The `coursier` application must be installed on your machine, and the OCS Apps channel must be installed.
 The instructions for doing this are provided @ref:[here](getting-apps.md).
 
 ## 2. Start any Needed CSW services

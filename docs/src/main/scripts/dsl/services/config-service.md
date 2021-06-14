@@ -10,7 +10,7 @@ The CS DSL provides methods to check if a file exists in the Configuration Servi
 ### existsConfig
 
 The `existsConfig` DSL method checks if provided file path exists in Configuration Service with a 
-specific revision id (if provided) and returns true or false based on whether or not the file exists.
+specific revision id (if provided) and returns true or false based on whether the file exists.
 
 Kotlin
 :   @@snip [ConfigServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #exists-config }
