@@ -219,7 +219,6 @@ lazy val `esw-integration-test` = project
       if (!sys.props.contains("disableIntegrationTests")) {
         sLog.value.info("============== Running publishLocal ==============")
         val _ = publishLocal.all(ScopeFilter(inAggregates(LocalRootProject))).value
-        sLog.value.info("============== Finished publishLocal ==============")
         (Test / test).value
       }
       else {
