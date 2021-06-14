@@ -30,7 +30,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
   "SequenceComponent command" must {
     "start sequence component with provided subsystem and prefix and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214, ESW-366, ESW-481, ESW-511" in {
-      val name: String            = "primary"
+      val name                    = "primary"
       val agentPrefix             = Prefix(ESW, "agent1")
       val expectedSequencerPrefix = Prefix(ESW, "darknight")
       val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)

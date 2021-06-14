@@ -160,10 +160,10 @@ open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), Script
         launch {
             withContext(Dispatchers.Default) {
                 loop(heartbeatInterval.plus(Duration.milliseconds(10))) {
-                    val tryReceive = wiring.heartbeatChannel.tryReceive()
-                    if (tryReceive.isSuccess) trace("[StrandEC Heartbeat Received]")
-                    if (tryReceive.isClosed) error("[StrandEC Heartbeat Channel Closed] Unable to perform heartbeat check")
-                    if (tryReceive.isFailure) error(
+                    val heartbeat = wiring.heartbeatChannel.tryReceive()
+                    if (heartbeat.isSuccess) trace("[StrandEC Heartbeat Received]")
+                    if (heartbeat.isClosed) error("[StrandEC Heartbeat Channel Closed] Unable to perform heartbeat check")
+                    if (heartbeat.isFailure) error(
                         "[StrandEC Heartbeat Delayed] - Scheduled sending of heartbeat was delayed. " +
                                 "The reason can be thread starvation, e.g. by running blocking tasks in sequencer script, CPU overload, or GC."
                     )
