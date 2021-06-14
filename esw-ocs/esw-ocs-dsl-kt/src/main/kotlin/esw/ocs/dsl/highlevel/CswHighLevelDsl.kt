@@ -56,15 +56,15 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
 
     fun downtimeStart(obsId: ObsId, reasonForDowntime: String): ObserveEvent = sequencerObserveEvent.downtimeStart(obsId, reasonForDowntime)
 
-    fun Assembly(prefix: Prefix, defaultTimeout: Duration = 10.seconds): RichComponent
-    fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =
+    fun Assembly(prefix: Prefix, defaultTimeout: Duration = Duration.seconds(10)): RichComponent
+    fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration = Duration.seconds(10)): RichComponent =
             Assembly(Prefix(subsystem, compName), defaultTimeout)
 
-    fun Hcd(prefix: Prefix, defaultTimeout: Duration = 10.seconds): RichComponent
-    fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =
+    fun Hcd(prefix: Prefix, defaultTimeout: Duration = Duration.seconds(10)): RichComponent
+    fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration = Duration.seconds(10)): RichComponent =
             Hcd(Prefix(subsystem, compName), defaultTimeout)
 
-    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration = 10.hours): RichSequencer
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration = Duration.hours(10)): RichSequencer
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag

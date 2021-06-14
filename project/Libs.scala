@@ -93,9 +93,9 @@ object Borer {
 
 object Kotlin {
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"         % EswKeys.kotlinVersion
-  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8"    % "1.4.2"
-  val kotlintest        = "io.kotest"             % "kotest-assertions-core-jvm" % "4.3.2"
-  val mockk             = "io.mockk"              % "mockk"                      % "1.10.5"
+  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8"    % "1.5.0"
+  val kotlintest        = "io.kotest"             % "kotest-assertions-core-jvm" % "4.6.0"
+  val mockk             = "io.mockk"              % "mockk"                      % "1.11.0"
 }
 
 object BuildProperties {

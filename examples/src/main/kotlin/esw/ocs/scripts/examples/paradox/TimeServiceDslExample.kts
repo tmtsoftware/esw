@@ -6,6 +6,7 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.utcTimeKey
+import kotlin.time.Duration
 import kotlin.time.hours
 import kotlin.time.seconds
 
@@ -37,7 +38,7 @@ script {
     onSetup("schedule-periodically") { command ->
         val probeCommand = Setup(schedulePrefix, "scheduledOffset", command.obsId)
 
-        schedulePeriodically(interval = 5.seconds) {
+        schedulePeriodically(interval = Duration.seconds(5)) {
             assemblyForOffset.submit(probeCommand)
         }
     }
@@ -47,7 +48,7 @@ script {
         val probeCommand = Setup(schedulePrefix, "scheduledOffset", command.obsId)
 
         // *** schedule with start time ***
-        schedulePeriodically(scheduledTime.head(), interval = 5.seconds) {
+        schedulePeriodically(scheduledTime.head(), interval = Duration.seconds(5)) {
             assemblyForOffset.submit(probeCommand)
         }
     }
@@ -55,13 +56,13 @@ script {
 
 
     onSetup("schedule-once-from-now") {
-        scheduleOnceFromNow(delayFromNow = 5.seconds) {
+        scheduleOnceFromNow(delayFromNow = Duration.seconds(5)) {
             publishEvent(SystemEvent("LGSF", "publish.success"))
         }
     }
 
     onSetup("schedule-periodically-from-now") {
-        schedulePeriodicallyFromNow(delayFromNow = 5.seconds, interval = 1.seconds) {
+        schedulePeriodicallyFromNow(delayFromNow = Duration.seconds(5), interval = Duration.seconds(1)) {
             publishEvent(SystemEvent("LGSF", "publish.success"))
         }
     }
@@ -75,14 +76,14 @@ script {
         // #tai-time-now
 
         // #utc-time-after
-        val utcTime = utcTimeAfter(1.hours)
+        val utcTime = utcTimeAfter(Duration.hours(1))
         // #utc-time-after
 
         // #tai-time-after
-        val taiTime = taiTimeAfter(1.hours)
+        val taiTime = taiTimeAfter(Duration.hours(1))
         // #tai-time-after
 
-        schedulePeriodicallyFromNow(delayFromNow = 5.seconds, interval = 1.seconds) {
+        schedulePeriodicallyFromNow(delayFromNow = Duration.seconds(5), interval = Duration.seconds(1)) {
             publishEvent(SystemEvent("LGSF", "publish.success"))
         }
     }
@@ -93,17 +94,17 @@ script {
     }
 
     // #schedule-once-from-now
-    scheduleOnceFromNow(1.hours) {
+    scheduleOnceFromNow(Duration.hours(1)) {
         publishEvent(SystemEvent("LGSF", "publish.success"))
     }
     // #schedule-once-from-now
 
-    schedulePeriodically(utcTimeNow(), 5.seconds) {
+    schedulePeriodically(utcTimeNow(), Duration.seconds(5)) {
         publishEvent(SystemEvent("LGSF", "publish.success"))
     }
 
     // #schedule-periodically-from-now
-    schedulePeriodicallyFromNow(1.hours, 10.seconds) {
+    schedulePeriodicallyFromNow(Duration.hours(1), Duration.seconds(10)) {
         publishEvent(SystemEvent("LGSF", "publish.success"))
     }
     // #schedule-periodically-from-now

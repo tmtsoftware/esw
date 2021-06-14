@@ -9,7 +9,7 @@ import kotlin.time.milliseconds
  */
 interface LoopDsl {
     companion object {
-        private val loopInterval: Duration = 50.milliseconds
+        private val loopInterval: Duration = Duration.milliseconds(50)
     }
 
     val coroutineScope: CoroutineScope
@@ -69,7 +69,7 @@ interface LoopDsl {
 
     private suspend fun <T> delayedResult(minDelay: Duration, block: suspend StopWhen.() -> T): T = coroutineScope {
         val futureValue = async { block(StopWhen) }
-        delay(minDelay.toLongMilliseconds())
+        delay(minDelay.inWholeMilliseconds)
         futureValue.await()
     }
 

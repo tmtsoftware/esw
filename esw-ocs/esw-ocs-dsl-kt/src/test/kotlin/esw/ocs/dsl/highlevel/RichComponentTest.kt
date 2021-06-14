@@ -28,16 +28,11 @@ import esw.ocs.dsl.script.utils.CommandUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.verify
+import io.mockk.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import msocket.api.Subscription
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -55,18 +50,18 @@ class RichComponentTest {
     private val source = Prefix(ESW, "test")
     private val setupCommand = Setup(source, CommandName("move"), Optional.of(ObsId.apply("2020A-001-123")))
 
-    private val leaseDuration: Duration = 10.seconds
+    private val leaseDuration: Duration = Duration.seconds(10)
     private val jLeaseDuration: java.time.Duration = leaseDuration.toJavaDuration()
 
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val commandUtil: CommandUtil = mockk()
     private val actorSystem: ActorSystem<*> = mockk()
 
-    private val timeoutDuration: Duration = 5.seconds
-    private val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+    private val timeoutDuration: Duration = Duration.seconds(5)
+    private val timeout = Timeout(timeoutDuration.inWholeNanoseconds, TimeUnit.NANOSECONDS)
 
-    private val defaultTimeoutDuration: Duration = 5.seconds
-    private val defaultTimeout = Timeout(defaultTimeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+    private val defaultTimeoutDuration: Duration = Duration.seconds(5)
+    private val defaultTimeout = Timeout(defaultTimeoutDuration.inWholeNanoseconds, TimeUnit.NANOSECONDS)
 
     @Nested
     inner class Assembly {
@@ -88,8 +83,8 @@ class RichComponentTest {
         private val assemblyRef: ActorRef<ComponentMessage> = mockk()
         private val assemblyCommandService: ICommandService = mockk()
 
-        @BeforeAll
-        fun beforeAll() {
+        @BeforeEach
+        fun beforeEach() {
             mockkStatic(CommandServiceFactory::class)
         }
 
@@ -408,8 +403,8 @@ class RichComponentTest {
         private val hcdRef: ActorRef<ComponentMessage> = mockk()
         private val hcdCommandService: ICommandService = mockk()
 
-        @BeforeAll
-        fun beforeAll() {
+        @BeforeEach
+        fun beforeEach() {
             mockkStatic(CommandServiceFactory::class)
         }
 

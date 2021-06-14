@@ -5,12 +5,13 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.intKey
 import kotlinx.coroutines.delay
+import kotlin.time.Duration
 import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 script {
 
-    val pollingVar = ParamVariable(0, "TCS.polling.param-var-test", intKey("counter"), 400.milliseconds)
+    val pollingVar = ParamVariable(0, "TCS.polling.param-var-test", intKey("counter"), Duration.milliseconds(400))
     val paramVarFsm = Fsm("param-pollingTest", "INIT") {
         state("INIT") {
             val event = SystemEvent("TCS.polling", "param-var-test")
@@ -49,8 +50,8 @@ script {
     onSetup("multi-node") { command ->
         val sequence = sequenceOf(command)
 
-        val tcs = Sequencer(TCS, ObsMode("moonnight"), 10.seconds)
-        tcs.submitAndWait(sequence, 10.seconds)
+        val tcs = Sequencer(TCS, ObsMode("moonnight"), Duration.seconds(10))
+        tcs.submitAndWait(sequence, Duration.seconds(10))
     }
 
     onSetup("log-command") {
@@ -63,8 +64,8 @@ script {
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(
-            InitialCommandHandler,
-            OnlineOfflineHandlers,
-            OperationsAndDiagModeHandlers
+        InitialCommandHandler,
+        OnlineOfflineHandlers,
+        OperationsAndDiagModeHandlers
     )
 }

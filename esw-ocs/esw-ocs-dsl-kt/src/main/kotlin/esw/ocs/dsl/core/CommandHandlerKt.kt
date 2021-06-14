@@ -59,7 +59,7 @@ class CommandHandlerKt<T : SequenceCommand>(
 
     fun retry(count: Int, interval: Duration) {
         retry(count)
-        delayInMillis = interval.toLongMilliseconds()
+        delayInMillis = interval.inWholeMilliseconds
     }
 
 }

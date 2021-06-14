@@ -42,10 +42,10 @@ class RichSequencerTest {
 
     private val sequencerApiFactory: (Subsystem, ObsMode) -> CompletableFuture<SequencerApi> = { _, _ -> CompletableFuture.completedFuture(sequencerApi) }
 
-    private val timeoutDuration: Duration = 10.seconds
+    private val timeoutDuration: Duration = Duration.seconds(10)
     private val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
-    private val defaultTimeoutDuration: Duration = 5.seconds
+    private val defaultTimeoutDuration: Duration = Duration.seconds(5)
     private val defaultTimeout = Timeout(defaultTimeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
     private val tcsSequencer = RichSequencer(subsystem, obsMode, sequencerApiFactory, defaultTimeoutDuration, coroutineScope)

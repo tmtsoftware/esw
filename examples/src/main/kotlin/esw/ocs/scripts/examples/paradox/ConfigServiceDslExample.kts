@@ -8,6 +8,7 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.longKey
 import esw.ocs.dsl.params.stringKey
+import kotlin.time.Duration
 import kotlin.time.minutes
 
 //#motor-commands
@@ -35,7 +36,7 @@ data class MotorCommands(val setMotorSpeed: Long, val setStepMotorResolution: St
 //#motor-commands
 
 script {
-    val longTimeout = 10.minutes
+    val longTimeout = Duration.minutes(10)
     val motorPrefix = Prefix(WFOS, "motor")
     val motorPrefixStr = motorPrefix.toString()
     val motorHcd = Hcd(motorPrefix, longTimeout)

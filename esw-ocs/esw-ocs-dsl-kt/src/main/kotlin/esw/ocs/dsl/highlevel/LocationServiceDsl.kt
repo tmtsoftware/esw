@@ -52,7 +52,7 @@ interface LocationServiceDsl : SuspendToJavaConverter {
      * @param within optional duration for which connection is looked up in the Location Service before giving up
      * @return location registered against connection if present otherwise null
      */
-    suspend fun <L : Location> resolveLocation(connection: TypedConnection<L>, within: Duration = 5.seconds): L? =
+    suspend fun <L : Location> resolveLocation(connection: TypedConnection<L>, within: Duration = Duration.seconds(5)): L? =
             locationService.resolve(connection, within.toJavaDuration()).await().nullable()
 
     /**

@@ -3,6 +3,7 @@ package esw.ocs.scripts.examples.testData
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.stringKey
 import kotlinx.coroutines.delay
+import kotlin.time.Duration
 import kotlin.time.seconds
 
 script {
@@ -39,9 +40,9 @@ script {
     }
 
     onSetup("time-service-dsl") {
-        val offset = utcTimeAfter(2.seconds).offsetFromNow()
+        val offset = utcTimeAfter(Duration.seconds(2)).offsetFromNow()
 
-        schedulePeriodically(utcTimeAfter(5.seconds), offset) {
+        schedulePeriodically(utcTimeAfter(Duration.seconds(5)), offset) {
             publishEvent(SystemEvent("LGSF.test", "publish.success"))
         }
 

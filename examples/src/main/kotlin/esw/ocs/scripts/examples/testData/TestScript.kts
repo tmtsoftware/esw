@@ -11,12 +11,13 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
+import kotlin.time.Duration
 import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 script {
-    val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), 10.seconds)
-    val testAssembly = Assembly(ESW, "test", 10.seconds)
+    val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10))
+    val testAssembly = Assembly(ESW, "test", Duration.seconds(10))
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
@@ -51,8 +52,8 @@ script {
         val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
-        val tcsSequencer = Sequencer(TCS, ObsMode("darknight"), 10.seconds)
-        tcsSequencer.submitAndWait(sequence, 10.seconds)
+        val tcsSequencer = Sequencer(TCS, ObsMode("darknight"), Duration.seconds(10))
+        tcsSequencer.submitAndWait(sequence, Duration.seconds(10))
     }
 
     onSetup("check-config") {
@@ -90,7 +91,7 @@ script {
             is CommandResponse.Started -> publishEvent(SystemEvent("tcs.filter.wheel", "query-started-command-from-script"))
         }
 
-        when (testAssembly.queryFinal(submitResponse.runId(), 100.milliseconds)) {
+        when (testAssembly.queryFinal(submitResponse.runId(), Duration.milliseconds(100))) {
             is CommandResponse.Completed -> publishEvent(SystemEvent("tcs.filter.wheel", "query-completed-command-from-script"))
         }
 
@@ -124,13 +125,13 @@ script {
         val setupCommand = Setup("LGSF.test", "command-lgsf")
         val sequence = sequenceOf(setupCommand)
 
-        lgsfSequencer.submitAndWait(sequence, 10.seconds)
+        lgsfSequencer.submitAndWait(sequence, Duration.seconds(10))
     }
 
     onSetup("schedule-once-from-now") {
         val currentTime = utcTimeNow()
-        scheduleOnceFromNow(1.seconds) {
-            val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
+        scheduleOnceFromNow(Duration.seconds(1)) {
+            val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.inWholeMilliseconds)
             publishEvent(SystemEvent("ESW.schedule.once", "offset", param))
         }
     }
@@ -138,8 +139,8 @@ script {
     onSetup("schedule-periodically-from-now") {
         val currentTime = utcTimeNow()
         var counter = 0
-        val a = schedulePeriodicallyFromNow(1.seconds, 1.seconds) {
-            val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
+        val a = schedulePeriodicallyFromNow(Duration.seconds(1), Duration.seconds(1)) {
+            val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.inWholeMilliseconds)
             publishEvent(SystemEvent("ESW.schedule.periodically", "offset", param))
             counter += 1
         }

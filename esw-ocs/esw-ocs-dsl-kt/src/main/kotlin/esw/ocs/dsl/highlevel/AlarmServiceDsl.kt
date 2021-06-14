@@ -32,7 +32,7 @@ interface AlarmServiceDsl : LoopDsl {
     }
 
     private fun delayTaskExecution(delayDuration: Duration, task: () -> Unit) = coroutineScope.launch {
-        delay(delayDuration.toLongMilliseconds())
+        delay(delayDuration.inWholeMilliseconds)
         task()
     }
 

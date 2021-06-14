@@ -26,7 +26,7 @@ class TimeServiceDslTest : TimeServiceDsl {
     private val cancellable = mockk<Cancellable>()
 
     private val startTime: UTCTime = utcTimeNow()
-    private val duration: Duration = 10.seconds
+    private val duration: Duration = Duration.seconds(10)
     private val jDuration = duration.toJavaDuration()
 
     override val timeService: TimeServiceScheduler = scheduler
@@ -48,7 +48,7 @@ class TimeServiceDslTest : TimeServiceDsl {
     @Test
     fun `TimeServiceDsl should scheduleOnceFromNow should delegate to timeServiceScheduler#scheduleOnce | ESW-122`() = runBlocking{
         every { scheduler.scheduleOnce(any(), any<Runnable>()) }.answers { cancellable }
-        scheduleOnceFromNow(1.seconds, mockk()) shouldBe cancellable
+        scheduleOnceFromNow(Duration.seconds(1), mockk()) shouldBe cancellable
         verify { scheduler.scheduleOnce(any(), any<Runnable>()) }
     }
 
@@ -68,25 +68,25 @@ class TimeServiceDslTest : TimeServiceDsl {
             scheduler.schedulePeriodically(any(), jDuration, any<Runnable>())
         }.answers { cancellable }
 
-        schedulePeriodicallyFromNow(1.seconds, duration, mockk()) shouldBe cancellable
+        schedulePeriodicallyFromNow(Duration.seconds(1), duration, mockk()) shouldBe cancellable
         verify { scheduler.schedulePeriodically(any(), jDuration, any<Runnable>()) }
     }
 
     @Test
     fun `offsetFromNow should give offset between current time and provided instance of the time | ESW-122`() {
         val offset: Duration = UTCTime.after(FiniteDuration(1, TimeUnit.SECONDS)).offsetFromNow()
-        assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
+        assertWithin(expected = Duration.seconds(1), result = offset, tolerance = Duration.milliseconds(2))
     }
 
     @Test
     fun `utcTimeAfter should give UTC time of after given duration from now | ESW-122`() {
-        val offset: Duration = utcTimeAfter(1.seconds).offsetFromNow()
-        assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
+        val offset: Duration = utcTimeAfter(Duration.seconds(1)).offsetFromNow()
+        assertWithin(expected = Duration.seconds(1), result = offset, tolerance = Duration.milliseconds(2))
     }
 
     @Test
     fun `taiTimeAfter should give time TAI of after given duration from now | ESW-122`() {
-        val offset: Duration = taiTimeAfter(1.seconds).offsetFromNow()
-        assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
+        val offset: Duration = taiTimeAfter(Duration.seconds(1)).offsetFromNow()
+        assertWithin(expected = Duration.seconds(1), result = offset, tolerance = Duration.milliseconds(2))
     }
 }

@@ -13,7 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.time.seconds
+import kotlin.time.Duration
 
 internal class CommandHandlerKtTest {
     private val exceptionHandler = CoroutineExceptionHandler { _, _ -> } // to swallow all the test exceptions
@@ -125,7 +125,7 @@ internal class CommandHandlerKtTest {
                         if (commandHandlerCounter < 2) throw RuntimeException("exception")
                     }.onError { errorHandlerCounter++ }
 
-            commandHandlerKt.retry(2, 1.seconds)
+            commandHandlerKt.retry(2, Duration.seconds(1))
             commandHandlerKt.execute(sequenceCommand)
 
             delay(100)

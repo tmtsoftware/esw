@@ -4,6 +4,7 @@ package esw.ocs.scripts.examples.paradox
 
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.longKey
+import kotlin.time.Duration
 import kotlin.time.milliseconds
 
 script {
@@ -35,7 +36,7 @@ script {
 
     //#loopAsync-custom-interval
     // start background loop which publishes current temperature of motor every 100 milliseconds
-    loopAsync(minInterval = 100.milliseconds) {
+    loopAsync(minInterval = Duration.milliseconds(100)) {
         val currentTemp = getCurrentTemp()
         publishEvent(temperatureEvent.add(temperatureKey.set(currentTemp)))
         stopWhen(stopPublishingTemperature)
@@ -81,7 +82,7 @@ script {
         //#loop-custom-interval
         // move motor by 20 degrees in every iteration after a loop interval of 500 millis (custom loop interval used here)
         // stop loop when current motor position matches expected motor position and continue with the execution of rest of the handler
-        loop(minInterval = 500.milliseconds) {
+        loop(minInterval = Duration.milliseconds(500)) {
             moveMotor(20)
             stopWhen(motorPosition == expectedMotorPosition)
         }

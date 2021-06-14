@@ -7,10 +7,7 @@ import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.Major
 import esw.ocs.dsl.highlevel.models.TCS
 import io.kotest.assertions.timing.eventually
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -19,10 +16,12 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.seconds
 
-class AlarmServiceDslTest : AlarmServiceDsl {
+// TODO after kotlin 1.5.x upgrade, class AlarmServiceDslTest : AlarmServiceDsl, LoopDsl does not work.
+//  Somehow, LoopDsl needs to be added before AlarmServiceDsl.
+class AlarmServiceDslTest : LoopDsl, AlarmServiceDsl {
 
     override val alarmService: IAlarmService = mockk()
-    override val _alarmRefreshDuration: Duration = 3.seconds
+    override val _alarmRefreshDuration: Duration = Duration.seconds(3)
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     @Test
@@ -52,7 +51,7 @@ class AlarmServiceDslTest : AlarmServiceDsl {
         every { alarmService.setSeverity(alarmKey2, severity) } answers { doneF }
         every { alarmService.setSeverity(alarmKey3, severity) } answers { doneF }
 
-        eventually(5.seconds) {
+        eventually(Duration.seconds(5)) {
             verify { alarmService.setSeverity(alarmKey1, severity) }
             verify { alarmService.setSeverity(alarmKey2, severity) }
             verify { alarmService.setSeverity(alarmKey3, severity) }
