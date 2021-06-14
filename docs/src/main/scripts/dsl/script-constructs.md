@@ -11,5 +11,5 @@
 * [Blocking Operations](constructs/blocking.md)
 * [Other DSL](constructs/other-dsl.md)
 
-<!-- if any thing is added in this list make sure it is added in ../scripts-index.md in Script Construct heading -->
+<!-- if anything is added in this list make sure it is added in ../scripts-index.md in Script Construct heading -->
 @@@

@@ -2,7 +2,7 @@
 
 A Sequencer can send commands to Assemblies and HCDs and Sequences to other Sequencers.
 In order to interact or send commands from one Sequencer to the other, one needs to create a `Sequencer` instance first.
-The API provided by a Sequencer Command Service is tailored to Sequencer to Sequencer functionality.
+The API provided by a Sequencer Command Service is tailored to Sequencer functionality.
 
 ##Sequencer
 
@@ -59,7 +59,7 @@ Kotlin
 
 The `query` DSL method allows checking on the state of the `Sequence`. `query` returns the current response immediately, which could be either a final 
 response (eg. `Completed`) or the `Started` response. The `runId` of the submitted `Sequence` can be obtained from the `SubmitResponse` returned by `submit`.
-`query` is useful in the case where polling of the command is needed or the script needs to take 
+`query` is useful in the case where polling of the command is needed, or the script needs to take 
 other actions and periodically check for the completion of the `Sequence`.    
 
 Note that if the `runId` is not present in the Sequencer or has been removed from the CRM, the response returned 

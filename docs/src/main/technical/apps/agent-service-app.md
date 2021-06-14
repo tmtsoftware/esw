@@ -13,7 +13,7 @@ The following steps should be followed to start Agent Service Application
 
 ### 1. Install `coursier` and the TMT Apps Channel
 
-The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
+The `coursier` application must be installed on your machine, and the OCS Apps channel must be installed.
 The instructions for doing this are provided @ref:[here](getting-apps.md).
 
 ### 2. Start Any Needed CSW Services

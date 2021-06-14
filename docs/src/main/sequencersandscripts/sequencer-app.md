@@ -10,7 +10,7 @@ The following steps should be followed to use ocs-app to start a Sequencer or Se
 
 ## 1. Install `coursier` and the TMT Apps Channel
 
-The `coursier` application must be installed on your machine and the OCS Apps channel must be installed.
+The `coursier` application must be installed on your machine, and the OCS Apps channel must be installed.
 The instructions for doing this is provided @ref:[here](../technical/apps/getting-apps.md).
 
 ## 2. Install ocs-app

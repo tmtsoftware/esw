@@ -2,7 +2,7 @@
 
 Sequencers are part of the ESW Observatory Control System or OCS. The job of OCS is to 
 receive the description of the science observation from the planning tools and 
-*execute the observation*. It does this using Sequencers and a few other ideas defined here.
+*execute the observation*. It does this using Sequencers, and a few other ideas defined here.
 
 This first section provides an overview of the critical OCS architectural ideas. Subsequent sections go into more depth. 
 
@@ -54,7 +54,7 @@ for an observing mode, but the construction agreement is that there will be one 
 subsystems with Scripts written by each subsystem team. For a typical AO-dependent observation such as with IRIS and 
 NFIRAOS the Sequencers would include: OCS (master sequencer), AOESW, TCS, and an instrument such as IRIS.
 
-The following figure shows all of the key discussion points of the previous paragraphs. This figure shows a simplified 
+The following figure shows all the key discussion points of the previous paragraphs. This figure shows a simplified 
 construction Sequencer hierarchy with OCS Master Sequencer, TCS Sequencer, and an Instrument Sequencer arranged in a 
 hierarchy. Each Sequencer has a loaded Script. The Master Sequencer has received a Sequence and in processing that 
 Sequence. It has sent Sequences to the TCS and INS Sequencers.
@@ -116,7 +116,7 @@ There are no restrictions on this name, but shorter is better. Any name can be u
 ## Registering Sequencers in Location Service
 
 A Sequencer is a Sequence Component that has a script loaded. A Sequencer converts a Sequence Component, but the Sequence Component stays around.
-A Sequencer must be started specifying the subsystem for the Sequencer and the observing mode (as described above). 
+A Sequencer must be started specifying the subsystem for the Sequencer, and the observing mode (as described above). 
 
 Like Sequence Components, Sequencers register themselves in the Location Service based on arguments used when they are 
 started. The following table shows scenarios that may happen when the Sequence Manager starts Sequencers for an observing mode.
@@ -130,8 +130,8 @@ Use of @ sign makes it appear like an email, hence validateSite fails without sp
 | ESW.ESW_77 | IRIS | IRIS_ifsonly |IRIS<span>@</span>IRIS_ifsonly | An IRIS instrument Sequencer running the IRIS script for the IRIS_ifsonly observing mode using the ESW.ESW_77 Sequence Component. |
 | ESW.primary | ESW |  IRIS_ifsonly | ESW<span>@</span>IRIS_ifsonly | An ESW Sequencer running the ESW script for the IRIS_ifsonly observing mode using the ESW.primary Sequence Component. |
 
-As shown above, the observing mode is the instrument name and an instrument-specific label related to observing mode features. Each instrument 
-includes its scripts inside its specific package. The subsystem and observing mode are used to lookup the correct script in the script repository. 
+As shown above, the observing mode is the instrument name, and an instrument-specific label related to observing mode features. Each instrument 
+includes its scripts inside its specific package. The subsystem and observing mode are used to look up the correct script in the script repository. 
 Once the Sequencer script is loaded in a Sequence Component, the Sequencer API exposes a `GetSequenceComponent` command which returns the
 Location of the Sequence Component allowing the Sequence Manager or other client to determine which Sequence Component is executing
 the observing mode script for a specific packageId.

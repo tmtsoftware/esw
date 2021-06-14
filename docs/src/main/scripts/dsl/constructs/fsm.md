@@ -110,8 +110,8 @@ Calling `await` before calling `start` will start the FSM internally and then wa
 
 ## Reactive FSM
 
-Reactive FSM means that changes of state can be tied to changes in Events as well as Commands.
-An FSM can be made to react to changes in Event and Command parameters with the help of `Event based variables` and `Command flags`.
+Reactive FSM means that changes of state can be tied to change in Events as well as Commands.
+An FSM can be made to react to change in Event and Command parameters with the help of `Event based variables` and `Command flags`.
 This reaction is called "re-evaluation", which causes the code for the current state to be executed again.
 It is necessary to _bind_ an FSM to reactive variables to achieve the reactive behavior.
 
@@ -125,7 +125,7 @@ There are two types of Event-based variables.
 
 #### EventVariable
 An `EventVariable` will be tied to an Event published on the given EventKey. 
-The example below shows creating an instance of an EventVariable and the *getEvent* method which returns the latest event. 
+The example below shows creating an instance of an EventVariable, and the *getEvent* method which returns the latest event. 
 
 An EventVariable needs 2 parameters:
 
@@ -165,7 +165,7 @@ Event-based variables have the **ability to behave in one of two ways**:
 
 #### Subscribe to an Event
 
-If the `duration` parameter of an Event-based variable is **not** specified, a subscription is made to the Event and the value 
+If the `duration` parameter of an Event-based variable is **not** specified, a subscription is made to the Event, and the value 
 is updated (and the current state of the FSM is re-evaluated) whenever it is published. 
 
 The following example shows how to create Event Variables with the subscribing behavior and `bind` FSM to it.
@@ -186,7 +186,7 @@ Kotlin
 
 ### CommandFlag
 
-Command Flag acts as bridge that can be used to pass `Parameters` to an FSM from outside (i.e via a Command Handler). 
+Command Flag acts as bridge that can be used to pass `Parameters` to an FSM from outside (i.e. via a Command Handler). 
 A Command Flag can be defined in a scope accessible by a Command Handler and the FSM, and then be bound to the FSM.
 This causes the FSM to re-evaluate whenever the value of the Command Flag changes, which occurs when the `set` method
 is called in the Command Flag (which can be placed in a Command Handler, see @ref[example below](#example-fsm)).

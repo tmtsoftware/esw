@@ -60,7 +60,7 @@ Kotlin
 ### Using scheduleOnceFromNow
 
 Often, it is necessary to schedule a task in the future some amount of time from now.
-The `scheduleOnceFromNow` API allows scheduling non periodic task in script after a specified duration. The task is a callback which will be 
+The `scheduleOnceFromNow` API allows scheduling non-periodic task in script after a specified duration. The task is a callback which will be 
 executed in thread-safe way. This API takes a time `Duration` type after which task will be scheduled.
 
 The following example shows the scheduling of a task after 1 hour from now. The function takes a duration and returns a handle 

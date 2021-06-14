@@ -11,7 +11,7 @@ For instance, `Sequence Manager` provides a `provision` function that takes a co
 
 The functionality of Agent Service is flexible and can be used to provide a more resilient OSW by allowing the
 operator of the telescope to easily respond to unexpected failures. For instance, the `Sequence Manager` itself can be
-created using the Agent Service. In this use case, a future operations user interface will allow the operator to start
+created using the Agent Service. In this use case, a future operation's user interface will allow the operator to start
 a new `Sequence Manager` on a backup machine in the case where the machine running the `Sequence Manager` has failed.
 This kind of scenario can in many cases reduce or eliminate OSW down-time due to machine failures.
 

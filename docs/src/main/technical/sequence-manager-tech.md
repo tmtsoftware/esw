@@ -17,7 +17,7 @@ The following sections provide details on the Sequence Manager.
 
 ## Introduction to Sequence Manager
 
-Sequence Manager is an ESW component that takes care of provisioning Sequence Components needed for an observation and the configuration of
+Sequence Manager is an ESW component that takes care of provisioning Sequence Components needed for an observation, and the configuration of
 Sequencer scripts as per observing mode. It has capabilities to start, re-start, shutdown Sequencer/s, shutdown Sequence Components
 as well as to know status of TMT components such as which script is loaded on which Sequence Component or which Sequence Component/s
 are running on which agent/host. Sequence Manager is implemented using Akka actors. Sequence Manager provides two communication interfaces
@@ -107,8 +107,8 @@ all Sequencers needed in the course of a night. The system can be easily re-prov
 ### Configuring Sequencers for an Observing Mode
 Once the system is provisioned, Sequence Manager can take the configure step.
 Configure is used for starting Sequencers needed for an observing mode. It also checks for any resource conflicts with ongoing observations.
-It is allowed that TMT run more than one concurrent observation as long as they do not conflict. The configure API ensures this is the case.
-If there is a conflict, the configure call will fail.
+It is allowed that TMT run more than one concurrent observation as long as they do not conflict. Configure API ensures this is the case.
+If there is a conflict, configure call will fail.
 
 A configuration file mapping observing mode to required Sequencers  (called obsModeConfig) is provided to Sequence Manager when it starts. 
 Configure API, checks for required Sequencers and resources in the obsModeConfig file.

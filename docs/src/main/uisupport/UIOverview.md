@@ -4,7 +4,7 @@ This section is an overview of the user interface approach for TMT.
 TMT has an OAD requirement for graphical user interfaces as the standard style for user interfaces. The CSW technical choice for 
 graphical user interfaces is the web platform consisting of the web browser as the host for the user interface and web 
 technologies based on JavaScript along with HTTP, and CSS, etc. Most UI innovation and development at this time is 
-based on these technologies and there is no apparent change in sight, so this decision continues to makes sense.
+based on these technologies and there is no apparent change in sight, so this decision continues to make sense.
 One other big advantage of the browser-based UI is that it can provide an easy solution for remote access in many situations. 
 The entire reason for web technologies is to provide remote access to systems and services.
 
@@ -68,7 +68,7 @@ UI through Websockets. Commands, responses, and events are serialized as JSON, w
 The key is the UI Application Gateway (UIAG) provided as part of UISTD/ESW Phase 1 shown in green in the figure. 
 The UIAG is a JVM-based application that acts as an HTTP server. The UIAG has several functions:
 
-* It registers itself with the Location Service so the UI can also use the Location Service to find the UIAG’s connection 
+* It registers itself with the Location Service, so the UI can also use the Location Service to find the UIAG’s connection 
 information using the Location Service HTTP API.
 * It may serve web pages if needed for the presentation of the UI, although splitting presentation pages to another web server is 
 also an option. (This feature is not currently implemented).
@@ -85,9 +85,9 @@ for more information.
 
 The Back-end UI is an application that may need to do more than use CSW services. It may have specialized backend
 commands that are better-suited to the server-side than the browser-based UI. This may be computationally
-intensive functions or the use of CSW Database Service with specialized queries as examples.
+intensive functions, or the use of CSW Database Service with specialized queries as examples.
 
-The Back-end UI uses it's own back-end HTTP-based service to implement application-specific routes. The sophisticated
+The Back-end UI uses its own back-end HTTP-based service to implement application-specific routes. The sophisticated
 UI that needs a back-end server may only use its back-end server, but more likely it will be a hybrid
 and also use the UI Application Gateway for access to CSW commands and events since
 duplicating this support is costly and error-prone. The following figure shows the components of a hybrid Back-end UI application.
