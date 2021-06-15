@@ -3,4 +3,4 @@ package esw.ocs.dsl.script.exceptions
 import csw.params.commands.SequenceCommand
 
 class UnhandledCommandException(command: SequenceCommand)
-    extends RuntimeException(s"command ${command.commandName} was not handled")
+    extends RuntimeException(s"command ${command.commandName.name} was not handled")
