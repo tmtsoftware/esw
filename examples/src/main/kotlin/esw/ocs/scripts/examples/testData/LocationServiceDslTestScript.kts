@@ -1,11 +1,11 @@
 package esw.ocs.scripts.examples.testData
 
-import esw.ocs.dsl.highlevel.models.*
 import csw.location.api.models.ComponentId
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.HttpRegistration
 import esw.ocs.dsl.core.script
-import csw.prefix.models.Prefix
+import esw.ocs.dsl.highlevel.models.Prefix
+import esw.ocs.dsl.highlevel.models.Service
 import esw.ocs.dsl.params.stringKey
 
 script {

@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.system.measureTimeMillis
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 class LoopDslTest : LoopDsl {
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)

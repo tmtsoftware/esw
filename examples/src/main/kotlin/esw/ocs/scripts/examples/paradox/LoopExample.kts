@@ -5,7 +5,6 @@ package esw.ocs.scripts.examples.paradox
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.longKey
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 script {
     //#loopAsync-default-interval

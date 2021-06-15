@@ -5,7 +5,6 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import java.math.BigInteger
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 //#call-compute-intensive
 script {

@@ -12,7 +12,6 @@ import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.highlevel.models.ObsId
 import esw.ocs.dsl.params.intKey
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 script {
 

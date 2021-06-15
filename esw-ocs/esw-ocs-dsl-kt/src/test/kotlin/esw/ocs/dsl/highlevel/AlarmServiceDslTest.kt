@@ -7,14 +7,16 @@ import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.Major
 import esw.ocs.dsl.highlevel.models.TCS
 import io.kotest.assertions.timing.eventually
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 // TODO after kotlin 1.5.x upgrade, class AlarmServiceDslTest : AlarmServiceDsl, LoopDsl does not work.
 //  Somehow, LoopDsl needs to be added before AlarmServiceDsl.

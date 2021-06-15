@@ -12,7 +12,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 class CommandFlagTest : CommandServiceDsl {
     private val timeout = Duration.milliseconds(100)

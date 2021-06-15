@@ -3,7 +3,10 @@ package esw.ocs.scripts.examples.epics
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.epics.CommandFlag
-import esw.ocs.dsl.params.*
+import esw.ocs.dsl.params.add
+import esw.ocs.dsl.params.intKey
+import esw.ocs.dsl.params.params
+import esw.ocs.dsl.params.stringKey
 
 FsmScript("INIT") {
     // temperature Fsm states

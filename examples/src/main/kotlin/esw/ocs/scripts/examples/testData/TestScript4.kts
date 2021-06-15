@@ -4,7 +4,6 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.stringKey
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 script {
 

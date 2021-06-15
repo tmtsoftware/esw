@@ -12,8 +12,6 @@ import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
-import kotlin.time.milliseconds
-import kotlin.time.seconds
 
 script {
     val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10))

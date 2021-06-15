@@ -10,8 +10,6 @@ import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.*
 import kotlin.math.sqrt
 import kotlin.time.Duration
-import kotlin.time.milliseconds
-import kotlin.time.seconds
 
 object aosq {
     val prefix = "AOESW.aosq"

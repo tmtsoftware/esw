@@ -17,8 +17,6 @@ import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
-import kotlin.time.milliseconds
-import kotlin.time.seconds
 import kotlin.time.toJavaDuration
 
 class TimeServiceDslTest : TimeServiceDsl {

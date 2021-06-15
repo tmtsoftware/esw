@@ -6,7 +6,10 @@ import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.scaladsl.SubscriptionModes
 import csw.params.core.generics.Parameter
-import csw.params.events.*
+import csw.params.events.Event
+import csw.params.events.EventKey
+import csw.params.events.EventName
+import csw.params.events.SystemEvent
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.SuspendableSupplier
 import esw.ocs.dsl.highlevel.models.EventSubscription

@@ -7,8 +7,6 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.params.stringKey
 import kotlin.time.Duration
-import kotlin.time.milliseconds
-import kotlin.time.seconds
 
 script {
     val lockResponseEvent = SystemEvent("ESW.ocs.lock_unlock", "locking_response")

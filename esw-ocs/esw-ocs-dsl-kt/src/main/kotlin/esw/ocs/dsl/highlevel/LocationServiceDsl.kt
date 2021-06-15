@@ -3,7 +3,6 @@ package esw.ocs.dsl.highlevel
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.IRegistrationResult
 import csw.location.api.models.*
-import csw.prefix.models.Prefix
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.highlevel.models.RegistrationResult
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
@@ -11,7 +10,6 @@ import esw.ocs.dsl.nullable
 import kotlinx.coroutines.future.await
 import msocket.api.Subscription
 import kotlin.time.Duration
-import kotlin.time.seconds
 import kotlin.time.toJavaDuration
 
 interface LocationServiceDsl : SuspendToJavaConverter {

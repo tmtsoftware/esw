@@ -10,7 +10,6 @@ import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
-import kotlin.time.nanoseconds
 import kotlin.time.toJavaDuration
 
 /**

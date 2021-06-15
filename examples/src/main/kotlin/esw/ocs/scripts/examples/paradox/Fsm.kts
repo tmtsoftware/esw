@@ -8,12 +8,9 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.EventVariable
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.ParamVariable
-import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.params.params
 import kotlin.time.Duration
-import kotlin.time.milliseconds
-import kotlin.time.seconds
 
 script {
 

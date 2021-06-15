@@ -6,7 +6,6 @@ import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.isCompleted
 import esw.ocs.dsl.params.stringKey
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 script {
 

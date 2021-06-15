@@ -4,7 +4,6 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 script {
 

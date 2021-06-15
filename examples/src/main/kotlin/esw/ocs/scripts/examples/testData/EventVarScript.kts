@@ -2,7 +2,6 @@ package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 script {
 

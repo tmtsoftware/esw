@@ -6,7 +6,6 @@ import esw.ocs.dsl.highlevel.RichComponent
 import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.onFailed
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 script {
 

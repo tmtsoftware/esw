@@ -6,8 +6,6 @@ import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.ESW
 import kotlin.time.Duration
-import kotlin.time.hours
-import kotlin.time.seconds
 
 fun takeExposure(): Unit = println("Taking exposure")
 fun processResult(result: Result): Unit = println("Processing $result")

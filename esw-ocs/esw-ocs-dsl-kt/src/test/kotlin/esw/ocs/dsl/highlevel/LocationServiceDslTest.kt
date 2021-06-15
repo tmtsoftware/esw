@@ -20,7 +20,6 @@ import java.util.*
 import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
-import kotlin.time.seconds
 import kotlin.time.toJavaDuration
 
 class LocationServiceDslTest : LocationServiceDsl {

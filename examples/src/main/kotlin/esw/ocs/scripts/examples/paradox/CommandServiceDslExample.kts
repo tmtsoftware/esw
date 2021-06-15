@@ -9,7 +9,6 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.intKey
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 script {
 

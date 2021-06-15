@@ -10,8 +10,6 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.*
 import kotlin.time.Duration
-import kotlin.time.minutes
-import kotlin.time.seconds
 
 script {
 

@@ -1,7 +1,6 @@
 package esw.ocs.scripts.examples
 
 import csw.params.events.EventName
-import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.models.Prefix
 

@@ -18,7 +18,6 @@ import csw.params.core.states.CurrentState
 import csw.params.core.states.StateName
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
-import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.jdk.SuspendToJavaConverter

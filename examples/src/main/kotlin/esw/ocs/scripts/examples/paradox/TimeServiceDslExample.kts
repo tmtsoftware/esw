@@ -7,8 +7,6 @@ import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.utcTimeKey
 import kotlin.time.Duration
-import kotlin.time.hours
-import kotlin.time.seconds
 
 // ESW-122 TimeServiceDsl usage in script
 script {

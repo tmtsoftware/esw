@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 class EventServiceDslTest : EventServiceDsl {
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)

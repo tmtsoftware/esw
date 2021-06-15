@@ -5,7 +5,6 @@ import esw.ocs.dsl.core.reusableScript
 import esw.ocs.dsl.highlevel.models.TCS
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 // ESW-134: Reuse code by ability to import logic from one script into another
 val OnlineOfflineHandlers = reusableScript {

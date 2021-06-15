@@ -7,7 +7,6 @@ import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.IRIS
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 script {
     val assembly = Assembly(IRIS, "filter.wheel", Duration.seconds(5))

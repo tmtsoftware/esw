@@ -7,7 +7,6 @@ import esw.ocs.dsl.params.floatKey
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.taiTimeKey
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 script {
     val prefix = "AOESW.aosq"

@@ -6,6 +6,8 @@ inThisBuild(
   CommonSettings
 )
 
+val KotlincOptions = Seq("-Xopt-in=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-ocs`,
   `esw-ocs-handler`,
@@ -122,7 +124,7 @@ lazy val `esw-ocs-dsl-kt` = project
   .settings(
     Test / fork := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := EswKeys.kotlinVersion,
-    kotlincOptions ++= Seq("-Xopt-in=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+    kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
   .dependsOn(`esw-ocs-dsl`)
@@ -290,7 +292,7 @@ lazy val examples = project
   .enablePlugins(KotlinPlugin)
   .settings(
     kotlinVersion := EswKeys.kotlinVersion,
-    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+    kotlincOptions ++= KotlincOptions
   )
   .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
 
@@ -419,5 +421,5 @@ lazy val `esw-performance-test` = project
   .settings(
     libraryDependencies ++= Dependencies.PerformanceTest.value,
     kotlinVersion := EswKeys.kotlinVersion,
-    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+    kotlincOptions ++= KotlincOptions
   )

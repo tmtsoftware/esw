@@ -9,7 +9,6 @@ import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.longKey
 import esw.ocs.dsl.params.stringKey
 import kotlin.time.Duration
-import kotlin.time.minutes
 
 //#motor-commands
 /**

@@ -12,9 +12,6 @@ import esw.ocs.dsl.params.floatKey
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.stringKey
 import kotlin.time.Duration
-import kotlin.time.milliseconds
-import kotlin.time.minutes
-import kotlin.time.seconds
 
 script {
 

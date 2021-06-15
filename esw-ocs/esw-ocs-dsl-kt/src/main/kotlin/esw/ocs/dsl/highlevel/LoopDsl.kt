@@ -2,7 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import kotlinx.coroutines.*
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 /**
  * Provide DSLs for writing condition based custom synchronous and asynchronous loops

@@ -21,8 +21,6 @@ import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
-import kotlin.time.hours
-import kotlin.time.seconds
 import kotlin.time.toKotlinDuration
 
 interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl, EventServiceDsl, LoggingDsl, CommandServiceDsl,

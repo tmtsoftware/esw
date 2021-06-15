@@ -16,7 +16,6 @@ import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 class EventVariableTest {
 

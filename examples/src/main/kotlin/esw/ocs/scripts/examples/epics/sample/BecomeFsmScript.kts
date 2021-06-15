@@ -6,7 +6,6 @@ import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.params.*
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 FsmScript("INIT") {
 

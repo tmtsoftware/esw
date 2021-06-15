@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration
 import kotlin.time.milliseconds
-import kotlin.time.seconds
 
 class FsmImplTest {
 

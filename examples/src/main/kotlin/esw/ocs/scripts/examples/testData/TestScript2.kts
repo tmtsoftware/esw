@@ -6,8 +6,6 @@ import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.intKey
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
-import kotlin.time.milliseconds
-import kotlin.time.seconds
 
 script {
 

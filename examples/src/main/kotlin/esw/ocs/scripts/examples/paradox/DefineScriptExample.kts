@@ -20,7 +20,6 @@ import esw.ocs.dsl.highlevel.models.NFIRAOS
 import esw.ocs.dsl.highlevel.models.Okay
 import esw.ocs.dsl.params.*
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 fun moveMotor(angle: Int): Unit = TODO()
 fun openPrimaryShutter(): Unit = TODO()

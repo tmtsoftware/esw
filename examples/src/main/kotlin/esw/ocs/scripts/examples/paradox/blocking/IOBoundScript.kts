@@ -4,7 +4,6 @@ import esw.ocs.dsl.core.script
 import kotlinx.coroutines.async
 import java.io.File
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 //#io-bound-call
 script {

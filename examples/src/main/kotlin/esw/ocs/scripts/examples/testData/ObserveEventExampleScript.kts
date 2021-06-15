@@ -4,7 +4,6 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 script {
     val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10))

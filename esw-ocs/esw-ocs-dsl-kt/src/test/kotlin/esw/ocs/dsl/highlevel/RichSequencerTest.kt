@@ -4,7 +4,6 @@ import akka.util.Timeout
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
-
 import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
@@ -25,7 +24,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 class RichSequencerTest {
 

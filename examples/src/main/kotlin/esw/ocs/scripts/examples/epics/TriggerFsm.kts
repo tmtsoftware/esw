@@ -5,7 +5,6 @@ import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.highlevel.models.LGSF
 import esw.ocs.dsl.params.booleanKey
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 FsmScript("INIT") {
     val triggerFlag = ParamVariable(false, "TCS.triggerflag", booleanKey("flag"))
