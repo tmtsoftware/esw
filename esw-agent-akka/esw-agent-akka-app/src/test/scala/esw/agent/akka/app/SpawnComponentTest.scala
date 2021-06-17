@@ -257,18 +257,19 @@ class SpawnComponentTest extends AgentSetup {
 
         spawnAgentActor(agentSettings, "test-actor-random-10", Some(hostConfigPath.toString), isHostConfigLocal)
 
-        // agent actor sends SpawnContainers message to self
-        Thread.sleep(100)
+        // agent actor sends SpawnContainers message to self which takes some milliseconds
+        eventually {
+          verify(processExecutor).runCommand(
+            command(
+              "com.github.tmtsoftware.sample",
+              "csw-sampledeploy",
+              "csw.sampledeploy.SampleContainerCmdApp",
+              "confPath1.conf"
+            ),
+            containerPrefixOne
+          )
+        }
 
-        verify(processExecutor).runCommand(
-          command(
-            "com.github.tmtsoftware.sample",
-            "csw-sampledeploy",
-            "csw.sampledeploy.SampleContainerCmdApp",
-            "confPath1.conf"
-          ),
-          containerPrefixOne
-        )
         verify(processExecutor).runCommand(
           List(
             "cs",
