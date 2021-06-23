@@ -270,22 +270,24 @@ class SpawnComponentTest extends AgentSetup {
           )
         }
 
-        verify(processExecutor).runCommand(
-          List(
-            "cs",
-            "launch",
-            "com.github.tmtsoftware.sample2::csw-sample2deploy:0.0.1",
-            "-r",
-            "jitpack",
-            "-M",
-            "csw.sample2deploy.Sample2ContainerCmdApp",
-            "--",
-            "--local",
-            "--standalone",
-            "confPath2.conf"
-          ),
-          componentPrefixTwo
-        )
+        eventually {
+          verify(processExecutor).runCommand(
+            List(
+              "cs",
+              "launch",
+              "com.github.tmtsoftware.sample2::csw-sample2deploy:0.0.1",
+              "-r",
+              "jitpack",
+              "-M",
+              "csw.sample2deploy.Sample2ContainerCmdApp",
+              "--",
+              "--local",
+              "--standalone",
+              "confPath2.conf"
+            ),
+            componentPrefixTwo
+          )
+        }
       }
 
       "reply 'Completed' and spawn containers on receiving message | ESW-379" in {
