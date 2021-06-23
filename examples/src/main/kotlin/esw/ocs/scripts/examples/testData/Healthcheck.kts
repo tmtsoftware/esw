@@ -5,10 +5,10 @@ import kotlinx.coroutines.delay
 
 script {
     onSetup("nonblocking-command") {
-        delay(1200)
+        delay(1600)
     }
 
     onSetup("blocking-command") {
-        Thread.sleep(1200)
+        Thread.sleep(1600)
     }
 }
