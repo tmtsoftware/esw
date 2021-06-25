@@ -1,5 +1,4 @@
 package esw.gateway.server
-import java.nio.file.Paths
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.models.ComponentType.Assembly
 import csw.location.api.models.{ComponentId, ComponentType}
@@ -12,6 +11,7 @@ import esw.gateway.server.utils.Resolver
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.utils.BaseTestSuite
 
+import java.nio.file.Paths
 import scala.concurrent.{Await, Future}
 
 trait GatewaySetup extends BaseTestSuite {
@@ -46,7 +46,7 @@ trait GatewaySetup extends BaseTestSuite {
   def startGateway(): GatewayWiring = {
     val commandRolesPath = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
     val gatewayWiring = new GatewayWiring(Some(SocketUtils.getFreePort), local = true, commandRolesPath) {
-      override val resolver: Resolver = mockResolver
+      override lazy val resolver: Resolver = mockResolver
     }
     Await.result(gatewayWiring.httpService.startAndRegisterServer(), defaultTimeout)
     gatewayWiring

@@ -1,8 +1,5 @@
 package esw.backend.testkit.stubs
 
-import java.nio.file
-import java.nio.file.Paths
-
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.aas.http.SecurityDirectives
@@ -18,6 +15,8 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.utils.LocationUtils
 import org.mockito.ArgumentMatchers.any
 
+import java.nio.file
+import java.nio.file.Paths
 import scala.concurrent.Future
 
 class GatewayStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
@@ -58,7 +57,7 @@ class GatewayStub(val locationService: LocationService)(implicit val actorSystem
       override lazy val adminApi: AdminApi                              = _adminApi
       override lazy val eventApi: EventApi                              = _eventApi
       override lazy val loggingApi: LoggingApi                          = _loggingApi
-      override private[esw] val resolver                                = _resolver
+      override private[esw] lazy val resolver                           = _resolver
     }
 
   private def spawnGatewayWithAuthEnabled(
@@ -66,13 +65,13 @@ class GatewayStub(val locationService: LocationService)(implicit val actorSystem
   )(implicit _actorSystem: ActorSystem[SpawnProtocol.Command]): GatewayWiring =
     new GatewayWiring(Some(gatewayPort), true, path) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
-      override private[esw] lazy val commandRoles                       = Future.successful(mockedAuth.commandRoles)
+      override private[esw] lazy val commandRoles                       = mockedAuth.commandRoles
       override private[esw] lazy val securityDirectives                 = mockedAuth._securityDirectives
       override lazy val alarmApi: AlarmApi                              = _alarmApi
       override lazy val adminApi: AdminApi                              = _adminApi
       override lazy val eventApi: EventApi                              = _eventApi
       override lazy val loggingApi: LoggingApi                          = _loggingApi
-      override private[esw] val resolver                                = _resolver
+      override private[esw] lazy val resolver                           = _resolver
     }
 
   def spawnMockGateway(authEnabled: Boolean = false, path: file.Path = commandRolesPath): GatewayWiring = {

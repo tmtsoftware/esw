@@ -1,7 +1,5 @@
 package esw.gateway.server
 
-import java.nio.file.Path
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
@@ -35,7 +33,9 @@ import msocket.http.post.{HttpPostHandler, PostRouteFactory}
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.stream.StreamRequestHandler
 
-import scala.concurrent.Future
+import java.nio.file.Path
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
 
 class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: Path, metricsEnabled: Boolean = false)
     extends GatewayCodecs
@@ -75,11 +75,11 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
 
   private lazy val configClient            = ConfigClientFactory.clientApi(actorSystem, locationService)
   private lazy val configUtils             = new ConfigUtils(configClient)
-  private lazy val commandRolesConfig      = configUtils.getConfig(commandRoleConfigPath, local)
-  private[esw] lazy val commandRoles       = commandRolesConfig.map(CommandRoles.from)
+  private lazy val commandRolesConfig      = Await.result(configUtils.getConfig(commandRoleConfigPath, local), 10.seconds)
+  private[esw] lazy val commandRoles       = CommandRoles.from(commandRolesConfig)
   private[esw] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, locationService)
 
-  private[esw] val resolver = new Resolver(locationService)(actorSystem)
+  private[esw] lazy val resolver = new Resolver(locationService)(actorSystem)
 
   lazy val postHandler: HttpPostHandler[GatewayRequest] =
     new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)

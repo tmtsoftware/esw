@@ -37,7 +37,7 @@ class GatewayAuthRequestTest extends BaseTestSuite with ScalatestRouteTest with 
 
   private val mocks = new AuthMocks()
   import mocks._
-  private val commandRoles = Future.successful(CommandRoles.empty)
+  private val commandRoles = CommandRoles.empty
 
   private val postHandlerImpl =
     new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)

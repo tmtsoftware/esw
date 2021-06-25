@@ -27,8 +27,6 @@ import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
 import org.scalatest.prop.Tables.Table
 
-import scala.concurrent.Future
-
 class PostMetricsTest
     extends BaseTestSuite
     with ScalatestRouteTest
@@ -42,7 +40,7 @@ class PostMetricsTest
   import cswCtxMocks._
 
   private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
-  private val commandRoles       = Future.successful(CommandRoles.empty)
+  private val commandRoles       = CommandRoles.empty
 
   private val postHandlerImpl =
     new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)

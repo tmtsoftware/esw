@@ -18,8 +18,6 @@ import esw.ocs.api.protocol.SequencerRequest
 import esw.ocs.handler.SequencerPostHandler
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
-import scala.concurrent.Future
-
 class GatewayPostHandler(
     alarmApi: AlarmApi,
     resolver: Resolver,
@@ -27,7 +25,7 @@ class GatewayPostHandler(
     loggingApi: LoggingApi,
     adminApi: AdminApi,
     securityDirectives: SecurityDirectives,
-    commandRoles: Future[CommandRoles]
+    commandRoles: CommandRoles
 ) extends HttpPostHandler[GatewayRequest]
     with ServerHttpCodecs {
 
@@ -58,8 +56,8 @@ class GatewayPostHandler(
     securityDirectives.sPost(AuthPolicies.eswUserOrSubsystemEngPolicy(componentId.prefix.subsystem))(_ => route)
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceRequest): Route =
-    onSuccess(resolver.commandService(componentId) zip commandRoles) { (commandService, roles) =>
-      new CommandServiceRequestHandler(commandService, securityDirectives, Some(componentId.prefix), roles).handle(command)
+    onSuccess(resolver.commandService(componentId)) { commandService =>
+      new CommandServiceRequestHandler(commandService, securityDirectives, Some(componentId.prefix), commandRoles).handle(command)
     }
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerRequest): Route =

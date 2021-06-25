@@ -47,7 +47,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   import cswCtxMocks._
 
   private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
-  private val commandRoles       = Future.successful(CommandRoles.empty)
+  private val commandRoles       = CommandRoles.empty
 
   private val postHandlerImpl =
     new GatewayPostHandler(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
