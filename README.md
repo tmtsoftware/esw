@@ -35,6 +35,7 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 
 | Date | Tag | Source | Docs | Assets |
 |-----|-----|-----|-----|-----|
+| 2021-07-06 | v0.3.0-M1 | [esw-0.3.0-M1](https://github.com/tmtsoftware/esw/tree/v0.3.0-M1) | [esw-0.3.0-M1 docs](https://tmtsoftware.github.io/esw/0.3.0-M1/) | [esw-0.3.0-M1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.3.0-M1) |
 | 2020-11-10 | v0.2.0-RC1 | [esw-0.2.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.2.0-RC1) | [esw-0.2.0-RC1 docs](https://tmtsoftware.github.io/esw/0.2.0-RC1/) | [esw-0.2.0-RC1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0-RC1) |
 | 2020-09-24 | v0.2.0-M1 | [esw-0.2.0-M1](https://github.com/tmtsoftware/esw/tree/v0.2.0-M1) | [esw-0.2.0-M1 docs](https://tmtsoftware.github.io/esw/0.2.0-M1/) | [esw-0.2.0-M1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.2.0-M1) |
 | 2020-03-03 | v0.1.0-RC3 | [esw-0.1.0-RC3](https://github.com/tmtsoftware/esw/tree/v0.1.0-RC3) | [esw-0.1.0-RC3 docs](https://tmtsoftware.github.io/esw/0.1.0-RC3/) | [esw-0.1.0-RC3 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.1.0-RC3) |
