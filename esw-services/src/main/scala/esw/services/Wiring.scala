@@ -65,7 +65,7 @@ class Wiring(cmd: Command) {
   private lazy val VersionConf = {
     println(s"${Console.YELLOW}Using versions: ESW=$eswVersion, sequencerScriptsVersion=$scriptVersion${Console.RESET}")
     s"""
-         |scripts = ${scriptVersion}
+         |scripts = $scriptVersion
          |esw = $eswVersion
          |""".stripMargin
   }

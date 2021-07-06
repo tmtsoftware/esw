@@ -7,26 +7,26 @@ import java.util.Properties
 import scala.util.Using
 
 object Libs {
-  private val MSocketVersion = "ca3583448d"
+  private val MSocketVersion = "0.3.0"
 
-  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.4"
-  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
-  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.29" // MIT License
+  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.6"
+  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.7.0") //MIT License
+  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.37" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.4") //Apache License 2.0
+  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.2.9") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"   //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
-  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "3.0.0"
+  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "3.0.3"
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.9.1"
-  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "33b2359b23"
+  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "0.1.0"
 
-  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.2.0"
+  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.6.RELEASE"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.4.0"
 
-  val `ammonite`      = "com.lihaoyi"      % "ammonite"     % "2.3.8-65-0f0d597f" cross CrossVersion.full
+  val `ammonite`      = "com.lihaoyi"      % "ammonite"     % "2.4.0" cross CrossVersion.full
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
-  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.30"
+  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.31"
 
 }
 
@@ -61,7 +61,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.14"
+  private val Version     = "2.6.15"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
@@ -83,7 +83,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.6.3"
+  private val Version = "1.7.2"
   private val Org     = "io.bullet"
 
   val `borer-core`        = dep(Org %%% "borer-core" % Version)
@@ -106,7 +106,7 @@ object Kotlin {
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
   val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "4.6.0"
-  val mockk      = "io.mockk"  % "mockk"                      % "1.11.0"
+  val mockk      = "io.mockk"  % "mockk"                      % "1.12.0"
 }
 
 object BuildProperties {
