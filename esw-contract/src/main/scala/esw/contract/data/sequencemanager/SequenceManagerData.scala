@@ -67,7 +67,7 @@ trait SequenceManagerData {
   val nonConfigurableObsMode: ObsModeDetails =
     models.ObsModeDetails(
       ObsMode("DarkNight_3"),
-      NonConfigurable,
+      NonConfigurable(List(IRIS)),
       Resources(eswResource, irisResource, wfosResource),
       darkNightSequencers
     )

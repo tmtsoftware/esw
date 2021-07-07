@@ -19,7 +19,7 @@ import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState, _}
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
+import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentAllocator, SequenceComponentUtil, SequencerUtil}
@@ -714,6 +714,32 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       obsModesDetailsResponseProbe.expectMessage(expectedMessage)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
 
+    }
+
+    "return set of Observation modes with non-configurable when sequence component are  missing | ESW-529" in {
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
+
+      val idleSeqComps = List.empty
+      when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
+      when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
+      when(sequenceComponentAllocator.allocate(idleSeqComps, darkNightSequencers))
+        .thenReturn(Left(SequenceComponentNotAvailable(List(TCS))))
+      List(clearSkiesSequencers, irisMCAOSequencers).foreach(seq =>
+        when(sequenceComponentAllocator.allocate(idleSeqComps, seq)).thenReturn(Right(List.empty))
+      )
+
+      val obsModesDetailsResponseProbe = TestProbe[ObsModesDetailsResponse]()
+      smRef ! GetObsModesDetails(obsModesDetailsResponseProbe.ref)
+
+      val expectedMessage = ObsModesDetailsResponse.Success(
+        Set(
+          ObsModeDetails(clearSkies, Configurable, Resources(tcsResource, irisResource), clearSkiesSequencers),
+          ObsModeDetails(darkNight, NonConfigurable(List(TCS)), Resources(nscuResource, tcsResource), darkNightSequencers),
+          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOSequencers)
+        )
+      )
+      obsModesDetailsResponseProbe.expectMessage(expectedMessage)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
     }
   }
 

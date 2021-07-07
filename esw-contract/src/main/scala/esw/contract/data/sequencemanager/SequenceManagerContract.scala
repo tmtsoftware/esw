@@ -31,7 +31,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       failedResponse(name[Provision])
     ),
     ModelType[ObsModeDetails](configuredObsMode),
-    ModelType[ObsModeStatus](ObsModeStatus.Configurable, ObsModeStatus.Configured, ObsModeStatus.NonConfigurable),
+    ModelType[ObsModeStatus](ObsModeStatus.Configurable, ObsModeStatus.Configured, ObsModeStatus.NonConfigurable(List.empty)),
     ModelType[ObsModesDetailsResponse](ObsModesDetailsSuccess, locationServiceError),
     ModelType[StartSequencerResponse](
       alreadyRunning,

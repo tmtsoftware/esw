@@ -80,7 +80,7 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
           ),
           ObsModeDetails(
             ObsMode("DarkNight_3"),
-            ObsModeStatus.NonConfigurable,
+            ObsModeStatus.NonConfigurable(List(TCS)),
             Resources(Set(Resource(TCS))),
             Sequencers(List(TCS))
           )
