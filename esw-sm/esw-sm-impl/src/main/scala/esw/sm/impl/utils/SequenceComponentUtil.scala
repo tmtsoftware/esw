@@ -16,14 +16,14 @@ import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
 import esw.sm.api.models.Sequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
 import esw.sm.impl.utils.Types._
 
 import scala.async.Async._
 import scala.concurrent.Future
 
-class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentAllocator: SequenceComponentAllocator)(
+class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequenceComponentAllocator: SequenceComponentAllocator)(
     implicit actorSystem: ActorSystem[_]
 ) {
   import actorSystem.executionContext
@@ -33,12 +33,15 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, sequenceCo
   ): Future[Either[ConfigureResponse.Failure, SequencerToSequenceComponentMap]] =
     getAllIdleSequenceComponentsFor(sequencers.subsystems).mapRightE(sequenceComponentAllocator.allocate(_, sequencers))
 
-  // get all sequence components for subsystems and find idle ones from these sequence components
-  private def getAllIdleSequenceComponentsFor(subsystems: List[Subsystem]) =
+  def getAllIdleSequenceComponents: Future[Either[LocationServiceError, List[SeqCompLocation]]] =
     locationServiceUtil
-      .listAkkaLocationsBy(SequenceComponent, withFilter = location => subsystems.contains(location.prefix.subsystem))
+      .listAkkaLocationsBy(SequenceComponent)
       .flatMapRight(filterIdleSequenceComponents)
       .mapLeft(error => LocationServiceError(error.msg))
+
+  // get all sequence components for subsystems and find idle ones from these sequence components
+  private def getAllIdleSequenceComponentsFor(subsystems: List[Subsystem]) =
+    getAllIdleSequenceComponents.mapRight(seqCompLocs => seqCompLocs.filter(loc => subsystems.contains(loc.prefix.subsystem)))
 
   def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     getAllIdleSequenceComponentsFor(List(subsystem, ESW)) //search idle seq comps for ESW as fallback if needed

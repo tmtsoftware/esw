@@ -1,7 +1,5 @@
 package esw.sm.impl.core
 
-import java.net.URI
-
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
@@ -24,10 +22,11 @@ import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingR
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, Started}
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
-import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
+import esw.sm.impl.utils.{AgentUtil, SequenceComponentAllocator, SequenceComponentUtil, SequencerUtil}
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks
 
+import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
@@ -58,10 +57,11 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     )
   )
 
-  private val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
-  private val agentUtil: AgentUtil                         = mock[AgentUtil]
-  private val sequencerUtil: SequencerUtil                 = mock[SequencerUtil]
-  private val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
+  private val locationServiceUtil: LocationServiceUtil               = mock[LocationServiceUtil]
+  private val agentUtil: AgentUtil                                   = mock[AgentUtil]
+  private val sequencerUtil: SequencerUtil                           = mock[SequencerUtil]
+  private val sequenceComponentUtil: SequenceComponentUtil           = mock[SequenceComponentUtil]
+  private val sequenceComponentAllocator: SequenceComponentAllocator = mock[SequenceComponentAllocator]
   private val sequenceManagerBehavior = new SequenceManagerBehavior(
     config,
     locationServiceUtil,
@@ -668,6 +668,13 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Right(List())))
 
+      val idleSeqComps = List.empty
+      when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
+      when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
+      List(clearSkiesSequencers, darkNightSequencers, irisMCAOSequencers).foreach(seq =>
+        when(sequenceComponentAllocator.allocate(idleSeqComps, seq)).thenReturn(Right(List.empty))
+      )
+
       val probe = TestProbe[ObsModesDetailsResponse]()
 
       smRef ! GetObsModesDetails(probe.ref)
@@ -687,13 +694,20 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val location = akkaLocation(ComponentId(Prefix(ESW, clearSkies.name), Sequencer))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
 
+      val idleSeqComps = List.empty
+      when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
+      when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
+      List(clearSkiesSequencers, darkNightSequencers, irisMCAOSequencers).foreach(seq =>
+        when(sequenceComponentAllocator.allocate(idleSeqComps, seq)).thenReturn(Right(List.empty))
+      )
+
       val obsModesDetailsResponseProbe = TestProbe[ObsModesDetailsResponse]()
       smRef ! GetObsModesDetails(obsModesDetailsResponseProbe.ref)
 
       val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
           ObsModeDetails(clearSkies, Configured, Resources(tcsResource, irisResource), clearSkiesSequencers),
-          ObsModeDetails(darkNight, NonConfigurable, Resources(nscuResource, tcsResource), darkNightSequencers),
+          ObsModeDetails(darkNight, NonConfigurable(List.empty), Resources(nscuResource, tcsResource), darkNightSequencers),
           ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOSequencers)
         )
       )
