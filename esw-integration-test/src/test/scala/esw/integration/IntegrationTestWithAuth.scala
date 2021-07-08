@@ -943,22 +943,30 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       TestSetup.cleanup()
     }
 
-    "getObsModesDetails should return all ObsModes with their status | ESW-466" in {
+    "getObsModesDetails should return all ObsModes with their status | ESW-466, ESW-529" in {
       locationService.unregisterAll().futureValue
       registerKeycloak()
       val darkNightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS)
       val irisCalSequencers: Sequencers   = Sequencers(IRIS, ESW, AOESW)
       val wfosCalSequencers: Sequencers   = Sequencers(WFOS, ESW)
       val eswSeqCompPrefix                = Prefix(ESW, "primary")
+      val eswSecondarySeqCompPrefix       = Prefix(ESW, "secondary")
       val irisSeqCompPrefix               = Prefix(IRIS, "primary")
       val aoeswSeqCompPrefix              = Prefix(AOESW, "primary")
+      val wfosSeqCompPrefix               = Prefix(WFOS, "primary")
       val irisResource                    = Resource(IRIS)
       val nscuResource                    = Resource(NSCU)
       val nfiraosResource                 = Resource(NFIRAOS)
       val tcsResource                     = Resource(TCS)
       val wfosResource                    = Resource(WFOS)
 
-      TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
+      TestSetup.startSequenceComponents(
+        eswSeqCompPrefix,
+        irisSeqCompPrefix,
+        aoeswSeqCompPrefix,
+        eswSecondarySeqCompPrefix,
+        wfosSeqCompPrefix
+      )
 
       val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
@@ -970,7 +978,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
           ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource), wfosCalSequencers),
           ObsModeDetails(
             IRIS_DARKNIGHT,
-            NonConfigurable,
+            NonConfigurable(List(ESW, TCS)),
             Resources(irisResource, tcsResource, nfiraosResource),
             darkNightSequencers
           )

@@ -17,10 +17,12 @@ import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, Sequenc
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState, _}
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
-import esw.sm.api.protocol.{ResourceStatusResponse, _}
+import esw.sm.api.protocol.{ObsModesDetailsResponse, ResourceStatusResponse, _}
 import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
+import esw.sm.impl.utils.Types.AgentLocation
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
@@ -99,7 +101,7 @@ class SequenceManagerBehavior(
     // getRunningObsModes finds the currently running observation modes
     val runningObsModesF = getRunningObsModes.flatMapToAdt(
       configuredObsModes => configureResources(obsMode, configuredObsModes),
-      error => CommonFailure.LocationServiceError(error.msg)
+      error => LocationServiceError(error.msg)
     )
     runningObsModesF
       .map(self ! ProcessingComplete(_))
@@ -115,7 +117,7 @@ class SequenceManagerBehavior(
       // get obsMode config for requested observation mode from sequence manager config
       sequenceManagerConfig.obsModeConfig(requestedObsMode) match {
         // check for resource conflict between requested obsMode and currently running obsMode
-        case Some(ObsModeConfig(resources, _)) if isNonConfigurable(resources, runningObsModes) =>
+        case Some(ObsModeConfig(resources, _)) if isConflicting(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
         case Some(ObsModeConfig(_, sequencers)) =>
           await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
@@ -124,7 +126,7 @@ class SequenceManagerBehavior(
     }
 
   // ignoring failure of getResources as config should never be absent for running obsModes
-  private def isNonConfigurable(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
+  private def isConflicting(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
@@ -242,31 +244,58 @@ class SequenceManagerBehavior(
         replyTo ! currentState
       case GetResources(replyTo)       => getResourcesStatus(replyTo)
       case GetObsModesDetails(replyTo) => getObsModesDetails.foreach(replyTo ! _)
+
     }
+
+  def getObsModeStatus(
+      obsMode: ObsMode,
+      obsModeConfig: ObsModeConfig,
+      configuredObsModes: Set[ObsMode],
+      allIdleSequenceComps: List[AgentLocation]
+  ): ObsModeStatus = {
+    def allocateSequenceComponents(sequencers: Sequencers) = {
+      val allocator = sequenceComponentUtil.sequenceComponentAllocator
+      val subsystemSpecificIdleSeqComps =
+        allIdleSequenceComps.filter(location => sequencers.subsystems.contains(location.prefix.subsystem))
+      allocator.allocate(subsystemSpecificIdleSeqComps, sequencers)
+    }
+
+    if (configuredObsModes.contains(obsMode)) Configured
+    else {
+      val conflicting          = isConflicting(obsModeConfig.resources, configuredObsModes)
+      val missingSequenceComps = allocateSequenceComponents(obsModeConfig.sequencers)
+      missingSequenceComps.fold(
+        e => NonConfigurable(e.subsystems),
+        _ => if (conflicting) NonConfigurable(Nil) else Configurable
+      )
+    }
+  }
 
   private def getObsModesDetails: Future[ObsModesDetailsResponse] = {
-    def getObsModeStatus(obsMode: ObsMode, resources: Resources, configuredObsModes: Set[ObsMode]): ObsModeStatus = {
-      if (configuredObsModes.contains(obsMode)) Configured
-      else if (isNonConfigurable(resources, configuredObsModes)) NonConfigurable
-      else Configurable
-    }
+    val runningObsModes        = getRunningObsModes.mapLeft(e => LocationServiceError(e.msg))
+    val idleSequenceComponents = sequenceComponentUtil.getAllIdleSequenceComponents
 
-    getRunningObsModes.mapToAdt(
-      configuredObsModes => {
-        val obsModes = sequenceManagerConfig.obsModes.toSet
-        val obsModesDetails = obsModes.map {
-          case (obsMode, ObsModeConfig(resources, sequencers)) =>
-            ObsModeDetails(obsMode, getObsModeStatus(obsMode, resources, configuredObsModes), resources, sequencers)
+    val response =
+      runningObsModes
+        .flatMapE(obsModes => idleSequenceComponents.mapRight(locs => (obsModes, locs)))
+        .mapRight {
+          case (configuredObsModes, locs) =>
+            val obsModes = sequenceManagerConfig.obsModes.toSet
+            val obsModesStatus =
+              obsModes.map {
+                case (obsMode, cfg @ ObsModeConfig(resources, sequencers)) =>
+                  val obsMOdeStatus = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
+                  ObsModeDetails(obsMode, obsMOdeStatus, resources, sequencers)
+              }
+
+            val response = ObsModesDetailsResponse.Success(obsModesStatus)
+            logger.info(s"Sequence Manager response Success: $response")
+            response
         }
 
-        val response = ObsModesDetailsResponse.Success(obsModesDetails)
-        logger.info(s"Sequence Manager response Success: $response")
-        response
-      },
-      error => {
-        logger.error(s"Sequence Manager response Error: ${error.getMessage}")
-        CommonFailure.LocationServiceError(error.msg)
-      }
+    response.mapToAdt(
+      identity,
+      e => e.tap(_ => logger.error(s"Sequence Manager response Error: ${e.getMessage}"))
     )
   }
 
