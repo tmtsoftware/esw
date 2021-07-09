@@ -76,7 +76,8 @@ object TestSetup extends EswTestKit {
       else config
 
     val securityDirectives = SecurityDirectives(authConfig, locationService)
-    val wiring             = SequenceManagerWiring(obsModeConfig, isConfigLocal, agentPrefix, _system, securityDirectives, simulation)
+    val wiring =
+      SequenceManagerWiring(None, obsModeConfig, isConfigLocal, agentPrefix, _system, securityDirectives, simulation)
     wiring.start()
     seqManagerWirings += wiring
     val smLocation = resolveHTTPLocation(prefix, Service)

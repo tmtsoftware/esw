@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 - Added GetResources, GetObsModesDetails API in the Sequence Manager
 - Removed GetRunningObsMode API from Sequence Manager
 - Added spawnContainers API to agent app and agent service
-- GetObsModeDetails API now also returns NonConfigurable obsMode in the case when required sequence components are missing
+- Allow configuring port for HTTP instances of AgentServiceApp & SequenceManagerApp from command line.
 
 ## [ESW v0.2.1] - 2021-01-29
 

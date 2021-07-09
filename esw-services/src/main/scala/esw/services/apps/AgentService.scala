@@ -11,7 +11,7 @@ object AgentService {
   def service(enable: Boolean): ManagedService[AgentServiceWiring] =
     ManagedService("agent-service", enable, () => startAgentService(), stopAgentService)
 
-  private def startAgentService(): AgentServiceWiring = AgentServiceApp.start()
+  private def startAgentService(): AgentServiceWiring = AgentServiceApp.start(None)
 
   private def stopAgentService(wiring: AgentServiceWiring): Unit =
     Await.result(wiring.stop(), CommonTimeouts.Wiring)

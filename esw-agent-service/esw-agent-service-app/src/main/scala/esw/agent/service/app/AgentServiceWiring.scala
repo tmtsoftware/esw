@@ -12,6 +12,7 @@ import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
+import csw.network.utils.SocketUtils
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.AgentServiceApi
@@ -25,7 +26,7 @@ import msocket.jvm.metrics.LabelExtractor
 
 import scala.concurrent.Future
 
-class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
+class AgentServiceWiring(_port: Option[Int] = None) extends AgentServiceCodecs {
 
   lazy val agentActorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
   lazy val actorRuntime                                         = new ActorRuntime(agentActorSystem)
@@ -33,7 +34,8 @@ class AgentServiceWiring(port: Option[Int] = None) extends AgentServiceCodecs {
 
   private lazy val config = agentActorSystem.settings.config
   lazy val prefix: Prefix = Prefix(ESW, "agent_service")
-  lazy val settings       = new Settings(port, Some(prefix), config, ComponentType.Service)
+  private lazy val port   = _port.getOrElse(SocketUtils.getFreePort)
+  lazy val settings       = new Settings(Some(port), Some(prefix), config, ComponentType.Service)
 
   private lazy val loggerFactory = new LoggerFactory(settings.httpConnection.prefix)
   lazy val logger: Logger        = loggerFactory.getLogger

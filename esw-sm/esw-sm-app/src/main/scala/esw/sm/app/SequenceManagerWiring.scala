@@ -45,7 +45,13 @@ import msocket.jvm.metrics.LabelExtractor
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
-class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPrefix: Option[Prefix], simulation: Boolean = false) {
+class SequenceManagerWiring(
+    _port: Option[Int],
+    obsModeConfigPath: Path,
+    isLocal: Boolean,
+    agentPrefix: Option[Prefix],
+    simulation: Boolean = false
+) {
   private[sm] lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(smActorSystem)
@@ -119,9 +125,9 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
 
   import LabelExtractor.Implicits.default
   import SequenceManagerServiceCodecs._
-  lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
-
-  private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)
+  lazy val routes: Route             = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
+  private lazy val port: Int         = _port.getOrElse(SocketUtils.getFreePort)
+  private lazy val settings          = new Settings(Some(port), Some(prefix), config, ComponentType.Service)
   private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(locationMetadata)
 
@@ -152,6 +158,7 @@ class SequenceManagerWiring(obsModeConfigPath: Path, isLocal: Boolean, agentPref
 
 private[sm] object SequenceManagerWiring {
   def apply(
+      port: Option[Int],
       obsModeConfig: Path,
       isLocal: Boolean,
       agentPrefix: Option[Prefix],
@@ -159,7 +166,7 @@ private[sm] object SequenceManagerWiring {
       _securityDirectives: SecurityDirectives,
       simulation: Boolean = false
   ): SequenceManagerWiring =
-    new SequenceManagerWiring(obsModeConfig, isLocal, agentPrefix, simulation) {
+    new SequenceManagerWiring(port, obsModeConfig, isLocal, agentPrefix, simulation) {
       override private[sm] lazy val smActorSystem       = _actorSystem
       override private[esw] lazy val securityDirectives = _securityDirectives
     }

@@ -10,7 +10,7 @@ trait AgentServiceUtils {
   private var agentServiceWiring: Option[AgentServiceWiring] = None
 
   def spawnAgentService(): Unit = {
-    agentServiceWiring = Some(AgentServiceApp.start(startLogging = false))
+    agentServiceWiring = Some(AgentServiceApp.start(None, startLogging = false))
   }
 
   def shutdownAgentService(): Unit = agentServiceWiring.foreach(_.actorRuntime.shutdown(UnknownReason))

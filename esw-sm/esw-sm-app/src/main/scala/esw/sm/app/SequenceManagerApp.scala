@@ -27,21 +27,22 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
 
   def run(command: SequenceManagerAppCommand, startLogging: Boolean = true): SequenceManagerWiring =
     command match {
-      case StartCommand(obsModeConfigPath, isConfigLocal, agentPrefix, simulation) => {
+      case StartCommand(port, obsModeConfigPath, isConfigLocal, agentPrefix, simulation) => {
         if (simulation) {
           lazy val defaultConfPath = FileUtils.cpyFileToTmpFromResource("smSimulationObsMode.conf")
           lazy val configPath      = obsModeConfigPath.getOrElse(defaultConfPath)
-          start(configPath, isConfigLocal = true, agentPrefix, startLogging, simulation)
+          start(port, configPath, isConfigLocal = true, agentPrefix, startLogging, simulation)
         }
         else
           obsModeConfigPath match {
-            case Some(path) => start(path, isConfigLocal, agentPrefix, startLogging, simulation)
+            case Some(path) => start(port, path, isConfigLocal, agentPrefix, startLogging, simulation)
             case None       => throw new IllegalArgumentException("obsMode config file path must be provided")
           }
       }
     }
 
   def start(
+      port: Option[Int],
       obsModeConfigPath: Path,
       isConfigLocal: Boolean,
       agentPrefix: Option[Prefix],
@@ -49,7 +50,7 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
       simulation: Boolean
   ): SequenceManagerWiring = {
 
-    val sequenceManagerWiring = new SequenceManagerWiring(obsModeConfigPath, isConfigLocal, agentPrefix, simulation)
+    val sequenceManagerWiring = new SequenceManagerWiring(port, obsModeConfigPath, isConfigLocal, agentPrefix, simulation)
     import sequenceManagerWiring._
 
     try {

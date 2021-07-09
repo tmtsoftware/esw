@@ -4,6 +4,7 @@ package esw.agent.service.app
 import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.core.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
+import esw.agent.service.app.AgentServiceAppCommand.StartCommand
 import esw.commons.cli.EswCommandApp
 import esw.constants.CommonTimeouts
 
@@ -17,11 +18,13 @@ object AgentServiceApp extends EswCommandApp[AgentServiceAppCommand] {
 
   override def run(command: AgentServiceAppCommand, args: RemainingArgs): Unit = {
     LocationServerStatus.requireUpLocally()
-    start()
+    command match {
+      case StartCommand(port) => start(port)
+    }
   }
 
-  def start(startLogging: Boolean = true): AgentServiceWiring = {
-    val httpWiring = new AgentServiceWiring()
+  def start(port: Option[Int], startLogging: Boolean = true): AgentServiceWiring = {
+    val httpWiring = new AgentServiceWiring(port)
     try {
       if (startLogging) httpWiring.actorRuntime.startLogging(progName, appVersion)
       Await.result(httpWiring.start(), CommonTimeouts.Wiring)
