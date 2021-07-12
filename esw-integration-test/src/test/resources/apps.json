@@ -1,5 +1,5 @@
 {
-  "ocs-app": {
+  "esw-ocs-app": {
     "repositories": ["jitpack", "central"],
     "dependencies": [
       "com.github.tmtsoftware.esw:examples_2.13:0.1.0-SNAPSHOT"
@@ -10,7 +10,7 @@
       "csw-logging.appender-config.file.baseLogPath": "/tmp"
     }
   },
-  "sequence-manager": {
+  "esw-sm-app": {
     "repositories": ["jitpack", "central"],
     "dependencies": [
       "com.github.tmtsoftware.esw:esw-sm-app_2.13:0.1.0-SNAPSHOT"

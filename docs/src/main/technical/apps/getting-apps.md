@@ -43,5 +43,5 @@ start CSW services @extref[here](csw:commons/apps).
 
 For example following command shows installation for agent app,
 ```bash
-cs install agent-app:<version | SHA>
+cs install esw-agent-akka-app:<version | SHA>
 ```

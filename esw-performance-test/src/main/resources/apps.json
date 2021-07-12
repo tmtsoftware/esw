@@ -1,5 +1,5 @@
 {
-  "ocs-app": {
+  "esw-ocs-app": {
     "repositories": [
       "jitpack",
       "central"

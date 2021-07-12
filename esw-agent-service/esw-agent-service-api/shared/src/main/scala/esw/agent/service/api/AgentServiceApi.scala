@@ -21,7 +21,7 @@ trait AgentServiceApi {
    * @param agentPrefix - prefix of the agent
    * @param obsModeConfigPath - path of obsMode config file
    * @param isConfigLocal - is config local or not
-   * @param version - binary version of sequence-manager
+   * @param version - binary version of esw-sm-app
    * @return [[esw.agent.service.api.models.SpawnResponse]] as a Future value
    */
   def spawnSequenceManager(
@@ -38,7 +38,7 @@ trait AgentServiceApi {
    *
    * @param agentPrefix - prefix of the agent
    * @param componentName - name of the sequence component
-   * @param version - binary version of ocs-app
+   * @param version - binary version of esw-ocs-app
    * @return [[esw.agent.service.api.models.SpawnResponse]] as a Future value
    */
   def spawnSequenceComponent(agentPrefix: Prefix, componentName: String, version: Option[String] = None): Future[SpawnResponse]

@@ -56,16 +56,16 @@ class SpawnCommandExtTest extends BaseTestSuite {
 
   "SpawnCommand.executableCommandStr" must {
     val spawnSeqCompCmd =
-      s"cs launch --channel $channel ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
+      s"cs launch --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
     val spawnSeqCompWithVersionCmd =
-      s"cs launch --channel $channel ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
+      s"cs launch --channel $channel esw-ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
     val spawnSeqCompSimulationCmd =
-      s"cs launch --channel $channel ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
-    val spawnSeqMgrCmd = s"cs launch --channel $channel sequence-manager:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix"
+      s"cs launch --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
+    val spawnSeqMgrCmd = s"cs launch --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix"
     val spawnSeqMgrWithVersionCmd =
-      s"cs launch --channel $channel sequence-manager:$version -- start -o $obsModeConf -l -a $agentPrefix"
+      s"cs launch --channel $channel esw-sm-app:$version -- start -o $obsModeConf -l -a $agentPrefix"
     val spawnSeqMgrSimulationCmd =
-      s"cs launch --channel $channel sequence-manager:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
+      s"cs launch --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
     val spawnContainerCmd =
       s"cs launch ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath}"
 

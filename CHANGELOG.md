@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Removed GetRunningObsMode API from Sequence Manager
 - Added spawnContainers API to agent app and agent service
 - Allow configuring port for HTTP instances of AgentServiceApp & SequenceManagerApp from command line.
+- Updated app name's with `esw` prefix according to `apps.prod.json` in `osw-apps` repo.
 
 ## [ESW v0.2.1] - 2021-01-29
 

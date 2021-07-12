@@ -7,7 +7,7 @@ SCRIPT_PATH="$(
 SCRIPTS_VERSION=""
 COURSIER="$(command -v cs)" || COURSIER="$SCRIPT_PATH/coursier"
 APPS_PATH="https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
-APP_NAME="ocs-app"
+APP_NAME="esw-ocs-app"
 
 # capture version number and store rest of the arguments to arr variable which then passed to cs launch
 while (("$#")); do

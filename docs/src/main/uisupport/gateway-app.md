@@ -1,11 +1,11 @@
 # Running the UI Gateway App
 
-`gateway-server` is a command line application that starts the ESW UI Gateway Server. The UI Gateway Server
+`esw-gateway-server` is a command line application that starts the ESW UI Gateway Server. The UI Gateway Server
 allows browser-based user interface programs using to interact securely with the CSW-based components.
 
-## Prerequisites for Running gateway-server
+## Prerequisites for Running esw-gateway-server
 
-The following steps should be followed to use gateway-server to start the UI Gateway Server.
+The following steps should be followed to use esw-gateway-server to start the UI Gateway Server.
 
 ## 1. Install `coursier` and the TMT Apps Channel
 
@@ -14,18 +14,18 @@ The instructions for doing this are provided @ref:[here](../technical/apps/getti
 
 ## 2. Start Any Needed CSW Services
 
-* To run gateway-server, the **CSW Location Service** must be running.
-* Gateway-server requires CSW AAS to be running.
+* To run esw-gateway-server, the **CSW Location Service** must be running.
+* esw-gateway-server requires CSW AAS to be running.
 * Any other CSW Services needed by scripts or browser UIs should also be running.
 
 Information on starting CSW services is @extref[here](csw:commons/apps)
 
-## 3. Install gateway-server
+## 3. Install esw-gateway-server
 
-The following command creates an executable file named gateway-server in the default installation directory.
+The following command creates an executable file named esw-gateway-server in the default installation directory.
 
 ```bash
-cs install gateway-server:<version | SHA>
+cs install esw-gateway-server:<version | SHA>
 ```
 
 One can specify installation directory like following:
@@ -33,11 +33,11 @@ One can specify installation directory like following:
 ```bash
 cs install \
     --install-dir /tmt/apps \
-    gateway-server:<version | SHA>
+    esw-gateway-server:<version | SHA>
 ```
 
 @@@ note
-If you don't provide the version or SHA in the above command, `gateway-server` will be installed with the latest tagged binary of `esw-gateway-server`.
+If you don't provide the version or SHA in the above command, `esw-gateway-server` will be installed with the latest tagged binary of `esw-gateway-server`.
 
 @@@
 

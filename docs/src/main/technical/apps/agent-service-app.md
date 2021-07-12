@@ -23,12 +23,12 @@ The instructions for doing this are provided @ref:[here](getting-apps.md).
 
 Information on starting CSW services is @extref[here](csw:commons/apps)
 
-### 3. Install agent-service-app
+### 3. Install esw-agent-service-app
 
-Following command creates an executable file named agent-service-app in the default installation directory.
+Following command creates an executable file named esw-agent-service-app in the default installation directory.
 
 ```bash
-cs install agent-service-app:<version | SHA>
+cs install esw-agent-service-app:<version | SHA>
 ```
 
 One can specify installation directory like following:
@@ -36,20 +36,20 @@ One can specify installation directory like following:
 ```bash
 cs install \
     --install-dir /tmt/apps \
-    agent-service-app:<version | SHA>
+    esw-agent-service-app:<version | SHA>
 ```
-Note: If you don't provide the version or SHA in above command, `agent-service-app` will be installed with the latest tagged binary of `esw-agent-service-app`
+Note: If you don't provide the version or SHA in above command, `esw-agent-service-app` will be installed with the latest tagged binary of `esw-agent-service-app`
 
-### 4. Run agent-service-app
+### 4. Run esw-agent-service-app
 
-Once agent-service-app is installed, one can simply run agent-service-app by executing start command
+Once esw-agent-service-app is installed, one can simply run esw-agent-service-app by executing start command
 
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
 // run agent service app
-./agent-service-app start
+./esw-agent-service-app start
 ```
 
 ## Setting the default log level
@@ -68,5 +68,5 @@ For example, using the example above:
 cd /tmt/apps
 
 // run Sequence Manager
-./agent-service-app -J-Dcsw-logging.component-log-levels.ESW.agent_service=TRACE start
+./esw-agent-service-app -J-Dcsw-logging.component-log-levels.ESW.agent_service=TRACE start
 ```

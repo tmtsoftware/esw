@@ -195,7 +195,7 @@ Simulation mode for SM is mainly for testing the functionality/scenarios of apps
     1. If a obs-mode config is provided using -o flag, it is used and if not then a default config is used.
     2. Three agents are spawned automatically(ESW, TCS, IRIS)
 
-* When the sequence-manager is up and running(--simulation):
+* When the Sequence Manager is up and running(--simulation):
 
     1. suppose `Provision` command is sent to SM. Now as we are using actual agents, seq-components our 
        production level logic eg: shutting-down previous seq-comps, agent-allocation for seq-comps, etc.
