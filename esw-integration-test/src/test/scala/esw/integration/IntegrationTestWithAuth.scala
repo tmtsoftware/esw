@@ -1,8 +1,5 @@
 package esw.integration
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
-
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -31,37 +28,30 @@ import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
-import esw.sm.api.models.{ObsModeDetails, ProvisionConfig, Resource, Resources, Sequencers}
 import esw.sm.api.models.ResourceStatus.{Available, InUse}
+import esw.sm.api.models._
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.{
-  ConfigureResponse,
-  ObsModesDetailsResponse,
-  ProvisionResponse,
-  ResourceStatusResponse,
-  ResourcesStatusResponse,
-  RestartSequencerResponse,
-  ShutdownSequenceComponentResponse,
-  ShutdownSequencersResponse,
-  StartSequencerResponse
-}
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable}
+import esw.sm.api.protocol._
 import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
 
+import java.io.File
+import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
 class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with AgentSetup with SequenceManagerSetup {
-  var gatewayServerWiring: GatewayWiring               = _
+
+  private val locationServiceUtil                      = new LocationServiceUtil(locationService)
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
+  private val configTestKit: ConfigTestKit             = frameworkTestKit.configTestKit
+  var gatewayServerWiring: GatewayWiring               = _
   private var agentClient: AgentClient                 = _
   private var agentService: AgentServiceApi            = _
   private var agentServiceWiring: AgentServiceWiring   = _
-  private val locationServiceUtil                      = new LocationServiceUtil(locationService)
-  private val configTestKit: ConfigTestKit             = frameworkTestKit.configTestKit
 
   override def beforeAll(): Unit = {
     // gateway setup
@@ -415,16 +405,19 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
   "sequence manager" must {
 
-    "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-173, ESW-366, ESW-332" in {
+    "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-173, ESW-366, ESW-332, ESW-532" in {
       val agentPrefix      = Prefix(ESW, "agent1")
       val expectedMetadata = Metadata().withAgentPrefix(agentPrefix).withPid(ProcessHandle.current().pid())
+      val port             = 8080
 
       // resolving sequence manager fails for Akka and Http
       intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
       intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
 
       // ESW-173 Start sequence manager using command line arguments without any other ESW dependency
-      SequenceManagerApp.main(Array("start", "-o", obsModeConfigPath.toString, "--local", "-a", agentPrefix.toString()))
+      SequenceManagerApp.main(
+        Array("start", "-o", obsModeConfigPath.toString, "--local", "-a", agentPrefix.toString(), "-p", port.toString)
+      )
 
       // verify sequence manager is started and AkkaLocation & HttpLocation are registered with location service
       val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
@@ -435,6 +428,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val smHttpLocation = resolveHTTPLocation(sequenceManagerPrefix, Service)
       smHttpLocation.prefix shouldBe sequenceManagerPrefix
+      smHttpLocation.uri.getPort shouldBe port
 
       // ESW-366 verify agent prefix and pid metadata is present in Sequence manager http location
       smHttpLocation.metadata should ===(expectedMetadata)
