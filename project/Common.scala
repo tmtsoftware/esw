@@ -38,7 +38,8 @@ object Common {
       gitCurrentRepo := "https://github.com/tmtsoftware/esw",
       // ================================
       resolvers += "jitpack" at "https://jitpack.io",
-      resolvers += Resolver.mavenLocal, // required to resolve kotlin `examples` deps published locally
+      resolvers += Resolver.mavenLocal,
+      resolvers += "bintray" at "https://jcenter.bintray.com",// required to resolve kotlin `examples` deps published locally
       autoCompilerPlugins := true,
       scalacOptions ++= Seq(
         "-encoding",
