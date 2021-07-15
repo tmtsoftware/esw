@@ -39,7 +39,6 @@ object Common {
       // ================================
       resolvers += "jitpack" at "https://jitpack.io",
       resolvers += Resolver.mavenLocal,
-      resolvers += "bintray" at "https://jcenter.bintray.com",// required to resolve kotlin `examples` deps published locally
       autoCompilerPlugins := true,
       scalacOptions ++= Seq(
         "-encoding",

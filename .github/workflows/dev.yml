@@ -39,13 +39,12 @@ jobs:
           sbtn clean
           sbtn scalafmtCheck
           sbtn makeSite
-          sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Unit Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
+        run: sbt -DenableFatalWarnings=true -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
 
       - name: Integration Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
+        run: sbt -DenableFatalWarnings=true -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
 
       - name: Coverage Report
         run: |
