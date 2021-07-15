@@ -1,7 +1,6 @@
 package esw.agent.service
 
 import csw.location.api.models.ComponentType.Service
-import csw.location.api.models.Metadata
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.app.AgentServiceApp
@@ -13,7 +12,6 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
   "AgentService" must {
 
     "start agent service on given port | ESW-532" in {
-      val agentPrefix        = Prefix(ESW, "agent1")
       val agentServicePrefix = Prefix(ESW, "agent_service")
       // resolving sequence manager fails for Akka and Http
       intercept[Exception](resolveAkkaLocation(agentServicePrefix, Service))
