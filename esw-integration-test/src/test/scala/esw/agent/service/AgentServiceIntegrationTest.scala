@@ -13,7 +13,7 @@ class AgentServiceIntegrationTest extends EswTestKit(AAS) {
 
     "start agent service on given port | ESW-532" in {
       val agentServicePrefix = Prefix(ESW, "agent_service")
-      // resolving sequence manager fails for Akka and Http
+      // resolving agent service fails for Akka and Http
       intercept[Exception](resolveAkkaLocation(agentServicePrefix, Service))
       intercept[Exception](resolveHTTPLocation(agentServicePrefix, Service))
 
