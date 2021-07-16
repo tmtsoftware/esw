@@ -44,6 +44,10 @@ Note: If you don't provide the version or SHA in above command, `esw-agent-servi
 
 Once esw-agent-service-app is installed, one can simply run esw-agent-service-app by executing start command
 
+Start command supports following arguments:
+
+- `-p` : optional argument: port on which HTTP server will be bound. If a value is not provided, it will be randomly picked.
+
 ```bash
 //cd to installation directory
 cd /tmt/apps

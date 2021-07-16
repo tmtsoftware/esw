@@ -45,6 +45,7 @@ Once esw-sm-app is installed, one can simply run esw-sm-app by executing start c
 
 Start command supports following arguments:
 
+- `-p` : optional argument: port on which HTTP server will be bound. If a value is not provided, it will be randomly picked.
 - `-o` : Config file path which has mapping of sequencers and resources needed for different observing modes
 - `-l` : optional argument (true if config is to be read locally or false if from remote server) default value is false
 - `-a` : optional argument: agentPrefix on which Sequence Manager will be spawned, ex: ESW.agent1, IRIS.agent2 etc.
