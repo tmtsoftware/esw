@@ -14,7 +14,7 @@ import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models.Id
-import csw.params.events.{EventKey, EventName, ObserveEvent, SystemEvent}
+import csw.params.events._
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, LGSF, NFIRAOS, TCS}
 import csw.testkit.ConfigTestKit
@@ -25,7 +25,6 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{ObsMode, Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.dsl.params.SequencerObserveEventNames
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service._
 
@@ -44,11 +43,10 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   private val lgsfSubsystem                = LGSF
   private val lgsfObsMode                  = ObsMode("darknight")
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
+  private val tolerance: Long              = 1200
   private var ocsSequencer: SequencerApi   = _
   private var tcsSequencer: SequencerApi   = _
   private var lgsfSequencer: SequencerApi  = _
-
-  private val tolerance: Long = 1200
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -376,7 +374,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command           = Observe(Prefix("esw.test"), CommandName("exposure-start"), None)
       val sequence          = Sequence(command)
       val expectedPrefix    = Prefix(ocsSubsystem, ocsObsMode.name)
-      val expectedEventName = SequencerObserveEventNames.ExposureStart
+      val expectedEventName = ObserveEventNames.ExposureStart
       val expectedEventKey  = EventKey(expectedPrefix, expectedEventName)
       val testProbe         = createTestProbe(Set(expectedEventKey))
 

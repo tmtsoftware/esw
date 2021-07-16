@@ -5,6 +5,7 @@ import akka.actor.typed.SpawnProtocol
 import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
+import csw.params.events.SequencerObserveEvent
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.ObsMode
@@ -13,7 +14,6 @@ import esw.ocs.dsl.highlevel.models.ScriptError
 import esw.ocs.dsl.internal.ScriptWiring
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.params.SequencerObserveEvent
 import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc

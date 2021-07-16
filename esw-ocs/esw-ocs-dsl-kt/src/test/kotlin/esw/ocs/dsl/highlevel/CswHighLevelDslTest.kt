@@ -5,13 +5,13 @@ import akka.actor.typed.SpawnProtocol
 import com.typesafe.config.Config
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.scaladsl.LocationService
+import csw.params.events.SequencerObserveEvent
 import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.lowlevel.CswServices
-import esw.ocs.dsl.params.SequencerObserveEvent
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.impl.script.ScriptContext
 import io.kotest.matchers.shouldBe

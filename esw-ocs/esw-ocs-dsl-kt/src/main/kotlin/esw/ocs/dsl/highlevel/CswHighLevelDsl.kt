@@ -6,6 +6,7 @@ import csw.params.core.models.ExposureIdType
 import csw.params.core.models.ObsId
 import csw.params.events.EventKey
 import csw.params.events.ObserveEvent
+import csw.params.events.SequencerObserveEvent
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
 import esw.commons.utils.location.LocationServiceUtil
@@ -14,7 +15,6 @@ import esw.ocs.dsl.epics.*
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.lowlevel.CswServices
-import esw.ocs.dsl.params.SequencerObserveEvent
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.CommandUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
