@@ -18,7 +18,7 @@
     - story requirement mapping file path (as per above requirements)
     - output path : `./target/RTM/output.txt`
     ```
-    > ./scripts/coursier launch -r jitpack -r https://jcenter.bintray.com com.github.tmtsoftware:rtm_2.13:78dd097b7a -M tmt.test.reporter.TestRequirementMapper -- <path of file containing Test-Story mapping > <path of file containing Story-Requirement mapping> <output path>
+    > ./scripts/coursier launch -r jitpack com.github.tmtsoftware:rtm_2.13:78dd097b7a -M tmt.test.reporter.TestRequirementMapper -- <path of file containing Test-Story mapping > <path of file containing Story-Requirement mapping> <output path>
     ```
 4. Import the generated Requirement-Test mapping in Google sheet.
     - Go to Google sheet and import the file (`File -> Import`) and choose the file.
