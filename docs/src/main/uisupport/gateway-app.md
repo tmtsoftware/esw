@@ -47,10 +47,10 @@ Once gateway-server is installed, one can simply run gateway-server by executing
 
 Start command supports following arguments:
 
- * `--port` , `-p` : Optional argument: HTTP server will be bound to this port. If a value is not provided, port will be picked up from a default configuration.
- * `-l`, `--local` : optional argument (true if config is to be read locally or false if from CSW Configuration Service) default value is false.
- * `-c`, `--commandRoleConfigPath` : specifies command role mapping file path which gets fetched from CSW Configuration Service or local file system based on --local option.
- * `-m`, `--metrics` : optional argument: If true, enable gateway metrics. If not provided, default value is false and metrics will be disabled.
+* `--port` , `-p` : Optional argument: HTTP server will be bound to this port. If a value is not provided, port will be picked up from a default configuration.
+* `-l`, `--local` : optional argument (true if config is to be read locally or false if from CSW Configuration Service) default value is false.
+* `-c`, `--commandRoleConfigPath` : specifies command role mapping file path which gets fetched from CSW Configuration Service or local file system based on --local option.
+* `-m`, `--metrics` : optional argument: If true, enable gateway metrics. If not provided, default value is false and metrics will be disabled.
 
 @@@note
 
@@ -62,6 +62,7 @@ from application.conf file.
 The following example commands start the Gateway Server.
 
 Example 1: Local command map with metrics enabled
+
 ```bash
 //cd to installation directory
 cd /tmt/apps
@@ -71,6 +72,7 @@ cd /tmt/apps
 ```
 
 Example 2: Use the Configuration Service to provide the command role mapping
+
 ```bash
 //cd to installation directory
 cd /tmt/apps
@@ -90,7 +92,7 @@ Refer supported arguments section or `./gateway-server start --help` for startin
 The default log level for any component is specified in the `application.conf` file of the component.
 Use the java -J-D option to override configuration values at runtime.  For log level, the format is:
 
-```
+```bash
 -J-Dcsw-logging.component-log-levels.<Subsystem>.<ComponentName>=<LEVEL>
 ```
 
