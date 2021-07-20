@@ -41,8 +41,8 @@ class SequenceComponentImplTest extends ActorTestSuit {
 
   "LoadScript | ESW-103, ESW-362" in {
     val loadScriptResponse = mock[ScriptResponseOrUnhandled]
-    withBehavior {
-      case LoadScript(`subsystem`, `obsMode`, replyTo) => replyTo ! loadScriptResponse
+    withBehavior { case LoadScript(`subsystem`, `obsMode`, replyTo) =>
+      replyTo ! loadScriptResponse
     } check { sc =>
       sc.loadScript(subsystem, obsMode).futureValue should ===(loadScriptResponse)
     }
@@ -50,8 +50,8 @@ class SequenceComponentImplTest extends ActorTestSuit {
 
   "Restart | ESW-141, ESW-362" in {
     val restartResponse = mock[ScriptResponseOrUnhandled]
-    withBehavior {
-      case RestartScript(replyTo) => replyTo ! restartResponse
+    withBehavior { case RestartScript(replyTo) =>
+      replyTo ! restartResponse
     } check { sc =>
       sc.restartScript().futureValue should ===(restartResponse)
     }
@@ -65,24 +65,24 @@ class SequenceComponentImplTest extends ActorTestSuit {
         Metadata.empty
       )
     val getStatusResponse = GetStatusResponse(Some(akkaLocation))
-    withBehavior {
-      case GetStatus(replyTo) => replyTo ! getStatusResponse
+    withBehavior { case GetStatus(replyTo) =>
+      replyTo ! getStatusResponse
     } check { sc =>
       sc.status.futureValue should ===(getStatusResponse)
     }
   }
 
   "UnloadScript | ESW-103, ESW-362" in {
-    withBehavior {
-      case UnloadScript(replyTo) => replyTo ! Ok
+    withBehavior { case UnloadScript(replyTo) =>
+      replyTo ! Ok
     } check { sc =>
       sc.unloadScript().futureValue should ===(Ok)
     }
   }
 
   "Shutdown | ESW-329, ESW-362" in {
-    withBehavior {
-      case Shutdown(replyTo) => replyTo ! Ok
+    withBehavior { case Shutdown(replyTo) =>
+      replyTo ! Ok
     } check { sc =>
       sc.shutdown().futureValue should ===(Ok)
     }

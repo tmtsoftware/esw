@@ -147,11 +147,10 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   def compareStepList(actualStepList: StepList, expectedStepList: StepList) = {
     actualStepList.steps should have size expectedStepList.steps.size
 
-    actualStepList.steps.zip(expectedStepList.steps).foreach {
-      case (e, a) =>
-        e.status should ===(a.status)
-        e.command should ===(a.command)
-        e.hasBreakpoint should ===(a.hasBreakpoint)
+    actualStepList.steps.zip(expectedStepList.steps).foreach { case (e, a) =>
+      e.status should ===(a.status)
+      e.command should ===(a.command)
+      e.hasBreakpoint should ===(a.hasBreakpoint)
     }
   }
 

@@ -17,13 +17,12 @@ class AgentStatusUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSy
   def getAllAgentStatus: Future[AgentStatusResponse] =
     getAllSequenceComponents
       .mapRight(groupByAgentWithOrphans)
-      .flatMapE {
-        case (agentMap, compsWithoutAgent) =>
-          getAndAddAgentsWithoutSeqComp(agentMap).flatMapE { agentMap =>
-            getAllSequencers.mapRight { sequencers =>
-              (getAgentStatus(agentMap, sequencers), getSeqCompsStatus(compsWithoutAgent, sequencers))
-            }
+      .flatMapE { case (agentMap, compsWithoutAgent) =>
+        getAndAddAgentsWithoutSeqComp(agentMap).flatMapE { agentMap =>
+          getAllSequencers.mapRight { sequencers =>
+            (getAgentStatus(agentMap, sequencers), getSeqCompsStatus(compsWithoutAgent, sequencers))
           }
+        }
       }
       .mapToAdt(
         { case (agentStatus, orphans) => AgentStatusResponse.Success(agentStatus, orphans) },
@@ -52,8 +51,8 @@ class AgentStatusUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSy
       agents: Map[ComponentId, List[AkkaLocation]],
       sequencers: List[AkkaLocation]
   ): List[AgentStatus] =
-    agents.toList.map {
-      case (agentId, seqCompLocations) => AgentStatus(agentId, getSeqCompsStatus(seqCompLocations, sequencers))
+    agents.toList.map { case (agentId, seqCompLocations) =>
+      AgentStatus(agentId, getSeqCompsStatus(seqCompLocations, sequencers))
     }
 
   private def getSeqCompsStatus(

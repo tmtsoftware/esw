@@ -65,50 +65,47 @@ class GatewayAuthRequestTest extends BaseTestSuite with ScalatestRouteTest with 
       ("Restart", Restart(componentId), _.restart(componentId))
     )
 
-    data.foreach {
-      case (name, command, api) =>
-        s"authorize $name if it has subsystem eng role | ESW-378" in {
-          when(api(adminApi)).thenReturn(Future.successful(Done))
-          val roles = Set(s"$subsystem-eng")
-          stubRolesInAccessToken(roles)
+    data.foreach { case (name, command, api) =>
+      s"authorize $name if it has subsystem eng role | ESW-378" in {
+        when(api(adminApi)).thenReturn(Future.successful(Done))
+        val roles = Set(s"$subsystem-eng")
+        stubRolesInAccessToken(roles)
 
-          post(command: GatewayRequest) ~> route ~> check {
-            api(verify(adminApi))
-            status shouldEqual StatusCodes.OK
-            responseAs[Done] shouldEqual Done
-          }
+        post(command: GatewayRequest) ~> route ~> check {
+          api(verify(adminApi))
+          status shouldEqual StatusCodes.OK
+          responseAs[Done] shouldEqual Done
         }
+      }
     }
 
-    data.foreach {
-      case (name, command, api) =>
-        s"authorize $name if it has esw user role | ESW-378" in {
-          when(api(adminApi)).thenReturn(Future.successful(Done))
-          val roles = Set("ESW-user")
-          stubRolesInAccessToken(roles)
+    data.foreach { case (name, command, api) =>
+      s"authorize $name if it has esw user role | ESW-378" in {
+        when(api(adminApi)).thenReturn(Future.successful(Done))
+        val roles = Set("ESW-user")
+        stubRolesInAccessToken(roles)
 
-          post(command: GatewayRequest) ~> route ~> check {
-            api(verify(adminApi))
-            status shouldEqual StatusCodes.OK
-            responseAs[Done] shouldEqual Done
-          }
+        post(command: GatewayRequest) ~> route ~> check {
+          api(verify(adminApi))
+          status shouldEqual StatusCodes.OK
+          responseAs[Done] shouldEqual Done
         }
+      }
     }
 
-    data.foreach {
-      case (name, command, api) =>
-        s"not authorize $name if it doesn't have the given component's subsystem eng role or ESW user Role | ESW-378" in {
-          val subsystemsWithoutCurrentSubsystem = Subsystem.values.filterNot(_ == subsystem).toList
-          val subsystemsWithoutESW              = Subsystem.values.filterNot(_ == ESW).toList
-          val userRoles                         = subsystemsWithoutESW.map(x => s"$x-user")
-          val engRoles                          = subsystemsWithoutCurrentSubsystem.map(x => s"$x-eng")
-          stubRolesInAccessToken((userRoles ::: engRoles).toSet)
+    data.foreach { case (name, command, api) =>
+      s"not authorize $name if it doesn't have the given component's subsystem eng role or ESW user Role | ESW-378" in {
+        val subsystemsWithoutCurrentSubsystem = Subsystem.values.filterNot(_ == subsystem).toList
+        val subsystemsWithoutESW              = Subsystem.values.filterNot(_ == ESW).toList
+        val userRoles                         = subsystemsWithoutESW.map(x => s"$x-user")
+        val engRoles                          = subsystemsWithoutCurrentSubsystem.map(x => s"$x-eng")
+        stubRolesInAccessToken((userRoles ::: engRoles).toSet)
 
-          post(command: GatewayRequest) ~> route ~> check {
-            api(verify(adminApi, never))
-            rejection shouldEqual AuthorizationFailedRejection
-          }
+        post(command: GatewayRequest) ~> route ~> check {
+          api(verify(adminApi, never))
+          rejection shouldEqual AuthorizationFailedRejection
         }
+      }
     }
 
     "authorize setLoglevel if it has esw user role | ESW-378" in {

@@ -40,8 +40,8 @@ class AgentUtil(
   }
 
   private def spawnSeqCompByVersion(mapping: List[(AgentLocation, SeqCompPrefix)]) = {
-    versionManager.getScriptVersion.flatMap(spawnCompsByMapping(mapping, _)).recover {
-      case FetchingScriptVersionFailed(msg) => ProvisionVersionFailure(msg)
+    versionManager.getScriptVersion.flatMap(spawnCompsByMapping(mapping, _)).recover { case FetchingScriptVersionFailed(msg) =>
+      ProvisionVersionFailure(msg)
     }
   }
 
@@ -50,9 +50,8 @@ class AgentUtil(
       version: String
   ): Future[ProvisionResponse] =
     Future
-      .traverse(mapping) {
-        case (agentLocation, seqCompPrefix) =>
-          spawnSeqComp(agentLocation.prefix, makeAgentClient(agentLocation), seqCompPrefix, version)
+      .traverse(mapping) { case (agentLocation, seqCompPrefix) =>
+        spawnSeqComp(agentLocation.prefix, makeAgentClient(agentLocation), seqCompPrefix, version)
       }
       .map(_.sequence.map(_ => ProvisionResponse.Success).left.map(SpawningSequenceComponentsFailed).merge)
 

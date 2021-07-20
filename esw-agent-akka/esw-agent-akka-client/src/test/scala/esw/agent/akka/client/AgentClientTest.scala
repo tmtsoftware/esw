@@ -83,8 +83,8 @@ class AgentClientTest extends ActorTestSuit {
       val prefix        = Prefix(s"esw.$randomString5")
       val componentName = prefix.componentName
       val spawnResponse = mock[SpawnResponse]
-      withBehavior {
-        case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) => replyTo ! spawnResponse
+      withBehavior { case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) =>
+        replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceComponent(componentName).futureValue should ===(spawnResponse)
       }
@@ -94,8 +94,8 @@ class AgentClientTest extends ActorTestSuit {
       val prefix        = Prefix(s"esw.$randomString5")
       val componentName = prefix.componentName
       val spawnResponse = mock[SpawnResponse]
-      withBehavior {
-        case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) => replyTo ! spawnResponse
+      withBehavior { case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) =>
+        replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceComponent(componentName, None, simulation = true).futureValue should ===(spawnResponse)
       }
@@ -107,8 +107,8 @@ class AgentClientTest extends ActorTestSuit {
       val location =
         AkkaLocation(AkkaConnection(ComponentId(Prefix("IRIS.filter"), SequenceComponent)), new URI("uri"), Metadata.empty)
       val killResponse = mock[KillResponse]
-      withBehavior {
-        case KillComponent(replyTo, `location`) => replyTo ! killResponse
+      withBehavior { case KillComponent(replyTo, `location`) =>
+        replyTo ! killResponse
       } check { ac =>
         ac.killComponent(location).futureValue should ===(killResponse)
       }
@@ -119,8 +119,8 @@ class AgentClientTest extends ActorTestSuit {
     "send spawnSequenceManager message to agent and return a future with agent response | ESW-180, ESW-362" in {
       val configPath    = Path.of("obsMode.conf")
       val spawnResponse = mock[SpawnResponse]
-      withBehavior {
-        case SpawnSequenceManager(replyTo, `configPath`, true, None, _) => replyTo ! spawnResponse
+      withBehavior { case SpawnSequenceManager(replyTo, `configPath`, true, None, _) =>
+        replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceManager(configPath, isConfigLocal = true).futureValue should ===(spawnResponse)
       }
@@ -129,8 +129,8 @@ class AgentClientTest extends ActorTestSuit {
     "send spawnSequenceManager message with simulation flag set, to agent and return a future with agent response | ESW-180, ESW-362, ESW-174" in {
       val configPath    = Path.of("obsMode.conf")
       val spawnResponse = mock[SpawnResponse]
-      withBehavior {
-        case SpawnSequenceManager(replyTo, `configPath`, true, None, _) => replyTo ! spawnResponse
+      withBehavior { case SpawnSequenceManager(replyTo, `configPath`, true, None, _) =>
+        replyTo ! spawnResponse
       } check { ac =>
         ac.spawnSequenceManager(configPath, isConfigLocal = true, None, simulation = true).futureValue should ===(spawnResponse)
       }
@@ -141,8 +141,8 @@ class AgentClientTest extends ActorTestSuit {
     "send spawnSequenceManager message to agent and return a future with agent response | ESW-379" in {
       val hostConfigPath          = "hostConfig.conf"
       val spawnContainersResponse = mock[Completed]
-      withBehavior {
-        case SpawnContainers(replyTo, `hostConfigPath`, true) => replyTo ! spawnContainersResponse
+      withBehavior { case SpawnContainers(replyTo, `hostConfigPath`, true) =>
+        replyTo ! spawnContainersResponse
       } check { ac =>
         ac.spawnContainers(hostConfigPath, isConfigLocal = true).futureValue should ===(spawnContainersResponse)
       }

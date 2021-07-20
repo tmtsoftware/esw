@@ -43,8 +43,8 @@ class ProcessManager(
     getProcessHandle(location) match {
       case Left(e) => Future.successful(Failed(e))
       case Right(process) =>
-        process.kill(10.seconds).map(_ => Killed).recover {
-          case NonFatal(e) => Failed(s"Failed to kill component process, reason: ${e.getMessage}".tap(log.warn(_)))
+        process.kill(10.seconds).map(_ => Killed).recover { case NonFatal(e) =>
+          Failed(s"Failed to kill component process, reason: ${e.getMessage}".tap(log.warn(_)))
         }
     }
 
@@ -82,8 +82,8 @@ class ProcessManager(
           .runCommand(cmdStr, command.prefix)
           .map(_.tap(onProcessExit(_, command.connection)))
       }
-      .recover {
-        case FetchingScriptVersionFailed(msg) => Left(msg)
+      .recover { case FetchingScriptVersionFailed(msg) =>
+        Left(msg)
       }
 
   //it checks if the given process is alive

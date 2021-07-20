@@ -61,8 +61,8 @@ class AgentActor(
             .map(spawnResponses => Completed((spawnResponseMap.keys zip spawnResponses).toMap))
         })
       })
-      .recoverWith {
-        case e: Exception => Future.successful(Failed(e.getMessage.tap(log.error(_))))
+      .recoverWith { case e: Exception =>
+        Future.successful(Failed(e.getMessage.tap(log.error(_))))
       }
   }
 

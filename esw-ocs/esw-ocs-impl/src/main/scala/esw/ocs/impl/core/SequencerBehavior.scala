@@ -170,11 +170,10 @@ class SequencerBehavior(
   }
 
   private def abortingSequence(data: SequencerData): Behavior[SequencerMsg] =
-    receive(AbortingSequence, data) {
-      case AbortSequenceComplete(replyTo) =>
-        import data._
-        val maybeStepList = stepList.map(_.discardPending)
-        running(updateStepList(replyTo, maybeStepList))
+    receive(AbortingSequence, data) { case AbortSequenceComplete(replyTo) =>
+      import data._
+      val maybeStepList = stepList.map(_.discardPending)
+      running(updateStepList(replyTo, maybeStepList))
     }
 
   // Only called from Running state. Method starts executing stop handlers and changes state to
@@ -186,11 +185,10 @@ class SequencerBehavior(
   }
 
   private def stopping(data: SequencerData): Behavior[SequencerMsg] =
-    receive[StopMessage](Stopping, data) {
-      case StopComplete(replyTo) =>
-        import data._
-        val maybeStepList = stepList.map(_.discardPending)
-        running(updateStepList(replyTo, maybeStepList))
+    receive[StopMessage](Stopping, data) { case StopComplete(replyTo) =>
+      import data._
+      val maybeStepList = stepList.map(_.discardPending)
+      running(updateStepList(replyTo, maybeStepList))
     }
 
   // This is a common message and can be received in any state. This will do the following things

@@ -80,11 +80,10 @@ class PostMetricsTest
     (ComponentCommand(componentId, Submit(command)), labelValues("ComponentCommand", commandMsg = "Submit")),
     (SequencerCommand(componentId, Pause), labelValues("SequencerCommand", sequencerMsg = "Pause")),
     (GetEvent(Set(eventKey)), labelValues("GetEvent"))
-  ).foreach {
-    case (request, labels) =>
-      s"increment http counter on every ${LabelExtractor.createLabel(request)} request | ESW-197, ESW-386" in {
-        runCounterTest(request, labels)
-      }
+  ).foreach { case (request, labels) =>
+    s"increment http counter on every ${LabelExtractor.createLabel(request)} request | ESW-197, ESW-386" in {
+      runCounterTest(request, labels)
+    }
   }
 
   private def getCounterValue(labelValues: List[String]): Double =

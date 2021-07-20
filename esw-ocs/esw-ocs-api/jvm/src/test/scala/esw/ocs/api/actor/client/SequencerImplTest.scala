@@ -47,8 +47,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "subscribeSequencerState should create an actor source that emits the state response | ESW-213" in {
     val sequencerStateResponse = mock[SequencerStateResponse]
-    withBehavior {
-      case SubscribeSequencerState(replyTo) => replyTo ! sequencerStateResponse
+    withBehavior { case SubscribeSequencerState(replyTo) =>
+      replyTo ! sequencerStateResponse
     } check { sequencerImpl =>
       val resStream = sequencerImpl.subscribeSequencerState()
       Await.result(resStream.runWith(Sink.head), 3.seconds) shouldEqual sequencerStateResponse
@@ -75,40 +75,40 @@ class SequencerImplTest extends ActorTestSuit {
 
   "getSequence | ESW-222, ESW-362" in {
     val getSequenceResponse = mock[Option[StepList]]
-    withBehavior {
-      case GetSequence(replyTo) => replyTo ! getSequenceResponse
+    withBehavior { case GetSequence(replyTo) =>
+      replyTo ! getSequenceResponse
     } check { s =>
       s.getSequence.futureValue should ===(getSequenceResponse)
     }
   }
 
   "isAvailable return false if sequencer loaded | ESW-222, ESW-362" in {
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Loaded
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Loaded
     } check { s =>
       s.isAvailable.futureValue should ===(false)
     }
   }
 
   "isAvailable returns true if sequencer idle | ESW-222, ESW-362" in {
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Idle
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Idle
     } check { s =>
       s.isAvailable.futureValue should ===(true)
     }
   }
 
   "isOnline returns true if sequencer loaded | ESW-222, ESW-362" in {
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Loaded
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Loaded
     } check { s =>
       s.isOnline.futureValue should ===(true)
     }
   }
 
   "isOnline returns false if sequencer offline | ESW-222, ESW-362" in {
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Offline
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Offline
     } check { s =>
       s.isOnline.futureValue should ===(false)
     }
@@ -116,8 +116,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "add | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
-    withBehavior {
-      case Add(List(`command`), replyTo) => replyTo ! okOrUnhandledResponse
+    withBehavior { case Add(List(`command`), replyTo) =>
+      replyTo ! okOrUnhandledResponse
     } check { s =>
       s.add(List(command)).futureValue should ===(okOrUnhandledResponse)
     }
@@ -125,8 +125,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "prepend | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
-    withBehavior {
-      case Prepend(List(`command`), replyTo) => replyTo ! okOrUnhandledResponse
+    withBehavior { case Prepend(List(`command`), replyTo) =>
+      replyTo ! okOrUnhandledResponse
     } check { s =>
       s.prepend(List(command)).futureValue should ===(okOrUnhandledResponse)
     }
@@ -134,8 +134,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "replace | ESW-222, ESW-362" in {
     val genericResponse = mock[GenericResponse]
-    withBehavior {
-      case Replace(`stepId`, List(`command`), replyTo) => replyTo ! genericResponse
+    withBehavior { case Replace(`stepId`, List(`command`), replyTo) =>
+      replyTo ! genericResponse
     } check { s =>
       s.replace(stepId, List(command)).futureValue should ===(genericResponse)
     }
@@ -143,8 +143,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "insertAfter | ESW-222, ESW-362" in {
     val genericResponse = mock[GenericResponse]
-    withBehavior {
-      case InsertAfter(`stepId`, List(`command`), replyTo) => replyTo ! genericResponse
+    withBehavior { case InsertAfter(`stepId`, List(`command`), replyTo) =>
+      replyTo ! genericResponse
     } check { s =>
       s.insertAfter(stepId, List(command)).futureValue should ===(genericResponse)
     }
@@ -152,8 +152,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "delete | ESW-222, ESW-362" in {
     val genericResponse = mock[GenericResponse]
-    withBehavior {
-      case Delete(`stepId`, replyTo) => replyTo ! genericResponse
+    withBehavior { case Delete(`stepId`, replyTo) =>
+      replyTo ! genericResponse
     } check { s =>
       s.delete(stepId).futureValue should ===(genericResponse)
     }
@@ -161,8 +161,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "pause | ESW-222, ESW-362" in {
     val pauseResponse = mock[PauseResponse]
-    withBehavior {
-      case Pause(replyTo) => replyTo ! pauseResponse
+    withBehavior { case Pause(replyTo) =>
+      replyTo ! pauseResponse
     } check { s =>
       s.pause.futureValue should ===(pauseResponse)
     }
@@ -170,8 +170,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "resume | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
-    withBehavior {
-      case Resume(replyTo) => replyTo ! okOrUnhandledResponse
+    withBehavior { case Resume(replyTo) =>
+      replyTo ! okOrUnhandledResponse
     } check { s =>
       s.resume.futureValue should ===(okOrUnhandledResponse)
     }
@@ -179,8 +179,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "addBreakpoint | ESW-222, ESW-362" in {
     val genericResponse = mock[GenericResponse]
-    withBehavior {
-      case AddBreakpoint(`stepId`, replyTo) => replyTo ! genericResponse
+    withBehavior { case AddBreakpoint(`stepId`, replyTo) =>
+      replyTo ! genericResponse
     } check { s =>
       s.addBreakpoint(stepId).futureValue should ===(genericResponse)
     }
@@ -188,8 +188,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "removeBreakpoint | ESW-222, ESW-362" in {
     val removeBreakpointResponse = mock[RemoveBreakpointResponse]
-    withBehavior {
-      case RemoveBreakpoint(`stepId`, replyTo) => replyTo ! removeBreakpointResponse
+    withBehavior { case RemoveBreakpoint(`stepId`, replyTo) =>
+      replyTo ! removeBreakpointResponse
     } check { s =>
       s.removeBreakpoint(stepId).futureValue should ===(removeBreakpointResponse)
     }
@@ -197,8 +197,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "reset | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
-    withBehavior {
-      case Reset(replyTo) => replyTo ! okOrUnhandledResponse
+    withBehavior { case Reset(replyTo) =>
+      replyTo ! okOrUnhandledResponse
     } check { s =>
       s.reset().futureValue should ===(okOrUnhandledResponse)
     }
@@ -206,8 +206,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "abortSequence | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
-    withBehavior {
-      case AbortSequence(replyTo) => replyTo ! okOrUnhandledResponse
+    withBehavior { case AbortSequence(replyTo) =>
+      replyTo ! okOrUnhandledResponse
     } check { s =>
       s.abortSequence().futureValue should ===(okOrUnhandledResponse)
     }
@@ -215,8 +215,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "stop | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
-    withBehavior {
-      case Stop(replyTo) => replyTo ! okOrUnhandledResponse
+    withBehavior { case Stop(replyTo) =>
+      replyTo ! okOrUnhandledResponse
     } check { s =>
       s.stop().futureValue should ===(okOrUnhandledResponse)
     }
@@ -226,8 +226,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "loadSequence | ESW-222, ESW-362" in {
     val okOrUnhandledResponse = mock[OkOrUnhandledResponse]
-    withBehavior {
-      case LoadSequence(`sequence`, replyTo) => replyTo ! okOrUnhandledResponse
+    withBehavior { case LoadSequence(`sequence`, replyTo) =>
+      replyTo ! okOrUnhandledResponse
     } check { s =>
       s.loadSequence(sequence).futureValue should ===(okOrUnhandledResponse)
     }
@@ -237,8 +237,8 @@ class SequencerImplTest extends ActorTestSuit {
     val sequencerSubmitResponse = mock[SequencerSubmitResponse]
     val submitResponse          = mock[SubmitResponse]
     when(sequencerSubmitResponse.toSubmitResponse()).thenReturn(submitResponse)
-    withBehavior {
-      case StartSequence(replyTo) => replyTo ! sequencerSubmitResponse
+    withBehavior { case StartSequence(replyTo) =>
+      replyTo ! sequencerSubmitResponse
     } check { s =>
       s.startSequence().futureValue should ===(submitResponse)
     }
@@ -248,8 +248,8 @@ class SequencerImplTest extends ActorTestSuit {
     val sequencerSubmitResponse = mock[SequencerSubmitResponse]
     val submitResponse          = mock[SubmitResponse]
     when(sequencerSubmitResponse.toSubmitResponse()).thenReturn(submitResponse)
-    withBehavior {
-      case SubmitSequenceInternal(`sequence`, replyTo) => replyTo ! sequencerSubmitResponse
+    withBehavior { case SubmitSequenceInternal(`sequence`, replyTo) =>
+      replyTo ! sequencerSubmitResponse
     } check { s =>
       s.submit(sequence).futureValue should ===(submitResponse)
     }
@@ -268,8 +268,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "queryFinal | ESW-222, ESW-362" in {
     val submitResponse = mock[SubmitResponse]
-    withBehavior {
-      case QueryFinal(`sequenceId`, replyTo) => replyTo ! submitResponse
+    withBehavior { case QueryFinal(`sequenceId`, replyTo) =>
+      replyTo ! submitResponse
     } check { s =>
       s.queryFinal(sequenceId).futureValue should ===(submitResponse)
     }
@@ -277,8 +277,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "diagnosticMode | ESW-143, ESW-362" in {
     val diagnosticModeResponse = mock[DiagnosticModeResponse]
-    withBehavior {
-      case DiagnosticMode(`startTime`, `hint`, replyTo) => replyTo ! diagnosticModeResponse
+    withBehavior { case DiagnosticMode(`startTime`, `hint`, replyTo) =>
+      replyTo ! diagnosticModeResponse
     } check { s =>
       s.diagnosticMode(startTime, hint).futureValue should ===(diagnosticModeResponse)
     }
@@ -286,8 +286,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "operationsMode | ESW-143, ESW-362" in {
     val operationsModeResponse = mock[OperationsModeResponse]
-    withBehavior {
-      case OperationsMode(replyTo) => replyTo ! operationsModeResponse
+    withBehavior { case OperationsMode(replyTo) =>
+      replyTo ! operationsModeResponse
     } check { s =>
       s.operationsMode().futureValue should ===(operationsModeResponse)
     }
@@ -300,55 +300,55 @@ class SequencerImplTest extends ActorTestSuit {
         new URI("uri"),
         Metadata.empty
       )
-    withBehavior {
-      case GetSequenceComponent(replyTo) => replyTo ! getSequenceComponentResponse
+    withBehavior { case GetSequenceComponent(replyTo) =>
+      replyTo ! getSequenceComponentResponse
     } check { s =>
       s.getSequenceComponent.futureValue should ===(getSequenceComponentResponse)
     }
   }
 
   "getSequencerState should return same state for Idle, Running, Loaded, Offline state | ESW-482" in {
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Idle
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Idle
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Idle) }
 
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Running
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Running
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Running) }
 
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Loaded
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Loaded
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Loaded) }
 
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Offline
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Offline
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Offline) }
 
   }
 
   "getSequencerState should return Processing for any intermediate sequencer state | ESW-482" in {
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! GoingOffline
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! GoingOffline
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! GoingOnline
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! GoingOnline
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! AbortingSequence
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! AbortingSequence
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Stopping
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Stopping
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Submitting
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Submitting
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
 
-    withBehavior {
-      case GetSequencerState(replyTo) => replyTo ! Starting
+    withBehavior { case GetSequencerState(replyTo) =>
+      replyTo ! Starting
     } check { s => s.getSequencerState.futureValue should ===(SequencerState.Processing) }
   }
 

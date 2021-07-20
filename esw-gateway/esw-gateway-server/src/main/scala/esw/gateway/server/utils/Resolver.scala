@@ -16,13 +16,13 @@ class Resolver(locationService: LocationService)(implicit typedSystem: ActorSyst
   private val componentFactory = new ComponentFactory(locationService)
 
   def commandService(componentId: ComponentId): Future[CommandService] =
-    componentFactory.commandService(componentId).recover {
-      case e: ComponentNotFoundException => throw InvalidComponent(e.getMessage)
+    componentFactory.commandService(componentId).recover { case e: ComponentNotFoundException =>
+      throw InvalidComponent(e.getMessage)
     }
 
   def sequencerCommandService(componentId: ComponentId): Future[SequencerApi] =
-    componentFactory.resolveLocation(componentId)(SequencerApiFactory.make).recover {
-      case e: ComponentNotFoundException => throw InvalidComponent(e.getMessage)
+    componentFactory.resolveLocation(componentId)(SequencerApiFactory.make).recover { case e: ComponentNotFoundException =>
+      throw InvalidComponent(e.getMessage)
     }
 
 }

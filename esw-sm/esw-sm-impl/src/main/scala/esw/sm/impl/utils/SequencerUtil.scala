@@ -51,8 +51,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       mappings: List[(Subsystem, SeqCompLocation)]
   ): Future[ConfigureResponse] =
     Future
-      .traverse(mappings) {
-        case (subsystem, seqCompLocation) => sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
+      .traverse(mappings) { case (subsystem, seqCompLocation) =>
+        sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
       }
       .map(_.sequence)
       .mapToAdt(

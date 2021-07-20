@@ -12,8 +12,8 @@ class AgentAllocator {
   // actual agent locations to sequence components prefix as per mapping.
   // In case of success it return mapping of agent location to sequence component prefix else error of CouldNotFindMachines
   def allocate(provisionConfig: ProvisionConfig, machines: List[AkkaLocation]): AllocationResponse = {
-    val allocationResult = provisionConfig.agentToSeqCompMapping.map {
-      case (agentPrefix, seqCompPrefix) => machines.find(_.prefix == agentPrefix).map((_, seqCompPrefix)).toRight(agentPrefix)
+    val allocationResult = provisionConfig.agentToSeqCompMapping.map { case (agentPrefix, seqCompPrefix) =>
+      machines.find(_.prefix == agentPrefix).map((_, seqCompPrefix)).toRight(agentPrefix)
     }.sequence
     allocationResult.left.map(p => CouldNotFindMachines(p.toSet))
   }

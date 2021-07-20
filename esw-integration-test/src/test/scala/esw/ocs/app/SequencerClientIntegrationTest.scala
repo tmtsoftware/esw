@@ -69,8 +69,8 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val expectedSequence = StepList(expectedSteps)
 
     val actualSequenceResponse = ocsSequencer.getSequence.futureValue.get
-    val actualSteps = actualSequenceResponse.steps.zipWithIndex.map {
-      case (step, index) => step.withId(expectedSteps(index).id)
+    val actualSteps = actualSequenceResponse.steps.zipWithIndex.map { case (step, index) =>
+      step.withId(expectedSteps(index).id)
     }
 
     actualSteps should ===(expectedSequence.steps)
@@ -329,11 +329,10 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
       actualStepList.steps should have size expectedStepList.steps.size
 
-      actualStepList.steps.zip(expectedStepList.steps).foreach {
-        case (e, a) =>
-          e.status should ===(a.status)
-          e.command should ===(a.command)
-          e.hasBreakpoint should ===(a.hasBreakpoint)
+      actualStepList.steps.zip(expectedStepList.steps).foreach { case (e, a) =>
+        e.status should ===(a.status)
+        e.command should ===(a.command)
+        e.hasBreakpoint should ===(a.hasBreakpoint)
       }
     }
   }

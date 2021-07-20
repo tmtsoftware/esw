@@ -79,13 +79,12 @@ class SpawnCommandExtTest extends BaseTestSuite {
         ("SpawnSequenceManager(version)", spawnSeqMgrWithVersion, spawnSeqMgrWithVersionCmd),
         ("SpawnSequenceManagerSimulation", spawnSeqMgrSimulation, spawnSeqMgrSimulationCmd),
         ("SpawnContainer", spawnContainer, spawnContainerCmd)
-      ).foreach {
-        case (name, spawnCommand, expectedCommandStr) =>
-          name in {
-            spawnCommand.executableCommandStr(channel, agentPrefix, versionManager).futureValue should ===(
-              expectedCommandStr.split(" ").toList
-            )
-          }
+      ).foreach { case (name, spawnCommand, expectedCommandStr) =>
+        name in {
+          spawnCommand.executableCommandStr(channel, agentPrefix, versionManager).futureValue should ===(
+            expectedCommandStr.split(" ").toList
+          )
+        }
       }
     }
   }

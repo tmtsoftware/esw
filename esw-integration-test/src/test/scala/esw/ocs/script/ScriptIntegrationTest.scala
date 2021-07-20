@@ -65,8 +65,8 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   private def withIds(stepListMaybe: Future[Option[StepList]], ids: Id*): Future[Option[StepList]] = {
     stepListMaybe.map {
       _.map { x =>
-        StepList(x.steps.zip(ids).map {
-          case (step, id) => step.withId(id)
+        StepList(x.steps.zip(ids).map { case (step, id) =>
+          step.withId(id)
         })
       }
     }

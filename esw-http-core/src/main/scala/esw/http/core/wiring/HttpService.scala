@@ -47,8 +47,8 @@ class HttpService(
 
       log.info(s"Server online at http://${binding.localAddress.getHostString}:${binding.localAddress.getPort}/")
       (binding, registrationResult)
-    } recoverWith {
-      case NonFatal(ex) => actorRuntime.shutdown(FailureReason(ex)).map(_ => throw ex)
+    } recoverWith { case NonFatal(ex) =>
+      actorRuntime.shutdown(FailureReason(ex)).map(_ => throw ex)
     }
 
   private def applicationRoute: Route = {

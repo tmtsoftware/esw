@@ -38,10 +38,9 @@ class AdminImplTest extends BaseTestSuite {
     "get log metadata when component is discovered and it responds with metadata" in {
       val locationService: LocationService = mock[LocationService]
       val expectedLogMetadata              = LogMetadata(Level.FATAL, Level.ERROR, Level.WARN, Level.DEBUG)
-      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetComponentLogMetadata] {
-        case GetComponentLogMetadata(replyTo) =>
-          replyTo ! expectedLogMetadata
-          Behaviors.same
+      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetComponentLogMetadata] { case GetComponentLogMetadata(replyTo) =>
+        replyTo ! expectedLogMetadata
+        Behaviors.same
       })
       val adminService: AdminImpl = new AdminImpl(locationService)
       val componentId             = ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Assembly)
@@ -55,10 +54,9 @@ class AdminImplTest extends BaseTestSuite {
     "get log metadata when sequencer is discovered and it responds with metadata" in {
       val locationService: LocationService = mock[LocationService]
       val expectedLogMetadata              = LogMetadata(Level.FATAL, Level.ERROR, Level.WARN, Level.DEBUG)
-      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetComponentLogMetadata] {
-        case GetComponentLogMetadata(replyTo) =>
-          replyTo ! expectedLogMetadata
-          Behaviors.same
+      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetComponentLogMetadata] { case GetComponentLogMetadata(replyTo) =>
+        replyTo ! expectedLogMetadata
+        Behaviors.same
       })
       val adminService: AdminImpl = new AdminImpl(locationService)
       val componentId             = models.ComponentId(Prefix(Subsystem.AOESW, "test_sequencer"), ComponentType.Sequencer)

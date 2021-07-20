@@ -76,15 +76,14 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
   override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =
     ActorSource
       .actorRef[SequencerStateSubscriptionResponse](
-        completionMatcher = {
-          case SequencerShuttingDown =>
+        completionMatcher = { case SequencerShuttingDown =>
         },
         PartialFunction.empty,
         16,
         OverflowStrategy.dropHead
       )
-      .collect {
-        case sequencerState: SequencerStateResponse => sequencerState
+      .collect { case sequencerState: SequencerStateResponse =>
+        sequencerState
       }
       .watchTermination() { (ref, doneF) =>
         sequencer ! SubscribeSequencerState(ref)

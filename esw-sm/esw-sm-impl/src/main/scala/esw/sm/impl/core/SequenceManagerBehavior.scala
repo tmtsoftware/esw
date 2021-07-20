@@ -217,8 +217,8 @@ class SequenceManagerBehavior(
     val resourceToObsMode  = obsModes.flatMap(kv => kv._2.resources.resources.map(r => (r, kv._1)))
     val (inUse, available) = resourceToObsMode.partition(t => runningObsModes.contains(t._2))
 
-    val inUseResources = inUse.map {
-      case (resource, mode) => ResourceStatusResponse(resource, ResourceStatus.InUse, Some(mode))
+    val inUseResources = inUse.map { case (resource, mode) =>
+      ResourceStatusResponse(resource, ResourceStatus.InUse, Some(mode))
     }
     val availableResources = available.filterNot(t => inUse.exists(_._1 == t._1)).map(t => ResourceStatusResponse(t._1))
     inUseResources ++ availableResources
@@ -278,19 +278,17 @@ class SequenceManagerBehavior(
     val response =
       runningObsModes
         .flatMapE(obsModes => idleSequenceComponents.mapRight(locs => (obsModes, locs)))
-        .mapRight {
-          case (configuredObsModes, locs) =>
-            val obsModes = sequenceManagerConfig.obsModes.toSet
-            val obsModesStatus =
-              obsModes.map {
-                case (obsMode, cfg @ ObsModeConfig(resources, sequencers)) =>
-                  val obsMOdeStatus = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
-                  ObsModeDetails(obsMode, obsMOdeStatus, resources, sequencers)
-              }
+        .mapRight { case (configuredObsModes, locs) =>
+          val obsModes = sequenceManagerConfig.obsModes.toSet
+          val obsModesStatus =
+            obsModes.map { case (obsMode, cfg @ ObsModeConfig(resources, sequencers)) =>
+              val obsMOdeStatus = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
+              ObsModeDetails(obsMode, obsMOdeStatus, resources, sequencers)
+            }
 
-            val response = ObsModesDetailsResponse.Success(obsModesStatus)
-            logger.info(s"Sequence Manager response Success: $response")
-            response
+          val response = ObsModesDetailsResponse.Success(obsModesStatus)
+          logger.info(s"Sequence Manager response Success: $response")
+          response
         }
 
     response.mapToAdt(
@@ -310,10 +308,9 @@ class SequenceManagerBehavior(
 
     def recoverWithProcessingError[Msg <: SequenceManagerMsg: ClassTag](selfRef: SelfRef): Future[Any] = {
       val msg = scala.reflect.classTag[Msg].runtimeClass.getSimpleName
-      future.recover {
-        case NonFatal(ex) =>
-          val reason = s"Sequence Manager Operation($msg) failed due to: ${ex.getMessage}"
-          selfRef ! ProcessingComplete(FailedResponse(reason))
+      future.recover { case NonFatal(ex) =>
+        val reason = s"Sequence Manager Operation($msg) failed due to: ${ex.getMessage}"
+        selfRef ! ProcessingComplete(FailedResponse(reason))
       }
     }
   }
