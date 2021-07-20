@@ -1,7 +1,7 @@
 # Creating and Using the UI Backend Template
 
 In this tutorial, you’ll see how to create a Scala/Java project using a [giter8](http://www.foundweekends.org/giter8/) template for ESW ([
-esw-backend-template.g8](https://github.com/tmtsoftware/esw-backend-template.g8)) which contains sample application make using ESW library.
+esw-web-app-template.g8](https://github.com/tmtsoftware/esw-web-app-template.g8)) which contains sample application make using ESW library.
 You can use this as a starting point for your own projects.
 
 ## Installation
@@ -24,8 +24,8 @@ Supported Operating Systems are: CentOS and MacOS
 5. Recommended testing frameworks/tools:
 	- [ScalaTest](https://www.scalatest.org/)
 	- [JUnit](https://junit.org/junit4/), JUnit Interface
-	- Note: these dependencies are specified by default in `esw-backend-template.g8`, and the sbt will resolve them when it runs.
+	- Note: these dependencies are specified by default in `esw-web-app-template.g8`, and the sbt will resolve them when it runs.
 
 
 ## Create Starter Project
-1. Follow the template [readme.md](https://github.com/tmtsoftware/esw-backend-template.g8/blob/master/README.md) for detailed information about project creation.
+1. Follow the template [readme.md](https://github.com/tmtsoftware/esw-web-app-template.g8/blob/master/README.md) for detailed information about project creation.

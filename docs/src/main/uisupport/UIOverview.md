@@ -96,5 +96,5 @@ duplicating this support is costly and error-prone. The following figure shows t
 
 There are challenges to creating a back-end server. The server must be secure and implement the same AAS model as the
 gateway. The back-end service must register itself with Location Service. To make this easier, there is also a back-end
-service template. See the dedicated documentation section @ref:[here](backend-template.md) and the @link:[esw-backend-template repo](https://github.com/tmtsoftware/esw-backend-template.g8) { open=new }
+service template. See the dedicated documentation section @ref:[here](backend-template.md) and the @link:[esw-web-app-template repo](https://github.com/tmtsoftware/esw-web-app-template.g8) { open=new }
 for more information.

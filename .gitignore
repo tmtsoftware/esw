@@ -20,9 +20,9 @@ test-output/
 .talismanrc
 
 build
+metals.sbt
 
 .vscode
-
 # temp files
 .~*
 *~
