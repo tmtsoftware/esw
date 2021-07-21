@@ -16,6 +16,8 @@ do
     http://$ip:8090/post-endpoint \
     -H "Content-Type: application/json" \
     -H "X-Real-IP: $ip" \
+    -H "Username: osw-user1" \
+    -H "App-Name: eng-ui" \
     -d '{
       "_type": "GetEvent",
       "eventKeys": [

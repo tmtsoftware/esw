@@ -1,14 +1,15 @@
 # Sequencer service contract
 
-This page describes possible ways of accessing sequencer service via HTTP/Websocket and sample JSON representation of request body, response body and error body. 
+This page describes possible ways of accessing sequencer service via HTTP/Websocket and sample JSON representation of request body, response body and error body.
 
-## Sequencer service endpoints 
+## Sequencer service endpoints
 
 ### Http endpoint
 
 The url - `http://{{host}}:{{port}}/post-endpoint` can be used to access sequencer service
 
 Following JSON payloads can be "post"ed to the above URL:
+
 * LoadSequence
 * Add
 * Prepend
@@ -37,6 +38,7 @@ Following JSON payloads can be "post"ed to the above URL:
 ### Websocket endpoint
 
 To execute the following request one can "send" it to the url - `ws://{{host}}:{{port}}/websocket-endpoint`.
+
 * QueryFinal
 
 _Note:_
@@ -45,7 +47,6 @@ Make sure to replace the `host` and `port` of the running sequencer service on l
 
 ## JSON Contract
 
-* Request sample, response types and error types for http endpoint is described in `http-contract.json`     
+* Request sample, response types and error types for http endpoint is described in `http-contract.json`
 * Request sample, response types and error types for webservice endpoint is described in `websocket-contract.json`
-* Samples describing how to create requests, possible responses and possible errors can be found in `models.json`     
-
+* Samples describing how to create requests, possible responses and possible errors can be found in `models.json`

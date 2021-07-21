@@ -17,7 +17,6 @@ import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 import java.net.URI
 import java.nio.file.Path
 import scala.concurrent.Future
-import scala.util.Random
 
 class AgentClientTest extends ActorTestSuit {
 

@@ -18,6 +18,8 @@ do
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $token" \
     -H "X-Real-IP: $ip" \
+    -H "Username: osw-user1" \
+    -H "App-Name: eng-ui" \
     -d '{
       "_type": "ComponentCommand",
       "componentId": {

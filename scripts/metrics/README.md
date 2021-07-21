@@ -35,8 +35,12 @@ This will start following two services:
 - Run `scripts/metrics/publish.sh <gateway_address> <access_token>` script to send 5 `PublishEvent` http request/sec to Gateway
 - Run `scripts/metrics/submit.sh <gateway_address> <access_token>` script to send `Submit` Component Command http request/sec to sample HCD via Gateway
 - Run `scripts/metrics/validate.sh <gateway_address> <access_token>` script to send 5 `Validate` Component Command http request/sec to sample HCD via Gateway
+- Run `scripts/metrics/subscribeEvent.sh <gateway_address>` script to create new websocket connection and subscribe to event stream generated using `publish.sh` script.
+- Run `scripts/metrics/subscribeEventPattern.sh <gateway_address>` script to create new websocket connection and pattern subscribe to event stream generated using `publish.sh` script.
 
 ## Notes
+
+- Last two scripts (websocket related) requires [wscat](https://github.com/websockets/wscat) to be installed on your machine.
 
 - <gateway_address> is your Machine's IP address.
 
