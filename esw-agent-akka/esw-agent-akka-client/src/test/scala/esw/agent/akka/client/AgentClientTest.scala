@@ -36,7 +36,7 @@ class AgentClientTest extends ActorTestSuit {
 
   import askProxyTestKit._
 
-  private def randomString5 = Random.nextString(5)
+  private def randomString5 = randomString(5)
 
   "make" should {
     "resolve the given prefix and return a new instance of AgentClient  | ESW-237" in {
