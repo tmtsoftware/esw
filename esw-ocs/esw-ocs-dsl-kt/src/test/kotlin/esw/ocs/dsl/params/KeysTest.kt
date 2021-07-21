@@ -13,7 +13,6 @@ class KeysTest {
     fun `verify kotlin to scala key mappings`() {
         choiceKey("choiceKey", choicesOf("A", "B")) shouldBe ChoiceKey().make("choiceKey", choicesOf("A", "B"))
         choiceKey("choiceKey", Choice("A")) shouldBe ChoiceKey().make("choiceKey", choicesOf("A"))
-        raDecKey("raDecKey") shouldBe RaDecKey().make("raDecKey")
         eqCoordKey("eqCoordKey") shouldBe EqCoordKey().make("eqCoordKey")
         solarSystemCoordKey("solarSystemCoordKey") shouldBe SolarSystemCoordKey().make("solarSystemCoordKey")
         minorPlanetCoordKey("minorPlanetCoordKey") shouldBe MinorPlanetCoordKey().make("minorPlanetCoordKey")

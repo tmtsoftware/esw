@@ -25,7 +25,6 @@ fun choiceKey(name: String, units: Units, vararg choices: Choice): Key<Choice> =
 
 fun choiceKey(name: String, vararg choices: Choice): Key<Choice> = choiceKey(name, Choices.fromChoices(choices.toSet()))
 
-fun raDecKey(name: String, units: Units = JUnits.NoUnits): Key<RaDec> = RaDecKey().make(name, units)
 fun eqCoordKey(name: String, units: Units = JUnits.NoUnits): Key<Coords.EqCoord> = EqCoordKey().make(name, units)
 fun solarSystemCoordKey(name: String, units: Units = JUnits.NoUnits): Key<Coords.SolarSystemCoord> = SolarSystemCoordKey().make(name, units)
 fun minorPlanetCoordKey(name: String, units: Units = JUnits.NoUnits): Key<Coords.MinorPlanetCoord> = MinorPlanetCoordKey().make(name, units)

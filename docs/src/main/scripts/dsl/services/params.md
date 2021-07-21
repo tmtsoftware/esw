@@ -36,7 +36,6 @@ Following table lists all the key types, and their corresponding DSL.
 | DoubleMatrix        | doubleMatrixKey             |
 | Choice              | choiceKey                   |
 | Struct              | structKey                   |
-| RaDec               | raDecKey                    |
 | EqCoord             | eqCoordKey                  |
 | SolarSystemCoord    | solarSystemCoordKey         |
 | MinorPlanetCoord    | minorPlanetCoordKey         |
