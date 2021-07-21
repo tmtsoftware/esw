@@ -19,7 +19,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"jump\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"keyName\": \"coords\",\n    \"keyType\": \"RaDecKey\",\n    \"values\": [{\n      \"ra\": 7.3,\n      \"dec\": 12.1\n    }, {\n      \"ra\": 9.1,\n      \"dec\": 2.9\n    }],\n    \"units\": \"NoUnits\"\n  }]\n}"
+					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"jump\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"units\": \"NoUnits\",\n    \"keyName\": \"planets\",\n    \"values\": [\n      {\n        \"_type\": \"SolarSystemCoord\",\n        \"tag\": \"planet\",\n        \"body\": \"Jupiter\"\n      },\n      {\n        \"_type\": \"SolarSystemCoord\",\n        \"tag\": \"planet\",\n        \"body\": \"Venus\"\n      }\n    ]\n  }]\n}"
 				},
 				"url": {
 					"raw": "{{hostname}}:{{port}}/command/{{componentType}}/{{componentName}}/validate",
@@ -51,7 +51,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"move\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"keyName\": \"coords\",\n    \"keyType\": \"RaDecKey\",\n    \"values\": [{\n      \"ra\": 7.3,\n      \"dec\": 12.1\n    }, {\n      \"ra\": 9.1,\n      \"dec\": 2.9\n    }],\n    \"units\": \"NoUnits\"\n  }]\n}"
+					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"move\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"units\": \"NoUnits\",\n    \"keyName\": \"planets\",\n    \"values\": [\n      {\n        \"_type\": \"SolarSystemCoord\",\n        \"tag\": \"planet\",\n        \"body\": \"Jupiter\"\n      },\n      {\n        \"_type\": \"SolarSystemCoord\",\n        \"tag\": \"planet\",\n        \"body\": \"Venus\"\n      }\n    ]\n  }]\n}"
 				},
 				"url": {
 					"raw": "{{hostname}}:{{port}}/command/{{componentType}}/{{componentName}}/oneway",
@@ -105,7 +105,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"move\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"keyName\": \"coords\",\n    \"keyType\": \"RaDecKey\",\n    \"values\": [{\n      \"ra\": 7.3,\n      \"dec\": 12.1\n    }, {\n      \"ra\": 9.1,\n      \"dec\": 2.9\n    }],\n    \"units\": \"NoUnits\"\n  }]\n}"
+					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"move\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"units\": \"NoUnits\",\n    \"keyName\": \"planets\",\n    \"values\": [\n      {\n        \"_type\": \"SolarSystemCoord\",\n        \"tag\": \"planet\",\n        \"body\": \"Jupiter\"\n      },\n      {\n        \"_type\": \"SolarSystemCoord\",\n        \"tag\": \"planet\",\n        \"body\": \"Venus\"\n      }\n    ]\n  }]\n}"
 				},
 				"url": {
 					"raw": "{{hostname}}:{{port}}/command/{{componentType}}/{{componentName}}/submit",
