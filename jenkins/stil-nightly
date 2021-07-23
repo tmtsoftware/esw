@@ -43,6 +43,17 @@ pipeline {
                             reportFiles          : 'index.html',
                             reportName           : "Scoverage Report"
                     ])
+
+                    // Generate RTM
+                    sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
+                    // Upload RTM
+                    publishHTML(target: [
+                        alwaysLinkToLastBuild: false,
+                        keepAll              : true,
+                        reportDir            : './target/RTM/',
+                        reportFiles          : 'index.html',
+                        reportName           : "Test-Story-Requirement mapping"
+                    ])
                 }
             }
         }
@@ -56,16 +67,6 @@ pipeline {
 
     post {
         always {
-            // Generate RTM
-            sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
-            // Upload RTM
-            publishHTML(target: [
-              alwaysLinkToLastBuild: false,
-              keepAll              : true,
-              reportDir            : './target/RTM/',
-              reportFiles          : 'index.html',
-              reportName           : "Test-Story-Requirement mapping"
-            ])
             script {
                 sendNotification(currentBuild.result)
             }
