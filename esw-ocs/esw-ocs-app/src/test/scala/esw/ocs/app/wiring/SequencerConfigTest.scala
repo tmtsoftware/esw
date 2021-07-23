@@ -5,7 +5,7 @@ import java.time.Duration
 import akka.Done
 import com.typesafe.config.{Config, ConfigException, ConfigFactory}
 import csw.params.commands.SequenceCommand
-import csw.prefix.models.Subsystem.{NSCU, TCS}
+import csw.prefix.models.Subsystem.{APS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.ObsMode
@@ -22,12 +22,12 @@ class SequencerConfigTest extends BaseTestSuite {
 
   "from" must {
     "create SequencerConfig based on subsystem and obsMode | ESW-103, ESW-279, ESW-290" in {
-      val subsystem        = NSCU
+      val subsystem        = APS
       val obsMode          = ObsMode("darknight")
       val sequencerConfigs = SequencerConfig.from(validConf, subsystem, obsMode)
 
       sequencerConfigs.prefix.componentName should ===("darknight")
-      sequencerConfigs.prefix should ===(Prefix(NSCU, "darknight"))
+      sequencerConfigs.prefix should ===(Prefix(APS, "darknight"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
       sequencerConfigs.heartbeatInterval should ===(Duration.ofSeconds(3))
       sequencerConfigs.enableThreadMonitoring should ===(true)

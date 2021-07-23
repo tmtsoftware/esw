@@ -22,7 +22,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
   private val iris: Resource    = Resource(IRIS)
   private val tcs: Resource     = Resource(TCS)
   private val nfiraos: Resource = Resource(NFIRAOS)
-  private val nscu: Resource    = Resource(Subsystem.NSCU)
+  private val aps: Resource     = Resource(Subsystem.APS)
 
   private val configUtils                 = mock[ConfigUtils]
   private val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
@@ -53,7 +53,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
         val expectedConfig = SequenceManagerConfig(
           Map(
             ObsMode("IRIS_DarkNight") -> ObsModeConfig(Resources(iris, tcs, nfiraos), darkNightSequencers),
-            ObsMode("IRIS_Cal")       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
+            ObsMode("IRIS_Cal")       -> ObsModeConfig(Resources(iris, aps, nfiraos), calSequencers)
           )
         )
         config.futureValue should ===(expectedConfig)

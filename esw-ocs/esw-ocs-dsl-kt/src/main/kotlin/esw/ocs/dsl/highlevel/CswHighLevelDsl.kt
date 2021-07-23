@@ -32,8 +32,8 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
 
     fun presetStart(obsId: ObsId): ObserveEvent       = sequencerObserveEvent.presetStart(obsId)
     fun presetEnd(obsId: ObsId): ObserveEvent         = sequencerObserveEvent.presetEnd(obsId)
-    fun guidstarAcqStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.guidstarAcqStart(obsId)
-    fun guidstarAcqEnd(obsId: ObsId): ObserveEvent    = sequencerObserveEvent.guidstarAcqEnd(obsId)
+    fun guidestarAcqStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.guidestarAcqStart(obsId)
+    fun guidestarAcqEnd(obsId: ObsId): ObserveEvent    = sequencerObserveEvent.guidestarAcqEnd(obsId)
     fun scitargetAcqStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.scitargetAcqStart(obsId)
     fun scitargetAcqEnd(obsId: ObsId): ObserveEvent   = sequencerObserveEvent.scitargetAcqEnd(obsId)
     fun observationStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.observationStart(obsId)

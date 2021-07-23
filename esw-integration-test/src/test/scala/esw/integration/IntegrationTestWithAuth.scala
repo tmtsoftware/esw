@@ -924,7 +924,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val expectedStatus = Set(
         ResourceStatusResponse(Resource(IRIS), InUse, Some(IRIS_CAL)),
-        ResourceStatusResponse(Resource(NSCU), InUse, Some(IRIS_CAL)),
+        ResourceStatusResponse(Resource(APS), InUse, Some(IRIS_CAL)),
         ResourceStatusResponse(Resource(WFOS), Available, None),
         ResourceStatusResponse(Resource(TCS), Available, None),
         ResourceStatusResponse(Resource(NFIRAOS), InUse, Some(IRIS_CAL))
@@ -949,7 +949,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val aoeswSeqCompPrefix              = Prefix(AOESW, "primary")
       val wfosSeqCompPrefix               = Prefix(WFOS, "primary")
       val irisResource                    = Resource(IRIS)
-      val nscuResource                    = Resource(NSCU)
+      val apsResource                     = Resource(APS)
       val nfiraosResource                 = Resource(NFIRAOS)
       val tcsResource                     = Resource(TCS)
       val wfosResource                    = Resource(WFOS)
@@ -968,7 +968,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
-          ObsModeDetails(IRIS_CAL, Configured, Resources(irisResource, nfiraosResource, nscuResource), irisCalSequencers),
+          ObsModeDetails(IRIS_CAL, Configured, Resources(irisResource, nfiraosResource, apsResource), irisCalSequencers),
           ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource), wfosCalSequencers),
           ObsModeDetails(
             IRIS_DARKNIGHT,

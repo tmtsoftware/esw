@@ -22,7 +22,7 @@ Authorization: Bearer {{access_token}}
         "sequencers": ["IRIS", "ESW", "TCS"]
       },
       "IRIS_Cal": {
-        "resources": ["IRIS", "NSCU", "NFIRAOS"],
+        "resources": ["IRIS", "APS", "NFIRAOS"],
         "sequencers": ["IRIS", "ESW", "AOESW"]
       },
       "WFOS_Cal": {
