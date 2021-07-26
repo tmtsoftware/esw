@@ -972,7 +972,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
           ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource), wfosCalSequencers),
           ObsModeDetails(
             IRIS_DARKNIGHT,
-            NonConfigurable(List(ESW, TCS)),
+            NonConfigurable(List(IRIS, TCS)),
             Resources(irisResource, tcsResource, nfiraosResource),
             darkNightSequencers
           )

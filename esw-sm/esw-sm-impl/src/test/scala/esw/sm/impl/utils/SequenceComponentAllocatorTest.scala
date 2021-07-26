@@ -27,7 +27,7 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
         )
         .rightValue
 
-      val expected = List((TCS, tcsPrimarySeqCompLoc), (IRIS, irisPrimarySeqCompLoc), (ESW, eswPrimarySeqCompLoc))
+      val expected = List((ESW, eswPrimarySeqCompLoc), (TCS, tcsPrimarySeqCompLoc), (IRIS, irisPrimarySeqCompLoc))
 
       sequencerToSeqCompMapping should ===(expected)
     }
@@ -40,7 +40,7 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
         )
         .rightValue
 
-      val expected = List((TCS, eswPrimarySeqCompLoc), (IRIS, irisPrimarySeqCompLoc), (ESW, eswSecondarySeqCompLoc))
+      val expected = List((ESW, eswPrimarySeqCompLoc), (TCS, eswSecondarySeqCompLoc), (IRIS, irisPrimarySeqCompLoc))
 
       sequencerToSeqCompMapping should ===(expected)
     }

@@ -14,8 +14,11 @@ class SequenceComponentAllocator() {
       sequenceComponents: List[SeqCompLocation],
       sequencers: Sequencers
   ): Either[SequenceComponentNotAvailable, List[(Subsystem, SeqCompLocation)]] = {
-    val subsystems = sequencers.subsystems
-    var locations  = sequenceComponents
+    val subsystems = {
+      val partByESW = sequencers.subsystems.partition(_ == Subsystem.ESW)
+      partByESW._1 ++ partByESW._2
+    }
+    var locations = sequenceComponents
     val mapping = for {
       subsystem       <- subsystems
       seqCompLocation <- findSeqComp(subsystem, locations)
