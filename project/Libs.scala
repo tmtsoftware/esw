@@ -7,12 +7,12 @@ import java.util.Properties
 import scala.util.Using
 
 object Libs {
-  private val MSocketVersion = "0.4.0"
+  private val MSocketVersion = "b012388205"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.6"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.7.0") //MIT License
   val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.37" // MIT License
-  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0-M1" //BSD 3-clause "New" or "Revised" License
+  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0" //BSD 3-clause "New" or "Revised" License
   val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.2.9") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"   //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
