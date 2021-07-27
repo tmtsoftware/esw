@@ -99,10 +99,10 @@ As soon as websocket connection gets disconnected, this number decreases.
 1. Active event service pattern subscribers. (CommandType = `SubscribeWithPattern`)
 1. Active event service subscribers. (CommandType = `SubscribeEvent`)
 1. Active websocket request per second. This indicates trend of websocket connections over period of time.
-1. Events rate per client/sec. This indicates rate at which events are flowing via websocket connection. Here client indicates unique application name and hostname combination, for example, `{app_name: eng-ui, hostname: 192.168.1.3}`
-1. Active websocket connections per client. This indicates number of active websocket connections per unique application name and hostname combination.
-1. Active event subscriptions per client. This indicates number of active event subscribers per unique application name and hostname combination.
-1. Active event pattern subscriptions per client. This indicates number of active event subscribers per unique application name and hostname combination.
+1. Events rate per client/sec. This indicates rate at which events are flowing via websocket connection. Here client indicates unique application name and username combination, for example, `{app_name: eng-ui, username: Jena}`
+1. Active websocket connections per client. This indicates number of active websocket connections per unique application name and username combination.
+1. Active event subscriptions per client. This indicates number of active event subscribers per unique application name and username combination.
+1. Active event pattern subscriptions per client. This indicates number of active event subscribers per unique application name and username combination.
 
 See the screenshots below from the integration of gateway metrics with Prometheus/Grafana.
 

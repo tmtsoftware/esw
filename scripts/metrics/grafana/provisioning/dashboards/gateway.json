@@ -46,9 +46,7 @@
       "options": {
         "colorMode": "value",
         "fieldOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "defaults": {
             "mappings": [
               {
@@ -297,9 +295,7 @@
       "links": [],
       "options": {
         "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "defaults": {
             "mappings": [
               {
@@ -357,9 +353,7 @@
       "id": 9,
       "options": {
         "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "defaults": {
             "mappings": [],
             "thresholds": {
@@ -409,9 +403,7 @@
       "links": [],
       "options": {
         "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "defaults": {
             "mappings": [
               {
@@ -586,7 +578,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (app_name, hostname) (rate(websocket_messages_per_connection_total{msg=\"Subscribe\"}[1m]))",
+          "expr": "sum by (app_name, username) (rate(websocket_messages_per_connection_total{msg=\"Subscribe\"}[1m]))",
           "legendFormat": "",
           "refId": "A"
         }
@@ -646,9 +638,7 @@
       "options": {
         "displayMode": "basic",
         "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "defaults": {
             "mappings": [],
             "max": 20,
@@ -675,10 +665,10 @@
       "pluginVersion": "6.6.2",
       "targets": [
         {
-          "expr": "sum by (app_name, hostname) (websocket_active_request_total)",
+          "expr": "sum by (app_name, username) (websocket_active_request_total)",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{app_name}}:{{hostname}}",
+          "legendFormat": "{{app_name}} ({{username}})",
           "refId": "A"
         }
       ],
@@ -701,9 +691,7 @@
       "options": {
         "displayMode": "basic",
         "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "defaults": {
             "mappings": [],
             "max": 20,
@@ -730,10 +718,10 @@
       "pluginVersion": "6.6.2",
       "targets": [
         {
-          "expr": "sum by (app_name, hostname) (websocket_active_request_total{msg=\"Subscribe\"})",
+          "expr": "sum by (app_name, username) (websocket_active_request_total{msg=\"Subscribe\"})",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{app_name}}:{{hostname}}",
+          "legendFormat": "{{app_name}} ({{username}})",
           "refId": "A"
         }
       ],
@@ -756,9 +744,7 @@
       "options": {
         "displayMode": "basic",
         "fieldOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "defaults": {
             "mappings": [],
             "max": 20,
@@ -785,10 +771,10 @@
       "pluginVersion": "6.6.2",
       "targets": [
         {
-          "expr": "sum by (app_name, hostname, subscribed_pattern, subsystem) (websocket_active_request_total{msg=\"SubscribeWithPattern\"})",
+          "expr": "sum by (app_name, username, subscribed_pattern, subsystem) (websocket_active_request_total{msg=\"SubscribeWithPattern\"})",
           "format": "time_series",
           "instant": true,
-          "legendFormat": "{{app_name}}:{{hostname}} [Pattern:\"{{subscribed_pattern}}\", Subsystem:{{subsystem}}]",
+          "legendFormat": "{{app_name}} ({{username}}) [Pattern:\"{{subscribed_pattern}}\", Subsystem:{{subsystem}}]",
           "refId": "A"
         }
       ],

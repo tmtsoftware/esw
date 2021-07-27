@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # Check if two input arguments provided
-if [ "$#" -ne 2 ]
-then
+if [ "$#" -ne 2 ]; then
     echo "Please provide the following arguments: <gateway_ip> <access_token>"
     echo "e.g. ./publish.sh 10.1.1.1 eyJhbGciOiJSUzI1NiIsInR5cCIgO..."
     exit 1
@@ -11,16 +10,14 @@ fi
 ip=$1
 token=$2
 
-for i in {1..10000}
-do
+for i in {1..10000}; do
     curl -X POST \
-    http://$ip:8090/post-endpoint \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $token" \
-    -H "X-Real-IP: $ip" \
-    -H "Username: osw-user1" \
-    -H "App-Name: eng-ui" \
-    -d '{
+        http://$ip:8090/post-endpoint \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $token" \
+        -H "X-TMT-Username: Bob" \
+        -H "X-TMT-App-Name: event-dashboard" \
+        -d '{
         "_type": "PublishEvent",
         "event": {
             "_type": "ObserveEvent",
@@ -31,6 +28,6 @@ do
             "paramSet": []
         }
     }'
-    
+
     sleep 0.2
 done

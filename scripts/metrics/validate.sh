@@ -1,23 +1,22 @@
 #!/usr/bin/env bash
 
 # Check if two input arguments provided
-if [ "$#" -ne 2 ]
-then
-    echo "Please provide the following arguments: <gateway_ip> <access_token>"
-    echo "e.g. ./validate.sh 10.1.1.1 eyJhbGciOiJSUzI1NiIsInR5cCIgO..."
-    exit 1
+if [ "$#" -ne 2 ]; then
+  echo "Please provide the following arguments: <gateway_ip> <access_token>"
+  echo "e.g. ./validate.sh 10.1.1.1 eyJhbGciOiJSUzI1NiIsInR5cCIgO..."
+  exit 1
 fi
 
 ip=$1
 token=$2
 
-for i in {1..10000}
-do
-    curl -X POST \
+for i in {1..10000}; do
+  curl -X POST \
     http://$ip:8090/post-endpoint \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $token" \
-    -H "X-Real-IP: $ip" \
+    -H "X-TMT-Username: Jane" \
+    -H "X-TMT-App-Name: eng-ui" \
     -d '{
       "_type": "ComponentCommand",
       "componentId": {
@@ -35,6 +34,6 @@ do
         }
       }
     }'
-    
-    sleep 0.2
+
+  sleep 0.2
 done
