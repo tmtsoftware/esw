@@ -948,6 +948,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val irisSeqCompPrefix               = Prefix(IRIS, "primary")
       val aoeswSeqCompPrefix              = Prefix(AOESW, "primary")
       val wfosSeqCompPrefix               = Prefix(WFOS, "primary")
+      val tcsSeqCompPrefix                = Prefix(TCS, "primary")
       val irisResource                    = Resource(IRIS)
       val apsResource                     = Resource(APS)
       val nfiraosResource                 = Resource(NFIRAOS)
@@ -963,6 +964,22 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       )
 
       val sequenceManager = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
+
+      val expectedMessage0 = ObsModesDetailsResponse.Success(
+        Set(
+          ObsModeDetails(IRIS_CAL, Configurable, Resources(irisResource, nfiraosResource, apsResource), irisCalSequencers),
+          ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource), wfosCalSequencers),
+          ObsModeDetails(
+            IRIS_DARKNIGHT,
+            Configurable,
+            Resources(irisResource, tcsResource, nfiraosResource),
+            darkNightSequencers
+          )
+        )
+      )
+
+      val actualResponse0 = sequenceManager.getObsModesDetails.futureValue.asInstanceOf[ObsModesDetailsResponse.Success]
+      actualResponse0 should ===(expectedMessage0)
 
       sequenceManager.configure(IRIS_CAL).futureValue
 
@@ -981,6 +998,24 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val actualResponse = sequenceManager.getObsModesDetails.futureValue.asInstanceOf[ObsModesDetailsResponse.Success]
       actualResponse should ===(expectedMessage)
+
+      TestSetup.startSequenceComponents(tcsSeqCompPrefix)
+
+      val expectedMessage1 = ObsModesDetailsResponse.Success(
+        Set(
+          ObsModeDetails(IRIS_CAL, Configured, Resources(irisResource, nfiraosResource, apsResource), irisCalSequencers),
+          ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource), wfosCalSequencers),
+          ObsModeDetails(
+            IRIS_DARKNIGHT,
+            NonConfigurable(List(IRIS)),
+            Resources(irisResource, tcsResource, nfiraosResource),
+            darkNightSequencers
+          )
+        )
+      )
+
+      val actualResponse1 = sequenceManager.getObsModesDetails.futureValue.asInstanceOf[ObsModesDetailsResponse.Success]
+      actualResponse1 should ===(expectedMessage1)
 
       sequenceManager.shutdownAllSequenceComponents().futureValue
       TestSetup.cleanup()
