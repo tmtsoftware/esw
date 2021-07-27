@@ -69,7 +69,6 @@ class WebsocketMetricsTest
 
   private val labelNames = List(
     "msg",
-    "hostname",
     "app_name",
     "username",
     "command_msg",
@@ -83,7 +82,6 @@ class WebsocketMetricsTest
   private val username = randomString(10)
   private def labels(
       msg: String,
-      hostname: String = "unknown",
       appName: String = appName,
       username: String = username,
       commandMsg: String = "",
@@ -94,7 +92,6 @@ class WebsocketMetricsTest
   ) =
     List(
       msg,
-      hostname,
       appName,
       username,
       commandMsg,
@@ -115,7 +112,7 @@ class WebsocketMetricsTest
     val p        = Promise[Res]()
     withMock(p)
 
-    WS(s"/websocket-endpoint?App-Name=$appName&Username=$username", wsClient.flow) ~> wsRoute ~> check {
+    WS(s"/websocket-endpoint?appName=$appName&username=$username", wsClient.flow) ~> wsRoute ~> check {
       getGaugeValue shouldBe 0
       getCounterValue shouldBe 0
       wsClient.sendMessage(ContentType.Json.strictMessage(req))
@@ -176,7 +173,7 @@ class WebsocketMetricsTest
     val eventStream        = rawStream.mapMaterializedValue(_ => mock[EventSubscription])
     when(eventSubscriber.subscribe(Set(eventKey), 100.millis, RateLimiterMode)).thenReturn(eventStream)
 
-    WS(s"/websocket-endpoint?App-Name=$appName&Username=$username", wsClient.flow) ~> wsRoute ~> check {
+    WS(s"/websocket-endpoint?appName=$appName&username=$username", wsClient.flow) ~> wsRoute ~> check {
       subscribeGaugeValue shouldBe 0
       wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
       isWebSocketUpgrade shouldBe true

@@ -57,7 +57,6 @@ class PostMetricsTest
 
   private val labelNames = List(
     "msg",
-    "hostname",
     "app_name",
     "username",
     "command_msg",
@@ -68,12 +67,11 @@ class PostMetricsTest
   private val username = randomString(10)
   def labelValues(
       msg: String,
-      hostName: String = "unknown",
       appName: String = appName,
       username: String = username,
       commandMsg: String = "",
       sequencerMsg: String = ""
-  ): List[String] = List(msg, hostName, appName, username, commandMsg, sequencerMsg)
+  ): List[String] = List(msg, appName, username, commandMsg, sequencerMsg)
 
   Table(
     ("PostRequest", "Labels"),
