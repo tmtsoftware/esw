@@ -79,7 +79,7 @@ class PostMetricsTest
     (SequencerCommand(componentId, Pause), labelValues("SequencerCommand", sequencerMsg = "Pause")),
     (GetEvent(Set(eventKey)), labelValues("GetEvent"))
   ).foreach { case (request, labels) =>
-    s"increment http counter on every ${LabelExtractor.createLabel(request)} request | ESW-197, ESW-386" in {
+    s"increment http counter on every ${LabelExtractor.createLabel(request)} request | ESW-197, ESW-386, ESW-531" in {
       runCounterTest(request, labels)
     }
   }
