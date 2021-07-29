@@ -1,13 +1,13 @@
 # Gateway Technical Documentation
 
-Gateway gives access to all CSW and ESW services (available to user) and components from browser-based user interfaces.
-Gateway also enforces auth on command and sequencer APIs to protect from unauthorised access.
+The User Interface Gateway gives access to all CSW and ESW services (available to user) and components from browser-based user interfaces.
+The Gateway also enforces authorization on Command Service APIs to components and Sequencer APIs to protect from unauthorized access.
 
 ![ESW Gateway](../images/gateway/gateway.svg)
 
 ## Implementation
 
-Gateway service is an HTTP service which relies on `msocket` framework. Internally it delegates to the various
+The Gateway is an HTTP service which relies on `msocket` framework. Internally it delegates to the various
 services(of both ESW or CSW) needed as per the request.
 
 It provides access to following:
@@ -15,28 +15,28 @@ It provides access to following:
 * Command Service APIs (CSW)
 * Alarm APIs (CSW)
 * Event APIs (CSW)
-* Sequencer Service APIs (ESW)
+* Sequencer APIs (ESW)
 * Admin APIs (ESW)
 * Logging APIS (ESW)
 
-Some services are not part of the gateway. This is mainly because of 2 reasons:
+Some services are not part of the Gateway. This is mainly because of 2 reasons:
 
-1. The services can be accessed via its own HTTP interface. Example, Config Service.
-1. The services are not user facing. Example, Sequence Manager Service.
+1. The service can be accessed via its own HTTP interface. Example, Config Service.
+1. The service is not user facing. Example, the Sequence Manager Service.
 
-The security directives created in the app for command and sequencer services are passed on to the routes in order to
-enable auth for command and sequencer services.
+The Command and Sequencer Command Services provide configurable protection to restrict certain commands to certain users.
+This is done by applying security directives on the Command Service routes that check for proper authorization.
 
 ## API call flow
 
-Let's take an example of `AbortSequence` command coming from browser to sequencer service via a gateway:
+Let's take an example of `AbortSequence` command coming from a browser to a Sequencer via the Gateway:
 
-1. Since sequencer APIs are protected using auth, the UI app gets a valid token from `AAS` that will enable access to
-sequencer API in gateway.
-1. The UI app will create a `abortSequence` request using the auth token and send it to gateway.
-1. Gateway validates the request auth token and the role of UI app against the `command role config`.
-1. If the validation is successful, gateway delegates the request to sequencer service.
-1. Sequencer service executes the request and return the stepList as response.
+1. Since Sequencer APIs are protected using authorization, the UI app gets a valid token from `AAS` that will enable access to
+Sequencer API in the Gateway.
+1. The UI app will create an `abortSequence` request using the authorization token and send it to the Gateway.
+1. The Gateway validates the request authorization token and the role of UI app against the `command role config`.
+1. If the validation is successful, the Gateway delegates the request to the Sequencer Command Service.
+1. The Sequencer executes the request and returns the `stepList` as a response.
 1. This response is given back to the UI app that made the request.
 
 Below diagram depicts the flow mapped by above points:
@@ -74,37 +74,37 @@ For running Gateway server, please refer @ref:[this](../uisupport/gateway-app.md
 
 ## Metrics
 
-Gateway has support for capturing metrics. The metrics can be enabled by providing `--metrics` or `-m` flag
-while starting gateway-server application.
+The Gateway has support for capturing metrics. The metrics can be enabled by providing `--metrics` or `-m` flag
+while starting the `gateway-server` application.
 
-Gateway metrics are powered by [prometheus](https://prometheus.io/). We use prometheus java [client](https://github.com/prometheus/client_java) to capture http and websocket based metrics.
-Gateway exposes `/metrics` endpoint where snapshot of metrics can be fetched. Prometheus server then polls the metrics endpoint and stores the metrics in a time series database which then can be used for visualization using tools like grafana.
+Gateway metrics are powered by [Prometheus](https://prometheus.io/). We use a Prometheus Java [client](https://github.com/prometheus/client_java) to capture HTTP and websocket-based metrics.
+The Gateway exposes a `/metrics` endpoint where a snapshot of metrics can be fetched. The Prometheus server then polls the metrics endpoint and stores the metrics in a time series database which then can be used for visualization using tools like [Grafana](https://grafana.com/).
 
-Gateway metrics are categorized into two major sections that are **HTTP Metrics** and **Websocket Metrics**.
+Gateway metrics are categorized into two major sections: **HTTP Metrics** and **Websocket Metrics**.
 
 ### HTTP Metrics
 
-HTTP metrics section includes following different types of metrics:
+The HTTP metrics section includes following different types of metrics:
 
-1. Total HTTP requests processed by gateway. This includes all the commands, events, log etc. messages processed by gateway since the beginning.
-1. HTTP requests flowing via gateway per second. These are categorized by command type, for example, `ComponentCommand`, `SequencerCommand`, `GetEvent`, `PublishEvent` etc. This metric help us to understand trend of requests processed per second.
-1. Commands passing through gateway per second. These commands can be `Submit`, `Validate`, `Oneway` etc.
+1. Total HTTP requests processed by the Gateway. This includes all the commands, events, log etc. messages processed by the Gateway since it was started.
+1. HTTP requests flowing via the Gateway per second. These are categorized by command type, for example, `ComponentCommand`, `SequencerCommand`, `GetEvent`, `PublishEvent` etc. This metric helps us to understand the trend of requests processed per second.
+1. Commands passing through the Gateway per second. These commands can be `Submit`, `Validate`, `Oneway` etc.
 
 ### Websocket Metrics
 
-Websocket metrics section includes following different types of metrics:
+The Websocket metrics section includes the following different types of metrics:
 
-1. Active Websocket connections. This number indicates all the currently connected websocket clients to gateway.
-As soon as websocket connection gets disconnected, this number decreases.
-1. Active event service pattern subscribers. (CommandType = `SubscribeWithPattern`)
-1. Active event service subscribers. (CommandType = `SubscribeEvent`)
-1. Active websocket request per second. This indicates trend of websocket connections over period of time.
-1. Events rate per client/sec. This indicates rate at which events are flowing via websocket connection. Here client indicates unique application name and username combination, for example, `{app_name: eng-ui, username: Jena}`
-1. Active websocket connections per client. This indicates number of active websocket connections per unique application name and username combination.
-1. Active event subscriptions per client. This indicates number of active event subscribers per unique application name and username combination.
-1. Active event pattern subscriptions per client. This indicates number of active event subscribers per unique application name and username combination.
+1. Active WebSocket connections. This number indicates all the currently connected websocket clients to the Gateway.
+As soon as a WebSocket connection gets disconnected, this number decreases.
+1. Active Event Service pattern subscribers. (CommandType = `SubscribeWithPattern`)
+1. Active Event Service subscribers. (CommandType = `SubscribeEvent`)
+1. Active WebSocket requests per second. This indicates the trend of WebSocket connections over a period of time.
+1. Event rate per client per second. This indicates the rate at which events are flowing via a WebSocket connection. Here, a client indicates a unique application name and username combination, for example, `{app_name: eng-ui, username: Jena}`
+1. Active WebSocket connections per client. This indicates the number of active WebSocket connections per unique application name and username combination.
+1. Active event subscriptions per client. This indicates the number of active event subscribers per unique application name and username combination.
+1. Active event pattern subscriptions per client. This indicates the number of active event subscribers per unique application name and username combination.
 
-See the screenshots below from the integration of gateway metrics with Prometheus/Grafana.
+The following screenshots show some example Gateway metrics using Grafana.
 
 ![HTTP Metrics](../images/gateway/http_metrics.png)
 ![Websocket Metrics 1](../images/gateway/ws_metrics1.png)
@@ -113,6 +113,6 @@ See the screenshots below from the integration of gateway metrics with Prometheu
 
 @@@ note
 
-Above screenshots are taken by following instruction provided [here]($github.base_url$/scripts/metrics/README.md).
+The screenshots above were taken by following the instructions provided [here]($github.base_url$/scripts/metrics/README.md).
 
 @@@
