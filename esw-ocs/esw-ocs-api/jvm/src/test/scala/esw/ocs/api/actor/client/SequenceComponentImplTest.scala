@@ -11,7 +11,6 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
-import esw.ocs.api.utils.RandomUtils
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import java.net.URI
@@ -33,9 +32,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
 
   import askProxyTestKit._
 
-  private def randomString5 = RandomUtils.randomString5()
-
-  private val obsMode   = ObsMode(randomString5)
+  private val obsMode   = ObsMode(randomString5())
   private val subsystem = randomSubsystem
 
   "LoadScript | ESW-103, ESW-362" in {
