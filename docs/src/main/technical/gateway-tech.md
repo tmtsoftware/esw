@@ -111,6 +111,8 @@ The following screenshots show some example Gateway metrics using Grafana.
 ![Websocket Metrics 2](../images/gateway/ws_metrics2.png)
 ![Websocket Metrics 3](../images/gateway/ws_metrics3.png)
 
+In the above screenshots, last two plots are labelled with `App Name (Username)` format, for example, **event-dashboard (Alex)**, **event-dashboard (Bob)**.
+
 @@@ note
 
 The screenshots above were taken by following the instructions provided [here]($github.base_url$/scripts/metrics/README.md).
