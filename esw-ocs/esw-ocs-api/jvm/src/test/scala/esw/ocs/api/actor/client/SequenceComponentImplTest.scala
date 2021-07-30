@@ -1,6 +1,5 @@
 package esw.ocs.api.actor.client
 
-import java.net.URI
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
@@ -15,7 +14,7 @@ import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, Sc
 import esw.ocs.api.utils.RandomUtils
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
-import scala.util.Random
+import java.net.URI
 
 class SequenceComponentImplTest extends ActorTestSuit {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SequenceComponentImplTest")

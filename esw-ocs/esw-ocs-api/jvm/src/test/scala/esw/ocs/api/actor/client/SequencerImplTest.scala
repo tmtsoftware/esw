@@ -23,7 +23,6 @@ import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 import java.net.URI
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import scala.util.Random
 
 class SequencerImplTest extends ActorTestSuit {
 
