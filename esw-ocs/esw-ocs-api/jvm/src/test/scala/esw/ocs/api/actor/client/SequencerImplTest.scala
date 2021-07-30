@@ -253,7 +253,7 @@ class SequencerImplTest extends ActorTestSuit {
   }
 
   "submitAndWait | ESW-222, ESW-362" in {
-    val id                 = Id(randomString5())
+    val id                 = Id(randomString5)
     val queryFinalResponse = mock[SubmitResponse]
     withBehavior {
       case SubmitSequenceInternal(`sequence`, replyTo) => replyTo ! SubmitResult(Started(id))
@@ -293,7 +293,7 @@ class SequencerImplTest extends ActorTestSuit {
   "getSequenceComponent | ESW-255, ESW-362" in {
     val getSequenceComponentResponse =
       AkkaLocation(
-        AkkaConnection(ComponentId(Prefix(randomSubsystem, randomString5()), SequenceComponent)),
+        AkkaConnection(ComponentId(Prefix(randomSubsystem, randomString5), SequenceComponent)),
         new URI("uri"),
         Metadata.empty
       )

@@ -26,8 +26,6 @@ class SequenceManagerImplTest extends ActorTestSuit {
 
   import askProxyTestKit._
 
-  private def randomString5 = randomString(5)
-
   private val obsMode   = ObsMode(randomString5)
   private val subsystem = randomSubsystem
 
