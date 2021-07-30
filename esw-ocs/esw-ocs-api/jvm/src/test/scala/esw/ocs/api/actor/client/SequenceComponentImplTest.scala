@@ -1,7 +1,6 @@
 package esw.ocs.api.actor.client
 
 import java.net.URI
-
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
@@ -13,6 +12,7 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
+import esw.ocs.api.utils.RandomUtils
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import scala.util.Random
@@ -34,7 +34,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
 
   import askProxyTestKit._
 
-  private def randomString5 = Random.nextString(5)
+  private def randomString5 = RandomUtils.randomString5()
 
   private val obsMode   = ObsMode(randomString5)
   private val subsystem = randomSubsystem

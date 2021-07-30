@@ -17,6 +17,7 @@ import esw.ocs.api.actor.messages.InternalSequencerState._
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol._
+import esw.ocs.api.utils.RandomUtils
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 import java.net.URI
@@ -43,7 +44,7 @@ class SequencerImplTest extends ActorTestSuit {
   private val startTime                 = UTCTime.now()
   private val hint                      = "engineering"
 
-  private def randomString5 = Random.nextString(5)
+  private def randomString5 = RandomUtils.randomString5()
 
   "subscribeSequencerState should create an actor source that emits the state response | ESW-213" in {
     val sequencerStateResponse = mock[SequencerStateResponse]
