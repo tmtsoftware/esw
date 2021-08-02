@@ -5,7 +5,7 @@ import csw.alarm.models.Key.AlarmKey
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.models.{Level, LogMetadata}
 import csw.params.core.models.ObsId
-import csw.params.events.{EventKey, EventName, IRDetectorEvent, ObserveEvent, SystemEvent}
+import csw.params.events.{EventKey, EventName, IRDetectorEvent, ObserveEvent, OpticalDetectorEvent, SystemEvent, WFSDetectorEvent}
 import csw.prefix.models.Subsystem
 import esw.contract.data.sequencer.SequencerData
 import esw.gateway.api.protocol.GatewayRequest._
@@ -13,11 +13,16 @@ import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPa
 import esw.gateway.api.protocol._
 
 trait GatewayData extends SequencerData {
-  val componentId: ComponentId   = ComponentId(prefix, ComponentType.HCD)
-  val eventName: EventName       = EventName("offline")
-  val observeEvent: ObserveEvent = IRDetectorEvent.observeStart(prefix.toString, ObsId("1234A-432-123"))
-  val systemEvent: SystemEvent   = SystemEvent(prefix, eventName)
-  val eventKey: EventKey         = EventKey(prefix, eventName)
+  val componentId: ComponentId = ComponentId(prefix, ComponentType.HCD)
+  val eventName: EventName     = EventName("offline")
+  private val obsId1: ObsId    = ObsId("1234A-432-123")
+
+  val observeEvent: ObserveEvent           = IRDetectorEvent.observeStart(prefix, obsId1)
+  val wfsObserveEvent: ObserveEvent        = WFSDetectorEvent.publishSuccess(prefix)
+  val opticalDetObserveEvent: ObserveEvent = OpticalDetectorEvent.observeStart(prefix, obsId1)
+
+  val systemEvent: SystemEvent = SystemEvent(prefix, eventName)
+  val eventKey: EventKey       = EventKey(prefix, eventName)
 
   val logMetadata: LogMetadata = LogMetadata(Level.INFO, Level.DEBUG, Level.INFO, Level.ERROR)
 

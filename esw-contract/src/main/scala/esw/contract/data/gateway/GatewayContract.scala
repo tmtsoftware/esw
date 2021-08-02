@@ -35,7 +35,7 @@ import esw.ocs.api.protocol.OkOrUnhandledResponse
 object GatewayContract extends GatewayCodecs with GatewayData {
 
   private val models: ModelSet = ModelSet.models(
-    ModelType[Event](observeEvent, systemEvent),
+    ModelType[Event](observeEvent, systemEvent, wfsObserveEvent, opticalDetObserveEvent),
     ModelType(alarmKey),
     ModelType(AlarmSeverity),
     ModelType(prefix),
