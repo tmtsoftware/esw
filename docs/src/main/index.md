@@ -9,5 +9,6 @@
 - [Scripting with Sequencers](scripts/scripts-index.md)
 - [UI Support](uisupport/uisupp-index.md)
 - [Technical Documentation](technical/tech-index.md)
+- [Tutorials](tutorials/web-app-tutorial.md)
 
 @@@
