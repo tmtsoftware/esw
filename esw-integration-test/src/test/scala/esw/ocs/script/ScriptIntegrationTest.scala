@@ -384,7 +384,6 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       actualObserveEvent.eventName should ===(expectedEventName)
       actualObserveEvent.source should ===(expectedPrefix)
       actualObserveEvent.paramSet shouldBe Set(
-        StringKey.make("obsId").set("2021A-011-153"),
         StringKey.make("exposureId").set("2021A-011-153-TCS-DET-SCI0-0001")
       )
     }
