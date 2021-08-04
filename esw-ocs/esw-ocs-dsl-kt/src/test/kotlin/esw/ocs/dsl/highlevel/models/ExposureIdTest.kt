@@ -11,7 +11,7 @@ class ExposureIdTest {
         val expectedExposureId = ExposureId.apply("2021A-011-153-TCS-DET-SCI0-0001")
 
         exposureId shouldBe expectedExposureId
-        exposureId.obsId shouldBe expectedExposureId.obsId()
+        exposureId.obsId shouldBe expectedExposureId.obsId().get()
         exposureId.det shouldBe expectedExposureId.det()
         exposureId.typLevel shouldBe expectedExposureId.typLevel()
         exposureId.subsystem shouldBe expectedExposureId.subsystem()
