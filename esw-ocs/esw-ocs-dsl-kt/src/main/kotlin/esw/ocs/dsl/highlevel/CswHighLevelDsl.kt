@@ -2,7 +2,7 @@ package esw.ocs.dsl.highlevel
 
 import csw.location.api.models.ComponentType
 import csw.params.core.generics.Key
-import csw.params.core.models.ExposureIdType
+import csw.params.core.models.ExposureId
 import csw.params.core.models.ObsId
 import csw.params.events.EventKey
 import csw.params.events.ObserveEvent
@@ -41,13 +41,13 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
     fun observeStart(obsId: ObsId): ObserveEvent      = sequencerObserveEvent.observeStart(obsId)
     fun observeEnd(obsId: ObsId): ObserveEvent        = sequencerObserveEvent.observeEnd(obsId)
 
-    fun exposureStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.exposureStart(obsId, exposureId)
-    fun exposureEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.exposureEnd(obsId, exposureId)
-    fun readoutEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.readoutEnd(obsId, exposureId)
-    fun readoutFailed(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.readoutFailed(obsId, exposureId)
-    fun dataWriteStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.dataWriteStart(obsId, exposureId)
-    fun dataWriteEnd(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.dataWriteEnd(obsId, exposureId)
-    fun prepareStart(obsId: ObsId, exposureId: ExposureIdType): ObserveEvent = sequencerObserveEvent.prepareStart(obsId, exposureId)
+    fun exposureStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.exposureStart(exposureId)
+    fun exposureEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.exposureEnd(exposureId)
+    fun readoutEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.readoutEnd(exposureId)
+    fun readoutFailed(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.readoutFailed(exposureId)
+    fun dataWriteStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.dataWriteStart(exposureId)
+    fun dataWriteEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.dataWriteEnd(exposureId)
+    fun prepareStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.prepareStart(exposureId)
 
     fun observePaused(): ObserveEvent  = sequencerObserveEvent.observePaused()
     fun observeResumed(): ObserveEvent = sequencerObserveEvent.observeResumed()

@@ -10,7 +10,7 @@ script {
     val testAssembly = Assembly(ESW, "test", Duration.seconds(10))
 
     onSetup("command-2") { command ->
-        val dataWriteStart = sequencerObserveEvent.dataWriteStart(command.maybeObsId().get(), ExposureId("2021A-011-153-TCS-DET-SCI0-0001"))
+        val dataWriteStart = sequencerObserveEvent.dataWriteStart(ExposureId("2021A-011-153-TCS-DET-SCI0-0001"))
         publishEvent(dataWriteStart)
     }
 
@@ -23,10 +23,9 @@ script {
         val exposureId = ExposureId("2021A-011-153-TCS-DET-SCI0-0001")
 
         // do something with ExposureId components
-        println(exposureId.obsId.programId)
-        println(exposureId.obsId.programId.semesterId)
-
-        publishEvent(observeEnd(exposureId.obsId))
+        println(exposureId.obsId!!.programId)
+        println(exposureId.obsId!!.programId.semesterId)
+        publishEvent(observeEnd(exposureId.obsId!!))
     }
 
 
@@ -45,7 +44,7 @@ script {
         println(exposureId.det)
 
         // ESW-81 demonstrate publishing of sequencer observe event exposureStart
-        publishEvent(exposureStart(obsId, exposureId))
+        publishEvent(exposureStart(exposureId))
     }
 
     onGoOffline {
@@ -60,7 +59,7 @@ script {
 
     onStop {
         //do some actions to stop
-        val event = sequencerObserveEvent.exposureEnd(ObsId("2021A-011-153"), ExposureId("2021A-011-153-TCS-DET-SCI0-0001"))
+        val event = sequencerObserveEvent.exposureEnd(ExposureId("2021A-011-153-TCS-DET-SCI0-0001"))
         publishEvent(event)
         //send stop command to downstream sequencer
         lgsfSequencer.stop()

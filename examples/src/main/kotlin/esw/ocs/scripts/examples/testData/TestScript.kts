@@ -38,7 +38,7 @@ script {
         println(exposureId.subsystem)
         println(exposureId.det)
 
-        publishEvent(exposureStart(obsId, exposureId))
+        publishEvent(exposureStart(exposureId))
     }
 
     onSetup("command-3") {
