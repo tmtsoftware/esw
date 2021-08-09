@@ -45,8 +45,8 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
     fun exposureEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.exposureEnd(exposureId)
     fun readoutEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.readoutEnd(exposureId)
     fun readoutFailed(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.readoutFailed(exposureId)
-    fun dataWriteStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.dataWriteStart(exposureId)
-    fun dataWriteEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.dataWriteEnd(exposureId)
+    fun dataWriteStart(exposureId: ExposureId, filename: String): ObserveEvent = sequencerObserveEvent.dataWriteStart(exposureId, filename)
+    fun dataWriteEnd(exposureId: ExposureId, filename: String): ObserveEvent = sequencerObserveEvent.dataWriteEnd(exposureId, filename)
     fun prepareStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.prepareStart(exposureId)
 
     fun observePaused(): ObserveEvent  = sequencerObserveEvent.observePaused()

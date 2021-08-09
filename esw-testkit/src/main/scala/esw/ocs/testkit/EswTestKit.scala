@@ -21,8 +21,8 @@ abstract class EswTestKit(services: Service*)
 
   implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = underlyingFrameworkTestKit.actorSystem
 
-  lazy val locationService: LocationService = underlyingFrameworkTestKit.frameworkWiring.locationService
-  lazy val eventService: EventService       = underlyingFrameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
+  lazy val locationService: LocationService = underlyingFrameworkTestKit.locationService
+  lazy val eventService: EventService       = underlyingFrameworkTestKit.eventService
   lazy val eventSubscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val eventPublisher: EventPublisher   = eventService.defaultPublisher
 

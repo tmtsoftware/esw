@@ -8,9 +8,9 @@ import kotlin.time.Duration
 script {
     val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10))
     val testAssembly = Assembly(ESW, "test", Duration.seconds(10))
-
+    val datafileName = "darknightData.txt"
     onSetup("command-2") { command ->
-        val dataWriteStart = sequencerObserveEvent.dataWriteStart(ExposureId("2021A-011-153-TCS-DET-SCI0-0001"))
+        val dataWriteStart = sequencerObserveEvent.dataWriteStart(ExposureId("2021A-011-153-TCS-DET-SCI0-0001"), datafileName)
         publishEvent(dataWriteStart)
     }
 

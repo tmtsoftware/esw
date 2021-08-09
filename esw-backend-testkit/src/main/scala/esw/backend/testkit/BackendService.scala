@@ -1,7 +1,5 @@
 package esw.backend.testkit
 
-import java.nio.file.Path
-
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import caseapp.RemainingArgs
@@ -10,13 +8,14 @@ import csw.location.api.scaladsl.LocationService
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 import csw.testkit.scaladsl.CSWService.AlarmServer
-import esw.backend.testkit.TSServicesCommands._
+import esw.backend.testkit.TSServicesCommands.*
 import esw.backend.testkit.stubs.{AgentServiceStub, GatewayStub, SequenceManagerStub}
 import esw.commons.cli.EswCommandApp
 import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, SequenceManager, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
+import java.nio.file.Path
 import scala.util.control.NonFatal
 
 object BackendService extends EswCommandApp[TSServicesCommands] {
@@ -48,7 +47,7 @@ object BackendService extends EswCommandApp[TSServicesCommands] {
 
     try {
       LoggingSystemFactory.start(progName, "0.1.0-SNAPSHOT", Networks().hostname, actorSystem)
-      import eswTestKit.frameworkTestKit.frameworkWiring.alarmServiceFactory
+      import eswTestKit.frameworkTestKit.alarmServiceFactory
 
       def initDefaultAlarms() = {
         val config            = ConfigFactory.parseResources(alarmConf)
