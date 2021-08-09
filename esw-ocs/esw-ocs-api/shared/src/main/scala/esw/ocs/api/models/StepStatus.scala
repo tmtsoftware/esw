@@ -1,5 +1,8 @@
 package esw.ocs.api.models
 
+/**
+ * This model represent the status of a particular step - Pending, InFight etc
+ */
 sealed trait StepStatus
 
 object StepStatus {

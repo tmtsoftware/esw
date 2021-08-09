@@ -1,6 +1,6 @@
 package esw.ocs.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
@@ -14,6 +14,14 @@ import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, Sc
 
 import scala.concurrent.Future
 
+/**
+ * Actor client for the sequence component. This client's apis sends message to sequence component's actor
+ * and returned the response provided by it
+ * This client takes actor ref of the sequence component as a constructor argument
+ *
+ * @param sequenceComponentLocation - location of the sequence component
+ * @param actorSystem - an Akka ActorSystem
+ */
 class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
     actorSystem: ActorSystem[_]
 ) extends SequenceComponentApi {

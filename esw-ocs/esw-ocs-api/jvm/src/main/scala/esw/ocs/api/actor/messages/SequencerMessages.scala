@@ -8,8 +8,13 @@ import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 
+/*
+ * These are messages(models) of sequencer actor.
+ * These are being used to communication with the sequencer actor
+ * and in the implementation of it.
+ */
 object SequencerMessages {
 
   sealed trait EswSequencerMessage       extends SequencerMsg

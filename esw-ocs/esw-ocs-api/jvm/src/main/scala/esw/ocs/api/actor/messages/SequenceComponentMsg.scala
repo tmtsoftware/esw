@@ -4,8 +4,13 @@ import akka.actor.typed.ActorRef
 import csw.prefix.models.Subsystem
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.ObsMode
-import esw.ocs.api.protocol.SequenceComponentResponse._
+import esw.ocs.api.protocol.SequenceComponentResponse.*
 
+/*
+ * These are messages(models) of sequence component actor.
+ * These are being used to communication with the sequence component actor
+ * and in the implementation of it.
+ */
 sealed trait SequenceComponentMsg
 sealed trait SequenceComponentRemoteMsg extends SequenceComponentMsg with OcsAkkaSerializable
 

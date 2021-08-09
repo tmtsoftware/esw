@@ -6,6 +6,9 @@ import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.{SequencerState, Step, StepList}
 
+/**
+ * These models are being used as responses for sequencers e.g., in SequencerApi
+ */
 sealed trait EswSequencerResponse     extends OcsAkkaSerializable
 sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name
 sealed trait GenericResponse          extends EswSequencerResponse // fixme: think about better name

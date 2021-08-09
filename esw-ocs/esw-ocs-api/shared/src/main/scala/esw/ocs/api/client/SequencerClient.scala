@@ -18,6 +18,13 @@ import msocket.api.{Subscription, Transport}
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * Http Client for the sequencer
+ *
+ * @param postClient -  a transport [[msocket.http.post.HttpPostTransport]] to communicate with http protocol
+ * @param websocketClient - a transport [[msocket.http.ws.WebsocketTransport]] to communicate with websocket
+ * @param ec - execution context
+ */
 class SequencerClient(
     postClient: Transport[SequencerRequest],
     websocketClient: Transport[SequencerStreamRequest]

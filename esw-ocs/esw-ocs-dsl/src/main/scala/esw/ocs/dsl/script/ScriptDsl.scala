@@ -18,6 +18,14 @@ import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * This is scala dsl for the sequencer script
+ *
+ * @param sequenceOperatorFactory - a factory/lamda which returns an instance of SequenceOperator
+ * @param logger - A logger to log
+ * @param strandEc - an StrandEc
+ * @param shutdownTask - a Runnable to shut down the script
+ */
 private[esw] class ScriptDsl(
     sequenceOperatorFactory: () => SequenceOperator,
     logger: ILogger,

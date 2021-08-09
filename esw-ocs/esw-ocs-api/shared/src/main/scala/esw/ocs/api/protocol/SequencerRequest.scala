@@ -4,6 +4,9 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 
+/**
+ * These models are being used as Http requests(POST) for the sequencer
+ */
 sealed trait SequencerRequest
 
 object SequencerRequest {

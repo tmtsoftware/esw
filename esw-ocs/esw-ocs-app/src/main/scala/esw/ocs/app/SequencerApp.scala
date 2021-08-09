@@ -1,7 +1,7 @@
 package esw.ocs.app
 
 import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import caseapp.RemainingArgs
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
@@ -24,6 +24,9 @@ import esw.ocs.impl.internal.SequencerServerFactory
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
+/*
+ * The main app to start sequencer/sequence component
+ * */
 object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   // $COVERAGE-OFF$
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
@@ -38,7 +41,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): SequenceComponentWiring = {
     val wiring = sequenceComponentWiring(command)
-    import wiring.actorRuntime._
+    import wiring.actorRuntime.*
     try {
       // irrespective of which command received, Sequence Component needs to be started
       val sequenceCompLocation = reportSequenceComponent(wiring.start())
@@ -70,8 +73,8 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
       sequenceComponentLocation: AkkaLocation,
       sequenceComponentWiring: SequenceComponentWiring
   ): ScriptResponseOrUnhandled = {
-    import sequenceComponentWiring._
-    import actorRuntime._
+    import sequenceComponentWiring.*
+    import actorRuntime.*
     val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
     val response: Future[ScriptResponseOrUnhandled] =
       (actorRef ? (LoadScript(subsystem, mode, _)))(SequenceComponentTimeouts.LoadScript, actorRuntime.typedSystem.scheduler)

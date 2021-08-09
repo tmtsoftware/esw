@@ -1,6 +1,6 @@
 package esw.ocs.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
@@ -18,15 +18,23 @@ import esw.constants.SequencerTimeouts
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.InternalSequencerState
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Loaded, Offline, Running}
-import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.models.{SequencerState, StepList}
+import esw.ocs.api.protocol.*
 import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
-import esw.ocs.api.protocol._
 import msocket.api.Subscription
 import msocket.jvm.SourceExtension.RichSource
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * Actor client for the sequencer. This client's apis sends message to sequencer actor
+ * and returned the response provided by sequencer
+ * This client takes actor ref of the sequencer as a constructor argument
+ *
+ * @param sequencer - actorRef of the Sequencer Actor
+ * @param system - an Akka ActorSystem
+ */
 class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_]) extends SequencerApi {
   private implicit val timeout: Timeout     = SequencerTimeouts.SequencerOperation
   private implicit val ec: ExecutionContext = system.executionContext

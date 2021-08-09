@@ -4,6 +4,9 @@ import enumeratum.{Enum, EnumEntry}
 
 import scala.collection.immutable.IndexedSeq
 
+/**
+ * The is model which represents the sequence component's state - Idle and Running
+ */
 sealed trait SequenceComponentState extends EnumEntry
 object SequenceComponentState extends Enum[SequenceComponentState] {
 

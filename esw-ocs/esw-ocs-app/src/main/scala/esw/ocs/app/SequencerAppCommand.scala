@@ -8,6 +8,9 @@ import esw.ocs.api.models.ObsMode
 
 import scala.util.Try
 
+/**
+ * SequencerAppCommand - a set of command line param written using case app for the sequencer/sequence component.
+ */
 sealed trait SequencerAppCommand {
   def seqCompSubsystem: Subsystem
   def name: Option[String]

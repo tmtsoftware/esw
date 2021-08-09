@@ -1,12 +1,20 @@
 package esw.ocs.app.wiring
 
-import java.time.Duration
-
 import com.typesafe.config.{Config, ConfigException}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.impl.script.ScriptLoadingException.ScriptConfigurationMissingException
 
+import java.time.Duration
+
+/**
+ * This is the sequencer config. which includes
+ *
+ * @param prefix - prefix of the sequencer
+ * @param scriptClass - the classpath of the script which is to be loaded in the sequencer
+ * @param heartbeatInterval -  interval to health check
+ * @param enableThreadMonitoring - boolean param to enable the thread monitoring
+ */
 private[ocs] final case class SequencerConfig(
     prefix: Prefix,
     scriptClass: String,

@@ -2,6 +2,14 @@ package esw.ocs.dsl.script
 
 import esw.ocs.dsl.params.Params
 
+/**
+ * This is a model which represent the state in the finite state machine scripts
+ *
+ * @param params - Params
+ * @param currentState - current state of the FSM
+ * @param maybeCurrentScript - current script according to the current state
+ * @param stateHandlers - Map of all state and their respective scripts
+ */
 private[esw] case class FsmScriptState(
     params: Params,
     private val currentState: Option[String],

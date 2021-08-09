@@ -2,14 +2,17 @@ package esw.ocs.api.codecs
 
 import csw.location.api.codec.LocationCodecs
 import csw.params.core.formats.ParamCodecs
-import esw.ocs.api.models._
+import esw.ocs.api.models.*
+import esw.ocs.api.protocol.*
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, OkOrUnhandled, ScriptResponseOrUnhandled}
-import esw.ocs.api.protocol._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 import msocket.api.codecs.BasicCodecs
 
+/**
+ * Codecs for the models which are being used in protocol(as a response/request model) communication(actor/http)
+ */
 object OcsCodecs extends OcsCodecs
 trait OcsCodecs extends OcsCodecsBase {
   implicit def responseCodec[T <: EswSequencerResponse]: Codec[T] = responseCodecValue.asInstanceOf[Codec[T]]

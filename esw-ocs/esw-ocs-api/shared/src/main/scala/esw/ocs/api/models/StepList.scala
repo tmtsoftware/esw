@@ -4,8 +4,13 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.protocol.EditorError
-import esw.ocs.api.protocol.EditorError._
+import esw.ocs.api.protocol.EditorError.*
 
+/**
+ * This is the runtime representation of the [[csw.params.commands.Sequence]]
+ *
+ * @param steps - list of Steps
+ */
 final case class StepList private[ocs] (steps: List[Step]) extends OcsAkkaSerializable {
   //query
   private[ocs] def isEmpty: Boolean    = steps.isEmpty

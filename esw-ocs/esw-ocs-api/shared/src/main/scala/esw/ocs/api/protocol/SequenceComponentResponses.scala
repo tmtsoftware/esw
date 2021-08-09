@@ -5,6 +5,9 @@ import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.SequenceComponentState
 import esw.ocs.api.protocol.SequenceComponentResponse.ScriptErrorOrSequencerLocation
 
+/*
+ * These models are being used as responses for sequence components e.g., in SequenceComponentApi
+ */
 object SequenceComponentResponse {
 
   sealed trait ScriptResponseOrUnhandled extends OcsAkkaSerializable

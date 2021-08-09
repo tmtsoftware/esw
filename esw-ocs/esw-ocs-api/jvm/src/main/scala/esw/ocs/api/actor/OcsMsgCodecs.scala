@@ -9,6 +9,9 @@ import esw.ocs.api.codecs.OcsCodecs
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 
+/*
+ * The codecs of sequencer and sequence components remote messages
+ * */
 trait OcsMsgCodecs extends MessageCodecs with CommonCodecs with OcsCodecs {
   implicit lazy val eswSequencerMessageCodec: Codec[EswSequencerRemoteMessage]               = deriveAllCodecs
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentRemoteMsg]             = deriveAllCodecs

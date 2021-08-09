@@ -7,6 +7,9 @@ import msocket.api
 import msocket.api.ErrorProtocol
 import msocket.api.models.ServiceError
 
+/**
+ * Codecs for request(http/websocket) models of the sequencer
+ */
 object SequencerServiceCodecs extends SequencerServiceCodecs
 
 trait SequencerServiceCodecs extends OcsCodecs {

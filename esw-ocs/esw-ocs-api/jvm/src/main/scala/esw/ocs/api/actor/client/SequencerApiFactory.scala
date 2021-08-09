@@ -13,8 +13,21 @@ import msocket.api.ContentType
 import msocket.http.post.HttpPostTransport
 import msocket.http.ws.WebsocketTransport
 
+/**
+ * This a factory to create instances of sequencer's actor and http client
+ */
 object SequencerApiFactory extends SequencerServiceCodecs {
 
+  /**
+   * This method of the factory takes the Location and returns the appropriate factory
+   * means if the Location is an AkkaLocation then an akkaClient is returned which talks to the sequencer via actor messages
+   * and if the Location is a HttpLocation then a HttpClient is returned which communicates with the sequencer via Http Protocols
+   * If none of the above type of locations are there then an Exception is returned
+   *
+   * @param componentLocation - Location of the sequencer
+   * @param actorSystem - actorSystem
+   * @return a [[esw.ocs.api.SequencerApi]]
+   */
   def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): SequencerApi =
     componentLocation match {
       case _: TcpLocation             => throw new RuntimeException("Only AkkaLocation and HttpLocation can be used to access sequencer")
@@ -22,6 +35,9 @@ object SequencerApiFactory extends SequencerServiceCodecs {
       case httpLocation: HttpLocation => httpClient(httpLocation)
     }
 
+  /*
+   * This method is for creating an http client for the sequencer
+   */
   private def httpClient(httpLocation: HttpLocation)(implicit actorSystem: ActorSystem[_]): SequencerClient = {
     import actorSystem.executionContext
 

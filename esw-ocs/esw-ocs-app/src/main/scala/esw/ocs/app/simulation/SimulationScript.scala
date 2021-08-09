@@ -6,7 +6,9 @@ import csw.time.core.models.UTCTime
 import esw.ocs.impl.script.ScriptApi
 
 import scala.concurrent.Future
-
+/*
+ * This is the simulation script that sequencer uses when it gets started in simulation mode
+ * */
 object SimulationScript extends SimulationScript
 
 // $COVERAGE-OFF$

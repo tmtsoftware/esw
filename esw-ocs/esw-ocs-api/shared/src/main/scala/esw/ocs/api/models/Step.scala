@@ -3,8 +3,16 @@ package esw.ocs.api.models
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.protocol.EditorError._
+import esw.ocs.api.protocol.EditorError.*
 
+/**
+ * This is a class which represent the Step model(a runtime representation of sequence command)
+ *
+ * @param id - an unique id for the step
+ * @param command - original sequence command
+ * @param status - status of step
+ * @param hasBreakpoint - represents if there is a breakpoint on the step
+ */
 case class Step private[ocs] (id: Id, command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean) {
   def isPending: Boolean = status == StepStatus.Pending
   def isFailed: Boolean =
