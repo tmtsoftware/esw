@@ -13,4 +13,4 @@ val ExposureId.exposureNumber: ExposureNumber get() = exposureNumber()
 // *********** Helpers to create models for ExposureId *************
 fun TYPLevel(value: String): TYPLevel = TYPLevel.apply(value)
 fun ExposureNumber(value: String): ExposureNumber = ExposureNumber.apply(value)
-fun ExposureId(value: String): ExposureId = ExposureId.apply(value)
+fun ExposureId(value: String): ExposureId = ExposureId.fromString(value)

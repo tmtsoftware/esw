@@ -26,13 +26,13 @@ class SequencerTestMultiJvmNode3 extends SequencerTest
 
 class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNodeSpec with ImplicitSender {
 
-  import MultiNodeSampleConfig._
+  import MultiNodeSampleConfig.*
 
   private val frameworkTestKit = FrameworkTestKit()
-  import frameworkTestKit._
-  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = frameworkWiring.actorSystem
+  import frameworkTestKit.*
+  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
 
-  private lazy val locationService = frameworkWiring.locationService
+  private lazy val locationService = frameworkTestKit.locationService
 
   private val ocsSubsystem                    = ESW
   private val ocsSequencerObsMode             = ObsMode("MoonNight")
@@ -62,7 +62,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
       enterBarrier("assembly-started")
 
       // creating subscriber for event which will be publish in onSubmit handler for sample assembly
-      val testProbe                 = TestProbe[Event]()
+      val testProbe                 = TestProbe[Event]()(typedSystem)
       val eventSubscriber           = ocsSequencerWiring.eventService.defaultSubscriber
       val multiJVMCommandEventKey   = EventKey("tcs.filter.wheel.setup-command-from-tcs-sequencer")
       val multiJVMEventSubscription = eventSubscriber.subscribeActorRef(Set(multiJVMCommandEventKey), testProbe.ref)
@@ -108,6 +108,6 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
   private def sequencerClient(subsystem: Subsystem, obsMode: ObsMode) = {
     val componentId = ComponentId(Prefix(subsystem, obsMode.name), ComponentType.Sequencer)
     val location    = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
-    SequencerApiFactory.make(location)
+    SequencerApiFactory.make(location)(typedSystem)
   }
 }
