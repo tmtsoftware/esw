@@ -47,7 +47,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
   protected val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   protected val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])
 
-  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.frameworkWiring.actorSystem
+  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
 
   protected val hostName: String = InetAddress.getLocalHost.getHostName
 
