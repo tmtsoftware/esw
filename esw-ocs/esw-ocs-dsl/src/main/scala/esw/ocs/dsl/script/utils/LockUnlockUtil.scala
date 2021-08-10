@@ -1,8 +1,5 @@
 package esw.ocs.dsl.script.utils
 
-import java.time.Duration
-import java.util.concurrent.{CompletionStage, TimeUnit}
-
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import akka.stream.scaladsl.{Keep, Sink}
@@ -12,21 +9,38 @@ import akka.util.Timeout
 import csw.command.client.messages.ComponentMessage
 import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse
-import csw.command.client.models.framework.LockingResponse._
+import csw.command.client.models.framework.LockingResponse.*
 import csw.prefix.models.Prefix
 
+import java.time.Duration
+import java.util.concurrent.{CompletionStage, TimeUnit}
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.FutureConverters.CompletionStageOps
 import scala.util.Success
 
+/**
+ * An Util class mainly written to send Lock/Unlock command to a particular HCD/Assembly
+ *
+ * @param source - represents the prefix of component that is acquiring lock
+ * @param actorSystem - an Akka ActorSystem
+ */
 class LockUnlockUtil(val source: Prefix)(actorSystem: ActorSystem[SpawnProtocol.Command]) {
   implicit val timeout: Timeout             = 5.seconds
   private implicit val scheduler: Scheduler = actorSystem.scheduler
   private implicit val ec: ExecutionContext = actorSystem.executionContext
   private implicit val mat: Materializer    = Materializer(actorSystem)
 
+  /**
+   * Sends an Lock message to the given typed actor ref of the component
+   *
+   * @param componentRef - typed actor ref of the component whom to send the Lock message
+   * @param leaseDuration - represents the lease duration of lock acquired
+   * @param onLockAboutToExpire - a callback which is to be triggered when lock is about to expire
+   * @param onLockExpired - a callback which is to be triggered when lock gets expired
+   * @return the [[csw.command.client.models.framework.LockingResponse]] as CompletionStage value
+   */
   def lock(componentRef: ActorRef[ComponentMessage], leaseDuration: Duration)(
       onLockAboutToExpire: () => CompletionStage[Void],
       onLockExpired: () => CompletionStage[Void]
@@ -50,6 +64,12 @@ class LockUnlockUtil(val source: Prefix)(actorSystem: ActorSystem[SpawnProtocol.
       .toJava
   }
 
+  /**
+   * Sends an Unlock message to the given typed actor ref of the component
+   *
+   * @param componentRef - typed actor ref of the component whom to send the Lock message
+   * @return the [[csw.command.client.models.framework.LockingResponse]] as CompletionStage value
+   */
   def unlock(componentRef: ActorRef[ComponentMessage]): CompletionStage[LockingResponse] =
     (componentRef ? (Unlock(source, _: ActorRef[LockingResponse]))).toJava
 

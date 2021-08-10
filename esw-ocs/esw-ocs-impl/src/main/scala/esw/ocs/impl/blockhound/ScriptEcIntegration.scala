@@ -3,6 +3,11 @@ package esw.ocs.impl.blockhound
 import reactor.blockhound.BlockHound
 import reactor.blockhound.integration.BlockHoundIntegration
 
+/**
+ * A class for BlockHoundIntegration contract for the thread on which sequencer scripts are to run
+ *
+ * @param scriptThreadName - thread name of the script
+ */
 class ScriptEcIntegration(scriptThreadName: String) extends BlockHoundIntegration {
   override def applyTo(builder: BlockHound.Builder): Unit = {
     builder

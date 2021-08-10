@@ -9,6 +9,15 @@ import esw.ocs.impl.core.SequenceOperator
 
 import scala.concurrent.Future
 
+/**
+ * Scala dsl for FSM(Finite State Machine) scripts in the sequencer scripts
+ *
+ * @param sequenceOperatorFactory - a factory/lamda which returns an instance of SequenceOperator
+ * @param logger - A logger to log
+ * @param strandEc - an StrandEc
+ * @param shutdownTask - a Runnable to shut down the script
+ * @param initialState - initial state of FSM from where the transition into the next state will begin
+ */
 private[esw] class FsmScriptDsl(
     sequenceOperatorFactory: () => SequenceOperator,
     logger: ILogger,

@@ -13,6 +13,20 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.ObsMode
 import esw.ocs.impl.core.SequenceOperator
 
+/**
+ * A context class created to pass following states to sequencer script
+ *
+ * @param heartbeatInterval - heart beat interval for health check
+ * @param prefix - prefix of the sequencer
+ * @param obsMode - obsMode of the sequencer
+ * @param jLogger - java typed Logger
+ * @param sequenceOperatorFactory - sequenceOperatorFactory
+ * @param actorSystem - An Akka ActorSystem
+ * @param eventService - an java instance of EventService
+ * @param alarmService - an java instance of AlarmService
+ * @param sequencerApiFactory - a Factory method to create an instance of sequencerApi
+ * @param config - overall config
+ */
 class ScriptContext(
     val heartbeatInterval: Duration,
     val prefix: Prefix,

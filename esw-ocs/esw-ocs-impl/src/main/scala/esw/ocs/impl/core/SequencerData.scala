@@ -3,7 +3,7 @@ package esw.ocs.impl.core
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import esw.ocs.api.actor.messages.InternalSequencerState
@@ -11,9 +11,21 @@ import esw.ocs.api.actor.messages.SequencerMessages.GoIdle
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.protocol.*
 import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
-import esw.ocs.api.protocol._
 
+/**
+ * This class is created to deal with runtime states present in Sequencer
+ *
+ * @param stepList - stepList in the sequencer
+ * @param runId - the runId of the running sequence
+ * @param readyToExecuteSubscriber - Typed Actor ref of readyToExecuteSubscriber(ref of actor which has sent ReadyToExecuteNext message to sequencer)
+ * @param stepRefSubscriber - Typed Actor ref of the actor which has sent PullNext message to sequencer
+ * @param self - Typed ref of the sequencer
+ * @param actorSystem - An ActorSystem in which sequencer is running
+ * @param sequenceResponseSubscribers - Set of typed actorRef of the actors which are waiting for Final Submit Response
+ * @param sequencerStateSubscribers - Set of typed actorRef of the actors which have subscribe to SequencerState of the sequencer
+ */
 private[core] case class SequencerData(
     stepList: Option[StepList],
     runId: Option[Id],
@@ -79,6 +91,7 @@ private[core] case class SequencerData(
       }
       .getOrElse(this) // This will never happen as this method gets called from inProgress data
 
+  //update the current stepList with given stepList and return the new SequencerData
   def updateStepList[T >: Ok.type](
       replyTo: ActorRef[T],
       stepList: Option[StepList]
@@ -93,10 +106,9 @@ private[core] case class SequencerData(
         .sendNextPendingStepIfAvailable()
   }
 
-  def stepSuccess(state: InternalSequencerState[SequencerMsg]): SequencerData = changeStepStatus(Success)
+  def stepSuccess(): SequencerData = changeStepStatus(Success)
 
-  def stepFailure(message: String, state: InternalSequencerState[SequencerMsg]): SequencerData =
-    changeStepStatus(Failure(message))
+  def stepFailure(message: String): SequencerData = changeStepStatus(Failure(message))
 
   def addStateSubscriber(subscriber: ActorRef[SequencerStateSubscriptionResponse]): SequencerData =
     copy(sequencerStateSubscribers = sequencerStateSubscribers + subscriber)

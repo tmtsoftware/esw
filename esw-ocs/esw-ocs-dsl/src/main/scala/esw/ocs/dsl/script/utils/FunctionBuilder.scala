@@ -3,6 +3,15 @@ package esw.ocs.dsl.script.utils
 import scala.collection.mutable
 
 // fixme : rename FunctionBuilder
+/**
+ * A builder class for a set of common functions.
+ * which holds a map where functions are kept as values against an unique key
+ * (being used in ScriptDsl to hold the command handlers)
+ *
+ * @tparam K - Type of the key in the mutable map against which the function to be kept as value
+ * @tparam I - Type of the input param of the Function
+ * @tparam O - Type of the output result of the Function
+ */
 private[esw] class FunctionBuilder[K, I, O] {
 
   private val handlers: mutable.Map[K, I => O] = mutable.Map.empty

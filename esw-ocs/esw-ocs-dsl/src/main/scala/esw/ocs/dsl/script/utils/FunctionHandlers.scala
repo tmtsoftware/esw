@@ -2,6 +2,13 @@ package esw.ocs.dsl.script.utils
 
 import scala.collection.mutable
 
+/**
+ * A builder class for a set of common functions.
+ * which holds a mutable buffer of functions
+ *
+ * @tparam I - Type of the input param of the Function
+ * @tparam O - Type of the output result of the Function
+ */
 private[esw] class FunctionHandlers[I, O] {
   private val handlers: mutable.Buffer[I => O] = mutable.Buffer.empty
 

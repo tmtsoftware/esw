@@ -93,8 +93,8 @@ class SequencerBehavior(
       case Pause(replyTo)         => running(data.updateStepListResult(replyTo, data.stepList.map(_.pause)))
       case Resume(replyTo)        => running(data.updateStepList(replyTo, data.stepList.map(_.resume)))
       case PullNext(replyTo)      => running(data.pullNextStep(replyTo))
-      case StepSuccess(_)         => running(data.stepSuccess(Running))
-      case StepFailure(reason, _) => running(data.stepFailure(reason, Running))
+      case StepSuccess(_)         => running(data.stepSuccess())
+      case StepFailure(reason, _) => running(data.stepFailure(reason))
       case _: GoIdle              => idle(data) // this is received on sequence completion
     }
   }
@@ -273,6 +273,7 @@ class SequencerBehavior(
       case SubmitFailed(replyTo)               => replyTo ! NewSequenceHookFailed(SequenceFailedToSubmitMessage); idle(data)
     }
 
+  //Start the execution of sequence and reply back with the immediate submit response
   private def startSequence(
       data: SequencerData,
       replyTo: ActorRef[SequencerSubmitResponse]
@@ -291,6 +292,7 @@ class SequencerBehavior(
         replyTo ! NewSequenceHookFailed(SequenceFailedToStartMessage); loaded(data)
     }
 
+  //Handle messages which are common in each states
   private def handleCommonMessage[T <: SequencerMsg](
       message: CommonMessage,
       state: InternalSequencerState[T],

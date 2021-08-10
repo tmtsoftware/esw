@@ -6,11 +6,18 @@ import csw.aas.http.SecurityDirectives
 import csw.prefix.models.Prefix
 import esw.commons.auth.AuthPolicies
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.codecs.SequencerServiceCodecs._
+import esw.ocs.api.codecs.SequencerServiceCodecs.*
 import esw.ocs.api.protocol.SequencerRequest
-import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerRequest.*
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
+/**
+ * This is the Http(POST) route handler written using msocket apis for Sequencer.
+ *
+ * @param sequencerApi - an instance of sequencerApi of the sequencer
+ * @param securityDirectives - security directive to deal with auth
+ * @param destinationPrefix - prefix of the sequencer
+ */
 class SequencerPostHandler(
     sequencerApi: SequencerApi,
     securityDirectives: SecurityDirectives,
@@ -18,7 +25,7 @@ class SequencerPostHandler(
 ) extends HttpPostHandler[SequencerRequest]
     with ServerHttpCodecs {
 
-  import sequencerApi._
+  import sequencerApi.*
 
   override def handle(request: SequencerRequest): Route =
     request match {

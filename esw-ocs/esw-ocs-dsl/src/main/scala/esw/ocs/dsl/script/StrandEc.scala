@@ -13,8 +13,10 @@ class StrandEc private (private[esw] val executorService: ScheduledExecutorServi
 }
 
 object StrandEc {
-  //Using this factory we create a Execution context with a single Thread
-  //this is created for scripts since sequencer-scripts will be running on a single thread
+  /*
+   * This factory creates an Execution context with a single Thread
+   * (this is created for sequencer-scripts since they will be running on a single thread)
+   */
   def apply(): StrandEc = {
     val threadName = "script-thread"
     BlockHoundWiring.addIntegration(new ScriptEcIntegration(threadName))

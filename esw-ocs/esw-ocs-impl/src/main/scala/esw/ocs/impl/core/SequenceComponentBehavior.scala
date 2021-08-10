@@ -18,6 +18,17 @@ import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
+/**
+ * Behavior class for Sequence component's actor. Currently the sequence component behavior is base of the state(Idle and Running).
+ * Idle represents the state in which there are no Sequencer running in the Sequence Component
+ * On the other hand, Running state means that there is Sequencer running in the Sequence Component
+ *
+ * @param prefix - prefix of the sequence component
+ * @param log - logger
+ * @param locationService - an instance of Location Service
+ * @param sequencerServerFactory - an Instance of SequencerServerFactory
+ * @param actorSystem - an Akka ActorSystem
+ */
 class SequenceComponentBehavior(
     prefix: Prefix,
     log: Logger,
@@ -27,6 +38,10 @@ class SequenceComponentBehavior(
   private val akkaConnection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
   implicit val ec: ExecutionContext          = actorSystem.executionContext
 
+  /*
+   * Sequence Component Behaviour when it is in Idle state means there are no Sequencer running
+   * @return an typed actor [[akka.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
+   */
   def idle: Behavior[SequenceComponentMsg] =
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (_, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
@@ -44,6 +59,11 @@ class SequenceComponentBehavior(
       }
     }
 
+  /*
+   * This method is to start the sequencer with the given subsystem and obsMode
+   * If successful it will transition the sequence component's behavior into Running state
+   * If failed it will remain in Idle state
+   */
   private def load(
       subsystem: Subsystem,
       obsMode: ObsMode,
@@ -63,10 +83,15 @@ class SequenceComponentBehavior(
     }
   }
 
+  /*
+   * Sequence Component Behaviour when it is in Running state means there is a Sequencer running
+   * @return an typed actor [[akka.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
+   */
   private def running(subsystem: Subsystem, obsMode: ObsMode, sequencerServer: SequencerServer, location: AkkaLocation) =
     receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (ctx, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
 
+      //unloads script (stops the sequencer)
       def unload(): Unit = {
         sequencerServer.shutDown()
         log.info("Unloaded script successfully")
@@ -88,6 +113,7 @@ class SequenceComponentBehavior(
       }
     }
 
+  //Method to shutdown the sequence component
   private def shutdown(
       replyTo: ActorRef[Ok.type],
       sequencerServer: Option[SequencerServer]
