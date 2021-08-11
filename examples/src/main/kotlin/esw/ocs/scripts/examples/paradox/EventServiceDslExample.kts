@@ -27,7 +27,7 @@ script {
         //#system-event
 
         //#observe-event
-        val observeEvent: ObserveEvent = sequencerObserveEvent.observationStart(ObsId("2020A-001-123"))
+        val observeEvent: ObserveEvent = observationStart(ObsId("2020A-001-123"))
         //#observe-event
 
         //#publish
