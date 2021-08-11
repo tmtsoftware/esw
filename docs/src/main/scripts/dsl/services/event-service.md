@@ -21,6 +21,9 @@ Kotlin
 ### ObserveEvent
 
 Helper DSL to create an `ObserveEvent` using factory provided to create various sequencer observe events.
+`sequencerObserveEvent` object is available in the script scope.
+
+Refer @extref:[here](csw:params/events.html#sequencers) to get the list of other Sequencer Events.
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-event }
@@ -64,3 +67,4 @@ Kotlin
 ## Source code for examples
 
 * [Event Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts)
+* [Observe Event Example]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/testData/ObserveEventExampleScript.kts)

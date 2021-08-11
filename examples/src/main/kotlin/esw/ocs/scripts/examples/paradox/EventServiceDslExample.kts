@@ -19,9 +19,8 @@ script {
 
 
         //#system-event
-        //#observe-event
         val parameters = intKey("stepNumber").set(1)
-        //#observe-event
+
         //#publish
         val systemEvent: SystemEvent = SystemEvent("ESW.IRIS_darkNight", "stepInfo", parameters)
         //#publish
