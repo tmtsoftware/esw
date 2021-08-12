@@ -30,28 +30,162 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
     val obsMode: ObsMode
     val sequencerObserveEvent: SequencerObserveEvent
 
+    /**
+     * This event indicates the start of the preset phase of acquisition
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun presetStart(obsId: ObsId): ObserveEvent       = sequencerObserveEvent.presetStart(obsId)
+
+    /**
+     * This event indicates the end of the preset phase of  acquisition
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun presetEnd(obsId: ObsId): ObserveEvent         = sequencerObserveEvent.presetEnd(obsId)
+    /**
+     * This event indicates the start of locking the telescope to the  sky with guide and WFS targets
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun guidestarAcqStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.guidestarAcqStart(obsId)
+    /**
+     * This event indicates the end of locking the telescope to the sky with guide and WFS targets
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun guidestarAcqEnd(obsId: ObsId): ObserveEvent    = sequencerObserveEvent.guidestarAcqEnd(obsId)
+    /**
+     * This event indicates the start of acquisition phase where  science target is peaked up as needed after  guidestar locking
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun scitargetAcqStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.scitargetAcqStart(obsId)
+    /**
+     * This event indicates the end of acquisition phase where  science target is centered as needed after  guidestar locking
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun scitargetAcqEnd(obsId: ObsId): ObserveEvent   = sequencerObserveEvent.scitargetAcqEnd(obsId)
+    /**
+     * This event indicates the start of execution of actions related  to an observation including acquisition and  science data acquisition.
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun observationStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.observationStart(obsId)
+    /**
+     * This event indicates the end of execution of actions related  to an observation including acquisition and  science data acquisition.
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun observationEnd(obsId: ObsId): ObserveEvent    = sequencerObserveEvent.observationEnd(obsId)
+    /**
+     * This event indicates the start of execution of actions related  to an Observe command
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun observeStart(obsId: ObsId): ObserveEvent      = sequencerObserveEvent.observeStart(obsId)
+
+    /**
+     * This event indicates the end of execution of actions related  to an Observe command
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun observeEnd(obsId: ObsId): ObserveEvent        = sequencerObserveEvent.observeEnd(obsId)
-
+    /**
+     * This event indicates the start of data acquisition that  results in a file produced for DMS. This is a potential metadata event for DMS.
+     * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
+     *                   The ExposureId follows the structure: 2020A-001-123-WFOS-IMG1-SCI0-0001 with an included ObsId or
+     *                   when no ObsId is present, in the standalone format: 20200706-190204-WFOS-IMG1-SCI0-0001 with a UTC time
+     *                   when the ExposureId is created.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun exposureStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.exposureStart(exposureId)
+    /**
+     * This event indicates the end of data acquisition that results  in a file produced for DMS. This is a potential metadata event for DMS.
+     * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
+     *                   The ExposureId follows the structure: 2020A-001-123-WFOS-IMG1-SCI0-0001 with an included ObsId or
+     *                   when no ObsId is present, in the standalone format: 20200706-190204-WFOS-IMG1-SCI0-0001 with a UTC time
+     *                   when the ExposureId is created.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun exposureEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.exposureEnd(exposureId)
+    /**
+     * This event indicates that a readout that is part of a ramp  has completed.
+     * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
+     *                   The ExposureId follows the structure: 2020A-001-123-WFOS-IMG1-SCI0-0001 with an included ObsId or
+     *                   when no ObsId is present, in the standalone format: 20200706-190204-WFOS-IMG1-SCI0-0001 with a UTC time
+     *                   when the ExposureId is created.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun readoutEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.readoutEnd(exposureId)
+    /**
+     * This event indicates that a readout that is part of a ramp  has failed indicating transfer failure or some  other issue.
+     * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
+     *                   The ExposureId follows the structure: 2020A-001-123-WFOS-IMG1-SCI0-0001 with an included ObsId or
+     *                   when no ObsId is present, in the standalone format: 20200706-190204-WFOS-IMG1-SCI0-0001 with a UTC time
+     *                   when the ExposureId is created.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun readoutFailed(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.readoutFailed(exposureId)
+    /**
+     * This event indicates that the instrument has started writing  the exposure data file or transfer of exposure  data to DMS.
+     * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
+     *                   The ExposureId follows the structure: 2020A-001-123-WFOS-IMG1-SCI0-0001 with an included ObsId or
+     *                   when no ObsId is present, in the standalone format: 20200706-190204-WFOS-IMG1-SCI0-0001 with a UTC time
+     *                   when the ExposureId is created.
+     * @param filename   [[java.lang.String]] the path of the file.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun dataWriteStart(exposureId: ExposureId, filename: String): ObserveEvent = sequencerObserveEvent.dataWriteStart(exposureId, filename)
+    /**
+     * This event indicates that the instrument has finished  writing the exposure data file or transfer of  exposure data to DMS.
+     * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
+     *                   The ExposureId follows the structure: 2020A-001-123-WFOS-IMG1-SCI0-0001 with an included ObsId or
+     *                   when no ObsId is present, in the standalone format: 20200706-190204-WFOS-IMG1-SCI0-0001 with a UTC time
+     *                   when the ExposureId is created.
+     * @param filename   [[java.lang.String]] the path of the file.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun dataWriteEnd(exposureId: ExposureId, filename: String): ObserveEvent = sequencerObserveEvent.dataWriteEnd(exposureId, filename)
+    /**
+     * This event indicates the start of data acquisition that  results in a file produced for DMS. This is a potential metadata event for DMS.
+     * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
+     *                   The ExposureId follows the structure: 2020A-001-123-WFOS-IMG1-SCI0-0001 with an included ObsId or
+     *                   when no ObsId is present, in the standalone format: 20200706-190204-WFOS-IMG1-SCI0-0001 with a UTC time
+     *                   when the ExposureId is created.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun prepareStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.prepareStart(exposureId)
-
+    /**
+     * This event indicates that a request was made to abort the  exposure and it has completed. Normal data events should occur if data is  recoverable.
+     * Abort should not fail
+     * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
+     *                   The ExposureId follows the structure: 2020A-001-123-WFOS-IMG1-SCI0-0001 with an included ObsId or
+     *                   when no ObsId is present, in the standalone format: 20200706-190204-WFOS-IMG1-SCI0-0001 with a UTC time
+     *                   when the ExposureId is created.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
+    fun exposureAborted(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.observePaused()
+    /**
+     * This event indicates that a user has paused the current  observation Sequence which will happen after  the current step concludes
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun observePaused(): ObserveEvent  = sequencerObserveEvent.observePaused()
+    /**
+     * This event indicates that a user has resumed a paused  observation Sequence.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun observeResumed(): ObserveEvent = sequencerObserveEvent.observeResumed()
-
+    /**
+     * This event indicates that something has occurred that  interrupts the normal observing workflow and  time accounting.
+     * This event will have a hint (TBD) that indicates  the cause of the downtime for statistics.
+     * Examples are: weather, equipment or other  technical failure, etc.
+     * Downtime is ended by the start of an observation  or exposure.
+     * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
+     * @param reasonForDowntime [[java.lang.String]] a hint that indicates the cause of the downtime for statistics.
+     * @return [[csw.params.events.ObserveEvent]]
+     */
     fun downtimeStart(obsId: ObsId, reasonForDowntime: String): ObserveEvent = sequencerObserveEvent.downtimeStart(obsId, reasonForDowntime)
 
     fun Assembly(prefix: Prefix, defaultTimeout: Duration = Duration.seconds(10)): RichComponent
