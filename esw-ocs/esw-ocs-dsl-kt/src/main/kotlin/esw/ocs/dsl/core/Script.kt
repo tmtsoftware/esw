@@ -28,6 +28,14 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 
+/**
+ * Base Class for all the scripts(sequencer-script, FSM)
+ * which contains the implementation of handlers like onSetup, OnObserve, OnNewSequence etc.
+ *
+ * @constructor
+ *
+ * @param wiring - An instance of script wiring
+ */
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext),
     HandlerScope {
     override val actorSystem: ActorSystem<SpawnProtocol.Command> = wiring.scriptContext.actorSystem()

@@ -1,7 +1,7 @@
 package esw.ocs.impl.core
 
 import akka.Done
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
@@ -19,10 +19,10 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.constants.SequencerTimeouts
 import esw.ocs.api.actor.messages.InternalSequencerState
-import esw.ocs.api.actor.messages.InternalSequencerState._
-import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.InternalSequencerState.*
+import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.codecs.OcsCodecs
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 import esw.ocs.impl.script.ScriptApi
 
 import scala.concurrent.Future
@@ -41,7 +41,7 @@ class SequencerBehavior(
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsCodecs {
   import actorSystem.executionContext
-  import logger._
+  import logger.*
 
   // Mapping of Sequencer state against corresponding state's behavior
   private def stateMachine(state: InternalSequencerState[_]): SequencerData => Behavior[SequencerMsg] =
@@ -171,7 +171,7 @@ class SequencerBehavior(
 
   private def abortingSequence(data: SequencerData): Behavior[SequencerMsg] =
     receive(AbortingSequence, data) { case AbortSequenceComplete(replyTo) =>
-      import data._
+      import data.*
       val maybeStepList = stepList.map(_.discardPending)
       running(updateStepList(replyTo, maybeStepList))
     }
@@ -186,7 +186,7 @@ class SequencerBehavior(
 
   private def stopping(data: SequencerData): Behavior[SequencerMsg] =
     receive[StopMessage](Stopping, data) { case StopComplete(replyTo) =>
-      import data._
+      import data.*
       val maybeStepList = stepList.map(_.discardPending)
       running(updateStepList(replyTo, maybeStepList))
     }
@@ -327,7 +327,7 @@ class SequencerBehavior(
       data: SequencerData,
       currentState: InternalSequencerState[SequencerMsg]
   ): Behavior[SequencerMsg] = {
-    import data._
+    import data.*
     val currentBehavior = stateMachine(currentState)
     editorAction match {
       case Add(commands, replyTo)                   => currentBehavior(updateStepList(replyTo, stepList.map(_.append(commands))))

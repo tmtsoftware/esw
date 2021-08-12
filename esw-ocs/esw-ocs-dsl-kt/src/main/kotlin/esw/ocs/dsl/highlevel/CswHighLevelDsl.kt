@@ -23,6 +23,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 
+/**
+ * Interface which contains methods to create different observe events by delegating to ScalaDsl of creating observe events
+ * and has abstract methods to create FSM, CommandFlag, command service for Sequencer, Assembly and Hcd
+ *
+ */
 interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl, EventServiceDsl, LoggingDsl, CommandServiceDsl,
         AlarmServiceDsl, TimeServiceDsl, DatabaseServiceDsl, LoopDsl {
     val isOnline: Boolean
@@ -188,16 +193,49 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      */
     fun downtimeStart(obsId: ObsId, reasonForDowntime: String): ObserveEvent = sequencerObserveEvent.downtimeStart(obsId, reasonForDowntime)
 
+    /**
+     * Creates an instance of RichComponent for Assembly of given prefix
+     *
+     * @param prefix - prefix of Assembly
+     * @param defaultTimeout - default timeout for the response of the RichComponent's API
+     *
+     * @return a [[esw.ocs.dsl.highlevel.RichComponent]] instance
+     */
     fun Assembly(prefix: Prefix, defaultTimeout: Duration = Duration.seconds(10)): RichComponent
     fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration = Duration.seconds(10)): RichComponent =
             Assembly(Prefix(subsystem, compName), defaultTimeout)
 
+    /**
+     * Creates an instance of RichComponent for HCD of given prefix
+     *
+     * @param prefix - prefix of HCD
+     * @param defaultTimeout - default timeout for the response of the RichComponent's API
+     *
+     * @return a [[esw.ocs.dsl.highlevel.RichComponent]] instance
+     */
     fun Hcd(prefix: Prefix, defaultTimeout: Duration = Duration.seconds(10)): RichComponent
+
     fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration = Duration.seconds(10)): RichComponent =
             Hcd(Prefix(subsystem, compName), defaultTimeout)
 
+    /**
+     * Creates an instance of RichSequencer for Sequencer of given subsystem and obsMode
+     *
+     * @param subsystem - Subsystem of the sequencer
+     * @param obsMode - ObsMode of the sequencer
+     * @param defaultTimeout - default timeout for the response of the RichSequencer's API
+     * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
+     */
     fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration = Duration.hours(10)): RichSequencer
 
+    /**
+     * TODO
+     *
+     * @param name
+     * @param initState
+     * @param block
+     * @return
+     */
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
 

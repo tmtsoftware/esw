@@ -17,9 +17,20 @@ import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.impl.script.ScriptContext
 
+/**
+ * An Interface which represents Collection of csw-services (Location, EventService etc.)
+ *
+ */
 interface CswServices {
 
     companion object {
+        /**
+         * Creates an instance of CswServices
+         *
+         * @param ctx - an instance of ScriptContext
+         * @param strandEc - an instance of strandEc (mostly single threaded execution context)
+         * @return an instance of [CswServices]
+         */
         internal fun create(ctx: ScriptContext, strandEc: StrandEc): CswServices = object : CswServices {
             private val actorSystem: ActorSystem<SpawnProtocol.Command> = ctx.actorSystem()
 

@@ -13,6 +13,16 @@ import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.values
 import kotlin.time.Duration
 
+/**
+ * This class is a wrapper class for an Event param which provides method to subscribe to the EventKey of initial Event
+ * and provides the method to get the latest event for that eventKey
+ *
+ * @property cswApi - an instance of CswHighLevelDslApi
+ * @property duration - duration of polling for latest event
+ * @constructor
+ *
+ * @param initial - initial event
+ */
 open class EventVariable protected constructor(
         initial: Event,
         private val cswApi: CswHighLevelDslApi,
@@ -66,6 +76,17 @@ open class EventVariable protected constructor(
     }
 }
 
+/**
+ * An extension class on EventVariable which provides method to work of  the event's(event in EventVariable) paramSet
+ *
+ * @param T - type of Param
+ * @property key - param key
+ * @property cswApi - an instance of CswHighLevelDslApi
+ * @constructor
+ *
+ * @param initial - initial event
+ * @param duration - duration of polling for latest event
+ */
 class ParamVariable<T> private constructor(
         initial: Event,
         private val key: Key<T>,
