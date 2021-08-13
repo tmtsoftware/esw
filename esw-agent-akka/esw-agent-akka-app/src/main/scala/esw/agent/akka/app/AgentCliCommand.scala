@@ -8,6 +8,7 @@ import csw.prefix.models.Prefix
 import scala.util.Try
 
 sealed trait AgentCliCommand
+
 /**
  * AgentCliCommand - a set of command line param written using case app for the Agent App.
  */

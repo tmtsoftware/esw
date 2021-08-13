@@ -12,14 +12,14 @@ import java.nio.file.Path
  * This is a representation of a single Container. It is collectively being used in HostConfig.
  * For e.g.
  * {
-    orgName: "com.github.tmtsoftware.sample"
-    deployModule: "csw-sampledeploy"
-    appName: "csw.sampledeploy.SampleContainerCmdApp"
-    version: "0.0.1"
-    mode: "Container"
-    configFilePath: "confPath1.conf"
-    configFileLocation: "Local"
-  }
+ *    orgName: "com.github.tmtsoftware.sample"
+ *    deployModule: "csw-sampledeploy"
+ *    appName: "csw.sampledeploy.SampleContainerCmdApp"
+ *    version: "0.0.1"
+ *    mode: "Container"
+ *    configFilePath: "confPath1.conf"
+ *    configFileLocation: "Local"
+ *  }
  * @param orgName - name of the organization. Ideally this would be same as github repo name/ package name.
  * @param deployModule - name of the module which needs to be started.
  * @param appName - complete reference name of the Application.

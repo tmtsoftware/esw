@@ -6,7 +6,6 @@ import com.typesafe.config.Config
 import csw.prefix.models.Prefix
 
 /**
- *
  * @param prefix [[csw.prefix.models.Prefix]] - A unique identifier for the Agent
  * @param coursierChannel [[java.lang.String]] - Channel path to be used while spawning processes via Coursier
  * @param versionConfPath [[java.nio.file.Path]] - Path pointing to the location of version conf file. It can be absolute path or path inside configuration service.

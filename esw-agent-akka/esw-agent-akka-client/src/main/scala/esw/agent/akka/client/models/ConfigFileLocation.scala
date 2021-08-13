@@ -15,7 +15,7 @@ object ConfigFileLocation extends Enum[ConfigFileLocation] {
   /**
    * This represents file present in resource folder or on the same machine if the given path is absolute.
    */
-  case object Local  extends ConfigFileLocation
+  case object Local extends ConfigFileLocation
 
   /**
    * This represents file present in the configuration service.

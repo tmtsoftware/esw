@@ -30,6 +30,7 @@ object AgentCommand {
   }
 
   object SpawnCommand {
+
     /**
      * This represents the message spawning SequenceComponent.
      * @param replyTo - Akka Agent Actor
