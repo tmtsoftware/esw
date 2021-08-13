@@ -103,4 +103,4 @@ for more information.
 
 A UI application which provides browser interface for managing Observations, Sequencers & Sequence Components within the TMT observatory.
 
-Documentation related to esw-ocs-eng-ui can be found @link[here](https://tmtsoftware.github.io/esw-ocs-eng-ui/0.1.0-SNAPSHOT) { open=new }
+Documentation related to esw-ocs-eng-ui can be found @link[here](https://tmtsoftware.github.io/esw-ocs-eng-ui/0.1.0-SNAPSHOT/) { open=new }
