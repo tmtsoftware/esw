@@ -98,3 +98,9 @@ There are challenges to creating a back-end server. The server must be secure an
 gateway. The back-end service must register itself with Location Service. To make this easier, there is also a back-end
 service template. See the dedicated documentation section @ref:[here](backend-template.md) and the @link:[esw-web-app-template repo](https://github.com/tmtsoftware/esw-web-app-template.g8) { open=new }
 for more information.
+
+### ESW OCS Eng UI
+
+A UI application which provides browser interface for managing Observations, Sequencers & Sequence Components within the TMT observatory.
+
+Documentation related to esw-ocs-eng-ui can be found @link[here](https://tmtsoftware.github.io/esw-ocs-eng-ui/0.1.0-SNAPSHOT) { open=new }
