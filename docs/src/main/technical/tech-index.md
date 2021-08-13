@@ -11,5 +11,6 @@
 - [ESW Service Contract](contracts.md)
 - [Agent Service](agent-service-tech.md)
 - [Technical Apps](apps/apps-index.md)
+- [WIP](esw-application-parts.md)
 
 @@@
