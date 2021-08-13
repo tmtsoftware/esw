@@ -2,7 +2,7 @@ package esw.agent.akka.app.process
 
 import akka.Done
 import akka.actor.typed.ActorSystem
-import csw.location.api.models._
+import csw.location.api.models.*
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import esw.agent.akka.app.AgentSettings
@@ -21,6 +21,9 @@ import scala.util.Try
 import scala.util.chaining.scalaUtilChainingOps
 import scala.util.control.NonFatal
 
+/**
+ * This class provides methods to manage various processes that will be spawned/killed using Agent App.
+ */
 class ProcessManager(
     locationService: LocationService,
     versionManager: VersionManager,

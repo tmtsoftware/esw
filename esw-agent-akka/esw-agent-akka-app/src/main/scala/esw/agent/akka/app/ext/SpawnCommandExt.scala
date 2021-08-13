@@ -8,6 +8,9 @@ import esw.commons.utils.config.VersionManager
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * This is a convenience utility which can be used to spawn ESW components via Coursier.
+ */
 object SpawnCommandExt {
 
   implicit class SpawnCommandOps(private val command: SpawnCommand) extends AnyVal {

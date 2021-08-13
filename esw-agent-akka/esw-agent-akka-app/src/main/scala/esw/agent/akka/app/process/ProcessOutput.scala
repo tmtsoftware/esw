@@ -8,6 +8,9 @@ import akka.stream.scaladsl.{Framing, StreamConverters}
 import akka.util.ByteString
 import esw.agent.akka.app.process.ProcessOutput.ConsoleWriter
 
+/**
+ * This class is central utility which write output of various processes that were spawned by Agent App to the console.
+ */
 class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter())(implicit actorSystem: ActorSystem[_]) {
 
   private def writeStream(stream: () => InputStream, processName: String, writeStr: String => Unit): Unit =

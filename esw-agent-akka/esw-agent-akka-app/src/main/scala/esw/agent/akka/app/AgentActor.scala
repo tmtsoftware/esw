@@ -10,10 +10,10 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.Container
 import esw.agent.akka.app.process.ProcessManager
 import esw.agent.akka.client.AgentCommand
+import esw.agent.akka.client.AgentCommand.*
 import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnContainer
-import esw.agent.akka.client.AgentCommand._
-import esw.agent.akka.client.models._
-import esw.agent.service.api.models._
+import esw.agent.akka.client.models.*
+import esw.agent.service.api.models.*
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.constants.AgentTimeouts
 

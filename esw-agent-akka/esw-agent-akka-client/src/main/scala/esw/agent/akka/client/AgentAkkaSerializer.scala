@@ -6,6 +6,9 @@ import esw.agent.service.api.AgentAkkaSerializable
 import esw.agent.service.api.models.AgentResponse
 
 // $COVERAGE-OFF$
+/*
+ * Serializer being used in ser(de) of agents actor messages
+ */
 class AgentAkkaSerializer extends CborAkkaSerializer[AgentAkkaSerializable] with AgentActorCodecs {
   override def identifier: Int = 26726
 

@@ -11,7 +11,10 @@ import esw.agent.service.api._
 import esw.agent.service.api.models.{KillResponse, SpawnContainersResponse, SpawnResponse}
 
 import java.nio.file.Path
-
+/*
+ * These are messages(models) of agent actor.
+ * These are being used in communication with the agent actor.
+ */
 sealed trait AgentCommand
 sealed trait AgentRemoteCommand extends AgentCommand with AgentAkkaSerializable
 
@@ -27,6 +30,14 @@ object AgentCommand {
   }
 
   object SpawnCommand {
+    /**
+     * This represents the message spawning SequenceComponent.
+     * @param replyTo - Akka Agent Actor
+     * @param agentPrefix - the subsystem part of sequence component prefix.
+     * @param componentName - the componentName part of sequence component prefix.
+     * @param version - the version of sequencer script repo.
+     * @param simulation - flag for starting SequenceComponent in simulation for testing purpose.
+     */
     case class SpawnSequenceComponent(
         replyTo: ActorRef[SpawnResponse],
         agentPrefix: Prefix,
@@ -42,6 +53,14 @@ object AgentCommand {
         List("seqcomp", "-s", prefix.subsystem.name, "-n", componentName) ++ extraArgs ++ sim
     }
 
+    /**
+     * This represents the message for Spawning SequenceManager.
+     * @param replyTo - Akka Agent Actor
+     * @param obsModeConfigPath - Path for the obsModeConfig for the sequence manager.
+     * @param isConfigLocal - flag which determines whether config file is local or in Configuration Service(remote).
+     * @param version - version of sm (a ESW module) that will be started by agent.
+     * @param simulation - flag for starting Sequence Manager in simulation for testing purpose.
+     */
     case class SpawnSequenceManager(
         replyTo: ActorRef[SpawnResponse],
         obsModeConfigPath: Path,
@@ -60,6 +79,12 @@ object AgentCommand {
       }
     }
 
+    /**
+     * This represents the message for Spawning a container.
+     * @param replyTo - Akka Agent Actor
+     * @param containerComponentId - ComponentId of the container to be spawned.
+     * @param containerConfig [[esw.agent.akka.client.models.ContainerConfig]]- Config for the container to be started.
+     */
     case class SpawnContainer(
         replyTo: ActorRef[SpawnResponse],
         containerComponentId: ComponentId,
@@ -78,8 +103,19 @@ object AgentCommand {
     }
   }
 
+  /**
+   * This represents the message for Spawning multiple containers.
+   * @param replyTo - Akka Agent Actor
+   * @param hostConfigPath - Path for the host config that will be picked by agent to start multiple containers.
+   * @param isConfigLocal - flag which determines whether config file is local or in Configuration Service(remote).
+   */
   case class SpawnContainers(replyTo: ActorRef[SpawnContainersResponse], hostConfigPath: String, isConfigLocal: Boolean)
       extends AgentRemoteCommand
 
+  /**
+   * This represents the message for killing component that are registered in location service.
+   * @param replyTo - Akka Agent Actor
+   * @param location [[csw.location.api.models.Location]] - location of the component to be killed.
+   */
   case class KillComponent(replyTo: ActorRef[KillResponse], location: Location) extends AgentRemoteCommand
 }

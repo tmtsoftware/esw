@@ -2,6 +2,9 @@ package esw.agent.akka.app.process.cs
 
 import esw.agent.akka.client.models.ContainerConfig
 
+/**
+ * This is a convenience utility which can be used to spawn OCS App, Sequence Manager & Container App via Coursier.
+ */
 object Coursier {
   lazy val cs: String = "cs"
 

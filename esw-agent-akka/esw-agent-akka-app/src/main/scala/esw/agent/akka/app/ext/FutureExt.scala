@@ -7,6 +7,9 @@ import akka.pattern
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Future, TimeoutException}
 
+/**
+ * This is a convenience utility on top of [[scala.concurrent.Future]].
+ */
 object FutureExt {
   private lazy val timedOutFuture = Future.failed(new TimeoutException)
 

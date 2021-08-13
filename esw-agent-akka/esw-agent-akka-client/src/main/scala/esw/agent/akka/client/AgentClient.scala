@@ -17,6 +17,11 @@ import esw.constants.AgentTimeouts
 import java.nio.file.Path
 import scala.concurrent.Future
 
+/**
+ * Akka client for the Agent
+ * @param akkaLocation - [[csw.location.api.models.AkkaLocation]] of the Agent Server.
+ * @param actorSystem - [[akka.actor.typed.ActorSystem]] - an Akka ActorSystem.
+ */
 class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]) {
   private val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefix                      = akkaLocation.prefix

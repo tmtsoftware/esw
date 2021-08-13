@@ -8,7 +8,9 @@ import esw.agent.akka.client.models._
 import esw.agent.service.api.codecs.AgentCodecs
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.{deriveAllCodecs, deriveCodec}
-
+/**
+ * Codecs for the models which are being used while communication by the actor
+ */
 trait AgentActorCodecs extends AgentCodecs with CommonCodecs with LocationCodecs {
   implicit def actorRefCodec[T]: Codec[ActorRef[T]]              = io.bullet.borer.compat.akka.typedActorRefCodec
   implicit lazy val agentCommandCodec: Codec[AgentRemoteCommand] = deriveAllCodecs

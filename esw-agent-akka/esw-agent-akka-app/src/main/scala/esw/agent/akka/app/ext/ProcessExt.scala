@@ -9,6 +9,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.FutureConverters.CompletionStageOps
 import scala.util.Try
 
+/**
+ * This is a convenience extension on top of [[java.lang.ProcessHandle]] while working with [[java.lang.Process]].
+ */
 object ProcessExt {
 
   implicit class ProcessOps(private val parent: ProcessHandle) extends AnyVal {

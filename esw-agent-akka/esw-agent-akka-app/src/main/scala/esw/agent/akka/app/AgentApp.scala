@@ -12,6 +12,9 @@ import scala.concurrent.Await
 import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
+/*
+ * The main app to start Agent on a machine.
+ * */
 object AgentApp extends CommandApp[AgentCliCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
