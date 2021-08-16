@@ -26,7 +26,7 @@ import scala.util.control.NonFatal
 
 /*
  * The main app to start sequencer/sequence component
- * */
+ */
 object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   // $COVERAGE-OFF$
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name

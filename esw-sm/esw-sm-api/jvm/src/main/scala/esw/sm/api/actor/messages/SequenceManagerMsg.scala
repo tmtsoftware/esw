@@ -5,8 +5,9 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 
+// Messages for the sequence manager actor
 sealed trait SequenceManagerMsg
 
 sealed trait SequenceManagerRemoteMsg extends SequenceManagerMsg with SmAkkaSerializable

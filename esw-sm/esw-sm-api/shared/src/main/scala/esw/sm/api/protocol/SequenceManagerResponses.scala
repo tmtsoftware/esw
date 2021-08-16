@@ -6,6 +6,7 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
 import esw.sm.api.models._
 
+//Response models for the sequence manager(both http and actor)
 sealed trait SmResponse extends SmAkkaSerializable
 
 sealed trait SmFailure extends Exception with SmResponse {
@@ -138,7 +139,7 @@ object Unhandled {
     new Unhandled(state, messageType, s"Sequence Manager can not accept '$messageType' message in '$state'")
 }
 
-sealed trait ResourcesStatusResponse extends SmResponse
+// Model for status of a single resource
 case class ResourceStatusResponse(
     resource: Resource,
     status: ResourceStatus,
@@ -149,6 +150,8 @@ object ResourceStatusResponse {
   def apply(resource: Resource): ResourceStatusResponse = ResourceStatusResponse(resource, ResourceStatus.Available)
 }
 
+// Model for status of multiple resources
+sealed trait ResourcesStatusResponse extends SmResponse
 object ResourcesStatusResponse {
 
   case class Success(resourcesStatus: List[ResourceStatusResponse]) extends ResourcesStatusResponse

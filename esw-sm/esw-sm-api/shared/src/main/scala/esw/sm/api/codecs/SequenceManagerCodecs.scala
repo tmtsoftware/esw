@@ -9,6 +9,7 @@ import io.bullet.borer.derivation.CompactMapBasedCodecs
 import io.bullet.borer.derivation.MapBasedCodecs.{deriveAllCodecs, deriveCodec}
 import msocket.api.codecs.BasicCodecs
 
+//Codecs for Sequence Manager responses and its models
 object SequenceManagerCodecs extends SequenceManagerCodecs
 
 trait SequenceManagerCodecs extends LocationCodecs with BasicCodecs with OcsCodecs {

@@ -15,6 +15,12 @@ import esw.sm.api.protocol._
 
 import scala.concurrent.Future
 
+/**
+ * Akka actor client for the sequence manager
+ *
+ * @param location - akka Location of the sequence manager
+ * @param actorSystem - an Akka ActorSystem
+ */
 class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]

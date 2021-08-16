@@ -3,6 +3,12 @@ package esw.sm.api.models
 import csw.prefix.models.Prefix
 import esw.sm.api.models.ProvisionConfig.{AgentPrefix, SequenceComponentPrefix}
 
+/**
+ * This model class represents mapping of agent and how many sequence components will be running on the agen
+ *
+ * @param agentPrefix - prefix of agent
+ * @param countOfSeqComps - number of sequence components
+ */
 case class AgentProvisionConfig(agentPrefix: Prefix, countOfSeqComps: Int) {
   // check count is greater than Zero
   require(
@@ -11,6 +17,11 @@ case class AgentProvisionConfig(agentPrefix: Prefix, countOfSeqComps: Int) {
   )
 }
 
+/**
+ * This model class has the list of AgentProvisionConfig fro all the agents
+ *
+ * @param config - list of AgentProvisionConfig
+ */
 case class ProvisionConfig(config: List[AgentProvisionConfig]) {
   private val repeatedPrefix: List[AgentProvisionConfig] = config.diff(config.distinctBy(_.agentPrefix))
   // Check there are no double entries of any prefix
@@ -19,6 +30,11 @@ case class ProvisionConfig(config: List[AgentProvisionConfig]) {
     s"Invalid Provision config: Cannot have multiple entries for same agent prefix. :$repeatedPrefix"
   )
 
+  /**
+   * Returns the list of mappings of which sequence component will be running on which agent
+   *
+   * @return mapping of AgentPrefix with SequenceComponentPrefix
+   */
   def agentToSeqCompMapping: List[(AgentPrefix, SequenceComponentPrefix)] = {
     def assign(config: List[AgentProvisionConfig], from: Int): List[(AgentPrefix, SequenceComponentPrefix)] =
       config match {

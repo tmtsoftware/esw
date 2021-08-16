@@ -2,14 +2,15 @@ package esw.sm.api
 
 import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.adapter._
+import akka.actor.typed.scaladsl.adapter.*
 import csw.commons.CborAkkaSerializer
 import esw.sm.api.actor.codecs.SequenceManagerMsgCodecs
 import esw.sm.api.actor.messages.SequenceManagerRemoteMsg
 import esw.sm.api.codecs.SmAkkaSerializable
 import esw.sm.api.models.SequenceManagerState
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 
+//Serializer for the Sequence Manager actor
 class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
     extends CborAkkaSerializer[SmAkkaSerializable]
     with SequenceManagerMsgCodecs {

@@ -11,6 +11,11 @@ import msocket.api.Transport
 
 import scala.concurrent.Future
 
+/**
+ * HTTP client for the sequence manager
+ *
+ * @param postClient - An Transport class for HTTP calls for the Sequence Manager
+ */
 class SequenceManagerClient(postClient: Transport[SequenceManagerRequest])
     extends SequenceManagerApi
     with SequenceManagerServiceCodecs {

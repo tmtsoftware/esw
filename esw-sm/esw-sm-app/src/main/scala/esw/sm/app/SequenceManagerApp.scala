@@ -7,12 +7,15 @@ import csw.prefix.models.Prefix
 import esw.commons.cli.EswCommandApp
 import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
-import esw.sm.app.SequenceManagerAppCommand._
+import esw.sm.app.SequenceManagerAppCommand.*
 
 import java.nio.file.Path
 import scala.concurrent.Await
 import scala.util.control.NonFatal
 
+/*
+ * The main app to start Sequence Manager
+ */
 // $COVERAGE-OFF$
 object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
@@ -51,7 +54,7 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
   ): SequenceManagerWiring = {
 
     val sequenceManagerWiring = new SequenceManagerWiring(port, obsModeConfigPath, isConfigLocal, agentPrefix, simulation)
-    import sequenceManagerWiring._
+    import sequenceManagerWiring.*
 
     try {
       if (startLogging) actorRuntime.startLogging(progName, appVersion)

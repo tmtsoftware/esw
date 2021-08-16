@@ -85,11 +85,13 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
       .flatMapRight(shutdown)
 
+  //shuts down all the running sequence components
   private def shutdownAll(): Future[Either[EswLocationError.RegistrationListingFailed, List[SequenceComponentResponse.Ok.type]]] =
     locationServiceUtil
       .listAkkaLocationsBy(SequenceComponent)
       .flatMapRight(Future.traverse(_)(shutdown))
 
+  //shuts down the sequence component of given location
   private def shutdown(seqCompLocation: SeqCompLocation) = sequenceComponentApi(seqCompLocation).shutdown()
 
   private def filterIdleSequenceComponents(seqCompLocations: List[SeqCompLocation]) =

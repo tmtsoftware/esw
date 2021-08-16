@@ -9,6 +9,9 @@ import csw.prefix.models.Prefix
 
 import scala.util.Try
 
+/**
+ * SequenceManagerAppCommand - a set of command line param written using case app for the Sequence Manager
+ */
 sealed trait SequenceManagerAppCommand
 
 object SequenceManagerAppCommand {

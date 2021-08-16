@@ -12,15 +12,15 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
+import esw.sm.api.models.*
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
-import esw.sm.api.models.{ProvisionConfig, SequenceManagerState, _}
+import esw.sm.api.protocol.*
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
-import esw.sm.api.protocol.{ObsModesDetailsResponse, ResourceStatusResponse, _}
 import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
 import esw.sm.impl.utils.Types.AgentLocation
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
@@ -31,6 +31,17 @@ import scala.reflect.ClassTag
 import scala.util.chaining.scalaUtilChainingOps
 import scala.util.control.NonFatal
 
+/**
+ * This a behavior class for the sequence manager actor. This behavior class is base on State machine means behavior depends on the state of sequence manager.
+ *
+ * @param sequenceManagerConfig - sequence manager config for the sequence manager
+ * @param locationServiceUtil - an instance of [[esw.commons.utils.location.LocationServiceUtil]]
+ * @param agentUtil - an instance of [[esw.commons.utils.location.LocationServiceUtil]]
+ * @param sequencerUtil - an instance of [[esw.sm.impl.utils.SequencerUtil]]
+ * @param sequenceComponentUtil - an instance of [[esw.sm.impl.utils.SequenceComponentUtil]]
+ * @param actorSystem - an Akka ActorSystem
+ * @param logger - a logger for Logging
+ */
 class SequenceManagerBehavior(
     sequenceManagerConfig: SequenceManagerConfig,
     locationServiceUtil: LocationServiceUtil,
@@ -39,11 +50,17 @@ class SequenceManagerBehavior(
     sequenceComponentUtil: SequenceComponentUtil
 )(implicit val actorSystem: ActorSystem[_], implicit val logger: Logger) {
 
-  import SequenceManagerBehavior._
+  import SequenceManagerBehavior.*
   import actorSystem.executionContext
 
   def setup: SMBehavior = Behaviors.setup(ctx => idle(ctx.self))
 
+  /*
+   * Returns the behavior of sequence manager in Idle state
+   * In this state all the [[SequenceManagerIdleMsg]] as well as common messages are accepted.
+   *
+   * self -> actor ref of sequence manager itself
+   */
   private def idle(self: SelfRef) =
     receive[SequenceManagerIdleMsg](Idle) {
       case Configure(obsMode, replyTo) => configure(obsMode, self, replyTo)
@@ -129,6 +146,7 @@ class SequenceManagerBehavior(
   private def isConflicting(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
+  //return Resources of a particular obsMode from the SequenceManagerConfig
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
 
   private def startSequencer(
@@ -182,8 +200,14 @@ class SequenceManagerBehavior(
     processing(self, replyTo)
   }
 
-  // processing some message, waiting for ProcessingComplete message
-  // Within this period, reject all the other messages except common messages
+  /*
+   * Returns the behavior of sequence manager in Processing state state.
+   * In this state, actor is processing some message, waiting for ProcessingComplete message
+   * Within this period, it rejects all the other messages except common messages
+   *
+   * self -> actor ref of sequence manager itself
+   * replyTo -> actor ref of the actor whom to send the ProcessingComplete received in this state
+   */
   private def processing[T <: SmResponse](
       self: SelfRef,
       replyTo: ActorRef[T]
@@ -212,6 +236,12 @@ class SequenceManagerBehavior(
       }
     }
 
+  /*
+   * Return the set of all the resources' status(In Use and Available)
+   *
+   * If a resources is required for running obsMode then it is marked as InUse resource
+   * otherwise it is an available resource
+   */
   private def buildResourceStatusList(runningObsModes: Set[ObsMode]) = {
     val obsModes           = sequenceManagerConfig.obsModes.toSet
     val resourceToObsMode  = obsModes.flatMap(kv => kv._2.resources.resources.map(r => (r, kv._1)))
@@ -224,6 +254,9 @@ class SequenceManagerBehavior(
     inUseResources ++ availableResources
   }
 
+  /*
+   * gets all the running obsMode and uses it to determine the status of resources by using buildResourceStatusList method
+   */
   private def getResourcesStatus(replyTo: ActorRef[ResourcesStatusResponse]): Future[Unit] =
     getRunningObsModes.mapToAdt(
       runningObsModes => {
@@ -237,6 +270,9 @@ class SequenceManagerBehavior(
       }
     )
 
+  /*
+   * Handler for the messages common to each state of the sequence manager
+   */
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
       case GetSequenceManagerState(replyTo) =>
@@ -247,6 +283,9 @@ class SequenceManagerBehavior(
 
     }
 
+  /*
+   * Gets status of the given obsMode
+   */
   def getObsModeStatus(
       obsMode: ObsMode,
       obsModeConfig: ObsModeConfig,
@@ -306,6 +345,9 @@ class SequenceManagerBehavior(
 
   private implicit class FutureOps[T](private val future: Future[T]) {
 
+    /*
+     * This method is created for sending ProcessingComplete message with the failure to sequence manager actor whenever the future fails
+     */
     def recoverWithProcessingError[Msg <: SequenceManagerMsg: ClassTag](selfRef: SelfRef): Future[Any] = {
       val msg = scala.reflect.classTag[Msg].runtimeClass.getSimpleName
       future.recover { case NonFatal(ex) =>

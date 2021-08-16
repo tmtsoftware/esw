@@ -14,9 +14,26 @@ import msocket.http.post.HttpPostTransport
 object SequenceManagerApiFactory {
 
   // todo: should this be exposed to all?
+  /**
+   * Creates akkaClient for the the Sequencer Manager
+   *
+   * @param akkaLocation - akka Location of the Sequencer
+   * @param actorSystem - an Akka ActorSystem
+   *
+   * @return an instance of [[esw.sm.api.SequenceManagerApi]]
+   */
   def makeAkkaClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_]): SequenceManagerApi =
     new SequenceManagerImpl(akkaLocation)
 
+  /**
+   * Creates http client for the the Sequencer Manager
+   *
+   * @param httpLocation - http Location of the Sequencer
+   * @param tokenFactory - a function that return the auth token
+   * @param actorSystem - an Akka ActorSystem
+   *
+   * @return an instance of [[esw.sm.api.SequenceManagerApi]]
+   */
   def makeHttpClient(httpLocation: HttpLocation, tokenFactory: () => Option[String])(implicit
       actorSystem: ActorSystem[_]
   ): SequenceManagerApi = {

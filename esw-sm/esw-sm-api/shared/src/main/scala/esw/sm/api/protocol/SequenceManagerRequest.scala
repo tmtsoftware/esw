@@ -4,6 +4,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.models.ProvisionConfig
 
+//Http Request models for the sequence manager
 sealed trait SequenceManagerRequest
 
 object SequenceManagerRequest {

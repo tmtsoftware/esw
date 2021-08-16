@@ -6,6 +6,7 @@ import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 import msocket.api.ErrorProtocol
 import msocket.api.models.ServiceError
 
+//Codecs for HTTP methods of Sequence Manager requests
 object SequenceManagerServiceCodecs extends SequenceManagerServiceCodecs
 
 trait SequenceManagerServiceCodecs extends SequenceManagerCodecs {
