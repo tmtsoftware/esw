@@ -1,10 +1,8 @@
-# Starting Sequence Manager Using esw-sm-app
+# Starting the Sequence Manager Application
 
 `esw-sm-app` is a command line application that facilitates starting Sequence Manager, and the HTTP server that is part of Sequence Manager using the `coursier` dependency management
 application. The `coursier` tool is described with full documentation
 at the [coursier site](https://get-coursier.io).
-
-## Prerequisites for Running esw-sm-app App
 
 The following steps should be followed to use esw-sm-app to start a Sequencer Manager.
 
@@ -39,7 +37,7 @@ cs install \
 If you don't provide the version or SHA in above command, `esw-sm-app` will be installed with the latest tagged binary of `esw-sm-app`
 @@@
 
-## 4. Run sequence manager via install esw-sm-app
+## 4. Run Sequence Manager via Install esw-sm-app
 
 Once esw-sm-app is installed, one can simply run esw-sm-app by executing start command
 
@@ -66,7 +64,7 @@ cd /tmt/apps
 Refer to supported arguments section or `./esw-sm-app start --help` for starting Sequence Manager with specific arguments
 @@@
 
-## Setting the Log Level
+### Setting the Log Level
 
 The default log level for any component is specified in the `application.conf` file of the component.
 Use the java -J-D option to override configuration values at runtime.  For log level, the format is:
@@ -85,9 +83,9 @@ cd /tmt/apps
 ./esw-sm-app -J-Dcsw-logging.component-log-levels.ESW.sequence_manager=TRACE start -o obsmode.conf
 ```
 
-# Starting Sequence Manager in simulation mode
+# Starting Sequence Manager in Simulation Mode
 
-## Prerequisites for Running esw-sm-app App in simulation mode
+## Prerequisites for Running esw-sm-app App in Simulation Mode
 
 ## 1. Install `coursier` and the TMT Apps channel
 
@@ -106,7 +104,7 @@ The following command creates an executable file named `esw-services` in the def
 cs install esw-services:<version | SHA>
 ```
 
-## 4. Run esw-sm-app in simulation mode
+## 4. Run esw-sm-app in Simulation Mode
 
 ```bash
 cs launch esw-services – start -s --simulation
@@ -115,7 +113,7 @@ cs launch esw-services – start -s --simulation
 //    --simulation : in simulation mode
 ```
     
-## 5. Running esw-sm-app in simulation mode independent of esw-services
+## 5. Running esw-sm-app in Simulation Mode Without esw-services
 
 ```bash
 cs launch esw-sm-app:<version | SHA> -- start --simulation

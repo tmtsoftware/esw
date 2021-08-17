@@ -184,30 +184,30 @@ and processing state can handle common msgs without any state change.
 
 For running Sequence Manager, please refer @ref:[this](./apps/sequence-manager-app.md).
 
-## Sequence Manager simulation mode
-Simulation mode for SM is mainly for testing the functionality/scenarios of apps interacting with SM.
+## Sequence Manager Simulation Mode
+Simulation mode for SM is mainly for testing the functionality/scenarios of apps interacting with SM. This functionality
+meets the requirements for SM simulation.
 
 ### Approach followed:
-* In this approach we will be spawning actual Sequence Manager, agents, sequence-components and sequencers(simulation mode).
+* In this approach we will be spawning actual Sequence Manager, agents, Sequence Components and Sequencers(in simulation mode).
 
 * When the Sequence Manager is started using the esw-services with the simulation flag, the following things are done.
     
-    1. If a obs-mode config is provided using -o flag, it is used and if not then a default config is used.
-    2. Three agents are spawned automatically(ESW, TCS, IRIS)
+    1. If a obs-mode config file is provided using -o flag, it is used and if not then a default obs-mode config is used.
+    2. Three agents are spawned automatically for subsystems ESW, TCS, and IRIS.
 
 * When the Sequence Manager is up and running(--simulation):
 
-    1. suppose `Provision` command is sent to SM. Now as we are using actual agents, seq-components our 
-       production level logic eg: shutting-down previous seq-comps, agent-allocation for seq-comps, etc.
-        can be tested 
-    2. suppose `Configure` command is sent to SM. Now as we are using sequencers in simulated mode any 
-        obs-mode can be configured(as long as there is an entry for it in the provided obs-mode conf or the 
+    1. Suppose the `Provision` command is sent to SM. Now as we are using actual agents and Sequence Components, our 
+       production level logic can be tested (eg: shutting-down previous seq-comps, agent-allocation for seq-comps, etc).
+    2. Suppose the `Configure` command is sent to SM. Now as we are using Sequencers in simulated mode any 
+        obs-mode can be configured (as long as there is an entry for it in the provided obs-mode conf or the 
         default). Also the success as well as all the failure scenarios (resource conflict, configuration 
         missing, etc) can be tested.
-    3. all the other apis like startSequencer, shutdownAllSeqComps etc will work properly with correct entries
-        made in location service.
+    3. All the other APIs like startSequencer, shutdownAllSeqComps etc. will work properly with correct entries
+        made in CSW Location Service.
         
-* Only agents will be started in the same jvm process.Since sequence components are started by agents 
+* Only agents will be started in the same JVM process. Since Sequence Components are started by agents 
   using `cs launch ...`,  command they will not be in the same process.
 
 ### Running Sequence Manager in simulation mode
