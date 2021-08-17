@@ -31,16 +31,16 @@ import scala.reflect.ClassTag
 import scala.util.chaining.scalaUtilChainingOps
 import scala.util.control.NonFatal
 
-/**
+/*
  * This a behavior class for the sequence manager actor. This behavior class is base on State machine means behavior depends on the state of sequence manager.
  *
- * @param sequenceManagerConfig - sequence manager config for the sequence manager
- * @param locationServiceUtil - an instance of [[esw.commons.utils.location.LocationServiceUtil]]
- * @param agentUtil - an instance of [[esw.commons.utils.location.LocationServiceUtil]]
- * @param sequencerUtil - an instance of [[esw.sm.impl.utils.SequencerUtil]]
- * @param sequenceComponentUtil - an instance of [[esw.sm.impl.utils.SequenceComponentUtil]]
- * @param actorSystem - an Akka ActorSystem
- * @param logger - a logger for Logging
+ * sequenceManagerConfig - sequence manager config for the sequence manager
+ * locationServiceUtil - an instance of [[esw.commons.utils.location.LocationServiceUtil]]
+ * agentUtil - an instance of [[esw.commons.utils.location.LocationServiceUtil]]
+ * sequencerUtil - an instance of [[esw.sm.impl.utils.SequencerUtil]]
+ * sequenceComponentUtil - an instance of [[esw.sm.impl.utils.SequenceComponentUtil]]
+ * actorSystem - an Akka ActorSystem
+ * logger - a logger for Logging
  */
 class SequenceManagerBehavior(
     sequenceManagerConfig: SequenceManagerConfig,
