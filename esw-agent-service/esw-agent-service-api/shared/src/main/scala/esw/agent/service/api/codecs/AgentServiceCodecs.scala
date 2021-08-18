@@ -8,6 +8,9 @@ import msocket.api.ErrorProtocol
 
 object AgentServiceCodecs extends AgentServiceCodecs
 
+/**
+ * Codecs for the http models which are being used while communication via http.
+ */
 trait AgentServiceCodecs extends AgentCodecs {
 
   lazy implicit val agentHttpMessageCodecs: Codec[AgentServiceRequest] = deriveAllCodecs

@@ -11,9 +11,17 @@ import esw.commons.utils.location.LocationServiceUtil
 
 import scala.concurrent.Future
 
+/**
+ * A utility class written using locationServiceUtil to be used in AgentServiceImpl
+ * @param locationServiceUtil - an instance of locationServiceUtil
+ * @param actorSystem - an implicit actor system
+ */
 class AgentStatusUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
+  // returns map of all agents with information about sequence components & sequencer running on it.
+  // agentId is collected using metadata field of sequenceComponent/sequencer registered location.
+  // In case when agentId is not found in the metadata, sequenceComponent/sequencer are collected in a separate list named orphans.
   def getAllAgentStatus: Future[AgentStatusResponse] =
     getAllSequenceComponents
       .mapRight(groupByAgentWithOrphans)

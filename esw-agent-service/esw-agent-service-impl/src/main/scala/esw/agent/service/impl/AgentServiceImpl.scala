@@ -5,13 +5,20 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
-import esw.agent.service.api.models._
+import esw.agent.service.api.models.*
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 
 import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * Akka actor client for the Agent Service
+ *
+ * @param locationServiceUtil - an instance of locationServiceUtil
+ * @param agentStatusUtil - an instance of agentStatusUtil
+ * @param actorSystem - an implicit Akka ActorSystem
+ */
 class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil: AgentStatusUtil)(implicit
     actorSystem: ActorSystem[_]
 ) extends AgentServiceApi {

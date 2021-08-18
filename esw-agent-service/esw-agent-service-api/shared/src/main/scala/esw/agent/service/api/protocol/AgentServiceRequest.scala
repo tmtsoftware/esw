@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
-
+//Http Request models for the Agent Service
 sealed trait AgentServiceRequest
 
 object AgentServiceRequest {

@@ -10,6 +10,9 @@ import esw.agent.service.api.protocol.AgentServiceRequest
 import msocket.api.ContentType
 import msocket.http.post.HttpPostTransport
 
+/**
+ * This is a factory to create instance of agent service's http client
+ */
 object AgentServiceClientFactory {
 
   def apply(httpLocation: HttpLocation, tokenFactory: () => Option[String])(implicit

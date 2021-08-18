@@ -2,6 +2,9 @@ package esw.agent.service.app
 
 import caseapp.{CommandName, ExtraName, HelpMessage}
 
+/**
+ * AgentServiceAppCommand - a set of command line param written using case app for the Agent Service App
+ */
 sealed trait AgentServiceAppCommand
 
 object AgentServiceAppCommand {

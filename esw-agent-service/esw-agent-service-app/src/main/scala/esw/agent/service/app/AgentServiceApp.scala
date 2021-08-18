@@ -11,6 +11,9 @@ import esw.constants.CommonTimeouts
 import scala.concurrent.Await
 import scala.util.control.NonFatal
 
+/*
+ * The main app to start Agent Service
+ */
 object AgentServiceApp extends EswCommandApp[AgentServiceAppCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version

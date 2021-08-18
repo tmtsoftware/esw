@@ -18,6 +18,11 @@ import java.nio.file.Path
 
 import scala.concurrent.Future
 
+/**
+ * HTTP client for the Agent Service
+ *
+ * @param postClient - An Transport class for HTTP calls for the Agent Service
+ */
 class AgentServiceClient(postClient: Transport[AgentServiceRequest]) extends AgentServiceApi with AgentServiceCodecs {
 
   override def spawnSequenceManager(

@@ -2,7 +2,10 @@ package esw.agent.service.api.models
 
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import esw.agent.service.api.AgentAkkaSerializable
-
+/*
+ * These are response messages(models) of agent service.
+ * These are being used in http communication.
+ */
 sealed trait AgentResponse extends AgentAkkaSerializable
 
 sealed trait SpawnResponse           extends AgentResponse

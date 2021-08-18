@@ -1,12 +1,15 @@
 package esw.agent.service.api.codecs
 
-import java.nio.file.{Path, Paths}
-
 import csw.location.api.codec.LocationCodecs
-import esw.agent.service.api.models._
+import esw.agent.service.api.models.*
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.{deriveAllCodecs, deriveCodec}
 
+import java.nio.file.{Path, Paths}
+
+/**
+ * Codecs for the models which are being used while communication by the actor
+ */
 trait AgentCodecs extends LocationCodecs {
   implicit lazy val pathCodec: Codec[Path]                                       = Codec.bimap[String, Path](_.toString, Paths.get(_))
   implicit lazy val agentResponseCodec: Codec[AgentResponse]                     = deriveAllCodecs
