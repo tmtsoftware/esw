@@ -2,7 +2,7 @@ package esw.gateway.server
 
 import akka.Done
 import akka.stream.scaladsl.Sink
-import csw.params.core.generics.KeyType.{ByteKey, StructKey}
+import csw.params.core.generics.KeyType.{ByteKey}
 import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models._
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
@@ -23,11 +23,9 @@ class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCod
   private val arrayDataKey   = KeyType.IntArrayKey.make("arrayDataKey")
   private val arrayDataParam = arrayDataKey.set(ArrayData(a1), ArrayData(a2))
   private val byteKey        = ByteKey.make("byteKey")
-  private val structKey      = StructKey.make("structKey")
   private val paramSet: Set[Parameter[_]] = Set(
     byteKey.set(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
   )
-  val largeData: Parameter[Struct] = structKey.setAll((1 to 10000).map(_ => Struct(paramSet)).toArray)
 
   private val prefix        = Prefix("tcs.test.gateway")
   private val name1         = EventName("event1")

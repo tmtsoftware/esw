@@ -20,7 +20,6 @@ class KeysTest {
         altAzCoordKey("altAzCoordKey") shouldBe AltAzCoordKey().make("altAzCoordKey")
         coordKey("coordKey") shouldBe CoordKey().make("coordKey")
         stringKey("stringKey") shouldBe StringKey().make("stringKey")
-        structKey("structKey") shouldBe StructKey().make("structKey")
         utcTimeKey("utcTimeKey") shouldBe UTCTimeKey().make("utcTimeKey")
         taiTimeKey("taiTimeKey") shouldBe TAITimeKey().make("taiTimeKey")
         booleanKey("booleanKey") shouldBe BooleanKey().make("booleanKey")
