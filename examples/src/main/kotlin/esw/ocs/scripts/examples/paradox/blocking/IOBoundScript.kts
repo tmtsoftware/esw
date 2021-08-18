@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package esw.ocs.scripts.examples.paradox.blocking
 
 import esw.ocs.dsl.core.script
@@ -16,7 +18,7 @@ script {
 
         // by default calling readMessage (blocking io) task suspends and waits for result
         // but this runs on different thread than the main script thread
-        // which allows other background tasks started previously to run concurrenlty
+        // which allows other background tasks started previously to run concurrently
         val message1 = readMessage(reader)
 
         // if you want to run readMessage in the background, then wrap it within async

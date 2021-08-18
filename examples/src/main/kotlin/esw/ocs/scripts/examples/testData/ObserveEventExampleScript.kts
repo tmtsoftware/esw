@@ -9,7 +9,7 @@ script {
     val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10))
     val testAssembly = Assembly(ESW, "test", Duration.seconds(10))
     val datafileName = "darknightData.txt"
-    onSetup("command-2") { command ->
+    onSetup("command-2") {
         val dataWriteStart = dataWriteStart(ExposureId("2021A-011-153-TCS-DET-SCI0-0001"), datafileName)
         publishEvent(dataWriteStart)
     }
@@ -18,7 +18,7 @@ script {
         publishEvent(observeStart(ObsId("2021A-011-153")))
     }
 
-    onObserve("observer-end") { command ->
+    onObserve("observer-end") {
         // ESW-421 demostrate usability of ObsId and ExposureId
         val exposureId = ExposureId("2021A-011-153-TCS-DET-SCI0-0001")
 
