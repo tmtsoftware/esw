@@ -87,12 +87,12 @@ cd /tmt/apps
 
 ## Prerequisites for Running esw-sm-app App in Simulation Mode
 
-## 1. Install `coursier` and the TMT Apps channel
+## 1. Install `coursier` and add the TMT Apps channel
 
 The `coursier` application must be installed on your machine, and the OCS Apps channel must be installed.
 The instructions for doing this are provided @ref:[here](getting-apps.md).
 
-## 2. Start any Needed CSW services
+## 2. Start required CSW services
 
 * To run esw-sm-app in simulation mode, the **CSW Location Service** must be running.
 
