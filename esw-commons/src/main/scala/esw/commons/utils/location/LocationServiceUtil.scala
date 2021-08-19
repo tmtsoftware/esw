@@ -14,6 +14,11 @@ import esw.commons.utils.location.EswLocationError._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * A common utility class on top of location service.
+ * @param locationService - an instance of locationService
+ * @param actorSystem - an implicit actor system
+ */
 private[esw] class LocationServiceUtil(val locationService: LocationService)(implicit
     val actorSystem: ActorSystem[_]
 ) {

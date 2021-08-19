@@ -6,6 +6,9 @@ import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
+/**
+ * This is an extension class containing convenience functions for handling use cases involving Either & Future.
+ */
 object FutureEitherExt {
   implicit class FutureEitherOps[+L, R](private val futureEither: Future[Either[L, R]]) extends AnyVal {
     def mapRight[R1](f: R => R1)(implicit executor: ExecutionContext): Future[Either[L, R1]] = futureEither.map(_.map(f))

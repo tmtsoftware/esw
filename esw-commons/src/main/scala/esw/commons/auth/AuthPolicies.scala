@@ -5,6 +5,12 @@ import csw.aas.http.Roles
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
 
+/**
+ * This is model representing Authorization policies defined for TMT.
+ * There is an assumption that the user roles are appropriately defined in Keycloak server.
+ * More information can be found here.
+ * See <a href="https://tmtsoftware.github.io/esw/uisupport/gateway.html">Gateway documentation</a>
+ */
 object AuthPolicies {
   private def make(predicate: Roles => Boolean): CustomPolicy =
     CustomPolicy { token =>

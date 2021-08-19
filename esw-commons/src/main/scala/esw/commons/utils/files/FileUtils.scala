@@ -4,6 +4,9 @@ import java.nio.file.{Files, Path}
 import scala.io.Source
 import scala.util.Using
 
+/**
+ * A class containing convenience functions for handling files.
+ */
 object FileUtils {
 
   private def stripExtension(fileName: String, ext: String = ".conf") = fileName.replaceAll(ext, "")

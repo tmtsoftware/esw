@@ -1,5 +1,8 @@
 package esw.commons.extensions
 
+/**
+ * This is an extension class containing convenience functions for handling use cases involving List & Either.
+ */
 object ListEitherExt {
   implicit class ListEitherOps[L, R](private val eithers: List[Either[L, R]]) extends AnyVal {
 

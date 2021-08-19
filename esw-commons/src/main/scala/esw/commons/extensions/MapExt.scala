@@ -1,5 +1,8 @@
 package esw.commons.extensions
 
+/**
+ * This is an extension class containing convenience functions for handling use cases involving Map type.
+ */
 object MapExt {
 
   implicit class MapOps[K, V](private val map: Map[K, V]) extends AnyVal {

@@ -8,6 +8,10 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.GenericLoggerFactory
 
 // $COVERAGE-OFF$
+
+/**
+ * This is a base class for all ESW command line applications containing helper utilities.
+ */
 abstract class EswCommandApp[T: CommandParser: CommandsHelp] extends CommandApp[T] {
 
   lazy val log: Logger = GenericLoggerFactory.getLogger

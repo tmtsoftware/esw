@@ -1,5 +1,8 @@
 package esw.commons.utils.location
 
+/**
+ * A common trait representing location Service Error that may occur in different service calls.
+ */
 sealed trait EswLocationError extends Exception {
   def msg: String
   override def getMessage: String = msg
