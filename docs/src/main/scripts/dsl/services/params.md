@@ -35,7 +35,6 @@ Following table lists all the key types, and their corresponding DSL.
 | FloatMatrix         | floatMatrixKey              |
 | DoubleMatrix        | doubleMatrixKey             |
 | Choice              | choiceKey                   |
-| Struct              | structKey                   |
 | EqCoord             | eqCoordKey                  |
 | SolarSystemCoord    | solarSystemCoordKey         |
 | MinorPlanetCoord    | minorPlanetCoordKey         |
@@ -43,7 +42,7 @@ Following table lists all the key types, and their corresponding DSL.
 | AltAzCoord          | altAzCoordKey               |
 | Coord  (*)          | coordKey                    |
 
-The example below shows usages of the DSL for different types of keys. Some other DSL helpers like `struct`, `choicesOf`, `arrayData`, `matrixData`, etc.
+The example below shows usages of the DSL for different types of keys. Some other DSL helpers like `choicesOf`, `arrayData`, `matrixData`, etc.
 have also been provided for ease of access. Usage of this helper DSLs is also shown in the example below.
 
 Kotlin

@@ -32,7 +32,6 @@ fun cometCoordKey(name: String, units: Units = JUnits.NoUnits): Key<Coords.Comet
 fun altAzCoordKey(name: String, units: Units = JUnits.NoUnits): Key<Coords.AltAzCoord> = AltAzCoordKey().make(name, units)
 fun coordKey(name: String, units: Units = JUnits.NoUnits): Key<Coords.Coord> = CoordKey().make(name, units)
 fun stringKey(name: String, units: Units = JUnits.NoUnits): Key<String> = StringKey().make(name, units)
-fun structKey(name: String, units: Units = JUnits.NoUnits): Key<Struct> = StructKey().make(name, units)
 fun utcTimeKey(name: String): Key<UTCTime> = UTCTimeKey().make(name)
 fun taiTimeKey(name: String): Key<TAITime> = TAITimeKey().make(name)
 
@@ -74,8 +73,5 @@ inline fun <reified T> arrayData(first: T, vararg rest: T): ArrayData<T> = Array
 
 inline fun <reified T> matrixData(elms: Array<Array<T>>): MatrixData<T> = MatrixData.fromArrays(elms)
 inline fun <reified T> matrixData(first: Array<T>, vararg rest: Array<T>): MatrixData<T> = MatrixData.fromArrays(first, *rest)
-fun struct(vararg params: Parameter<*>): Struct = JStruct.create(*params)
-fun struct(paramSet: Set<Parameter<*>>): Struct = JStruct.create(paramSet)
-fun struct(params: Params): Struct = JStruct.create(params.params())
 
 fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())

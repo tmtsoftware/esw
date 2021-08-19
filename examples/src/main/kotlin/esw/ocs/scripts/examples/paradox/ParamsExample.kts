@@ -9,7 +9,6 @@ import csw.params.core.generics.Parameter
 import csw.params.core.models.ArrayData
 import csw.params.core.models.Choice
 import csw.params.core.models.MatrixData
-import csw.params.core.models.Struct
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
 import csw.params.javadsl.JUnits
@@ -48,15 +47,6 @@ script {
         // Domain specific types
         val choiceKey: Key<Choice> = choiceKey("choice", choicesOf("A", "B", "C"))
         val choiceParam: Parameter<Choice> = choiceKey.set(Choice("A"), Choice("C"))
-
-        // Struct
-        val intParam: Parameter<Int> = encoderKey.set(1, 2, 3)
-        val paramSet: Set<Parameter<*>> = setOf(intParam, choiceParam)
-        val complexKey: Key<Struct> = structKey("complexKey")
-        val struct1: Struct = struct(paramSet)
-        val struct2: Struct = struct(command.params)
-        val struct3: Struct = struct(intParam, arrayParam)
-        val structParam: Parameter<Struct> = complexKey.set(struct1, struct2, struct3)
 
         // with units
         val temperatureInKelvinKey: Key<Int> = intKey("encoder", JUnits.kelvin)
