@@ -1,4 +1,4 @@
-# ESW Technical Applications
+# Technical Applications
 
 ESW technical infrastructure includes applications that can be started individually. The applications
 are described in the sections below.
