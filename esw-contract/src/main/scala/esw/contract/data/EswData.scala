@@ -6,6 +6,9 @@ import esw.contract.data.gateway.GatewayContract
 import esw.contract.data.sequencemanager.SequenceManagerContract
 import esw.contract.data.sequencer.SequencerContract
 
+/**
+ * Model representing contract Data for all public ESW services
+ */
 object EswData {
   val services: Services = Services(
     Map(

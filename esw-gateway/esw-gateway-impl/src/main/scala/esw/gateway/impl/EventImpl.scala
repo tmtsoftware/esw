@@ -15,6 +15,12 @@ import msocket.jvm.SourceExtension.RichSource
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * Akka actor client for the Event service
+ * @param eventService - an instance of AlarmService
+ * @param eventSubscriberUtil - an instance of eventSubscriberUtil
+ * @param ec - an implicit execution context
+ */
 class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriberUtil)(implicit ec: ExecutionContext)
     extends EventApi {
 

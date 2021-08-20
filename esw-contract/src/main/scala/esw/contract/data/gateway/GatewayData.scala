@@ -12,6 +12,9 @@ import esw.gateway.api.protocol.GatewayRequest._
 import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 
+/**
+ * This object contains all the Gateway data models which will be sent on wire.
+ */
 trait GatewayData extends SequencerData {
   val componentId: ComponentId = ComponentId(prefix, ComponentType.HCD)
   val eventName: EventName     = EventName("offline")

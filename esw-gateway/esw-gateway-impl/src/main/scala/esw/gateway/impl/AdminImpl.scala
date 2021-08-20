@@ -25,6 +25,12 @@ import esw.gateway.api.protocol.InvalidComponent
 
 import scala.concurrent.Future
 
+/**
+ * Akka actor client for the Admin service
+ *
+ * @param locationService - an instance of locationService
+ * @param actorSystem - an implicit Akka ActorSystem
+ */
 class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AdminApi {
   import actorSystem.executionContext
   private val log: Logger       = AdminLogger.getLogger

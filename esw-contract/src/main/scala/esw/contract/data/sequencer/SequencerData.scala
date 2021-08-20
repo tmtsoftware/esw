@@ -14,6 +14,9 @@ import esw.ocs.api.protocol._
 import java.net.URI
 import java.time.Instant
 
+/**
+ * This class contains all the Sequencer data models which will be sent on wire.
+ */
 trait SequencerData extends CommandData {
   val observeSequenceCommand: Observe       = Observe(prefix, commandName, Some(obsId))
   val setupSequenceCommand: Setup           = Setup(prefix, commandName, Some(obsId))

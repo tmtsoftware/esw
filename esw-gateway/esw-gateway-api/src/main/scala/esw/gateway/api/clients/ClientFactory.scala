@@ -9,6 +9,12 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.client.SequencerClient
 import msocket.api.Transport
 
+/**
+ * A client factory for creating HTTP clients for components & sequencers.
+ * @param postTransport - An HTTP Transport class for HTTP calls for the components & sequencers.
+ * @param websocketTransport - An Web socket Transport class for the components & sequencers.
+ * @param actorSystem - An implicit actor system.
+ */
 class ClientFactory(postTransport: Transport[GatewayRequest], websocketTransport: Transport[GatewayStreamRequest])(implicit
     actorSystem: ActorSystem[_]
 ) {

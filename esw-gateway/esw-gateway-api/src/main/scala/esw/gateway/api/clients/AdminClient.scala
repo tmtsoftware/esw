@@ -15,6 +15,10 @@ import msocket.api.codecs.BasicCodecs
 
 import scala.concurrent.Future
 
+/**
+ * HTTP client for the Admin Service
+ * @param postClient - An Transport class for HTTP calls for the Admin Service
+ */
 class AdminClient(postClient: Transport[GatewayRequest]) extends AdminApi with LoggingCodecs with BasicCodecs with MessageCodecs {
 
   override def shutdown(componentId: ComponentId): Future[Done] = postClient.requestResponse[Done](Shutdown(componentId))

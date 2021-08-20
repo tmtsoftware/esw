@@ -7,6 +7,10 @@ import esw.gateway.api.LoggingApi
 
 import scala.concurrent.Future
 
+/**
+ * client for the logging api
+ * @param loggerCache - an instance of logger cache
+ */
 class LoggingImpl(loggerCache: LoggerCache) extends LoggingApi {
   override def log(prefix: Prefix, level: Level, message: String, metadata: Map[String, Any]): Future[Done] = {
     val logger = loggerCache.get(prefix)

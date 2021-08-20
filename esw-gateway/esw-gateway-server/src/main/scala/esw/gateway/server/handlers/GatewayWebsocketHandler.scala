@@ -14,6 +14,12 @@ import msocket.jvm.stream.{StreamRequestHandler, StreamResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * This is the Websocket(Stream) route handler written using msocket apis for Gateway.
+ * @param resolver - an instance of resolver for resolving hcd/assemblies & sequencers
+ * @param eventApi - an instance of event api
+ * @param ec - an implicit execution context
+ */
 class GatewayWebsocketHandler(resolver: Resolver, eventApi: EventApi)(implicit ec: ExecutionContext)
     extends StreamRequestHandler[GatewayStreamRequest] {
 

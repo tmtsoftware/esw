@@ -10,6 +10,12 @@ import esw.gateway.api.protocol.SetAlarmSeverityFailure
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
+/**
+ * Akka actor client for the Admin service
+ *
+ * @param alarmService - an instance of AlarmService
+ * @param ec - an implicit execution context
+ */
 class AlarmImpl(alarmService: AlarmService)(implicit ec: ExecutionContext) extends AlarmApi {
 
   override def setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity): Future[Done] = {

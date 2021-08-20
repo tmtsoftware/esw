@@ -9,6 +9,12 @@ import esw.constants.CommonTimeouts
 
 import scala.concurrent.Future
 
+/**
+ * This class provides functionality to resolve hcd/assembly/container/sequencer using location service.
+ * @param locationService - an instance of locationService
+ * @param commandServiceFactory - an instance of commandServiceFactory
+ * @param typedSystem - an instance of akka actor typed system
+ */
 class ComponentFactory(
     locationService: LocationService,
     commandServiceFactory: ICommandServiceFactory = ICommandServiceFactory.default // todo: remove this and add function here

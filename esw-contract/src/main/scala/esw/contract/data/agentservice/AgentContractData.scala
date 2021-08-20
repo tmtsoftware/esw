@@ -17,6 +17,9 @@ import esw.agent.service.api.protocol.AgentServiceRequest.{
   SpawnSequenceManager
 }
 
+/**
+ * This object contains all the Agent Service data models which will be sent on wire.
+ */
 trait AgentContractData {
   val spawned: SpawnResponse           = Spawned
   val killed: KillResponse             = Killed

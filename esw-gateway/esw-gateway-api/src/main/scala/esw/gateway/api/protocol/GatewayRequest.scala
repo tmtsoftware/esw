@@ -9,6 +9,9 @@ import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Prefix
 import esw.ocs.api.protocol.SequencerRequest
 
+/**
+ * Http Request models for the Gateway
+ */
 sealed trait GatewayRequest
 
 object GatewayRequest {

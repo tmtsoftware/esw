@@ -10,6 +10,11 @@ import esw.ocs.api.actor.client.SequencerApiFactory
 
 import scala.concurrent.Future
 
+/**
+ * This class provides functionality to resolve hcd/assembly/container/sequencer using component factory.
+ * @param locationService - an instance of locationService
+ * @param typedSystem - an instance of akka actor typed system
+ */
 class Resolver(locationService: LocationService)(implicit typedSystem: ActorSystem[_]) {
   import typedSystem.executionContext
 

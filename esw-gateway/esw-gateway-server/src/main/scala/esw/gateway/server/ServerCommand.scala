@@ -4,6 +4,9 @@ import java.nio.file.Path
 
 import caseapp._
 
+/**
+ * ServerCommand - a set of command line param written using case app for the gateway server.
+ */
 sealed trait ServerCommand
 
 object ServerCommand {

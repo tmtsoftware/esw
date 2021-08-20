@@ -18,6 +18,16 @@ import esw.ocs.api.protocol.SequencerRequest
 import esw.ocs.handler.SequencerPostHandler
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
+/**
+ * This is the Http(POST) route handler written using msocket apis for Gateway.
+ * @param alarmApi - an instance of alarm api
+ * @param resolver - an instance of resolver for resolving hcd/assemblies & sequencers
+ * @param eventApi - an instance of event api
+ * @param loggingApi - an instance of logging api
+ * @param adminApi - an instance of admin api
+ * @param securityDirectives - an instance of security directives
+ * @param commandRoles - Map of commands & user-roles allowed to sent commands
+ */
 class GatewayPostHandler(
     alarmApi: AlarmApi,
     resolver: Resolver,

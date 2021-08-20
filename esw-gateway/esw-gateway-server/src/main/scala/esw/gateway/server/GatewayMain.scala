@@ -7,6 +7,10 @@ import esw.gateway.server.ServerCommand.StartCommand
 import java.nio.file.Path
 
 // $COVERAGE-OFF$
+
+/**
+ * Main app to start gateway server
+ */
 object GatewayMain extends EswCommandApp[ServerCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version

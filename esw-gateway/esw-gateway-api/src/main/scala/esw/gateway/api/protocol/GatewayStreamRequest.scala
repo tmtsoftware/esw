@@ -6,6 +6,9 @@ import csw.params.events.EventKey
 import csw.prefix.models.Subsystem
 import esw.ocs.api.protocol.SequencerStreamRequest
 
+/**
+ * Web socket request models for the Gateway
+ */
 sealed trait GatewayStreamRequest
 
 object GatewayStreamRequest {

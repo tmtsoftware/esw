@@ -18,6 +18,9 @@ import esw.sm.api.protocol._
 
 import java.net.URI
 
+/**
+ * This object contains all the Sequence Manager data models which will be sent on wire.
+ */
 trait SequenceManagerData {
   private val agentPrefix               = Prefix(ESW, "agent")
   private val seqCompPrefix             = Prefix(ESW, "seq_comp")

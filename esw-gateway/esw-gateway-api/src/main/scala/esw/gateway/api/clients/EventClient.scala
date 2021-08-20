@@ -13,6 +13,10 @@ import msocket.api.{Subscription, Transport}
 
 import scala.concurrent.Future
 
+/**
+ * HTTP client for the Event Service
+ * @param postClient - An Transport class for HTTP calls for the Event Service
+ */
 class EventClient(postClient: Transport[GatewayRequest], websocketClient: Transport[GatewayStreamRequest])
     extends EventApi
     with GatewayCodecs {

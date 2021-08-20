@@ -15,6 +15,9 @@ import msocket.api.ErrorProtocol
 
 import scala.annotation.nowarn
 
+/**
+ * Codecs for the models which are being used while communication via gateway
+ */
 object GatewayCodecs extends GatewayCodecs
 trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with LoggingCodecs with SequencerServiceCodecs {
 
