@@ -1,43 +1,37 @@
-# ESW Design Document
+# ESW Low Level Design
 
-This section describes design of an esw component.
+Goal of this section is to provide walk through of the low level design of the ESW applications.
+This section is targeted towards future maintainers of the ESW. It should help them understand different parts of the ESW applications and easily navigate through the codebase.
 
-There are two type of applications :
-Remote Actor based Access like agent akka app
-Embeded Http Sever based - These apps uses combination of Actors and Http Layer like Gateway
+ESW applications are divided into following two major categories:
 
-For each type of access, there exists clients that provides Codecs which helps in serialization/deserialization and App/Server side uses these clients. Like Agent Akka Client project provides a client to connect to Agent Akka App hence it depends on Agent Akka Client for Codecs.
+1. Pure Actor based, for example, ESW Agent Akka Application.
+1. Embedded Http Server based - Such applications exposes two protocols for communication, one is HTTP and other is Akka. for example, ESW Gateway.
 
-Packages Structure followed in various esw apps
+Most if not all the ESW applications follows the following conventions for organizing the codebase:
 
-AGENT AKKA
-client, app
-
-AGENT HTTP
-api, app, impl
-
-GATEWAY
-api, server, impl
-
-SEQUENCER
-api, app, impl, handler, dsl, dsl-kt
-
-SEQUENCE-MANAGER
-api, app, impl, handler
-
-An esw component is composed of various classes layered on top of each other. All these layers are described in sections below.
+1. Main - Runnable application responsible for starting the ESW service.
+1. Wiring - Initializes all the dependencies and wires them together.
+1. HttpService - Starts and registers the HTTP service with Location Service.
+1. Route Handlers - Defines two types of the routes for the HTTP service i.e. HTTP routes and Websocket routes.
+1. API - Interface defining the contract for the Service
+   - Impl - Server side implementation of the API.
+   - Clients - Two types of clients implementing API i.e. HTTP and Actor clients.
+1. Actor Behavior - Defines the behavior of the Service. This includes actual implementation of backend service logic.
+1. Codecs - Encoders and Decoders required for the remote communication. This includes codecs required for Actors and HTTP service.
 
 ## Main Class
 
-This class is the starting point of any application, Here we specify what arguments the application accepts.
-Main class extends `CommandApp` which is a `case app`, it is a utility to capture program arguments in command model class.
+Main class is the entry point for all the ESW applications, and responsible for specifying the command line arguments, options and parsing them to domain models.
+This capability is provided by extending Main class with `CommandApp` which is coming from a [case-app](https://github.com/alexarchambault/case-app).
+**case-app** is a command line argument parsing library for scala
 `Command` class has fields corresponding to each supported program argument.
-For esw applications, we use a rich wrapper class `EswCommandApp` build on top of `CommandApp`.
+For ESW applications, we use a rich wrapper class `EswCommandApp` build on top of `CommandApp`.
 When we run Main class it creates a new instance `Wiring` class and triggers Http server startup.
 How to start Http server and what other things to initialize is decided by `Wiring` class. For example,
 
-1. For Gateway service application refer classes `GatewayMain` and `ServerCommand`
-1. For Agent service application refer `AgentServiceApp`, `AgentServiceAppCommand`
+1. For Gateway Service application, refer classes `GatewayMain` and `ServerCommand`
+1. For Agent Service application, refer `AgentServiceApp`, `AgentServiceAppCommand`kk
 
 ## Wiring Class
 
