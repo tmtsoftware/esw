@@ -1,4 +1,4 @@
-# Technical Design Documentsx
+# Technical Design Documents
 
 @@toc { depth=2 }
 
@@ -12,6 +12,6 @@
 - [ESW Service Contract](contracts.md)
 - [Agent Service](agent-service-tech.md)
 - [Technical Apps](apps/apps-index.md)
-- [XXWIP](esw-application-parts.md)
+- [ESW Application Composition](esw-design-document.md)
 
 @@@
