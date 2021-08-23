@@ -57,7 +57,7 @@ This module has class `HttpService` which is responsible for initializing a HTTP
 1. `ActorRuntime` - Small wrapper over `ActorSystem` responsible for providing implicit `ActorSystem`, `ExecutionContext`, starting Logging Service and closing resources on shutdown.
 1. `Settings` - Reading application specific configuration like service prefix, HttpConnection (Used to register with Location Service) etc.
 
-## HTTP and Websocket handlers
+## HTTP and Websocket Handlers
 
 All the HTTP based applications implements `PostHandler` and `WebsocketHandler` traits provided by [msocket](https://github.com/tmtsoftware/msocket) library.
 
@@ -67,20 +67,22 @@ Since the underlying infrastructure used to handle Http requests is using Msocke
 1. WebsocketHandler - This handler contains routes corresponding to web-socket requests. e.g. `GatewayWebsocketHandler`, `SequencerWebsocketHandler`.
 Since, websocket request work on top of http protocol, routes in WebsocketHandler are handled by `HttpService` along with PostHandler routes.
 
-## Api, Impl and Behavior classes
+## Api, Impl and Actor Behavior Classes
 
 ### Api
 
-These classes define the contracts for external users of our application. e.g. `SequencerApi`, `SequenceManagerApi`, `AlarmApi`.
+These classes define the contracts for external users of our application. e.g. `SequencerApi`, `SequenceManagerApi` etc.
 
 ### Impl
 
-These classes has implementation to Api classes. e.g. `SequencerImpl`, `SequenceManagerImpl`, `AlarmImpl`.
-These classes can call other services to fulfil the requests or handle it using corresponding behaviour classes.
+Impl class is present at server side and implements API (service contract). In most of the cases,
+these implementations just sends local message to underlying actor which consist of all the business logic or
+call other services to fulfil requests. e.g. `SequencerImpl`, `SequenceManagerImpl` etc.
 
-### Behaviour
+### Actor Behavior
 
-Impl classes don't have logic to manage application state of the system, it is handled by behaviours classes. They use Akka Actors state machine pattern to manage state. e.g. `SequencerBehavior`, `SequenceManagerBehavior`.
+Most of the business logic and functionality resides within the actor. Actors are responsible for managing application state and implementing requirements specific state machines.
+e.g. `SequencerBehavior`, `SequenceManagerBehavior`.
 
 ## Codecs
 
