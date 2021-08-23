@@ -11,15 +11,15 @@ ESW applications are divided into following three major categories:
 
 Most if not all the ESW applications follows the following conventions for organizing the codebase:
 
-1. Main - Runnable application responsible for starting the ESW service.
-1. Wiring - Initializes all the dependencies and wires them together.
-1. HttpService - Starts and registers the HTTP service with Location Service.
-1. Route Handlers - Defines two types of the routes for the HTTP service i.e. HTTP routes and Websocket routes.
-1. API - Interface defining the contract for the Service
-   - Impl - Server side implementation of the API.
-   - Clients - Two types of clients implementing API i.e. HTTP and Actor clients.
-1. Actor Behavior - Defines the behavior of the Service. This includes actual implementation of backend service logic.
-1. Codecs - Encoders and Decoders required for the remote communication. This includes codecs required for Actors and HTTP service.
+1. **Main** - Runnable application responsible for starting the ESW service.
+1. **Wiring** - Initializes all the dependencies and wires them together.
+1. **HttpService** - Starts and registers the HTTP service with Location Service.
+1. **Route Handlers** - Defines two types of the routes for the HTTP service i.e. HTTP routes and Websocket routes.
+1. **API** - Interface defining the contract for the Service
+1. **Impl** - Server side implementation of the API.
+1. **Clients** - Two types of clients implementing API i.e. HTTP and Actor clients.
+1. **Actor Behavior** - Defines the behavior of the Service. This includes actual implementation of backend service logic.
+1. **Codecs** - Encoders and Decoders required for the remote communication. This includes codecs required for Actors and HTTP service.
 
 ## Main Class
 
@@ -67,46 +67,93 @@ Since the underlying infrastructure used to handle Http requests is using Msocke
 1. WebsocketHandler - This handler contains routes corresponding to web-socket requests. e.g. `GatewayWebsocketHandler`, `SequencerWebsocketHandler`.
 Since, websocket request work on top of http protocol, routes in WebsocketHandler are handled by `HttpService` along with PostHandler routes.
 
-## Api, Impl and Actor Behavior Classes
-
-### Api
+## API
 
 These classes define the contracts for external users of our application. e.g. `SequencerApi`, `SequenceManagerApi` etc.
 
-### Impl
+## Impl
 
 Impl class is present at server side and implements API (service contract). In most of the cases,
 these implementations just sends local message to underlying actor which consist of all the business logic or
 call other services to fulfil requests. e.g. `SequencerImpl`, `SequenceManagerImpl` etc.
 
-### Actor Behavior
+## Actor Behavior
 
 Most of the business logic and functionality resides within the actor. Actors are responsible for managing application state and implementing requirements specific state machines.
 e.g. `SequencerBehavior`, `SequenceManagerBehavior`.
 
 ## Codecs
 
-When you send request over the wire, it needs to be converted and send in some standard format like JSON.
-For this purpose we use Codec classes which use Borer library to automatically derive JSON and CBOR format.
-e.g. in `OcsCodecs` `implicit lazy val stepCodec: Codec[Step] = deriveCodec`, here deriveCode do the job of generating decoder/encoder for serialization/deserialization.
-These Codec classes contain reference of model case classes and these are marked implicit, so that when a class extends this codec class it gets the model class codec automatically. e.g `OcsCodecs`, `SequencerServiceCodecs`.
-You can even have hierarchy of model classes, and you just need to provide top level class/marker trait, and it will automatically derive child class codecs.
-e.g. in `SequencerServiceCodecs` `implicit lazy val sequencerPostRequestValue: Codec[SequencerRequest] = deriveAllCodecs`,
-here you see deriveAllCodecs which means generate decoder/encoder of complete class hierarchy starting from top level `SequencerRequest`.
-There are mainly two use cases when you need to serialize/deserialize of request and response.
+Codec stands for encoder and decoder. Codecs are responsible for encoding and decoding akka messages/http requests.
 
-Remote Actor Communication - First use case is when your actor system interact with other remote actor systems from other services.
-We use cbor format for serialization/deserialization in our application for it. e.g. When Sequencer receive requests from Gateway via Actors.
-For such cases first we need to add model classes to Codecs so that encoder/decoder can be derived.
-e.g. `AgentActorCodecs`. Then we need to registered models classes to serializer class e.g. `AgentAkkaSerializer` and also we need to mark our model classes as Serializable e.g. `sealed trait AgentResponse extends AgentAkkaSerializable`.
-Both Serializer and Serializable class are present in configuration of application so that Akka Actors can use them for serialization/deserialization.
-e.g. in `esw-agent-akka-client` module `reference.conf` has `AgentAkkaSerializer` as serializers and `AgentAkkaSerializable` as serialization-bindings.
+For this purpose, we use [borer](https://sirthias.github.io/borer/) library to derive codecs for our domain models.
+Borer provides efficient CBOR and JSON (de)serialization for Scala.
 
-Http Communication - Second use case is when consume your request and send response back over Http protocol.
-For such use cases, when a request goes to PostHandler, it needs a mechanism to deserialize request, process it and serialize the response and sent it back.
-For this reason PostHandler uses HttpCodec classes which takes care of serialization and deserialization.
-Since, Web socket protocol work on top of Http protocol hence WebsocketHandler uses same mechanism as PostHandler. e.g. `SequencerWiring` extends `SequencerServiceCodecs` and further `SequencerWiring` pass Codecs to `SequencerPostHandler` via `PostRouteFactory` and to `SequencerWebsocketHandler` via `WebsocketRouteFactory`.
+Codecs are required at two places:
 
-## Complete flow of above discussed classes is
+1. Remote Actor Communication (Akka actor)
+1. HTTP Communication (Akka HTTP)
 
- Main (using case app) -> Wiring -> HttpService(esw-http-core) -> HttpPostHandler(using Codecs) + WebsocketHandler(using Codecs) -> Behaviour classes(using Codecs).
+Lets look at each of this use case in details below.
+
+### Remote Actor Communication (Akka actor)
+
+Actors registers their location with Location Service when they are created. Using this location,
+other actors or services running on different JVM's or machine can communicate by message passing.
+These messages have to undergo some form of serialization (i.e. the objects have to be converted to and from byte arrays).
+This is where codecs come into play. We use [CBOR](https://cbor.io/) format for encoding/decoding actor messages.
+
+For Akka to know which Serializer to use for what, we need to edit our configuration:
+in the `akka.actor.serializers`-section, we need to bind names to implementations of the `akka.serialization.Serializer` you wish to use, like this:
+
+```scala
+akka.actor {
+  serializers {
+    ocs-framework-cbor = "esw.ocs.api.actor.OcsAkkaSerializer"
+  }
+  serialization-bindings {
+    "esw.ocs.api.codecs.OcsAkkaSerializable" = ocs-framework-cbor
+  }
+}
+```
+
+Here `OcsAkkaSerializer` class implements `akka.serialization.Serializer` interface and `OcsAkkaSerializable` marker trait is bound to `ocs-framework-cbor` serializer.
+
+With this configuration in place, Akka will know that it should use `OcsAkkaSerializer` for serializing `OcsAkkaSerializable` objects.
+Which means all the remote actor messages (incoming/outgoing) needs to extend `OcsAkkaSerializable` marker trait.
+These remote messages (only top level in case of sealed ADTs) needs to be registered with `OcsAkkaSerializer`.
+This is done by calling `register` method for example, `register[EswSequencerRemoteMessage]`.
+`register` method requires implicit codecs in scope for the provided type. In this case, codecs are defined in `OcsMsgCodecs` trait and
+`OcsAkkaSerializer` extends from `OcsMsgCodecs`, thats how implicit codecs are brought into scope.
+
+Following example shows how to define codecs for `EswSequencerRemoteMessage` type:
+
+```scala
+// OcsMsgCodecs.scala
+import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodec
+
+implicit lazy val eswSequencerMessageCodec: Codec[EswSequencerRemoteMessage] = deriveAllCodecs
+```
+
+@@@ note
+
+In case of sealed ADTs, only parent class needs to extend from `OcsAkkaSerializable` marker trait.
+
+@@@
+
+Refer [Akka Serialization](https://doc.akka.io/docs/akka/current/serialization.html) documentation for more details on how to wire up custom CBOR based serializer up with Akka.
+
+Some of the examples for Actor remote message codecs are `OcsCodecs`, `SequencerServiceCodecs` etc.
+
+### HTTP Communication
+
+HTTP based services are implemented using [msocket](https://github.com/tmtsoftware/msocket) library which usage [Akka HTTP](https://doc.akka.io/docs/akka-http/current/) under the hood.
+
+MSocket exposes two factories, `PostRouteFactory[Req]` and `WebsocketRouteFactory[Req]` for generating HTTP and Websocket routes respectively.
+Both these factories require implicit decoder in scope, so that Akka HTTP server can decode the incoming HTTP request.
+This mechanism is called `Unmarshalling` in Akka HTTPs terminology.
+These decoders are brought into scope by `SequencerWiring` extending from `SequencerServiceCodecs`.
+
+Similarly, `PostHandler` and `WebsocketHandler` are responsible for processing incoming HTTP requests and returning HTTP response.
+Hence, it requires implicit encoders in scope. This mechanism is called `Marshalling` in Akka HTTPs terminology.
+In case of `SequencerPostHandler` and `SequencerWebsocketHandler`, these encoders are brought into scope using following import `import esw.ocs.api.codecs.SequencerServiceCodecs.*`
