@@ -9,15 +9,24 @@ import scala.concurrent.Future
 
 object Container {
 
+  /**
+   * Spawns a simulated component inside a container.
+   *
+   * @param prefix - prefix of the component
+   * @param componentType - component type of the component(HCD or Assembly)
+   * @param agentClient - client of the agent on which component(inside a container) to be spawned
+   *
+   * @return a [[esw.agent.service.api.models.SpawnContainersResponse]] response as Future value
+   */
   def spawnSimulatedComponent(
       prefix: String,
-      `type`: ComponentType,
+      componentType: ComponentType,
       agentClient: AgentClient
   ): Future[SpawnContainersResponse] = {
     val standaloneConf =
       s"""
          |prefix = $prefix
-         |componentType = ${`type`}
+         |componentType = $componentType
          |behaviorFactoryClassName = "esw.shell.component.SimulatedComponentBehaviourFactory"
          |locationServiceUsage = RegisterOnly
          |""".stripMargin

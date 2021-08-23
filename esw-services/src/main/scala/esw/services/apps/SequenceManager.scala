@@ -20,13 +20,16 @@ import java.nio.file.Path
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext}
 
+// This class is created to start and stop the Sequence Manager on a particular agent
 class SequenceManager(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) {
 
-  private val agentConfig: Config                  = ConfigFactory.load()
+  private val agentConfig: Config = ConfigFactory.load()
+  // Prefix of the Agent on which SM will be started
   private val smAgentPrefix: Prefix                = Prefix(ESW, "sm_machine")
   private val smAgent: ManagedService[AgentWiring] = Agent.service(enable = true, smAgentPrefix, agentConfig)
   implicit val executionContext: ExecutionContext  = actorSystem.executionContext
 
+  // Creates an instance of ManagedService with start and stop hook for the SM
   def service(
       enable: Boolean,
       maybeObsModeConfigPath: Option[Path],
@@ -35,16 +38,22 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
     ManagedService(
       "sequence-manager",
       enable,
+      //start hook for the SM
       () => startSM(getConfig(maybeObsModeConfigPath), simulation),
+      //stop hook for the SM
       _ => stopSM()
     )
 
+  // returns the given smObsMode config's path
+  // if not given any then returns the default smObsMode config's path present in the resources
   private def getConfig(maybeObsModeConfigPath: Option[Path]): Path =
     maybeObsModeConfigPath.getOrElse {
       GREEN.println("Using default obsMode config for sequence manager.")
       FileUtils.cpyFileToTmpFromResource("smObsModeConfig.conf")
     }
 
+  // this method start an agent and then stats the SM on that agent and return the spawn response
+  // it's being called in the start hook for the SM
   private def startSM(obsModeConfigPath: Path, simulation: Boolean): SpawnResponse = {
     smAgent.start()
     val spawnResponseF = locationService
@@ -63,6 +72,8 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
     spawnResponse
   }
 
+  // this method stops the started SM (on the smAgent)
+  // it's being called in the stop hook for the SM
   private def stopSM(): Unit = {
     val smLocation = Await
       .result(

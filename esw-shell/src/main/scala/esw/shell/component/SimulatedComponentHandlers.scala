@@ -15,6 +15,7 @@ import csw.time.core.models.UTCTime
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
 
+// ComponentHandlers of the simulated HCDs/Assemblies
 class SimulatedComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
     extends ComponentHandlers(ctx, cswCtx) {
 

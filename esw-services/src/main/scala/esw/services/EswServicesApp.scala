@@ -9,6 +9,7 @@ import esw.services.cli.Command
 import esw.sm.app.SequenceManagerAppCommand.prefixParser
 import scala.util.control.NonFatal
 
+//main app to start esw services - e.g., agent, agent service, gateway, sm etc
 object EswServicesApp extends EswCommandApp[Command] {
   override def appName: String    = getClass.getSimpleName.dropRight(1)
   override def appVersion: String = BuildInfo.version

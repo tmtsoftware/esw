@@ -2,6 +2,7 @@ package esw.shell
 
 import scala.sys.exit
 
+//main to start the esw-shell
 object Main extends App {
   println("+++++ starting esw.shell +++++")
   val eswWiring = new EswWiring
