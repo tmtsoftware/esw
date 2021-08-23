@@ -18,6 +18,14 @@ All notable changes to this project will be documented in this file.
 - Allow configuring port for HTTP instances of AgentServiceApp & SequenceManagerApp from command line.
 - Updated app name's with `esw` prefix according to `apps.prod.json` in `osw-apps` repo.
 - Removed `Struct` script dsl helpers. The idea of removal was sent out with the last release.
+- Added `getSequencerState` & `subscribteSequencerState` methods in sequencer API.
+- Added `SequencerObserveEvent` factories in script dsl.
+- Improved `Configure` functionality by now also checking for availability of required sequence component along with resources.
+
+### Supporting Releases
+
+<a name="0-3-0-1"></a>1: [ESW v0.3.0-M1](https://github.com/tmtsoftware/esw/releases/tag/v0.3.0-M1) - 2021-08-23<br>
+<a name="0-3-0-2"></a>2: [ESW v0.3.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.3.0-RC1) - 2021-07-06<br>
 
 ## [ESW v0.2.1] - 2021-01-29
 
