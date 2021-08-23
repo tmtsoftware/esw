@@ -3,10 +3,11 @@
 Goal of this section is to provide walk through of the low level design of the ESW applications.
 This section is targeted towards future maintainers of the ESW. It should help them understand different parts of the ESW applications and easily navigate through the codebase.
 
-ESW applications are divided into following two major categories:
+ESW applications are divided into following three major categories:
 
-1. Pure Actor based, for example, ESW Agent Akka Application.
-1. Embedded Http Server based - Such applications exposes two protocols for communication, one is HTTP and other is Akka. for example, ESW Gateway.
+1. Actor based, for example, Agent Akka Application.
+1. HTTP based, for example, Agent Service, Gateway Application.
+1. Embedded Http + Actor based - Such applications exposes two protocols for communication, one is HTTP and other is Akka. for example, ESW OCS (Sequencer) Application.
 
 Most if not all the ESW applications follows the following conventions for organizing the codebase:
 
@@ -27,26 +28,38 @@ This capability is provided by extending Main class with `CommandApp` which is c
 **case-app** is a command line argument parsing library for scala
 `Command` class has fields corresponding to each supported program argument.
 For ESW applications, we use a rich wrapper class `EswCommandApp` build on top of `CommandApp`.
-When we run Main class it creates a new instance `Wiring` class and triggers Http server startup.
-How to start Http server and what other things to initialize is decided by `Wiring` class. For example,
+Main class creates instance of `Wiring` class and initializes actors and HTTP server wherever applicable.
+
+Examples of Main class for different application modules are,
 
 1. For Gateway Service application, refer classes `GatewayMain` and `ServerCommand`
-1. For Agent Service application, refer `AgentServiceApp`, `AgentServiceAppCommand`kk
+1. For Agent Service application, refer `AgentServiceApp`, `AgentServiceAppCommand`
 
 ## Wiring Class
 
-This class takes care of initializing instances of various other classes required by this application like `ActorSystem`, api instances, setting overrides, `HttpService`, handlers for routes and clients to connect to other services like Location Service, Event Service, security etc.
-e.g `GatewayWiring`, `AgentServiceWiring`, `SequenceManagerWiring`
+Wiring class initializes all the dependencies and resources required for creating Actors and HTTP server.
+Some of the common examples of instances and resources created by `Wiring` are:
+`ActorSystem`, API implementation instances, Application Settings, `HttpService`, HTTP and Websocket handlers and clients to connect to other services like Location Service, Event Service etc.
+
+Examples of `Wiring` class are, `GatewayWiring`, `AgentServiceWiring`, `SequenceManagerWiring` etc.
 
 ## HttpService
 
-Most of esw applications needs a HTTP server to handle http requests, Hence we have extracted to a common module `esw-http-core`,
-which has things common to all esw http applications. `HttpService` class is responsible for initializing a HTTP Server and registering its location to Location Service.
-Module `esw-http-core` has other common classes like `ActorRuntime` wrapper containing actor related class references, `Settings` containing logic to extract common settings.
+As mentioned in the introductory section, many ESW applications for example,
+Gateway, ocs-app (Sequencer), Sequence Manager etc. are either HTTP based or Embedded HTTP + Actor based,
+and requires capabilities to start and register with Location Service.
 
-## Route handlers
+We have extracted out these common capabilities in independent module called `esw-http-core`.
+This module has class `HttpService` which is responsible for initializing a HTTP Server and registering it with Location Service.
 
-There are two type of route handlers.
+`esw-http-core` module has other common utilities like,
+
+1. `ActorRuntime` - Small wrapper over `ActorSystem` responsible for providing implicit `ActorSystem`, `ExecutionContext`, starting Logging Service and closing resources on shutdown.
+1. `Settings` - Reading application specific configuration like service prefix, HttpConnection (Used to register with Location Service) etc.
+
+## HTTP and Websocket handlers
+
+All the HTTP based applications implements `PostHandler` and `WebsocketHandler` traits provided by [msocket](https://github.com/tmtsoftware/msocket) library.
 
 1. PostHandler - This handler contains routes corresponding to http requests. e.g. `GatewayPostHandler`, `AgentServicePostHandler`.
 Since the underlying infrastructure used to handle Http requests is using Msocket library, all requests are of type `POST`.
