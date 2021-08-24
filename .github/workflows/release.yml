@@ -9,7 +9,7 @@ jobs:
   release:
     runs-on: ubuntu-18.04
     env:
-      CSW_VERSION: "4.0.0-M1"
+      CSW_VERSION: "4.0.0-RC1"
     steps:
       - uses: actions/checkout@v2
       - uses: laughedelic/coursier-setup@v1
