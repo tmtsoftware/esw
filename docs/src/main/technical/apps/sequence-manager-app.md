@@ -121,7 +121,7 @@ Manager. When started in simulation mode, the Sequence Manager starts bypasses t
 internally. The register themselves with the Location Service and load Scripts and Sequencers as normal, but simulated
 Sequence Manager can start on its own.
 
-### 1. Install `coursier` and the TMT Apps channel
+### 1. Install `coursier` and add the TMT Apps channel
 
 The `coursier` application must be installed on your machine, and the OCS Apps channel must be installed.
 The instructions for doing this are provided @ref:[here](getting-apps.md).
