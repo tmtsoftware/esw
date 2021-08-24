@@ -26,6 +26,8 @@ import esw.services.internal.ManagedService
 
 import java.nio.file.Path
 
+// wiring class which provide method to start/stop services by reading the command and
+// parsing which services needed to start/stop
 class Wiring(cmd: Command) {
 
   implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol())

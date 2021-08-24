@@ -4,6 +4,9 @@ import java.nio.file.Path
 import caseapp.{CommandName, ExtraName, HelpMessage}
 import csw.prefix.models.Prefix
 
+/**
+ * A set of command line params written using case app for the Esw Service App
+ */
 sealed trait Command
 
 object Command {

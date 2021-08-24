@@ -25,8 +25,11 @@ import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
+/*
+ * This class contains factory methods to create clients for SM, Sequencer, HCD/Assembly etc
+ */
 class Factories(val locationUtils: LocationServiceUtil, configServiceExt: ConfigServiceExt)(implicit
     val actorSystem: ActorSystem[_]
 ) {
