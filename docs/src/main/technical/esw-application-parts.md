@@ -12,7 +12,7 @@ ESW applications are divided into following three major categories:
 
 1. Actor based, for example, Agent Akka Application.
 1. HTTP based, for example, Agent Service, Gateway Application.
-1. Embedded Http + Actor based - Such applications exposes two protocols for communication, one is HTTP and other is Akka. for example, ESW OCS (Sequencer) Application.
+1. Embedded HTTP + Actor based - Such applications exposes two protocols for communication, one is HTTP and other is Akka. for example, ESW OCS (Sequencer) Application.
 
 Most if not all the ESW applications follows the following conventions for organizing the codebase:
 
@@ -68,13 +68,13 @@ As mentioned in the introductory section, many ESW applications for example,
 Gateway, ocs-app (Sequencer), Sequence Manager etc. are either HTTP based or Embedded HTTP + Actor based,
 and requires capabilities to start and register with Location Service.
 
-We have extracted out these common capabilities in independent module called [esw-http-core]($github.base_url$/esw-http-core/src).
-This module has class [HttpService]($github.base_url$/esw-http-core/src/HttpService.scala) which is responsible for initializing a HTTP Server and registering it with Location Service.
+We have extracted out these common capabilities in independent module called [esw-http-core]($github.dir.base_url$/esw-http-core/src).
+This module has class [HttpService]($github.base_url$/esw-http-core/src/main/scala/esw/http/core/wiring/HttpService.scala) which is responsible for initializing a HTTP Server and registering it with Location Service.
 
 `esw-http-core` module has other common utilities like,
 
-1. [ActorRuntime]($github.base_url$/esw-http-core/src/HttpService.scala) - Small wrapper over `ActorSystem` responsible for providing implicit `ActorSystem`, `ExecutionContext`, starting Logging Service and closing resources on shutdown.
-1. [Settings]($github.base_url$/esw-http-core/src/Settings.scala) - Reading application specific configurations like service prefix, HttpConnection (Used to register with Location Service) etc
+1. [ActorRuntime]($github.base_url$/esw-http-core/src/main/scala/esw/http/core/wiring/HttpService.scala) - Small wrapper over `ActorSystem` responsible for providing implicit `ActorSystem`, `ExecutionContext`, starting Logging Service and closing resources on shutdown.
+1. [Settings]($github.base_url$/esw-http-core/src/main/scala/esw/http/core/wiring/Settings.scala) - Reading application specific configurations like service prefix, HttpConnection (Used to register with Location Service) etc
 
 @@@ note
 The User Interface Gateway is only registered as an HTTP service in Location Service. Because of its role in the TMT architecture as the gateway for HTTP requests from browser-based user interfaces,
@@ -151,7 +151,7 @@ Examples of impl or Akka client classes are:
 
 - For Sequence Manager, the impl is: [SequencerManagerImpl]($github.base_url$/esw-sm/esw-sm-api/jvm/src/main/scala/esw/sm/api/actor/client/SequenceManagerImpl.scala).
 
-These impl classes can call other services to fulfill the requests or handle it locally using the service's Behaviour classes.
+These impl classes can call other services to fulfill the requests or handle it locally using the service's Behavior classes.
 
 ## Behavior Classes
 
@@ -159,7 +159,7 @@ At their core, the ESW applications are implemented as Akka Actors.
 A `behavior class` is the top level Akka implementation of the service.
 It is called a behavior because that's what Akka calls the type returned by a newly constructed typed actor.
 
-Behavior classes receive Akka messages, which are often defined in a `protocol` package such as [this]($github.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/protocol/),
+Behavior classes receive Akka messages, which are often defined in a `protocol` package such as [this]($github.dir.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/protocol/),
 which includes two message files for the Sequence Manager requests and responses.
 The Impl classes are clients, and don't have logic to manage the application state; state and functionality is handled by the actor behavior classes.
 State-based functionality is often implemented using the Akka actor state machine pattern.
@@ -229,7 +229,7 @@ Both the serializer and the serializable class are present in the configuration 
 serialization/deserialization.
 
 The final step needed is configuration to make sure Akka is aware of the special serialization by hooking OcsAkkaSerializer into the Akka infrastructure.
-For the Sequencer (and any Akka-based app), this is done in the [resource.conf]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/resources/resources.conf) file of the clients of Sequencer.
+For the Sequencer (and any Akka-based app), this is done in the [reference.conf]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/resources/reference.conf) file of the clients of Sequencer.
 As shown below, the `ocs-framework-cbor` property is set to the class name of `OcsAkkaSerializer`, and whenever a class is marked with `OcsAkkaSerializable` Akka will use the `ocs-framework-cbor` serializer.
 
 ```scala
