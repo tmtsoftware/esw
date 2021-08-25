@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 sh "git checkout $VERSION"
-                sh "git pull"
+                sh "git pull origin $VERSION"
             }
         }
 
@@ -45,7 +45,7 @@ pipeline {
                     ])
 
                     // Generate RTM
-                    sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:33b2359b23 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
+                    sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:0.1.0 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
                     // Upload RTM
                     publishHTML(target: [
                         alwaysLinkToLastBuild: false,
@@ -78,7 +78,7 @@ def sendNotification(String buildStatus = 'STARTED') {
     buildStatus = buildStatus ?: 'SUCCESS'
 
     def colorCode = '#FF0000'
-    def subject = "${buildStatus}: Job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]'"
+    def subject = "${buildStatus}: Job '${env.JOB_NAME}' [${VERSION}] [${env.BUILD_NUMBER}]"
     def summary = "${subject} (${env.BUILD_URL})"
 
     // override default values based on build status
@@ -92,5 +92,5 @@ def sendNotification(String buildStatus = 'STARTED') {
         color = 'RED'
         colorCode = '#FF0000'
     }
-    slackSend(channel: "#ci-nightly", color: colorCode, message: summary)
+    slackSend(channel: "#${SLACK_CH}", color: colorCode, message: summary)
 }
