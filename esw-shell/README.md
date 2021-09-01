@@ -79,7 +79,7 @@ val componentHandlers = (ctx, cswCtx) =>
       new DefaultComponentHandlers(ctx, cswCtx) {
         override def onSubmit(runId: Id, controlCommand: ControlCommand): CommandResponse.SubmitResponse = {
           controlCommand.commandName.name match {
-            case "move" =>
+            case "sleep" =>
               // do something on receiving move command
               cswCtx.timeServiceScheduler.scheduleOnce(UTCTime(UTCTime.now().value.plusSeconds(5))) {
                 cswCtx.commandResponseManager.updateCommand(CommandResponse.Completed(runId))
