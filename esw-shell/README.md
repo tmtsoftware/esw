@@ -45,6 +45,7 @@ cs launch esw-shell:<version | SHA>
 
 ### Spawning simulated HCD/Assembly
 
+#### Using Agent
 `esw-shell` can be used to spawn simulated HCD/Assembly which uses the handlers specified in 
 `esw-shell/src/main/scala/esw/shell/component/SimulatedComponentHandlers.scala`
 
@@ -54,6 +55,42 @@ Below example commands will spawn a simulated HCD/Assembly on `ESW.machine1` age
 ```bash
 spawnSimulatedHCD("ESW.testHCD", "ESW.machine1") // "ESW.testHCD" is the HCD prefix
 spawnSimulatedAssembly("ESW.testAssembly", "ESW.machine1") // "ESW.testAssembly" is the assembly prefix
+```
+
+#### Using predefined component handlers
+`esw-shell` can be used to spawn simulated HCD/Assembly which uses the handlers specified in
+`esw-shell/src/main/scala/esw/shell/component/SimulatedComponentHandlers.scala`
+
+
+Below example commands will spawn a simulated HCD/Assembly without having the need of running 
+```bash
+spawnSimulatedHCD("ESW.testHCD1") // "ESW.testHCD1" is the HCD prefix
+spawnSimulatedAssembly("ESW.testAssembly") // "ESW.testAssembly" is the assembly prefix
+```
+
+#### Using custom component handlers
+
+`esw-shell` can be used to spawn real HCD/Assembly which uses the custom component handlers passed by the user.
+
+Below example commands will spawn a real Assembly by the provided component handlers which will be used by component actor.
+
+```bash
+val componentHandlers = (ctx, cswCtx) =>
+      new DefaultComponentHandlers(ctx, cswCtx) {
+        override def onSubmit(runId: Id, controlCommand: ControlCommand): CommandResponse.SubmitResponse = {
+          controlCommand.commandName.name match {
+            case "move" =>
+              // do something on receiving move command
+              cswCtx.timeServiceScheduler.scheduleOnce(UTCTime(UTCTime.now().value.plusSeconds(5))) {
+                cswCtx.commandResponseManager.updateCommand(CommandResponse.Completed(runId))
+              }
+              CommandResponse.Started(runId)
+            case _ => CommandResponse.Completed(runId)
+          }
+        }
+      }
+spawnAssemblyWithHandler("ESW.testHCD", componentHandlers) // "ESW.testHCD" is the HCD prefix
+spawnHCDWithHandler("ESW.testAssembly", componentHandlers) // "ESW.testAssembly" is the assembly prefix
 ```
 
 ### Finding the required component

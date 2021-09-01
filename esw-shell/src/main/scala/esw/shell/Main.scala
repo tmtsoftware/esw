@@ -45,6 +45,7 @@ object Main extends App {
                        |import eswWiring._
                        |import eswWiring.factories._
                        |import eswWiring.cswWiring.cswContext._
+                       |import csw.framework.scaladsl.DefaultComponentHandlers
                        |""".stripMargin
     )
     .run("eswWiring" -> eswWiring)

@@ -5,6 +5,7 @@ import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
+import csw.framework.scaladsl.ComponentBehaviorFactory
 import csw.location.api.models.ComponentType.{Assembly, HCD, Machine}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.client.AgentClient
@@ -60,6 +61,12 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
 
   def spawnSimulatedAssembly(prefix: String): ActorRef[ComponentMessage] =
     eswTestKit.spawnAssembly(Prefix(prefix), new SimulatedComponentBehaviourFactory())
+
+  def spawnAssemblyWithHandler(prefix: String, behaviorFactory: ComponentBehaviorFactory): ActorRef[ComponentMessage] =
+    eswTestKit.spawnAssembly(Prefix(prefix), behaviorFactory)
+
+  def spawnHCDWithHandler(prefix: String, behaviorFactory: ComponentBehaviorFactory): ActorRef[ComponentMessage] =
+    eswTestKit.spawnHCD(Prefix(prefix), behaviorFactory)
 
   // ============= ESW ============
   def sequencerCommandService(subsystem: Subsystem, obsMode: String): SequencerApi = {
