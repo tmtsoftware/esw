@@ -13,5 +13,6 @@
 - [Technical Apps](apps/apps-index.md)
 - [Arch](esw-application-parts.md)
 - [ESW Service Contract](contracts.md)
+- [OSW Testing Philosophy](testing-philosophy.md)
 
 @@@
