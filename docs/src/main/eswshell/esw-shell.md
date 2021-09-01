@@ -1,9 +1,7 @@
+
 # ESW Shell
 
-This project contains an interactive shell and allows its users to gain access to all the major CSW and ESW services via CLI
-which then can be used to communicate with a HCD (Hardware Control Daemon) and an Assembly using
-TMT Common Software ([CSW](https://github.com/tmtsoftware/csw)) APIs and with a Sequencer using
-TMT Executive Software ([ESW](https://github.com/tmtsoftware/esw)).
+This project contains an interactive REPL shell powered by [Ammonite](https://ammonite.io/#Ammonite-REPL) and allows its users to gain access to all the major CSW and ESW services via CLI which then can be used to communicate with a HCD (Hardware Control Daemon) and an Assembly using TMT Common Software ([CSW](https://github.com/tmtsoftware/csw)) APIs and with a Sequencer using TMT Executive Software ([ESW](https://github.com/tmtsoftware/esw)).
 
 ## Build Instructions
 
@@ -41,30 +39,38 @@ cs channel --add https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/a
 cs launch esw-shell:<version | SHA>
 ```
 
+## Exiting esw-shell
+
+At any point in time, if you want to exit the shell, type `exit` and press enter.
+
 ## Usage of Command Service to interact with HCDs, Assemblies and Sequencers
 
 ### Spawning simulated HCD/Assembly
 
-#### Using Agent
-`esw-shell` can be used to spawn simulated HCD/Assembly which uses the handlers specified in
-`esw-shell/src/main/scala/esw/shell/component/SimulatedComponentHandlers.scala`
+`esw-shell` can be used to spawn simulated HCD/Assembly which uses the handlers specified in [Simulated Component Handlers]($github.base_url$/esw-shell/src/main/scala/esw/shell/component/SimulatedComponentHandlers.scala)
 
-Below example commands will spawn a simulated HCD/Assembly on `ESW.machine1` agent. It is assumed that
-`ESW.machine1` is already running.
-```bash
-spawnSimulatedHCD("ESW.testHCD", "ESW.machine1") // "ESW.testHCD" is the HCD prefix
-spawnSimulatedAssembly("ESW.testAssembly", "ESW.machine1") // "ESW.testAssembly" is the assembly prefix
-```
+`SimulatedComponentHandlers` supports two commands.
+
+- `noop` : This command immediately returns `Completed` response with `runId`
+- `sleep` : This command immediately returns `Started` response with `runId` and `Completed` response after some sleep time. This sleep time is specified in `timeInMs` parameter of command itself.
 
 #### Using predefined component handlers
-`esw-shell` can be used to spawn simulated HCD/Assembly which uses the handlers specified in
-`esw-shell/src/main/scala/esw/shell/component/SimulatedComponentHandlers.scala`
 
+Below example commands will spawn a simulated HCD/Assembly without having the need of running agent
 
-Below example commands will spawn a simulated HCD/Assembly without having the need of running
 ```bash
 spawnSimulatedHCD("ESW.testHCD1") // "ESW.testHCD1" is the HCD prefix
 spawnSimulatedAssembly("ESW.testAssembly") // "ESW.testAssembly" is the assembly prefix
+```
+
+#### Using predefined component handlers on Agent
+
+Below example commands will spawn a simulated HCD/Assembly on `ESW.machine1` agent. It is assumed that
+`ESW.machine1` is already running. For running agent refer @ref:[Agent App](../technical/apps/agent-app.md)
+
+```bash
+spawnSimulatedHCD("ESW.testHCD", "ESW.machine1") // "ESW.testHCD" is the HCD prefix
+spawnSimulatedAssembly("ESW.testAssembly", "ESW.machine1") // "ESW.testAssembly" is the assembly prefix
 ```
 
 #### Using custom component handlers
@@ -104,7 +110,7 @@ For Assemblies
 
 - `val assemblyComponent = assemblyCommandService("iris.assembly_name")`
 
-For Sequencers
+For @ref:[Sequencers](../technical/sequencer-tech.md)
 
 - `val sequencer = sequencerCommandService(IRIS, "darknight")`
 
@@ -120,22 +126,32 @@ Create a setup command object using similar command to what is shown below
 
 ```scala
 import csw.params.commands._
-import csw.prefix.models.Prefix
+import csw.params.core.generics.KeyType.LongKey
+import csw.params.core.generics.Parameter
 import csw.params.core.models.ObsId
+import csw.prefix.models.Prefix
 // above imports are available in shell, user does not need to import again
 
-val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("2020A-001-123")))
+val longKey                     = LongKey.make("timeInMs")
+val paramSet: Set[Parameter[_]] = Set(longKey.set(1000))
+
+val setup = Setup(Prefix("iris.filter.wheel"), CommandName("sleep"), Some(ObsId("2020A-001-123")), paramSet)
 ```
 
 ### Creating the sequence to submit to Sequencer
 
 ```scala
 import csw.params.commands._
-import csw.prefix.models.Prefix
+import csw.params.core.generics.KeyType.ByteKey
+import csw.params.core.generics.Parameter
 import csw.params.core.models.ObsId
+import csw.prefix.models.Prefix
 // above imports are available in shell, user does not need to import again
 
-val setup = Setup(Prefix("iris.filter.wheel"),CommandName("move"),Some(ObsId("2020A-001-123")))
+val byteKey                     = ByteKey.make("byteKey")
+val paramSet: Set[Parameter[_]] = Set(byteKey.set(100, 100))
+
+val setup = Setup(Prefix("iris.filter.wheel"), CommandName("move"), Some(ObsId("2020A-001-123")), paramSet)
 val sequence = Sequence(setup)
 ```
 
@@ -143,6 +159,7 @@ Other than command service handles, following pre-defined handles or factories a
 
 - For Sequence Manager, use pre-imported `sequenceManager()` handle
 - For Agent, create new handle using `agentClient("iris.machine_1")`
+- For SequenceComponent, create new handle using `sequenceComponentService("ESW.ESW_1")`
 - For AdminApi, use pre-imported `adminApi` handle
 - For EventService, use pre-imported `eventService` handle
 - For AlarmService, use pre-imported `alarmService` handle
@@ -187,8 +204,14 @@ val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm
 
 Submit the setup command object created in a previous step using command service for the HCD/Assembly
 
+Submit returns a response wrapped in Future, you can use `get` to extract response out of any Future response, it has default wait timeout of `10.seconds` for future to complete.
+
 - `val hcdResponse = hcdComponent.submit(setup).get`
 - `val assemblyResponse = assemblyComponent.submit(setup).get`
+
+If you have a long running command, you can use `await` method with your custom timeout
+
+- `val hcdResponse = hcdComponent.submit(setup).await(20.seconds)`
 
 Submit the sequence object created in a previous step using command service for the Sequencer
 
@@ -215,7 +238,7 @@ To AlarmService
 
 ## Interacting with Sequence Manager
 
-Handler to running Sequence Manager can be obtained using:
+Handler to running @ref:[Sequence Manager](../technical/apps/sequence-manager-app.md) can be obtained using:
 
 ```bash
 val sm = sequenceManager()
@@ -227,6 +250,22 @@ All Sequence Manager APIs can be called upon the handle. For example:
 val configureResponse = sequenceManager.configure(ObsMode("darknight")).get
 val shutdownSequencerResponse = sequenceManager.shutdownSequencer(ESW, ObsMode("darknight")).get
 val resources = sm.getResources.get
+```
+
+## Interacting with Sequence Component
+
+Handler to running @ref:[Sequence Component](../sequencersandscripts/sequencer-app.md) can be obtained using:
+
+```bash
+val sc = sequenceComponentService("ESW.ESW_1")
+```
+
+All Sequence Component APIs can be called upon the handle. For example:
+
+```bash
+val loadScriptResponse =  sc.loadScript(ESW,ObsMode("darknight")).get
+val unloadScriptResponse =  sc.unloadScript().get
+val restartScriptResponse =  sc.restartScript().get
 ```
 
 ### Provisioning sequence components

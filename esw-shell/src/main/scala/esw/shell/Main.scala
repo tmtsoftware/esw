@@ -19,6 +19,7 @@ object Main extends App {
                        |import csw.alarm.models.AlarmSeverity
                        |import csw.alarm.models.Key.AlarmKey
                        |import csw.params.core.generics.KeyType._
+                       |import csw.params.core.generics._
                        |import csw.params.events._
                        |import csw.params.commands._
                        |import csw.params.commands.CommandResponse._
