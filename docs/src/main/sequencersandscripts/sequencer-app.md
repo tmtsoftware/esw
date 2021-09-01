@@ -56,22 +56,13 @@ A separate `loadScript` command needs to be sent to the sequence component to sp
 
 Options accepted by this command are described below:
 
- * `-s` : subsystem of the sequence component, for e.g. `tcs`, `iris` etc
- * `-n`, `--name` : optional name for sequence component, for e.g. `primary`, `backup` etc
+* `-s` : subsystem of the sequence component, for e.g. `tcs`, `iris` etc
+* `-n`, `--name` : optional name for sequence component, for e.g. `primary`, `backup` etc
 
-Once esw-ocs-app is installed, one can simply run sequencer or sequence component by executing the `start` command.
-
-Start command supports following arguments:
-
- * `--port`, `-p` : Optional argument: HTTP server will be bound to this port. If a value is not provided, port will be picked up from configuration.
- * `-l`, `--local` : optional argument (true if config is to be read locally or false if from remote server) default value is false.
- * `-c`, `--commandRoleConfigPath` : specifies command role mapping file path which gets fetched from config service or local file system based on --local option.
- * `-m`, `--metrics` : optional argument: If true, enable gateway metrics. If not provided, default value is false and metrics will be disabled.
-
-
-Here are some examples. 
+Here are some examples.
 
 Example 1: Starts a Sequence Component with a name
+
 ```bash
 //cd to installation directory
 cd /tmt/apps
@@ -80,7 +71,8 @@ cd /tmt/apps
 ./esw-ocs-app seqcomp -s tcs -n primary
 ```
 
-Example 2: Starts a Sequence Component without a name 
+Example 2: Starts a Sequence Component without a name
+
 ```bash
 //cd to installation directory
 cd /tmt/apps
