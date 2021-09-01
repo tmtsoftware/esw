@@ -65,108 +65,25 @@ models that can sent and received over the wire.
 To start, we will go through the Sequence Manager code and tests to show the multiple layers
 involved and how testing is done at each one.  
 
-We’ll start with a look at the API:
+We’ll start with a look at the [SequenceManagerApi]($github.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/SequenceManagerApi.scala):
 
 ```scala
-package esw.sm.api
-
-import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol._
-
-import scala.concurrent.Future
-
-/**
- * A Sequence Manager API for interacting with Sequence Manager component.
- */
 trait SequenceManagerApi {
 
   /**
    * Configures sequencers and resources needed for provided observing mode.
-   * @param obsMode observing mode for configuration
-   * @return a future of [[esw.sm.api.protocol.ConfigureResponse]] which completes with Success or Failure response ADT.
    */
   def configure(obsMode: ObsMode): Future[ConfigureResponse]
 
   /**
-   * Spawns specified number of sequence components on specified agents.
-   * @param config provision config which specifies number of sequence components needed to be provisioned on specific agents
-   * @return a future of [[esw.sm.api.protocol.ProvisionResponse]] which completes with Success or Failure response ADT.
-   */
-  def provision(config: ProvisionConfig): Future[ProvisionResponse]
-
-  /**
-   * Returns all observing modes with their status
-   *
-   * @return a future of [[esw.sm.api.protocol.ObsModesDetailsResponse]] which completes with Success or Failure response ADT.
-   *         Success response gives information of all observing modes with their status.
-   */
-  def getObsModesDetails: Future[ObsModesDetailsResponse]
-
-  /**
-   * Starts sequencer of provided Subsystem and Observing mode.
-   * @param subsystem for sequencer needs to be started
-   * @param obsMode for sequencer needs to be started
-   * @return a future of [[esw.sm.api.protocol.StartSequencerResponse]] which completes with Success or Failure response ADT.
-   */
-  def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse]
-
-  /**
-   * Restarts running sequencer of provided Subsystem and Observing mode.
-   * @param subsystem for sequencer needs to be re-started
-   * @param obsMode for sequencer needs to be re-started
-   * @return a future of [[esw.sm.api.protocol.RestartSequencerResponse]] which completes with Success or Failure response ADT.
-   */
-  def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse]
-
-  /**
    * Shutdown running sequencer of provided Subsystem and Observing mode.
-   * @param subsystem of sequencer needs to be shutdown
-   * @param obsMode of sequencer needs to be shutdown
-   * @return a future of [[esw.sm.api.protocol.ShutdownSequencersResponse]] which completes with Success or Failure response ADT.
    */
-  def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse]
+  def shutdownSequencer(
+    subsystem: Subsystem,
+    obsMode: ObsMode
+  ): Future[ShutdownSequencersResponse]
 
-  /**
-   * Shutdown all running sequencers of provided Subsystem
-   * @param subsystem of sequencers needs to be shutdown
-   * @return a future of [[esw.sm.api.protocol.ShutdownSequencersResponse]] which completes with Success or Failure response ADT.
-   */
-  def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse]
-
-  /**
-   * Shutdown all running sequencers of provided Observing mode
-   * @param obsMode of sequencers needs to be shutdown
-   * @return a future of [[esw.sm.api.protocol.ShutdownSequencersResponse]] which completes with Success or Failure response ADT.
-   */
-  def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse]
-
-  /**
-   * Shutdown all running sequencers
-   * @return a future of [[esw.sm.api.protocol.ShutdownSequencersResponse]] which completes with Success or Failure response ADT.
-   */
-  def shutdownAllSequencers(): Future[ShutdownSequencersResponse]
-
-  /**
-   * Shutdown sequence component of provided prefix. This shuts down sequence component as well as sequencer running on sequence component (if any)
-   * @param prefix of sequence component needs to be shutdown
-   * @return a future of [[esw.sm.api.protocol.ShutdownSequenceComponentResponse]] which completes with Success or Failure response ADT
-   */
-  def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
-
-  /**
-   * Shutdown all running sequence components
-   * @return a future of [[esw.sm.api.protocol.ShutdownSequenceComponentResponse]] which completes with Success or Failure response ADT
-   */
-  def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse]
-
-  /**
-   * Gives information of all resources which are being used by obsMode in given sequence manager config file
-   * each resource will have its status [[esw.sm.api.models.ResourceStatus]] and obsMode if it is in use
-   * @return a future of [[esw.sm.api.protocol.ResourcesStatusResponse]] which completes with Success or Failure response ADT
-   */
-  def getResources: Future[ResourcesStatusResponse]
+  // other APIs ...
 }
 ```
 
@@ -218,8 +135,9 @@ HTTP Client.
 
 #### SequenceManagerClient
 
-The **SequenceManagerClient** class has the msocket POST client passed in. The following snippet
-shows the implementation of `shutdownSequencer`:
+The [SequenceManagerClient]($github.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/client/SequenceManagerClient.scala)
+class has the msocket POST client passed in. The following snippet shows the implementation of
+`shutdownSequencer`:
 
 ```scala
 override def shutdownSequencer(
@@ -235,9 +153,9 @@ This method creates a **ShutdownSequencer** which is an ADT subtype of a **Seque
 the type used by msocket to send over the wire via an HTTP POST. Then the model is sent to the post
 client to be transported via msocket.
 
-So what does the testing fixture for this class (SequenceManagerClientTest) look like?  Well, if we
-follow our strategy, we will use a real implementation of SequenceManagerClient, and the post client
-will be mocked.  
+So what does the testing fixture for this class ([SequenceManagerClientTest]($github.base_url$/esw-sm/esw-sm-api/jvm/src/test/scala/esw/sm/api/client/SequenceManagerClientTest.scala))
+look like?  Well, if we follow our strategy, we will use a real implementation of
+SequenceManagerClient, and the post client will be mocked.  
 
 ```scala
 class SequenceManagerClientTest
@@ -251,7 +169,7 @@ class SequenceManagerClientTest
 }
 ```
 
-To do this, we need to implement mocked behavior for postClient.requestResponse. For our method,
+To do this, we need to implement mocked behavior for `postClient.requestResponse`. For our method,
 this looks like this:
 
 ```scala
@@ -286,8 +204,8 @@ because we are simply testing that the correct request is made.
 
 ### SequenceManagerRequestHandler
 
-Now we will move on to the **SequenceManagerRequestHandler** class, which is called in msocket to
-handle this request. The code for the handler looks like this:
+Now we will move on to the [SequenceManagerRequestHandler]($github.base_url$/esw-sm/esw-sm-handler/src/main/scala/esw/sm/handler/SequenceManagerRequestHandler.scala)
+class, which is called in msocket to handle this request. The code for the handler looks like this:
 
 ```scala
 class SequenceManagerRequestHandler(
@@ -299,21 +217,13 @@ class SequenceManagerRequestHandler(
   import sequenceManager._
   override def handle(request: SequenceManagerRequest): Route =
     request match {
-      case GetRunningObsModes                   => complete(getRunningObsModes)
-      case GetAgentStatus                       => complete(getAgentStatus)
-      case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
-      case Provision(config)                    => sPost(complete(provision(config)))
-      case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
-      case RestartSequencer(subsystem, obsMode) => sPost(complete(restartSequencer(subsystem, obsMode)))
+      case Configure(obsMode) => 
+        sPost(complete(configure(obsMode)))
+  
+      case ShutdownSequencer(subsystem, obsMode) => 
+        sPost(complete(shutdownSequencer(subsystem, obsMode)))
 
-      // Shutdown sequencers
-      case ShutdownSequencer(subsystem, obsMode)  => sPost(complete(shutdownSequencer(subsystem, obsMode)))
-      case ShutdownSubsystemSequencers(subsystem) => sPost(complete(shutdownSubsystemSequencers(subsystem)))
-      case ShutdownObsModeSequencers(obsMode)     => sPost(complete(shutdownObsModeSequencers(obsMode)))
-      case ShutdownAllSequencers                  => sPost(complete(shutdownAllSequencers()))
-
-      case ShutdownSequenceComponent(prefix) => sPost(complete(shutdownSequenceComponent(prefix)))
-      case ShutdownAllSequenceComponents     => sPost(complete(shutdownAllSequenceComponents()))
+      // other ...
     }
 
   def sPost(route: => Route): Route = securityDirectives.sPost(EswUserRolePolicy())(_ => route)
@@ -386,9 +296,9 @@ we have tested serialization for all of our responses with round trip testing in
 
 ### SequenceManagerImpl
 
-The next layer down is the Akka Client, **SequenceManagerImpl**.  It takes API method calls and
-turns them into Akka ask calls to the Sequence Manager actor. The lower layer in this case is the
-Sequence Manager actor, implemented in **SequenceManagerBehavior**.  
+The next layer down is the Akka Client, [SequenceManagerImpl]($github.base_url$/esw-sm/esw-sm-api/jvm/src/main/scala/esw/sm/api/actor/client/SequenceManagerImpl.scala).
+It takes API method calls and turns them into Akka ask calls to the Sequence Manager actor. The
+lower layer in this case is the Sequence Manager actor, implemented in **SequenceManagerBehavior**.  
 
 In this, however, the actor reference is not passed in. It is assumed to be created (by the wiring)
 and registered with the Location Service. Therefore, just the location is passed in and the actor
@@ -419,8 +329,8 @@ override def shutdownSequencer(
   )
 ```
 
-For testing, instead of mocking the actor behavior directly, we use the **AskProxyTestKit**. This
-piece of code can be used to create a custom behavior for an Akka ask with a particular message.
+For testing, instead of mocking the actor behavior directly, we use the [AskProxyTestKit]($github.base_url$/esw-test-commons/src/main/scala/esw/testcommons/AskProxyTestKit.scala).
+This piece of code can be used to create a custom behavior for an Akka ask with a particular message.
 In our case, we set up the **AskProxyTestKit** expect messages to be of type **SequenceManagerMsg**
 and come from a **SequenceManagerImpl**.
 
@@ -473,9 +383,10 @@ mocked behavior, is returned.
 
 ### SequenceManagerBehavior
 
-Now we are down in our actor, which uses utility classes to carry out operations. For this
-operation, it requires the **SequencerUtil** class, which is again created by the wiring and passed
-into the constructor of the behavior. Here is a snippet of handling our message:
+Now we are down in our actor ([SequenceManagerBehavior]($github.base_url$/esw-sm/esw-sm-impl/src/main/scala/esw/sm/impl/core/SequenceManagerBehavior.scala)),
+which uses utility classes to carry out operations. For this operation, it requires the
+**SequencerUtil** class, which is again created by the wiring and passed into the constructor of the
+behavior. Here is a snippet of handling our message:
 
 ```scala
 private def idle(self: SelfRef): SMBehavior =
@@ -558,11 +469,11 @@ class SequenceManagerBehaviorTest
 
 ### SequencerUtil
 
-Now, we will move down to the next layer, **SequencerUtil**. This is where the Sequencer to shutdown
-is located and commanded to shutdown, which involves finding the Sequencer, getting the Sequence
-Component for that Sequencer, and then sending it an unloadScript command. This command is
-implemented in **SequenceComponentUtil**. The following shows bits of code from SequenceUtil pieced
-together to show the relevant logic:
+Now, we will move down to the next layer, [SequencerUtil]($github.base_url$/esw-sm/esw-sm-impl/src/main/scala/esw/sm/impl/utils/SequencerUtil.scala).
+This is where the Sequencer to shutdown is located and commanded to shutdown, which involves finding
+the Sequencer, getting the Sequence Component for that Sequencer, and then sending it an
+`unloadScript` command. This command is implemented in **SequenceComponentUtil**. The following
+shows bits of code from SequenceUtil pieced together to show the relevant logic:
 
 ```scala
 class SequencerUtil(
@@ -614,9 +525,9 @@ they are passed in, and mocked when testing.
 ### SequenceComponentUtil
 
 The Location Service is a separate service, so it is tested separately. The
-**SequenceComponentUtil** is the next layer of the Sequence Manager, and therefore requires tests.
-For our method, this class uses the Sequence Component location to unload the script, thus
-destroying the Sequencer:
+[SequenceComponentUtil]($github.base_url$/esw-sm/esw-sm-impl/src/main/scala/esw/sm/impl/utils/SequenceComponentUtil.scala)
+is the next layer of the Sequence Manager, and therefore requires tests. For our method, this class
+uses the Sequence Component location to unload the script, thus destroying the Sequencer:
 
 ```scala
 class SequenceComponentUtil(
@@ -673,8 +584,8 @@ returned.
 ### Additional Testing
 
 This leads us to discuss additional testing. It is important that all code paths are tested at at
-least one layer. The best place to test this is at the lowest level they occur. This makes these
-layers Bedrock classes as well. Let’s go back at take a look at SequenceUtil.  
+least one layer. The best place to test this is at the lowest level they occur. Let’s go back at
+take a look at SequenceUtil.  
 
 It uses the Location Service to find a reference to the Sequencer. There are two ways this operation
 can fail. If the Sequence is not registered, it can be assumed to not be running, and this is
@@ -768,4 +679,4 @@ showing at least one code path.
 The integration test for the SM demonstrates performing a configure command. Sequencers are set up
 in real Sequence Components, and a sequence is submitted to the top-level sequencer. The test
 confirms the Sequence flows down the Sequencer hierarchy constructed by the command. After
-completion, the Sequencers are cleaned up using the shutdownObsModeSequencers command.
+completion, the Sequencers are cleaned up using the `shutdownObsModeSequencers` command.
