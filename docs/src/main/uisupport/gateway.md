@@ -108,7 +108,13 @@ curl --location --request POST 'http://<host>:<port>/post-endpoint' \
 }'
 ```
 
+### Protection on Admin endpoints on Gateway  
 
+On protected endpoints of admin API in esw-gateway, `esw-user` or `{subsystem}-eng` role check is performed.
+
+* Subsystem is obtained from `componentId` for which admin api action needs to be performed.
+* E.g. To shutdown `SequenceComponent` of prefix `IRIS.comp` using gateway, user should have minimum `esw-user` or `iris-eng` role.
+  
 ## Gateway Technical Design
 
 See @ref:[ESW Gateway Technical Documentation](../technical/gateway-tech.md).
