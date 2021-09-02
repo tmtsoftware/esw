@@ -291,8 +291,59 @@ This test verifies when we send this model to this endpoint, `sPost` is called, 
 response set up to return from that client method call. Note, in this case, the response here is a
 single real type of expected response, and not a mocked response. This is because the response
 requires serialization and we don’t have serialization set up for mocked typed. This is okay because
-we have tested serialization for all of our responses with round trip testing in
-[RoundTripTest]($github.base_url$/esw-contract/src/test/scala/esw/contract/data/RoundTripTest.scala).
+we have tested serialization for all of our responses with round trip testing.
+
+### Round Trip Testing
+
+As mentioned above, de/serialization for all the public facing models are done using
+[RoundTripTest]($github.base_url$/esw-contract/src/test/scala/esw/contract/data/RoundTripTest.scala)
+
+[esw-contract]($github.dir.base_url$/esw-contract/src/main/scala) module contains sample examples
+for all the models which are sent over the wire in case of HTTP requests/responses and AKKA messages.
+**RoundTripTest** consumes all these models and verifies that they are serialized and deserialized
+using both `CBOR` and `JSON` formats.
+
+```scala
+class RoundTripTest extends AnyFreeSpec with Matchers {
+  EswData.services.data.foreach { case (serviceName, service) =>
+    s"$serviceName" - {
+      "models" - {
+        service.models.modelTypes.foreach { modelType =>
+          modelType.name - { validate(modelType) }
+        }
+      }
+    // similarly for "http requests" and  "websocket requests"
+  }
+
+  private def validate(modelType: ModelType[_]): Unit = {
+    modelType.models.zipWithIndex.foreach { case (modelData, index) =>
+      s"${modelData.getClass.getSimpleName.stripSuffix("$")}: $index" - {
+        List(Json, Cbor).foreach { format =>
+          format.toString in {
+            RoundTrip.roundTrip(modelData, modelType.codec, format) shouldBe modelData
+          }
+        }
+      }
+    }
+  }
+}
+
+object RoundTrip {
+  def roundTrip(modelData: Any, codec: Codec[_], format: Target): Any = {
+    val bytes = format.encode(modelData)(codec.encoder.asInstanceOf[Encoder[Any]]).toByteArray
+    format.decode(bytes).to[Any](codec.decoder.asInstanceOf[Decoder[Any]]).value
+  }
+}
+```
+
+As seen in above code, following actions are performed:
+
+- Iterate over all the `EswData.services.data` that includes *models*, *http requests* and
+  *websocket requests* models and call `validate` method for each of them.
+- `validate` method iterates over all the models and calls `RoundTrip.roundTrip` method for each of
+  them with both `CBOR` and `JSON` format.
+- `roundTrip` method convert the `modelData` to `bytes` and then `bytes` to original `modelData`
+  using passed in `codec` and `format` parameter which is one of `CBOR` or `JSON`.
 
 ### SequenceManagerImpl
 
