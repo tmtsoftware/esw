@@ -60,7 +60,7 @@ Any remoting or Client-Server type interface that requires serialization of mess
 must demonstrate proper serialization and deserialization on both sides of the interface for all
 models that can sent and received over the wire.  
 
-### Sequence Manager as an Example
+## Sequence Manager as an Example
 
 To start, we will go through the Sequence Manager code and tests to show the multiple layers
 involved and how testing is done at each one.  
@@ -133,7 +133,7 @@ because it is complete enough to demonstrate our testing philosophy, but simple 
 over complicate this document. We will take a top-down look at the layers, so we will start with the
 HTTP Client.  
 
-#### SequenceManagerClient
+### SequenceManagerClient
 
 The [SequenceManagerClient]($github.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/client/SequenceManagerClient.scala)
 class has the msocket POST client passed in. The following snippet shows the implementation of
@@ -230,11 +230,11 @@ class SequenceManagerRequestHandler(
 }
 ```
 
-Here, the lower layer is the **SequenceManagerImpl**, passed in as the sequenceManager. For our
-method, the handle method matches the request model as a **ShutdownSequencer** type, and then calls
-`shutdownSequencer(subsystem, obsMode)` which is an imported method of sequenceManager. This call is
-wrapped in an `sPost`, which provides AAS security, and complete, is an Akka-HTTP method to complete
-the HTTP request.
+Here, the lower layer is the **SequenceManagerImpl**, passed in as the `sequenceManager`. For our
+method, the `handle` method matches the request model as a **ShutdownSequencer** type, and then
+calls `shutdownSequencer(subsystem, obsMode)` which is an imported method of `sequenceManager`
+object. This call is wrapped in an `sPost` method, which provides AAS security, and `complete`, is
+an Akka-HTTP method to complete the HTTP request.
 
 Again, this layer is just an adapter layer that changes HTTP requests into **SequenceManagerImpl**
 calls. All that is needed to test this class is to make sure each request calls the appropriate Akka
@@ -260,9 +260,9 @@ class SequenceManagerRequestHandlerTest
 }
 ```
 
-The test creates a post-endpoint route via msocket, just like we using in our msocket-based HTTP
+The test creates a `post-endpoint` route via msocket, just like we using in our msocket-based HTTP
 server. Now, our test uses Akka-HTTP to POST a request to this route, using the Akka-HTTP testkit to
-“check” that what happens when the request with the proper model is sent to this endpoint is what
+`check` that what happens when the request with the proper model is sent to this endpoint is what
 expect.  
 
 ```scala
@@ -291,8 +291,59 @@ This test verifies when we send this model to this endpoint, `sPost` is called, 
 response set up to return from that client method call. Note, in this case, the response here is a
 single real type of expected response, and not a mocked response. This is because the response
 requires serialization and we don’t have serialization set up for mocked typed. This is okay because
-we have tested serialization for all of our responses with round trip testing in
-[RoundTripTest]($github.base_url$/esw-contract/src/test/scala/esw/contract/data/RoundTripTest.scala).
+we have tested serialization for all of our responses with round trip testing.
+
+### Round Trip Testing
+
+As mentioned above, de/serialization for all the public facing models are done using
+[RoundTripTest]($github.base_url$/esw-contract/src/test/scala/esw/contract/data/RoundTripTest.scala)
+
+[esw-contract]($github.dir.base_url$/esw-contract/src/main/scala) module contains sample examples
+for all the models which are sent over the wire in case of HTTP requests/responses and AKKA messages.
+**RoundTripTest** consumes all these models and verifies that they are serialized and deserialized
+using both `CBOR` and `JSON` formats.
+
+```scala
+class RoundTripTest extends AnyFreeSpec with Matchers {
+  EswData.services.data.foreach { case (serviceName, service) =>
+    s"$serviceName" - {
+      "models" - {
+        service.models.modelTypes.foreach { modelType =>
+          modelType.name - { validate(modelType) }
+        }
+      }
+    // similarly for "http requests" and  "websocket requests"
+  }
+
+  private def validate(modelType: ModelType[_]): Unit = {
+    modelType.models.zipWithIndex.foreach { case (modelData, index) =>
+      s"${modelData.getClass.getSimpleName.stripSuffix("$")}: $index" - {
+        List(Json, Cbor).foreach { format =>
+          format.toString in {
+            RoundTrip.roundTrip(modelData, modelType.codec, format) shouldBe modelData
+          }
+        }
+      }
+    }
+  }
+}
+
+object RoundTrip {
+  def roundTrip(modelData: Any, codec: Codec[_], format: Target): Any = {
+    val bytes = format.encode(modelData)(codec.encoder.asInstanceOf[Encoder[Any]]).toByteArray
+    format.decode(bytes).to[Any](codec.decoder.asInstanceOf[Decoder[Any]]).value
+  }
+}
+```
+
+As seen in above code, following actions are performed:
+
+- Iterate over all the `EswData.services.data` that includes *models*, *http requests* and
+  *websocket requests* models and call `validate` method for each of them.
+- `validate` method iterates over all the models and calls `RoundTrip.roundTrip` method for each of
+  them with both `CBOR` and `JSON` format.
+- `roundTrip` method convert the `modelData` to `bytes` and then `bytes` to original `modelData`
+  using passed in `codec` and `format` parameter which is one of `CBOR` or `JSON`.
 
 ### SequenceManagerImpl
 
@@ -334,8 +385,8 @@ This piece of code can be used to create a custom behavior for an Akka ask with 
 In our case, we set up the **AskProxyTestKit** expect messages to be of type **SequenceManagerMsg**
 and come from a **SequenceManagerImpl**.
 
-The test kit is set up by overriding the make method to return an instance of our Akka client to be
-used in the test kit features.
+The test kit is set up by overriding the `make` method to return an instance of our Akka client to
+be used in the test kit features.
 
 ```scala
 private val askProxyTestKit =
@@ -376,7 +427,7 @@ The use of the test kit for our method is shown below, **SequenceManagerImplTest
 
 The `withBehavior` block is used to define whatever behavior is needed to handle the incoming
 message, which is a **ShutdownSequencer** message. For testing, we just want it to send a mocked
-response. The check block is used to execute the command we are testing. The sm object in this
+response. The `check` block is used to execute the command we are testing. The `sm` object in this
 lambda is the **SequenceManagerImpl** we created when instantiating the test kit. Here, the check is
 making sure when we call the method on the client, our mocked response, which must come from our
 mocked behavior, is returned.
@@ -406,20 +457,17 @@ private def idle(self: SelfRef): SMBehavior =
 
 This takes the information in the message and calls the `shutdownSequencer` method in
 **SequencerUtil**, and then maps the response to be sent to itself, which now transitions to the
-processing state. When the actor receives the response in the processing state, it is then returned
-to the replyTo actor of the original message, and the SM actor returns to the idle state.
+processing state. When the actor receives the response in the `processing` state, it is then returned
+to the `replyTo` actor of the original message, and the SM actor returns to the `idle` state.
 
 This means our test fixture needs to verify the following things:
 
-When the actor receives the **ShutdownSequencer** message, it calls the `shutdownSequencer` method
-of sequencerUtil with the subsystem and obsMode from the message.
-
-The actor then transitions to the processing state.
-
-The response from our `sequenceUtil.shutdownSequencer` is returned to the replyTo actor in the
+- When the actor receives the **ShutdownSequencer** message, it calls the `shutdownSequencer` method
+of sequencerUtil with the `subsystem` and `obsMode` from the message.
+- The actor then transitions to the processing state.
+- The response from our `sequenceUtil.shutdownSequencer` is returned to the replyTo actor in the
 **ShutdownSequencer** message.
-
-The actor return to the idle state.
+- The actor return to the `idle` state.
 
 As seen below, this is what our test does.  As we seen before the lower layer
 (or layers, in this case), are mocked.
@@ -576,16 +624,16 @@ The testing for this class must have tests for the methods we use, which in this
 ```
 
 Here, the Akka client for the Sequence Component is mocked, and it’s shown that when the
-`unloadScript` method in **SequenceComponentUtil** is called, it calls the unloadScript method in
-the Akka client. Note that this method always returns Ok. If it didn’t, the failure modes of this
-call would also need to be tested, using mocks, and it must be verified the proper error response is
-returned.
+`unloadScript` method in **SequenceComponentUtil** is called, it calls the `unloadScript` method in
+the Akka client. Note that this method always returns **Ok**. If it didn’t, the failure modes of
+this call would also need to be tested, using mocks, and it must be verified the proper error
+response is returned.
 
 ### Additional Testing
 
 This leads us to discuss additional testing. It is important that all code paths are tested at at
 least one layer. The best place to test this is at the lowest level they occur. Let’s go back at
-take a look at SequenceUtil.  
+take a look at **SequenceUtil**.  
 
 It uses the Location Service to find a reference to the Sequencer. There are two ways this operation
 can fail. If the Sequence is not registered, it can be assumed to not be running, and this is
@@ -666,7 +714,7 @@ returned to the Akka client. Therefore, this type needs to be tested in the
 ```
 
 The `sequencerUtil` method is mocked to return the error response, and it is verified that if the
-actor receives the shutdown message, this is returned to the replyTo.
+actor receives the shutdown message, this is returned to the `replyTo`.
 
 ## Integration Tests
 
@@ -676,7 +724,7 @@ included, nor all code paths for the methods used. That is what the units tests 
 for completeness, there should be an integration test for every public method in outward facing APIs
 showing at least one code path.
 
-The integration test for the SM demonstrates performing a configure command. Sequencers are set up
+The integration test for the SM demonstrates performing a `configure` command. Sequencers are set up
 in real Sequence Components, and a sequence is submitted to the top-level sequencer. The test
 confirms the Sequence flows down the Sequencer hierarchy constructed by the command. After
 completion, the Sequencers are cleaned up using the `shutdownObsModeSequencers` command.

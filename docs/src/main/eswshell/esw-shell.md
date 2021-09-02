@@ -43,6 +43,13 @@ cs launch esw-shell:<version | SHA>
 
 At any point in time, if you want to exit the shell, type `exit` and press enter.
 
+## Imports available in esw-shell
+
+These imports are available in shell, user does not need to import again
+
+Scala
+: @@snip [Main.scala](../../../../esw-shell/src/main/scala/esw/shell/Main.scala) { #imports }
+
 ## Usage of Command Service to interact with HCDs, Assemblies and Sequencers
 
 ### Spawning simulated HCD/Assembly
@@ -125,13 +132,6 @@ Note - The above calls internally uses location service to resolve the required 
 Create a setup command object using similar command to what is shown below
 
 ```scala
-import csw.params.commands._
-import csw.params.core.generics.KeyType.LongKey
-import csw.params.core.generics.Parameter
-import csw.params.core.models.ObsId
-import csw.prefix.models.Prefix
-// above imports are available in shell, user does not need to import again
-
 val longKey                     = LongKey.make("timeInMs")
 val paramSet: Set[Parameter[_]] = Set(longKey.set(1000))
 
@@ -141,13 +141,6 @@ val setup = Setup(Prefix("iris.filter.wheel"), CommandName("sleep"), Some(ObsId(
 ### Creating the sequence to submit to Sequencer
 
 ```scala
-import csw.params.commands._
-import csw.params.core.generics.KeyType.ByteKey
-import csw.params.core.generics.Parameter
-import csw.params.core.models.ObsId
-import csw.prefix.models.Prefix
-// above imports are available in shell, user does not need to import again
-
 val byteKey                     = ByteKey.make("byteKey")
 val paramSet: Set[Parameter[_]] = Set(byteKey.set(100, 100))
 
@@ -167,23 +160,12 @@ Other than command service handles, following pre-defined handles or factories a
 ### Creating ComponentId
 
 ```scala
-import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.ESW
-import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.Assembly
-// above imports are available in shell, user does not need to import again
-
 val componentId = ComponentId(Prefix(ESW, "test1"), Assembly)
 ```
 
 ### Creating Event
 
 ```scala
-import csw.params.core.generics.Parameter
-import csw.params.core.generics.KeyType.ByteKey
-import csw.prefix.models.Prefix
-import csw.params.events.{EventName, SystemEvent}
-
 val byteKey = ByteKey.make("byteKey")
 val paramSet: Set[Parameter[_]] = Set(byteKey.set(100, 100 ))
 val prefix = Prefix("tcs.assembly")
@@ -193,10 +175,6 @@ val event = SystemEvent(prefix, EventName("event_1"), paramSet)
 ### Creating AlarmKey
 
 ```scala
-import csw.alarm.models.Key.AlarmKey
-import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.NFIRAOS
-
 val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
 ```
 

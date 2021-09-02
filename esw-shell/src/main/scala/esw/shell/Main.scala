@@ -9,7 +9,7 @@ object Main extends App {
 
   val ammoniteResponse = ammonite
     .Main(
-      predefCode = """
+      predefCode = """ // #imports
                        |import java.nio.file.Path
                        |import java.nio.file.Paths
                        |import akka.util.Timeout
@@ -47,6 +47,7 @@ object Main extends App {
                        |import eswWiring.factories._
                        |import eswWiring.cswWiring.cswContext._
                        |import csw.framework.scaladsl.DefaultComponentHandlers
+                       |// #imports
                        |""".stripMargin
     )
     .run("eswWiring" -> eswWiring)

@@ -14,5 +14,6 @@
 - [Arch](esw-application-parts.md)
 - [ESW Service Contract](contracts.md)
 - [OSW Testing Philosophy](testing-philosophy.md)
+- [esw-service](esw-services.md)
 
 @@@
