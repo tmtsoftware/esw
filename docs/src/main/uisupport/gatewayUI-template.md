@@ -39,7 +39,7 @@ along with the AAS authentication and authorization model. The UIAG application 
 ### Gateway-only Template and Tutorial
 
 A template Giter8 project has been provided that should be used to create a Gateway-only user TMT interface.
-Please follow the instructions in the README to get started with the template. The repository is located @link:[here](https://github.com/tmtsoftware/esw-ui-template.g8) { open=new }.
+Please follow the instructions in the README to get started with the template. The repository is located @link:[here](https://github.com/tmtsoftware/esw-gateway-ui-template.g8) { open=new }.
 
 A tutorial has also been created that shows the basics of creating and coding a Gateway-only UI using the template.
-The tutorial is located @link:[here](https://github.com/tmtsoftware/esw-ui-example).  *** MUST FIX LINK ***
+The tutorial is located @link:[here](https://github.com/tmtsoftware/esw-gateway-ui-example).
