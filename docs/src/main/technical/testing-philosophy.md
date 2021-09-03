@@ -295,13 +295,13 @@ we have tested serialization for all of our responses with round trip testing.
 
 ### Round Trip Testing
 
-As mentioned above, de/serialization for all the public facing models are done using
+As mentioned above, testing of de/serialization for all the public facing models is done using
 [RoundTripTest]($github.base_url$/esw-contract/src/test/scala/esw/contract/data/RoundTripTest.scala)
 
-[esw-contract]($github.dir.base_url$/esw-contract/src/main/scala) module contains sample examples
-for all the models which are sent over the wire in case of HTTP requests/responses and AKKA messages.
+The [esw-contract]($github.dir.base_url$/esw-contract/src/main/scala) module contains examples
+for all the models which are sent over the wire for HTTP requests/responses and AKKA messages.
 **RoundTripTest** consumes all these models and verifies that they are serialized and deserialized
-using both `CBOR` and `JSON` formats.
+properly using both `CBOR` and `JSON` formats.
 
 ```scala
 class RoundTripTest extends AnyFreeSpec with Matchers {
@@ -336,14 +336,14 @@ object RoundTrip {
 }
 ```
 
-As seen in above code, following actions are performed:
+As seen in code above, the following actions are performed:
 
-- Iterate over all the `EswData.services.data` that includes *models*, *http requests* and
-  *websocket requests* models and call `validate` method for each of them.
-- `validate` method iterates over all the models and calls `RoundTrip.roundTrip` method for each of
+- Iterate over all the types of models in `EswData.services.data`, which includes *models* for Akka, *HTTP request models* and
+  *websocket request models*,  and call the `validate` method for each of them.
+- The `validate` method iterates over all the models of each type and calls the `RoundTrip.roundTrip` method for each of
   them with both `CBOR` and `JSON` format.
-- `roundTrip` method convert the `modelData` to `bytes` and then `bytes` to original `modelData`
-  using passed in `codec` and `format` parameter which is one of `CBOR` or `JSON`.
+- The`roundTrip` method converts the `modelData` to `bytes` and then `bytes` back to the original `modelData`
+  using the `codec` and `format` parameters passed in for `CBOR` and `JSON`.
 
 ### SequenceManagerImpl
 
@@ -775,7 +775,7 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 }
 ```
 
-Few things to note in above test, [TestSetup]($github.base_url$/esw-integration-test/src/test/scala/esw/sm/app/TestSetup.scala)
+There are a few things to note about this test. [TestSetup]($github.base_url$/esw-integration-test/src/test/scala/esw/sm/app/TestSetup.scala)
 is a utility class which supports starting real Sequence Component and Sequence Manager without
 mocks. It just delegates call to underlying Sequencer or Sequence Manager application/wiring.
 
@@ -788,15 +788,15 @@ This integration test is divided into following three parts:
 ### Setup
 
 - Start required Sequence Components that are `ESW`, `AOESW` and `IRIS` for the `IRIS_Cal`
-  observation using `TestSetup.spawnSequenceComponent(ESW, None)` method.
-- Start Sequence Manager using `TestSetup.startSequenceManager(sequenceManagerPrefix)` method.
+  observation using `TestSetup.spawnSequenceComponent` method.
+- Start Sequence Manager using the `TestSetup.startSequenceManager(sequenceManagerPrefix)` method.
 
 ### Verification
 
-- Submit `configure` command to Sequence Manager and verify successful configure response is returned.
-- Resolve the location of the top level sequencer and create **SequencerApi** using that location.
-- Submit `sequence` using `sequencerApi.submitAndWait(sequence)` method and verify it returns
-  **Completed** response
+- Submit the `configure` command to the Sequence Manager and verify a successful configure response is returned.
+- Resolve the location of the top level sequencer and create a **SequencerApi** using that location.
+- Submit a `sequence` using the `sequencerApi.submitAndWait(sequence)` method and verify it returns
+  a **Completed** response
 
 ### Cleanup
 
