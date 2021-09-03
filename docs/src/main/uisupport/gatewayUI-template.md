@@ -1,4 +1,4 @@
-# Creating and Using the Gateway-only UI Template
+# Using the Gateway-only UI Template and Tutorial
 
 A Gateway-only User Interface is a TMT user interface that only needs to use the CSW services to implement its purpose.  Not all
 CSW services require the User Inteface Gateway or UIAG, but the UIAG is the backend for most of the UIs functionality.  A TypeScript library

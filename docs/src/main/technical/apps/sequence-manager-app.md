@@ -1,7 +1,7 @@
 # Starting the Sequence Manager Application
 
-`esw-sm-app` is a command line application that facilitates starting Sequence Manager, and the HTTP server that is part of Sequence Manager using the `coursier` dependency management
-application. The `coursier` tool is described with full documentation
+`esw-sm-app` is a command line application that facilitates starting Sequence Manager, and the HTTP server that is part of 
+Sequence Manager using the `coursier` dependency management application. The `coursier` tool is described with full documentation
 at the [coursier site](https://get-coursier.io).
 
 The following steps should be followed to use esw-sm-app to start a Sequencer Manager.

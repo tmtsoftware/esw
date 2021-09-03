@@ -1,15 +1,14 @@
 # TMT Executive Software Documentation
 
-@@toc { depth=3 }
+@@toc { depth=2 }
 
 @@@ index
 
 - [ESW Overview](esw/eswOverview.md)
 - [Sequencers and Scripts](sequencersandscripts/seq-index.md)
 - [Scripting with Sequencers](scripts/scripts-index.md)
-- [ESW Shell](eswshell/esw-shell.md)
 - [UI Support](uisupport/uisupp-index.md)
+- [ESW Apps](technical/apps/apps-index.md)
 - [Technical Documentation](technical/tech-index.md)
-- [Tutorials](tutorials/web-app-tutorial.md)
 
 @@@

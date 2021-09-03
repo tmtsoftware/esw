@@ -1,4 +1,4 @@
-# Creating and Using the UI Web Application Template
+# Using the Web Application Template and Tutorial
 
 A Web Application, or WebApp, is a UI application that has specialized or application-specific
 functions that are better-suited to the server-side than the browser-based UI, data processing, or control system Assemblies, HCDs, or Sequencers. 
@@ -7,8 +7,8 @@ TMT doesn't have many applications like this. It requires a user interface that 
 Server-side functionality may be computationally intensive functions, or it may need to use the CSW Database Service with specialized queries/results as examples.
 At this time, only the APS has been identified as a user interface that needs the Web Application approach.
 
-A Web Application has a frontend and a backend.  The frontend uses the same tools and libraries as the Gateway-only UI. 
-The WebApp UI will typically use the UIAG, but also uses its own backend HTTP-based service to implement application-specific routes that are called by the UI. 
+A Web Application has a frontend and a backend.  The Web Application frontend uses the same tools and libraries as the Gateway-only UI. 
+The WebApp UI will typically use the UIAG as well as its own backend service that implements the application-specific routes that are called by the UI. 
 
 ### Web Application Template and Tutorial
 

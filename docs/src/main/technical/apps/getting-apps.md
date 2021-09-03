@@ -1,7 +1,8 @@
 # Getting and Running ESW Applications
 
 ESW applications are installed locally using the `coursier` application, a standalone program that makes using the
-JVM and Scala/Java applications easier to use and maintain.
+JVM and Scala/Java applications easier to use and maintain. The `coursier` tool is described with full documentation
+at the [coursier site](https://get-coursier.io).
 
 To use *any* ESW application, `coursier` must be installed on your machine.
 
