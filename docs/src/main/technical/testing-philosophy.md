@@ -724,7 +724,81 @@ included, nor all code paths for the methods used. That is what the units tests 
 for completeness, there should be an integration test for every public method in outward facing APIs
 showing at least one code path.
 
-The integration test for the SM demonstrates performing a `configure` command. Sequencers are set up
-in real Sequence Components, and a sequence is submitted to the top-level sequencer. The test
-confirms the Sequence flows down the Sequencer hierarchy constructed by the command. After
-completion, the Sequencers are cleaned up using the `shutdownObsModeSequencers` command.
+Following example demonstrates how to write an integration test for the Sequence Manager's
+`configure` and `shutdownObsModeSequencers` APIs.
+
+```scala
+class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
+
+  "SOSS" must {
+    "have ability be able to spawn sequencer hierarchy and send sequence to top level sequencer" in {
+      // ======= Setup =======
+      val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
+      val obsMode               = ObsMode("IRIS_Cal")
+
+      val sequence = Sequence(
+        Setup(sequenceManagerPrefix, CommandName("command-1"), None)
+      )
+      
+      // Start required sequence components
+      TestSetup.spawnSequenceComponent(ESW, None)
+      TestSetup.spawnSequenceComponent(AOESW, None)
+      TestSetup.spawnSequenceComponent(IRIS, None)
+
+      // Start Sequence Manager
+      val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix)
+
+      // ======= Verification =======
+      // configure obsMode
+      val configureResponse = sequenceManager.configure(obsMode).futureValue
+      configureResponse should ===(
+        ConfigureResponse.Success(
+          ComponentId(Prefix(ESW, obsMode.name), Sequencer)
+        )
+      )
+      
+      val successResponse = configureResponse.asInstanceOf[Success]
+      val id              = successResponse.masterSequencerComponentId
+      val location        = resolveHTTPLocation(id.prefix, id.componentType)
+
+      SequencerApiFactory
+        .make(location)
+        .submitAndWait(sequence) // Submit sequence to top level sequencer
+        .futureValue shouldBe a[Completed]
+
+      // ======= Cleanup =======
+      sequenceManager
+        .shutdownObsModeSequencers(obsMode)
+        .futureValue shouldBe a[ShutdownSequencersResponse.Success.type]
+    }
+  }
+}
+```
+
+Few things to note in above test, [TestSetup]($github.base_url$/esw-integration-test/src/test/scala/esw/sm/app/TestSetup.scala)
+is a utility class which supports starting real Sequence Component and Sequence Manager without
+mocks. It just delegates call to underlying Sequencer or Sequence Manager application/wiring.
+
+[SequenceManagerSossIntegrationTest]($github.base_url$/esw-integration-test/src/test/scala/esw/sm/app/SequenceManagerSossIntegrationTest.scala)
+demonstrates starting `IRIS_Cal` observation mode, submitting `sequence` to the top level sequencer
+and then stopping the observation.
+
+This integration test is divided into following three parts:
+
+### Setup
+
+- Start required Sequence Components that are `ESW`, `AOESW` and `IRIS` for the `IRIS_Cal`
+  observation using `TestSetup.spawnSequenceComponent(ESW, None)` method.
+- Start Sequence Manager using `TestSetup.startSequenceManager(sequenceManagerPrefix)` method.
+
+### Verification
+
+- Submit `configure` command to Sequence Manager and verify successful configure response is returned.
+- Resolve the location of the top level sequencer and create **SequencerApi** using that location.
+- Submit `sequence` using `sequencerApi.submitAndWait(sequence)` method and verify it returns
+  **Completed** response
+
+### Cleanup
+
+- Shutdown all the sequencers that are started while configuring `IRIS_Cal` observation using
+  `sequenceManager.shutdownObsModeSequencers(obsMode)` method.
