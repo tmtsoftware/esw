@@ -9,7 +9,7 @@ object Main extends App {
 
   val ammoniteResponse = ammonite
     .Main(
-      predefCode = """
+      predefCode = """ // #imports
                        |import java.nio.file.Path
                        |import java.nio.file.Paths
                        |import akka.util.Timeout
@@ -19,6 +19,7 @@ object Main extends App {
                        |import csw.alarm.models.AlarmSeverity
                        |import csw.alarm.models.Key.AlarmKey
                        |import csw.params.core.generics.KeyType._
+                       |import csw.params.core.generics._
                        |import csw.params.events._
                        |import csw.params.commands._
                        |import csw.params.commands.CommandResponse._
@@ -45,6 +46,8 @@ object Main extends App {
                        |import eswWiring._
                        |import eswWiring.factories._
                        |import eswWiring.cswWiring.cswContext._
+                       |import csw.framework.scaladsl.DefaultComponentHandlers
+                       |// #imports
                        |""".stripMargin
     )
     .run("eswWiring" -> eswWiring)

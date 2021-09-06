@@ -1,7 +1,7 @@
 # Starting the Sequence Manager Application
 
-`esw-sm-app` is a command line application that facilitates starting Sequence Manager, and the HTTP server that is part of Sequence Manager using the `coursier` dependency management
-application. The `coursier` tool is described with full documentation
+`esw-sm-app` is a command line application that facilitates starting Sequence Manager, and the HTTP server that is part of 
+Sequence Manager using the `coursier` dependency management application. The `coursier` tool is described with full documentation
 at the [coursier site](https://get-coursier.io).
 
 The following steps should be followed to use esw-sm-app to start a Sequencer Manager.
@@ -121,7 +121,7 @@ Manager. When started in simulation mode, the Sequence Manager starts bypasses t
 internally. The register themselves with the Location Service and load Scripts and Sequencers as normal, but simulated
 Sequence Manager can start on its own.
 
-### 1. Install `coursier` and the TMT Apps channel
+### 1. Install `coursier` and add the TMT Apps channel
 
 The `coursier` application must be installed on your machine, and the OCS Apps channel must be installed.
 The instructions for doing this are provided @ref:[here](getting-apps.md).
