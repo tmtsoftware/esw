@@ -133,19 +133,19 @@ The above calls internally use Location Service to resolve the required HCD/Asse
 To send a Setup or Observe command to a component, create the Parameters and add them to the Setup or Observe.
 
 ```scala
-val longKey                     = LongKey.make("timeInMs")
-val paramSet: Set[Parameter[_]] = Set(longKey.set(1000))
+val longKey  = LongKey.make("timeInMs")
+val paramSet = Set(longKey.set(1000))
 
-val setup = Setup(Prefix("iris.filter.wheel"), CommandName("sleep"), Some(ObsId("2020A-001-123")), paramSet)
+val setup = Setup(Prefix("iris.filter.wheel"), CommandName("sleep"), Some(ObsId("2020A-001-123"))).madd(paramSet)
 ```
 
 ### Creating a Sequence to submit to a Sequencer using Command Service
 
 ```scala
-val byteKey                     = ByteKey.make("byteKey")
-val paramSet: Set[Parameter[_]] = Set(byteKey.set(100, 100))
+val byteKey  = ByteKey.make("byteKey")
+val paramSet = Set(byteKey.set(100, 100))
 
-val setup = Setup(Prefix("iris.filter.wheel"), CommandName("move"), Some(ObsId("2020A-001-123")), paramSet)
+val setup = Setup(Prefix("iris.filter.wheel"), CommandName("move"), Some(ObsId("2020A-001-123"))).madd(paramSet)
 val sequence = Sequence(setup)
 ```
 Note that in the last step, the Setup is wrapped in a Sequence to make a Sequence with one Step.
@@ -170,10 +170,10 @@ val componentId = ComponentId(Prefix(ESW, "test1"), Assembly)
 Events work much like Setups.
 
 ```scala
-val byteKey = ByteKey.make("byteKey")
-val paramSet: Set[Parameter[_]] = Set(byteKey.set(100, 100 ))
-val prefix = Prefix("tcs.assembly")
-val event = SystemEvent(prefix, EventName("event_1"), paramSet)
+val byteKey  = ByteKey.make("byteKey")
+val paramSet = Set(byteKey.set(100, 100 ))
+val prefix   = Prefix("tcs.assembly")
+val event    = SystemEvent(prefix, EventName("event_1")).madd(paramSet)
 ```
 
 ### Creating an AlarmKey
@@ -241,8 +241,8 @@ Unlike Assemblies, and HCDs, there is only one Sequence Manager service at a  ti
 All Sequence Manager APIs can be called upon the handle. For example:
 
 ```bash
-val configureResponse = sequenceManager.configure(ObsMode("darknight")).get
-val shutdownSequencerResponse = sequenceManager.shutdownSequencer(ESW, ObsMode("darknight")).get
+val configureResponse = sm.configure(ObsMode("darknight")).get
+val shutdownSequencerResponse = sm.shutdownSequencer(ESW, ObsMode("darknight")).get
 val resources = sm.getResources.get
 ```
 
