@@ -31,7 +31,7 @@ JVM process._
    If you are not building csw from the sources, you can run `csw-services` as follows:
 
 - Install `coursier` using steps described [here](https://tmtsoftware.github.io/csw/apps/csinstallation.html) and add TMT channel.
-- Run `cs install csw-services:<CSW version | SHA>`. This will create an executable file named `csw-services` in the default installation directory.
+- Run `cs install csw-services`. This will create an executable file named `csw-services` in the default installation directory.
 - Run `csw-services --help` to get more information.
 - Run `csw-services start -c -k` to start the location service, config service and auth service.
 
@@ -47,8 +47,8 @@ JVM process._
 
 ## Running the esw-services using coursier
 
-- Run `cs launch esw-services:<ESW version | SHA> -- start` inside esw repository.
-- Run `cs launch esw-services:<ESW version | SHA> -- start --help` to get more information.
+- Run `cs launch esw-services -- start` inside esw repository.
+- Run `cs launch esw-services -- start --help` to get more information.
 
 ## How to use esw-services
 

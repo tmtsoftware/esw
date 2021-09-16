@@ -28,7 +28,7 @@ Information on starting CSW services is @extref[here](csw:commons/apps)
 Following command creates an executable file named esw-agent-service-app in the default installation directory.
 
 ```bash
-cs install esw-agent-service-app:<version | SHA>
+cs install esw-agent-service-app
 ```
 
 One can specify installation directory like following:
@@ -36,7 +36,7 @@ One can specify installation directory like following:
 ```bash
 cs install \
     --install-dir /tmt/apps \
-    esw-agent-service-app:<version | SHA>
+    esw-agent-service-app
 ```
 Note: If you don't provide the version or SHA in above command, `esw-agent-service-app` will be installed with the latest tagged binary of `esw-agent-service-app`
 

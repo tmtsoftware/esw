@@ -25,13 +25,13 @@ Information on starting CSW services is @extref[here](csw:commons/apps).
 The following `coursier` command creates an executable file named `esw-sm-app` in the default coursier installation directory.
 
 ```bash
-cs install esw-sm-app:<version | SHA>
+cs install esw-sm-app
 ```
 
 One can specify the installation directory like the following:
 
 ```bash
-cs install --install-dir /tmt/apps esw-sm-app:<version | SHA>
+cs install --install-dir /tmt/apps esw-sm-app
 ```
 @@@note
 If you don't provide the version *or* SHA in above command, `esw-sm-app` will be installed with the latest tagged binary of `esw-sm-app`.
@@ -135,13 +135,13 @@ The instructions for doing this are provided @ref:[here](getting-apps.md).
 The following command creates an executable file named `esw-services` in the default installation directory.
 
 ```bash
-cs install esw-services:<version | SHA>
+cs install esw-services
 ```
 
 ## 4. Run esw-sm-app in Simulation Mode
 
 ```bash
-cs launch esw-services – start -s --simulation
+cs launch esw-services -- start -s --simulation
 //  where:
 //    -s : to start SequenceManager
 //    --simulation : in simulation mode
@@ -150,7 +150,7 @@ cs launch esw-services – start -s --simulation
 ## 5. Running esw-sm-app in Simulation Mode Without esw-services
 
 ```bash
-cs launch esw-sm-app:<version | SHA> -- start --simulation
+cs launch esw-sm-app -- start --simulation
 ```   
 
 @@@ warning

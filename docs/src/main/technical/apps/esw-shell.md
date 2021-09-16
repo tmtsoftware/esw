@@ -27,7 +27,7 @@ cs launch esw-shell
 If you need to start with a specific version, the following can be used:
 
 ```bash
-cs launch esw-shell:<version | SHA>
+cs launch esw-shell
 ```
 
 Normally, you don't need to start the app with a specific version.
