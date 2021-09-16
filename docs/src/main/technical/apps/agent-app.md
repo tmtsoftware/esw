@@ -26,7 +26,7 @@ Information on starting CSW services is @extref[here](csw:commons/apps)
 Following command creates an executable file named esw-agent-akka-app in the default installation directory.
 
 ```bash
-cs install esw-agent-akka-app:<version | SHA>
+cs install esw-agent-akka-app
 ```
 
 One can specify installation directory like following:
@@ -34,7 +34,7 @@ One can specify installation directory like following:
 ```bash
 cs install \
     --install-dir /tmt/apps \
-    esw-agent-akka-app:<version | SHA>
+    esw-agent-akka-app
 ```
 Note: If you don't provide the version or SHA in above command, `esw-agent-akka-app` will be installed with the latest tagged binary of `esw-agent-akka-app`
 

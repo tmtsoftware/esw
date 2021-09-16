@@ -16,5 +16,5 @@ A template Giter8 project has been provided that should be used when creating a 
 The template provides starter code for the frontend UI and the backend service.
 Please follow the instructions in the README to get started with the template. The repository is located  @link:[here](https://github.com/tmtsoftware/esw-web-app-template.g8).
 
-There is also a tutorial and example that builds from the template @link:[here](https://tmtsoftware.github.io/esw-web-app-example/0.1.0-SNAPSHOT/index.html) { open=new }.
+There is also a tutorial and example that builds from the template @link:[here](https://tmtsoftware.github.io/esw-web-app-example/index.html) { open=new }.
 The tutorial shows how to create a project using the template and go through the steps needed to create a web application backend that works with the frontend.

@@ -18,7 +18,7 @@ The instructions for doing this is provided @ref:[here](../technical/apps/gettin
 The following command creates an executable file named `esw-ocs-app` in the default installation directory.
 
 ```bash
-cs install esw-ocs-app:<version | SHA>
+cs install esw-ocs-app
 ```
 
 One can specify an installation directory like the following:
@@ -26,7 +26,7 @@ One can specify an installation directory like the following:
 ```bash
 cs install \
     --install-dir /tmt/apps \
-    esw-ocs-app:<version | SHA>
+    esw-ocs-app
 ```
 
 @@@note

@@ -1,9 +1,9 @@
-name: Paradox Link Check
+name: Master Link Check
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 19 * * *' # run at 1:00 AM IST
+    - cron: "30 18 * * *" # run at 00:00 AM IST
 
 jobs:
   paradox:
@@ -26,4 +26,4 @@ jobs:
         with:
           job-status: ${{ job.status }}
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          channel: ci-dev
+          channel: ci-linkcheck

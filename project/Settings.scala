@@ -1,4 +1,4 @@
-import sbt._
+import sbt.{Def, _}
 
 object Settings {
   def addAliases(): Seq[Setting[_]] = {
@@ -20,3 +20,14 @@ object Settings {
     )
   }
 }
+
+object ESW_OCS_ENG_UI {
+  val baseUrl = Def.setting(s"https://tmtsoftware.github.io/esw-ocs-eng-ui/${readVersion("ESW_OCS_ENG_UI_VERSION")}/%s")
+
+  private def readVersion(envVersionKey: String): String =
+    (sys.env ++ sys.props).get(envVersionKey) match {
+      case Some(v) => v
+      case None    => "0.1.0-SNAPSHOT"
+    }
+}
+

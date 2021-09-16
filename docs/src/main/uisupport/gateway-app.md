@@ -25,7 +25,7 @@ Information on starting CSW services is @extref[here](csw:commons/apps)
 The following command creates an executable file named esw-gateway-server in the default installation directory.
 
 ```bash
-cs install esw-gateway-server:<version | SHA>
+cs install esw-gateway-server
 ```
 
 One can specify installation directory like following:
@@ -33,7 +33,7 @@ One can specify installation directory like following:
 ```bash
 cs install \
     --install-dir /tmt/apps \
-    esw-gateway-server:<version | SHA>
+    esw-gateway-server
 ```
 
 @@@ note

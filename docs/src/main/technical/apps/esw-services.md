@@ -34,7 +34,7 @@ cs launch esw-services -- start`
 If you need to start with a specific version, the following can be used:
 
 ```bash
-cs launch esw-services:<ESW version | SHA> -- start` 
+cs launch esw-services -- start` 
 ```
 
 Normally, you don't need to start the app with a specific version.
