@@ -49,6 +49,7 @@ A milestone release is cut from master branch as we expect bug fixes / feedback 
 1. Exclude projects from `build.sbt` which you do not want to release
 1. Update dependent repo version in `Libs.scala`
 1. Commit and push the changes to `branch-<major>.<minor>.x` branch.
+1. Make sure build is green for dev and paradox link check pipeline for this branch.
 1. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
 
     **Note:** `PROD=true` environment variable needs to be set before running `release.sh`
