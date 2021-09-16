@@ -286,6 +286,7 @@ lazy val `esw-contract` = project
 /* ================= Paradox Docs ============== */
 lazy val docs = project
   .enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
+  .settings(paradoxProperties ++= Map("extref.esw_ocs_eng_ui.base_url" -> ESW_OCS_ENG_UI.baseUrl.value))
 
 lazy val examples = project
   .in(file("examples"))

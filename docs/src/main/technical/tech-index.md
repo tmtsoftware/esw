@@ -8,7 +8,7 @@
 - [Sequencer](sequencer-tech.md)
 - [Sequence Component](sequence-component-tech.md)
 - [ESW Gateway](gateway-tech.md)
-- @link[ESW OCS Engineering User Interface](https://tmtsoftware.github.io/esw-ocs-eng-ui/0.1.0-SNAPSHOT/){ open=new }
+- [ESW OCS Engineering User Interface](apps/eng-ui.md)
 - [Agent Service](agent-service-tech.md)
 - [Arch](esw-application-parts.md)
 - [ESW Service Contract](contracts.md)

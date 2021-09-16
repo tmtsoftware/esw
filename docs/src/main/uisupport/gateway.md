@@ -10,7 +10,7 @@ All UI programs must use the UI Gateway to reach the control system. The UI Gate
 in the ESW/CSW system. 
 
 ESW UI Gateway is accessible to the outside network and exposes API endpoints through an HTTP interface, hence we need to
-protect its endpoints from unauthorized access. To better understand the inside and outside network terminology, refer @link:[network-topology](https://tmtsoftware.github.io/csw/0.1.0-SNAPSHOT/deployment/network-topology.html) { open=new }.
+protect its endpoints from unauthorized access. To better understand the inside and outside network terminology, refer @extref:[network-topology](csw:deployment/network-topology.html) { open=new }.
   
 ### Protection on Command Service Endpoints on Gateway
 
