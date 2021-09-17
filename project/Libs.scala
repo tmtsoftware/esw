@@ -19,7 +19,7 @@ object Libs {
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
   val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "3.0.3"
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.9.1"
-  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "0.1.0"
+  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "0.2.0"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.6.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.5.0"

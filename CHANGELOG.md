@@ -21,11 +21,14 @@ All notable changes to this project will be documented in this file.
 - Added `getSequencerState` & `subscribteSequencerState` methods in sequencer API.
 - Added `SequencerObserveEvent` factories in script dsl.
 - Improved `Configure` functionality by now also checking for availability of required sequence component along with resources.
+- Added API in esw-shell to `spawnAssemblyWithHandler` & `spawnHCDWithHandler` using custom handlers
+- Added API in esw-shell to get handle of `sequenceComponentService`
 
 ### Supporting Releases
 
 <a name="0-3-0-1"></a>1: [ESW v0.3.0-M1](https://github.com/tmtsoftware/esw/releases/tag/v0.3.0-M1) - 2021-08-23<br>
 <a name="0-3-0-2"></a>2: [ESW v0.3.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.3.0-RC1) - 2021-07-06<br>
+<a name="0-3-0-3"></a>3: [ESW v0.3.0-RC2](https://github.com/tmtsoftware/esw/releases/tag/v0.3.0-RC2) - 2021-09-17<br>
 
 ## [ESW v0.2.1] - 2021-01-29
 
