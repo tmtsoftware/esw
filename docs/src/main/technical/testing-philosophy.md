@@ -2,20 +2,20 @@
 
 This document serves to describe the OSW Testing Philosophy, using the Sequence Manager code as an
 example. The philosophy can be summarized with the belief that unit tests should be favored over
-integration tests, in the sense that a comprehensive set of unit tests paired with a small set of
-integration tests can provide a complete test suite without the need for a large set of integration
+"integrated" component tests, in the sense that a comprehensive set of unit tests paired with a small set of
+component tests can provide a complete test suite without the need for a large set of component
 tests that pursue every possible code path.  
 
 Software today often follows the
 [Single Responsibility Principle](https://en.wikipedia.org/wiki/Single-responsibility_principle),
 in which code is often broken down into components and layers that cover one function of the program.
 This leads to more isolated “units” to test, but branching at each layer of code can lead to an
-exponential number of code paths to cover. Writing a complete set of integration tests that explore
+exponential number of code paths to cover. Writing a complete set of integrated tests that explore
 every branch of code can be extremely time consuming or even impossible.
 
-Testing with a full set of integration tests can actually be entirely unnecessary. A comprehensive
+Testing with a full set of component tests can actually be entirely unnecessary. A comprehensive
 set of unit tests, when written properly, can demonstrate every code path sufficiently. Then, they
-can be combined with a few integration tests as both a sanity check and to ensure the connections
+can be combined with a few component tests as both a sanity check and to ensure the connections
 are complete throughout the layers of code.
 
 ## Layered Software
