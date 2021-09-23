@@ -32,7 +32,7 @@ A milestone release is cut from master branch as we expect bug fixes / feedback 
 - Documentation related updates are allowed on this RC branch, because these changes won't be breaking anything code-wise.
 3. While making `Final` release, we follow:
 - RC branch will be considered final & not the master branch.
-- After getting the approval, `V*.*.*-Final` tag will be created.
+- After getting the approval, `V*.*.*` tag will be created.
 
 ### ESW
 
@@ -43,13 +43,14 @@ A milestone release is cut from master branch as we expect bug fixes / feedback 
 3. Update top-level `CHANGELOG.md`
 4. Update top-level `README.md`
 5. Update versions in `release.yml'` for other repos like `CSW_VERSION`, `ESW_OCS_ENG_UI_VERSION` etc. which we will be releasing next. (These versions are used to create parameterized links in the documentation)
-6. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `CHANGELOG.md`
-7. Add changes mention in `CHANGELOG.md` of `esw-contract` in the change section of `README.md` of `esw-contract`
-8. Exclude projects from `build.sbt` which you do not want to release
-9. Update dependent repo version in `Libs.scala`
-10. Commit and push the changes to `branch-<major>.<minor>.x` branch and make sure build is green for dev and paradox link pipeline.
-11. Make sure build is green for dev and paradox link check pipeline for this branch.
-12. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
-13. Applicable for final release only - Upgrade all the versions of all esw apps in [here](https://github.com/tmtsoftware/osw-apps/blob/master/apps.json)
+6. Update latest RTM version in github and jenkins workflow files(this step to be done only in milestone & RC release).
+7. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `CHANGELOG.md`
+8. Add changes mention in `CHANGELOG.md` of `esw-contract` in the change section of `README.md` of `esw-contract`
+9. Exclude projects from `build.sbt` which you do not want to release
+10. Update dependent repo version in `Libs.scala`
+11. Commit and push the changes to `branch-<major>.<minor>.x` branch and make sure build is green for dev and paradox link pipeline.
+12. Make sure build is green for dev and paradox link check pipeline for this branch.
+13. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
+14. Applicable for final release only - Upgrade all the versions of all esw apps in [here](https://github.com/tmtsoftware/osw-apps/blob/master/apps.json)
 
      **Note:** `PROD=true` environment variable needs to be set before running `release.sh`
