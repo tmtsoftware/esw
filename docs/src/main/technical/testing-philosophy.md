@@ -2,20 +2,20 @@
 
 This document serves to describe the OSW Testing Philosophy, using the Sequence Manager code as an
 example. The philosophy can be summarized with the belief that unit tests should be favored over
-integration tests, in the sense that a comprehensive set of unit tests paired with a small set of
-integration tests can provide a complete test suite without the need for a large set of integration
+"integrated" component tests, in the sense that a comprehensive set of unit tests paired with a small set of
+component tests can provide a complete test suite without the need for a large set of component
 tests that pursue every possible code path.  
 
 Software today often follows the
 [Single Responsibility Principle](https://en.wikipedia.org/wiki/Single-responsibility_principle),
 in which code is often broken down into components and layers that cover one function of the program.
 This leads to more isolated “units” to test, but branching at each layer of code can lead to an
-exponential number of code paths to cover. Writing a complete set of integration tests that explore
+exponential number of code paths to cover. Writing a complete set of integrated tests that explore
 every branch of code can be extremely time consuming or even impossible.
 
-Testing with a full set of integration tests can actually be entirely unnecessary. A comprehensive
+Testing with a full set of component tests can actually be entirely unnecessary. A comprehensive
 set of unit tests, when written properly, can demonstrate every code path sufficiently. Then, they
-can be combined with a few integration tests as both a sanity check and to ensure the connections
+can be combined with a few component tests as both a sanity check and to ensure the connections
 are complete throughout the layers of code.
 
 ## Layered Software
@@ -716,16 +716,23 @@ returned to the Akka client. Therefore, this type needs to be tested in the
 The `sequencerUtil` method is mocked to return the error response, and it is verified that if the
 actor receives the shutdown message, this is returned to the `replyTo`.
 
-## Integration Tests
+## Component Tests
 
-For completeness, an integration test should be added. Integration tests should not use any mocks.
+For completeness, a component test should be added. Component tests should not use any mocks.
 This test should involve methods that go up and down the chain, but not all methods need to be
 included, nor all code paths for the methods used. That is what the units tests are for. However,
-for completeness, there should be an integration test for every public method in outward facing APIs
+for completeness, there should be a component test for every public method in outward facing APIs
 showing at least one code path.
 
-Following example demonstrates how to write an integration test for the Sequence Manager's
-`configure` and `shutdownObsModeSequencers` APIs.
+Following example demonstrates how to write a component test for the Sequence Manager's
+`configure` and `shutdownObsModeSequencers` APIs.  
+
+@@@ note
+The class name for the tests in our example have the words "integration test" in it, but this is a bit of a misnomer.
+While the tests are performed on the *integrated* component, it should not be confused with the 
+integration tests as described in the TMT Software Development Process, which involve multiple components.
+The name of these types of tests will be changed in subsequent release to avoid confusion.
+@@@
 
 ```scala
 class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
@@ -783,7 +790,7 @@ mocks. It just delegates call to underlying Sequencer or Sequence Manager applic
 demonstrates starting `IRIS_Cal` observation mode, submitting `sequence` to the top level sequencer
 and then stopping the observation.
 
-This integration test is divided into following three parts:
+This component test is divided into following three parts:
 
 ### Setup
 

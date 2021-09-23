@@ -9,7 +9,7 @@ Here is the repository for ESW: [ESW](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
-## [Upcoming version]
+## [ESW v0.3.0] - 2021-09-23
 
 - Added Shutdown, Restart, GoOnline, GoOffline, GetContainerLifecycleState and GetComponentLifecycleState Admin API routes in Gateway.
 - Added GetResources, GetObsModesDetails API in the Sequence Manager
