@@ -8,7 +8,7 @@ class MainTest extends BaseTestSuite {
 
   "verify esw-shell compiles and starts successfully" in {
     val channel        = "https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
-    val version        = "0.1.0-SNAPSHOT"
+    val version        = "0.2.0"
     val commands       = List("cs", "launch", "--channel", channel, s"esw-shell:$version")
     val processBuilder = new ProcessBuilder(commands: _*)
     val process        = processBuilder.start()
