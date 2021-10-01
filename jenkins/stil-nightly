@@ -21,6 +21,7 @@ pipeline {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
                 sh "sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
+                sh "sbt publishLocal"
             }
         }
 
