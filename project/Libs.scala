@@ -7,17 +7,17 @@ import java.util.Properties
 import scala.util.Using
 
 object Libs {
-  private val MSocketVersion = "0.5.0"
+  private val MSocketVersion = "b0b3f3b"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.6"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.7.0") //MIT License
-  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.37" // MIT License
-  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.0" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.2.9") //Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"   //BSD 3-clause "New" or "Revised" License
+  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.42" // MIT License
+  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.1" //BSD 3-clause "New" or "Revised" License
+  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.2.10") //Apache License 2.0
+  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "1.0.1"   //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
-  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "3.0.3"
+  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "3.0.4"
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.9.1"
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "0.2.0"
 
@@ -30,7 +30,7 @@ object Libs {
     .exclude("com.lihaoyi", "pprint_3")
 
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
-  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.31"
+  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.32"
 
 }
 
@@ -65,7 +65,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.15"
+  private val Version     = "2.6.17"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
@@ -77,13 +77,13 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.2.4" //all akka is Apache License 2.0
+  private val Version = "10.2.6" //all akka is Apache License 2.0
 
   val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
   val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
   val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
 
-  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.1"
+  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.2"
 }
 
 object Borer {
@@ -96,7 +96,7 @@ object Borer {
 }
 
 object Kotlin {
-  val CoroutinesVersion = "1.5.0"
+  val CoroutinesVersion = "1.5.2"
 
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % EswKeys.kotlinVersion
   val `coroutines-core` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core" % CoroutinesVersion
@@ -109,7 +109,7 @@ object Kotlin {
   //JDK8 - CompletionStage.await, Guava ListenableFuture.await, and Google Play Services Task.await;
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
-  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "4.6.0"
+  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "4.6.3"
   val mockk      = "io.mockk"  % "mockk"                      % "1.12.0"
 }
 
