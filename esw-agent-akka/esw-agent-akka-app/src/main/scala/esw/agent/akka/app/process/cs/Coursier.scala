@@ -1,5 +1,6 @@
 package esw.agent.akka.app.process.cs
 
+import esw.agent.akka.app.BuildInfo
 import esw.agent.akka.client.models.ContainerConfig
 
 /**
@@ -13,7 +14,7 @@ object Coursier {
   def smApp(version: Option[String]): CoursierLaunch = CoursierLaunch("esw-sm-app", version)
 
   def containerApp(config: ContainerConfig): CoursierLaunch = {
-    val appName = s"${config.orgName}::${config.deployModule}"
+    val appName = s"${config.orgName}:${config.deployModule}_${BuildInfo.scalaBinaryVersion}"
     CoursierLaunch(appName, Some(config.version))
   }
 }

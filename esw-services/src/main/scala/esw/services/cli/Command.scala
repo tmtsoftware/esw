@@ -84,6 +84,8 @@ object Command {
       @HelpMessage("Specify sequencer-scripts version")
       scriptsVersion: Option[String] = None,
       @HelpMessage("Specify esw version")
-      eswVersion: Option[String] = None
+      eswVersion: Option[String] = None,
+      @HelpMessage("ObsMode config file path for Sequence Manager. If provided, this will be used instead of default.")
+      obsModeConfig: Option[Path] = None
   ) extends Command
 }
