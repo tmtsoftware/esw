@@ -64,7 +64,7 @@ trait SequencerUtils extends LocationUtils {
     loc.rightValue
   }
 
-  private def loadScript(seqCompLocation: AkkaLocation, subsystem: Subsystem, obsMode: ObsMode) =
+  def loadScript(seqCompLocation: AkkaLocation, subsystem: Subsystem, obsMode: ObsMode): AkkaLocation =
     new SequenceComponentImpl(seqCompLocation).loadScript(subsystem, obsMode).futureValue match {
       case SequencerLocation(location) => location
       case error: ScriptError          => throw new RuntimeException(s"failed to load script: ${error.msg}")
