@@ -235,7 +235,7 @@ class SpawnComponentTest extends AgentSetup {
         List(
           "cs",
           "launch",
-          s"$org::$module:0.0.1",
+          s"$org:${module}_2.13:0.0.1",
           "-r",
           "jitpack",
           "-M",
@@ -275,7 +275,7 @@ class SpawnComponentTest extends AgentSetup {
             List(
               "cs",
               "launch",
-              "com.github.tmtsoftware.sample2::csw-sample2deploy:0.0.1",
+              "com.github.tmtsoftware.sample2:csw-sample2deploy_2.13:0.0.1",
               "-r",
               "jitpack",
               "-M",
@@ -324,7 +324,7 @@ class SpawnComponentTest extends AgentSetup {
           List(
             "cs",
             "launch",
-            "com.github.tmtsoftware.sample2::csw-sample2deploy:0.0.1",
+            "com.github.tmtsoftware.sample2:csw-sample2deploy_2.13:0.0.1",
             "-r",
             "jitpack",
             "-M",
@@ -345,7 +345,7 @@ class SpawnComponentTest extends AgentSetup {
           List(
             "cs",
             "launch",
-            "com.github.tmtsoftware.sample2::csw-sample2deploy:0.0.1",
+            "com.github.tmtsoftware.sample2:csw-sample2deploy_2.13:0.0.1",
             "-r",
             "jitpack",
             "-M",
