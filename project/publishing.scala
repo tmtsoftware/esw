@@ -21,7 +21,7 @@ object EswBuildInfo extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] =
     Seq(
-      buildInfoKeys := Seq[BuildInfoKey](name, version),
+      buildInfoKeys := Seq[BuildInfoKey](name, version, scalaBinaryVersion),
       // module name(e.g. module-name) gets converted into package name(e.g. module.name) for buildInfo, so it does not have
       // same package across all modules in the repo
       buildInfoPackage := name.value.replace('-', '.')

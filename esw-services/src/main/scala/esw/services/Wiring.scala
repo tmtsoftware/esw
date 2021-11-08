@@ -57,7 +57,7 @@ class Wiring(cmd: Command) {
   private lazy val configServiceExt      = new ConfigServiceExt(configService)
 
   private lazy val sequencerScriptsSha = "153b6748e0"
-  private lazy val eswVersionDefault   = "0.1.0-SNAPSHOT"
+  private lazy val eswVersionDefault   = this.getClass.getPackage.getSpecificationVersion
 
   private lazy val (scriptVersion, eswVersion) = cmd match {
     case _: Start              => (sequencerScriptsSha, eswVersionDefault)
@@ -105,7 +105,12 @@ class Wiring(cmd: Command) {
 
     val agentService   = AgentService.service(enable = true)
     val gatewayService = Gateway.service(enable = true, None)
-    val smService      = new SequenceManager(locationService).service(enable = true, None, simulation = command.smSimulationMode)
+    val smService =
+      new SequenceManager(locationService).service(
+        enable = true,
+        maybeObsModeConfigPath = command.obsModeConfig,
+        simulation = command.smSimulationMode
+      )
 
     val serviceList = List(agentApp1, agentApp2, agentApp3, agentApp4, agentApp5, agentService, gatewayService, smService)
     serviceList

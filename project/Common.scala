@@ -59,15 +59,12 @@ object Common {
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
       Test / testOptions ++= reporterOptions,
       Test / packageBin / publishArtifact := true,
-      version := {
-        sys.props.get("prod.publish") match {
-          case Some("true") => version.value
-          case _            => "0.1.0-SNAPSHOT"
-        }
-      },
+      // jitpack provides the env variable VERSION=<version being built> # A tag or commit
+      // we make use of it so that the version in class metadata (this.getClass.getPackage.getSpecificationVersion)
+      // and the maven repo match
+      version := sys.env.getOrElse("VERSION", "0.1.0-SNAPSHOT"),
       fork := true,
       Test / fork := false,
-      isSnapshot := !sys.props.get("prod.publish").contains("true"),
       Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),
       cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
       scalafmtOnCompile := true,

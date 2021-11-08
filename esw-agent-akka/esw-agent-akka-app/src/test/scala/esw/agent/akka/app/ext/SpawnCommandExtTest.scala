@@ -3,6 +3,7 @@ package esw.agent.akka.app.ext
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
+import esw.agent.akka.app.BuildInfo
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig, ContainerMode}
@@ -67,7 +68,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
     val spawnSeqMgrSimulationCmd =
       s"cs launch --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
     val spawnContainerCmd =
-      s"cs launch ${containerConfig.orgName}::${containerConfig.deployModule}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath}"
+      s"cs launch ${containerConfig.orgName}:${containerConfig.deployModule}_${BuildInfo.scalaBinaryVersion}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath}"
 
     "SpawnCommand.executableCommandStr" must {
       Table(
