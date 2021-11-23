@@ -8,7 +8,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import esw.ocs.api.actor.messages.SequenceComponentMsg._
+import esw.ocs.api.actor.messages.SequenceComponentMsg.*
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
@@ -30,17 +30,18 @@ class SequenceComponentImplTest extends ActorTestSuit {
     }
   }
 
-  import askProxyTestKit._
+  import askProxyTestKit.*
 
   private val obsMode   = ObsMode(randomString5)
   private val subsystem = randomSubsystem
+  private val seqPrefix = Prefix(subsystem, obsMode.name)
 
-  "LoadScript | ESW-103, ESW-362" in {
+  "LoadScript | ESW-103, ESW-362, ESW-561" in {
     val loadScriptResponse = mock[ScriptResponseOrUnhandled]
-    withBehavior { case LoadScript(`subsystem`, `obsMode`, replyTo) =>
+    withBehavior { case LoadScript(`seqPrefix`, replyTo) =>
       replyTo ! loadScriptResponse
     } check { sc =>
-      sc.loadScript(subsystem, obsMode).futureValue should ===(loadScriptResponse)
+      sc.loadScript(seqPrefix).futureValue should ===(loadScriptResponse)
     }
   }
 

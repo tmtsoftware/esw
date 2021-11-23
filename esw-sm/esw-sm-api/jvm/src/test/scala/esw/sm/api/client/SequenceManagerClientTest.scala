@@ -5,8 +5,8 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol.SequenceManagerRequest._
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
+import esw.sm.api.protocol.SequenceManagerRequest.*
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
@@ -16,6 +16,7 @@ import scala.concurrent.Future
 
 class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServiceCodecs {
   private val obsMode               = ObsMode("IRIS_darknight")
+  private val sequencerPrefix       = Prefix(ESW, obsMode.name)
   private val seqCompPrefix: Prefix = Prefix(ESW, "primary")
 
   val postClient: Transport[SequenceManagerRequest] = mock[Transport[SequenceManagerRequest]]
@@ -128,7 +129,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
 
     "return StartSequencerResponse for startSequencer request | ESW-362" in {
       val startSequencerResponse = mock[StartSequencerResponse]
-      val startSequencerMsg      = StartSequencer(ESW, obsMode)
+      val startSequencerMsg      = StartSequencer(sequencerPrefix)
       when(
         postClient.requestResponse[StartSequencerResponse](argsEq(startSequencerMsg))(
           any[Decoder[StartSequencerResponse]](),
@@ -136,7 +137,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
         )
       ).thenReturn(Future.successful(startSequencerResponse))
 
-      client.startSequencer(ESW, obsMode).futureValue shouldBe startSequencerResponse
+      client.startSequencer(sequencerPrefix).futureValue shouldBe startSequencerResponse
     }
 
     "return ShutdownSequenceComponentResponse for shutdown sequence component request | ESW-338, ESW-362" in {

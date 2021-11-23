@@ -121,12 +121,8 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       }
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
-  private[esw] def resolveSequencer(
-      subsystem: Subsystem,
-      obsMode: String,
-      within: FiniteDuration
-  ): Future[Either[FindLocationError, AkkaLocation]] =
-    resolve(AkkaConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)), within)
+  private[esw] def resolveSequencer(prefix: Prefix, within: FiniteDuration) =
+    resolve(AkkaConnection(ComponentId(prefix, Sequencer)), within)
 
   private[esw] def findSequencer(
       subsystem: Subsystem,

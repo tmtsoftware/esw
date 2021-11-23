@@ -262,7 +262,7 @@ Note that the Sequence Component is registered with a Subsystem.name.
 All Sequence Component APIs can be called upon the handle. For example:
 
 ```bash
-val loadScriptResponse =  sc.loadScript(ESW,ObsMode("darknight")).get
+val loadScriptResponse =  sc.loadScript(Prefix(ESW,"darknight")).get
 val unloadScriptResponse =  sc.unloadScript().get
 val restartScriptResponse =  sc.restartScript().get
 ```

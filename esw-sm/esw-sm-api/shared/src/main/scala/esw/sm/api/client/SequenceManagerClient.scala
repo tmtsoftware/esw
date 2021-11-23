@@ -5,8 +5,8 @@ import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol.SequenceManagerRequest._
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
+import esw.sm.api.protocol.SequenceManagerRequest.*
 import msocket.api.Transport
 
 import scala.concurrent.Future
@@ -29,8 +29,8 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerRequest])
   override def getObsModesDetails: Future[ObsModesDetailsResponse] =
     postClient.requestResponse[ObsModesDetailsResponse](GetObsModesDetails)
 
-  override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
-    postClient.requestResponse[StartSequencerResponse](StartSequencer(subsystem, obsMode))
+  override def startSequencer(prefix: Prefix): Future[StartSequencerResponse] =
+    postClient.requestResponse[StartSequencerResponse](StartSequencer(prefix))
 
   override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     postClient.requestResponse[RestartSequencerResponse](RestartSequencer(subsystem, obsMode))

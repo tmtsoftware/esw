@@ -1,6 +1,6 @@
 package esw.ocs.scripts.examples.testData
 
-import esw.ocs.api.models.ObsMode
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.intKey
@@ -48,7 +48,7 @@ script {
     onSetup("multi-node") { command ->
         val sequence = sequenceOf(command)
 
-        val tcs = Sequencer(TCS, ObsMode("moonnight"), Duration.seconds(10))
+        val tcs = Sequencer(Prefix(TCS,"moonnight"), Duration.seconds(10))
         tcs.submitAndWait(sequence, Duration.seconds(10))
     }
 

@@ -1,6 +1,6 @@
 package esw.ocs.api.actor.messages
 
-import esw.ocs.api.actor.messages.InternalSequencerState._
+import esw.ocs.api.actor.messages.InternalSequencerState.*
 import esw.testcommons.BaseTestSuite
 
 class InternalSequencerStateTest extends BaseTestSuite {

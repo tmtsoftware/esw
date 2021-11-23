@@ -16,8 +16,8 @@ class SequencerSimulationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnSequencer(TCS, obsMode)
-    spawnSequencerInSimulation(ESW, obsMode)
+    spawnSequencer(Prefix(TCS, obsMode.name))
+    spawnSequencerInSimulation(Prefix(ESW, obsMode.name))
   }
 
   "Sequencer in simulation | ESW-149" in {

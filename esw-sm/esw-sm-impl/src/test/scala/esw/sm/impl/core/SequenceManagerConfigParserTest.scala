@@ -4,10 +4,10 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem
-import csw.prefix.models.Subsystem._
+import csw.prefix.models.Subsystem.*
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.{Resource, Resources, Sequencers}
-import esw.sm.impl.config._
+import esw.sm.api.models.{Resource, Resources, SequencerId, Sequencers}
+import esw.sm.impl.config.*
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Borer.Error.InvalidInputData
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -19,10 +19,16 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
   private val actorSystem                   = ActorSystem(SpawnProtocol(), "test-system")
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  private val iris: Resource    = Resource(IRIS)
-  private val tcs: Resource     = Resource(TCS)
-  private val nfiraos: Resource = Resource(NFIRAOS)
-  private val aps: Resource     = Resource(Subsystem.APS)
+  private val iris: Resource            = Resource(IRIS)
+  private val tcs: Resource             = Resource(TCS)
+  private val nfiraos: Resource         = Resource(NFIRAOS)
+  private val aps: Resource             = Resource(Subsystem.APS)
+  private val eswSequencerId            = SequencerId(ESW)
+  private val tcsSequencerId            = SequencerId(TCS)
+  private val aoeswSequencerId          = SequencerId(AOESW)
+  private val irisSequencerId           = SequencerId(IRIS)
+  private val irisSequencerIdWithImager = SequencerId(IRIS, Some("IRIS_IMAGER"))
+  private val irisSequencerIdWithIFS    = SequencerId(IRIS, Some("IRIS_IFS"))
 
   private val configUtils                 = mock[ConfigUtils]
   private val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
@@ -40,11 +46,19 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
     )
 
     forAll(args) { (readObsModeConfigArg, getConfigArg, fileLocation) =>
-      s"read obs mode config file from $fileLocation | ESW-162" in {
-        val path                            = Paths.get("testObsModeConfig.conf")
-        val darkNightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS, AOESW)
-        val calSequencers: Sequencers       = Sequencers(IRIS, ESW, AOESW)
-        val testConfig                      = ConfigFactory.parseResources(path.getFileName.toString)
+      s"read obs mode config file from $fileLocation | ESW-162,ESW-561" in {
+        val path = Paths.get("testObsModeConfig.conf")
+        val darkNightSequencers: Sequencers =
+          Sequencers(
+            irisSequencerIdWithIFS,
+            irisSequencerIdWithImager,
+            irisSequencerId,
+            eswSequencerId,
+            tcsSequencerId,
+            aoeswSequencerId
+          )
+        val calSequencers: Sequencers = Sequencers(irisSequencerId, eswSequencerId, aoeswSequencerId)
+        val testConfig                = ConfigFactory.parseResources(path.getFileName.toString)
 
         when(configUtils.getConfig(inputFilePath = path, isLocal = getConfigArg)).thenReturn(Future.successful(testConfig))
 

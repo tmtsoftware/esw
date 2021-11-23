@@ -1,8 +1,5 @@
 package esw.ocs.dsl.script.utils
 
-import java.time.Duration
-import java.util.concurrent.TimeUnit
-
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
@@ -12,6 +9,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.testcommons.BaseTestSuite
 
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
 
 class LockUnlockUtilTest extends BaseTestSuite {

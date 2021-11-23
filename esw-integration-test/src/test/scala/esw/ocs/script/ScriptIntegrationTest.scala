@@ -14,7 +14,7 @@ import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models.Id
-import csw.params.events._
+import csw.params.events.*
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, LGSF, NFIRAOS, TCS}
 import csw.testkit.ConfigTestKit
@@ -24,9 +24,9 @@ import esw.gateway.server.testdata.AssemblyBehaviourFactory
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{ObsMode, Step, StepList}
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service._
+import esw.ocs.testkit.Service.*
 
 import java.nio.file.Path
 import scala.concurrent.Future
@@ -55,9 +55,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
   override def beforeEach(): Unit = {
     //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
-    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
-    tcsSequencer = spawnSequencerProxy(tcsSubsystem, tcsObsMode)
-    lgsfSequencer = spawnSequencerProxy(lgsfSubsystem, lgsfObsMode)
+    ocsSequencer = spawnSequencerProxy(Prefix(ocsSubsystem, ocsObsMode.name))
+    tcsSequencer = spawnSequencerProxy(Prefix(tcsSubsystem, tcsObsMode.name))
+    lgsfSequencer = spawnSequencerProxy(Prefix(lgsfSubsystem, lgsfObsMode.name))
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()

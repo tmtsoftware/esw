@@ -1,11 +1,9 @@
 package esw.sm.app
 
-import java.nio.file.Path
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
@@ -37,11 +35,12 @@ import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.handler.SequenceManagerRequestHandler
 import esw.sm.impl.config.SequenceManagerConfigParser
 import esw.sm.impl.core.SequenceManagerBehavior
-import esw.sm.impl.utils._
+import esw.sm.impl.utils.*
 import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
 import msocket.jvm.metrics.LabelExtractor
 
+import java.nio.file.Path
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 
@@ -55,7 +54,7 @@ class SequenceManagerWiring(
   private[sm] lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(smActorSystem)
-  import actorRuntime._
+  import actorRuntime.*
   private implicit val timeout: Timeout = CommonTimeouts.Wiring
   private val prefix                    = Prefix(ESW, "sequence_manager")
 
@@ -124,7 +123,7 @@ class SequenceManagerWiring(
   private lazy val postHandler             = new SequenceManagerRequestHandler(sequenceManager, securityDirectives)
 
   import LabelExtractor.Implicits.default
-  import SequenceManagerServiceCodecs._
+  import SequenceManagerServiceCodecs.*
   lazy val routes: Route             = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
   private lazy val port: Int         = _port.getOrElse(SocketUtils.getFreePort)
   private lazy val settings          = new Settings(Some(port), Some(prefix), config, ComponentType.Service)

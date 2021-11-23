@@ -1,13 +1,12 @@
 package esw.ocs.dsl.script
 
-import java.util.concurrent.CompletableFuture
-
 import csw.logging.api.javadsl.ILogger
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.prefix.models.Prefix
 import esw.ocs.impl.core.SequenceOperator
 import esw.testcommons.BaseTestSuite
 
+import java.util.concurrent.CompletableFuture
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.DurationDouble
 

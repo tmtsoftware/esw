@@ -1,10 +1,10 @@
 package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.prefix.models.Prefix
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models._
+import esw.sm.api.models.*
 
 //Response models for the sequence manager(both http and actor)
 sealed trait SmResponse extends SmAkkaSerializable
@@ -62,13 +62,13 @@ object StartSequencerResponse {
     override def msg: String = s"Failed to load sequencer script: $reason"
   }
 
-  case class SequenceComponentNotAvailable private[sm] (subsystems: List[Subsystem], msg: String)
+  case class SequenceComponentNotAvailable private[sm] (sequencerPrefixes: List[Prefix], msg: String)
       extends Failure
       with ConfigureResponse.Failure
 
   object SequenceComponentNotAvailable {
-    def apply(subsystems: List[Subsystem]): SequenceComponentNotAvailable =
-      new SequenceComponentNotAvailable(subsystems, s"No sequence components found for subsystems : $subsystems")
+    def apply(sequencerPrefixes: List[Prefix]): SequenceComponentNotAvailable =
+      new SequenceComponentNotAvailable(sequencerPrefixes, s"No sequence components found for sequencers : $sequencerPrefixes")
   }
 }
 

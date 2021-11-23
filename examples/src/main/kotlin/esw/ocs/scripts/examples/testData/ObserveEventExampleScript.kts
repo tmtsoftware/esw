@@ -1,12 +1,12 @@
 package esw.ocs.scripts.examples.testData
 
-import esw.ocs.api.models.ObsMode
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import kotlin.time.Duration
 
 script {
-    val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10))
+    val lgsfSequencer = Sequencer(Prefix(LGSF,"darknight"), Duration.seconds(10))
     val testAssembly = Assembly(ESW, "test", Duration.seconds(10))
     val datafileName = "darknightData.txt"
     onSetup("command-2") {

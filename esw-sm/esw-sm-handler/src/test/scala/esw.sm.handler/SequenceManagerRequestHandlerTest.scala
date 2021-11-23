@@ -10,10 +10,10 @@ import esw.commons.auth.AuthPolicies
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
+import esw.sm.api.models.*
 import esw.sm.api.models.ObsModeStatus.Configurable
-import esw.sm.api.models._
-import esw.sm.api.protocol.SequenceManagerRequest._
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
+import esw.sm.api.protocol.SequenceManagerRequest.*
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
@@ -88,14 +88,13 @@ class SequenceManagerRequestHandlerTest
         responseAs[ObsModesDetailsResponse] should ===(expectedObsModesDetailsResponse)
       }
     }
-
     "return start sequencer success for startSequencer request | ESW-171, ESW-332" in {
       when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
-      when(sequenceManagerApi.startSequencer(ESW, obsMode))
+      when(sequenceManagerApi.startSequencer(componentId.prefix))
         .thenReturn(Future.successful(StartSequencerResponse.Started(componentId)))
 
-      Post("/post-endpoint", StartSequencer(ESW, obsMode).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).startSequencer(ESW, obsMode)
+      Post("/post-endpoint", StartSequencer(componentId.prefix).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).startSequencer(componentId.prefix)
         verify(securityDirectives).sPost(eswUserPolicy)
         responseAs[StartSequencerResponse] should ===(StartSequencerResponse.Started(componentId))
       }

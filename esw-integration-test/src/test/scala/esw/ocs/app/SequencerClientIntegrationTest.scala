@@ -41,14 +41,14 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   override protected def beforeEach(): Unit = {
     //ocs sequencer, starts with TestScript2
-    spawnSequencer(subsystem, obsMode)
+    spawnSequencer(Prefix(subsystem, obsMode.name))
 
     ocsSequencer = sequencerClient(subsystem, obsMode)
 
     // tcs sequencer, starts with TestScript3
     val tcsSequencerId      = TCS
     val tcsSequencerObsMode = ObsMode("moonnight")
-    spawnSequencer(tcsSequencerId, tcsSequencerObsMode)
+    spawnSequencer(Prefix(tcsSequencerId, tcsSequencerObsMode.name))
     tcsSequencer = sequencerClient(tcsSequencerId, tcsSequencerObsMode)
   }
 
@@ -303,7 +303,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     //start sequencer
     val obsMode  = ObsMode("darknight")
-    val response = sequenceComponentImpl.loadScript(ESW, obsMode).futureValue
+    val response = sequenceComponentImpl.loadScript(Prefix(ESW, obsMode.name)).futureValue
     response shouldBe a[SequencerLocation]
 
     val sequencer: SequencerApi = sequencerClient(ESW, obsMode)

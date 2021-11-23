@@ -17,11 +17,11 @@ object TSSequencerCommands {
 
   @CommandName("start")
   final case class Start(
-      @HelpMessage("subsystem to start the sequencer")
+      @HelpMessage("subsystem of the sequencer")
       @ExtraName("s")
       subSystem: Subsystem,
-      @HelpMessage("observing mode to start the sequencer")
+      @HelpMessage("component name of the sequencer")
       @ExtraName("m")
-      observingMode: String
+      componentName: String
   ) extends TSSequencerCommands
 }

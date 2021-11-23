@@ -2,25 +2,25 @@ package esw.sm.impl.core
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import csw.location.api.models.ComponentType._
+import csw.location.api.models.ComponentType.*
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem._
+import csw.prefix.models.Subsystem.*
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
+import esw.sm.api.models.*
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
-import esw.sm.api.models.{ProvisionConfig, SequenceManagerState, _}
+import esw.sm.api.protocol.*
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
-import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentAllocator, SequenceComponentUtil, SequencerUtil}
 import esw.testcommons.BaseTestSuite
@@ -40,11 +40,17 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   private val darkNight                        = ObsMode("DarkNight")
   private val clearSkies                       = ObsMode("ClearSkies")
-  private val irisMCAO                         = ObsMode("IRIS-MCAO")
+  private val irisMCAO                         = ObsMode("IRIS_MCAO")
   private val randomObsMode                    = ObsMode("RandomObsMode")
-  private val darkNightSequencers: Sequencers  = Sequencers(ESW, TCS)
-  private val clearSkiesSequencers: Sequencers = Sequencers(ESW)
-  private val irisMCAOSequencers: Sequencers   = Sequencers(ESW, WFOS)
+  private val eswSequencerId                   = SequencerId(ESW)
+  private val tcsSequencerId                   = SequencerId(TCS)
+  private val wfosSequencerId                  = SequencerId(WFOS)
+  private val darkNightSequencers: Sequencers  = Sequencers(eswSequencerId, tcsSequencerId)
+  private val clearSkiesSequencers: Sequencers = Sequencers(eswSequencerId)
+  private val irisMCAOSequencers: Sequencers   = Sequencers(eswSequencerId, wfosSequencerId)
+  private val clearSkiesSequencersPrefix       = List(Prefix(ESW, clearSkies.name))
+  private val darkNightSequencersPrefix        = List(Prefix(ESW, darkNight.name), Prefix(TCS, darkNight.name))
+  private val irisMCAOSequencersPrefix         = List(Prefix(ESW, irisMCAO.name), Prefix(WFOS, irisMCAO.name))
   private val apsResource: Resource            = Resource(APS)
   private val tcsResource: Resource            = Resource(TCS)
   private val irisResource: Resource           = Resource(IRIS)
@@ -132,7 +138,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val testProbe = TestProbe[StartSequencerResponse]()
       assertState(Idle)
-      smRef ! StartSequencer(ESW, darkNight, testProbe.ref)
+      smRef ! StartSequencer(connection.prefix, testProbe.ref)
       // goes back to idle after exception
       assertState(Idle)
 
@@ -313,19 +319,19 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
 
-      when(sequenceComponentUtil.loadScript(ESW, darkNight)).thenReturn(future(1.second, Started(componentId)))
+      when(sequenceComponentUtil.loadScript(componentId.prefix)).thenReturn(future(1.second, Started(componentId)))
       when(locationServiceUtil.find(httpConnection)).thenReturn(futureLeft(LocationNotFound("error")))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
 
       // STATE TRANSITION: Idle -> StartSequencer -> Processing -> Idle
       assertState(Idle)
-      smRef ! StartSequencer(ESW, darkNight, startSequencerResponseProbe.ref)
+      smRef ! StartSequencer(componentId.prefix, startSequencerResponseProbe.ref)
       assertState(Processing)
       assertState(Idle)
 
       startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(componentId))
-      verify(sequenceComponentUtil).loadScript(ESW, darkNight)
+      verify(sequenceComponentUtil).loadScript(componentId.prefix)
       verify(locationServiceUtil).find(httpConnection)
     }
 
@@ -339,10 +345,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
 
-      smRef ! StartSequencer(ESW, darkNight, startSequencerResponseProbe.ref)
+      smRef ! StartSequencer(componentId.prefix, startSequencerResponseProbe.ref)
 
       startSequencerResponseProbe.expectMessage(StartSequencerResponse.AlreadyRunning(componentId))
-      verify(sequenceComponentUtil, never).loadScript(ESW, darkNight)
+      verify(sequenceComponentUtil, never).loadScript(componentId.prefix)
       verify(locationServiceUtil).find(httpConnection)
     }
 
@@ -353,14 +359,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       when(locationServiceUtil.find(httpConnection))
         .thenReturn(futureLeft(LocationNotFound("error")))
-      when(sequenceComponentUtil.loadScript(ESW, darkNight)).thenReturn(Future.successful(expectedErrorResponse))
+      when(sequenceComponentUtil.loadScript(componentId.prefix)).thenReturn(Future.successful(expectedErrorResponse))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
 
-      smRef ! StartSequencer(ESW, darkNight, startSequencerResponseProbe.ref)
+      smRef ! StartSequencer(componentId.prefix, startSequencerResponseProbe.ref)
 
       startSequencerResponseProbe.expectMessage(expectedErrorResponse)
-      verify(sequenceComponentUtil).loadScript(ESW, darkNight)
+      verify(sequenceComponentUtil).loadScript(componentId.prefix)
       verify(locationServiceUtil).find(httpConnection)
     }
   }
@@ -641,7 +647,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         ShutdownSequencer(ESW, darkNight, _),
         ShutdownObsModeSequencers(clearSkies, _),
         ShutdownSubsystemSequencers(ESW, _),
-        StartSequencer(ESW, darkNight, _),
+        StartSequencer(Prefix(ESW, darkNight.name), _),
         RestartSequencer(ESW, darkNight, _),
         ShutdownSequenceComponent(Prefix(ESW, "primary"), _),
         ShutdownAllSequenceComponents,
@@ -664,14 +670,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
     }
 
-    "return set of Observer modes that are all configurable if location service returns empty list | ESW-466" in {
+    "return set of Observer modes that are all configurable if location service returns empty list | ESW-466, ESW-561" in {
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Right(List())))
 
       val idleSeqComps = List.empty
       when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
       when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
-      List(clearSkiesSequencers, darkNightSequencers, irisMCAOSequencers).foreach(seq =>
+      List(clearSkiesSequencersPrefix, darkNightSequencersPrefix, irisMCAOSequencersPrefix).foreach(seq =>
         when(sequenceComponentAllocator.allocate(idleSeqComps, seq)).thenReturn(Right(List.empty))
       )
 
@@ -697,7 +703,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val idleSeqComps = List.empty
       when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
       when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
-      List(clearSkiesSequencers, darkNightSequencers, irisMCAOSequencers).foreach(seq =>
+      List(clearSkiesSequencersPrefix, darkNightSequencersPrefix, irisMCAOSequencersPrefix).foreach(seq =>
         when(sequenceComponentAllocator.allocate(idleSeqComps, seq)).thenReturn(Right(List.empty))
       )
 
@@ -716,15 +722,15 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     }
 
-    "return set of Observation modes with non-configurable when sequence component are  missing | ESW-529" in {
+    "return set of Observation modes with non-configurable when sequence component are  missing | ESW-529, ESW-561" in {
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
 
       val idleSeqComps = List.empty
       when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
       when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
-      when(sequenceComponentAllocator.allocate(idleSeqComps, darkNightSequencers))
-        .thenReturn(Left(SequenceComponentNotAvailable(List(TCS))))
-      List(clearSkiesSequencers, irisMCAOSequencers).foreach(seq =>
+      when(sequenceComponentAllocator.allocate(idleSeqComps, darkNightSequencersPrefix))
+        .thenReturn(Left(SequenceComponentNotAvailable(List(Prefix(TCS, darkNight.name)))))
+      List(clearSkiesSequencersPrefix, irisMCAOSequencersPrefix).foreach(seq =>
         when(sequenceComponentAllocator.allocate(idleSeqComps, seq)).thenReturn(Right(List.empty))
       )
 
@@ -734,7 +740,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
           ObsModeDetails(clearSkies, Configurable, Resources(tcsResource, irisResource), clearSkiesSequencers),
-          ObsModeDetails(darkNight, NonConfigurable(List(TCS)), Resources(apsResource, tcsResource), darkNightSequencers),
+          ObsModeDetails(
+            darkNight,
+            NonConfigurable(List(Prefix(TCS, darkNight.name))),
+            Resources(apsResource, tcsResource),
+            darkNightSequencers
+          ),
           ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOSequencers)
         )
       )

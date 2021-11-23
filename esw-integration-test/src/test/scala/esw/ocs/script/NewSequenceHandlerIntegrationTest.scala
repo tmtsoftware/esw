@@ -31,7 +31,7 @@ class NewSequenceHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnSequencer(LGSF, obsMode)
+    spawnSequencer(Prefix(LGSF, obsMode.name))
     sequencer = sequencerClient(LGSF, obsMode)
     commandHandlerEventProbe = createTestProbe(commandHandlerEventKeys)
     newSequenceHandlerInitializationProbe = createTestProbe(newSequenceHandlerEventKeys)

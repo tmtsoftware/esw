@@ -19,7 +19,7 @@ class SequencerBehaviorIntegrationTest extends EswTestKit {
       val submitResponseProbe       = TestProbe[SequencerSubmitResponse]()
       val loadSequenceResponseProbe = TestProbe[OkOrUnhandledResponse]()
       val sequence                  = Sequence(command)
-      val ocsSequencer              = spawnSequencerRef(ocsSubsystem, ocsObsMode)
+      val ocsSequencer              = spawnSequencerRef(Prefix(ocsSubsystem, ocsObsMode.name))
 
       ocsSequencer ! SubmitSequenceInternal(sequence, submitResponseProbe.ref)
       Thread.sleep(1000)

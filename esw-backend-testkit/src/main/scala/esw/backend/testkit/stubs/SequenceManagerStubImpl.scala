@@ -12,15 +12,18 @@ import esw.backend.testkit.utils.IOUtils
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
-import esw.sm.api.models._
-import esw.sm.api.protocol._
+import esw.sm.api.models.*
+import esw.sm.api.protocol.*
 import esw.sm.app.SequenceManagerWiring
 
 import scala.concurrent.Future
 
 class SequenceManagerStubImpl extends SequenceManagerApi {
 
-  private val obsMode = ObsMode("darknight")
+  private val obsMode                      = ObsMode("darknight")
+  private val eswSequencerId: SequencerId  = SequencerId(ESW)
+  private val tcsSequencerId: SequencerId  = SequencerId(TCS)
+  private val irisSequencerId: SequencerId = SequencerId(IRIS, Some("IRIS_IMAGER"))
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] = {
     val componentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
     Future.successful(ConfigureResponse.Success(componentId))
@@ -28,8 +31,8 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
 
   override def provision(config: ProvisionConfig): Future[ProvisionResponse] = Future.successful(ProvisionResponse.Success)
 
-  override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
-    Future.successful(StartSequencerResponse.Started(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
+  override def startSequencer(prefix: Prefix): Future[StartSequencerResponse] =
+    Future.successful(StartSequencerResponse.Started(ComponentId(prefix, Sequencer)))
 
   override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     Future.successful(RestartSequencerResponse.Success(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
@@ -70,19 +73,19 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
             ObsMode("DarkNight_1"),
             ObsModeStatus.Configured,
             Resources(Set(Resource(ESW), Resource(IRIS))),
-            Sequencers(List(ESW, TCS))
+            Sequencers(List(eswSequencerId, tcsSequencerId))
           ),
           ObsModeDetails(
             ObsMode("DarkNight_2"),
             ObsModeStatus.Configurable,
             Resources(Set(Resource(IRIS), Resource(TCS))),
-            Sequencers(List(ESW, IRIS))
+            Sequencers(List(eswSequencerId, irisSequencerId))
           ),
           ObsModeDetails(
             ObsMode("DarkNight_3"),
-            ObsModeStatus.NonConfigurable(List(TCS)),
+            ObsModeStatus.NonConfigurable(List(Prefix(TCS, "DarkNight_3"))),
             Resources(Set(Resource(TCS))),
-            Sequencers(List(TCS))
+            Sequencers(List(tcsSequencerId))
           )
         )
       )

@@ -1,7 +1,7 @@
 package esw.sm.api.actor.client
 
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import csw.location.api.extensions.ActorExtension._
+import csw.location.api.extensions.ActorExtension.*
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
@@ -10,7 +10,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 class SequenceManagerImplTest extends ActorTestSuit {
@@ -24,10 +24,11 @@ class SequenceManagerImplTest extends ActorTestSuit {
     }
   }
 
-  import askProxyTestKit._
+  import askProxyTestKit.*
 
   private val obsMode   = ObsMode(randomString5)
   private val subsystem = randomSubsystem
+  private val prefix    = Prefix(subsystem, obsMode.name)
 
   "SequenceManagerImpl" must {
     "configure | ESW-362" in {
@@ -41,10 +42,10 @@ class SequenceManagerImplTest extends ActorTestSuit {
 
     "startSequencer | ESW-362" in {
       val startSequencerResponse = mock[StartSequencerResponse]
-      withBehavior { case SequenceManagerMsg.StartSequencer(`subsystem`, `obsMode`, replyTo) =>
+      withBehavior { case SequenceManagerMsg.StartSequencer(`prefix`, replyTo) =>
         replyTo ! startSequencerResponse
       } check { sm =>
-        sm.startSequencer(subsystem, obsMode).futureValue should ===(startSequencerResponse)
+        sm.startSequencer(prefix).futureValue should ===(startSequencerResponse)
       }
     }
 

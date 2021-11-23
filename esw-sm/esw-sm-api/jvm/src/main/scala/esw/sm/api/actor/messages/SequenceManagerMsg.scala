@@ -22,8 +22,7 @@ sealed trait CommonMessage          extends SequenceManagerRemoteMsg
 object SequenceManagerMsg {
   case class Configure(obsMode: ObsMode, replyTo: ActorRef[ConfigureResponse]) extends SequenceManagerIdleMsg
 
-  case class StartSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[StartSequencerResponse])
-      extends SequenceManagerIdleMsg
+  case class StartSequencer(prefix: Prefix, replyTo: ActorRef[StartSequencerResponse]) extends SequenceManagerIdleMsg
   case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[RestartSequencerResponse])
       extends SequenceManagerIdleMsg
 

@@ -1,9 +1,8 @@
 package esw.ocs.api.actor.messages
 
 import akka.actor.typed.ActorRef
-import csw.prefix.models.Subsystem
+import csw.prefix.models.Prefix
 import esw.ocs.api.codecs.OcsAkkaSerializable
-import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.*
 
 /*
@@ -29,7 +28,7 @@ object SequenceComponentMsg {
 
   final case class Shutdown(replyTo: ActorRef[Ok.type]) extends SequenceComponentRemoteMsg with CommonMsg
 
-  final case class LoadScript(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[ScriptResponseOrUnhandled])
+  final case class LoadScript(prefix: Prefix, replyTo: ActorRef[ScriptResponseOrUnhandled])
       extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
       with IdleStateSequenceComponentMsg

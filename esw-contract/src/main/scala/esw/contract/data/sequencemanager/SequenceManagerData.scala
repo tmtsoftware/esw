@@ -22,18 +22,21 @@ import java.net.URI
  * This object contains all the Sequence Manager data models which will be sent on wire.
  */
 trait SequenceManagerData {
-  private val agentPrefix               = Prefix(ESW, "agent")
-  private val seqCompPrefix             = Prefix(ESW, "seq_comp")
-  val sequencerPrefix: Prefix           = Prefix(ESW, "DarkNight")
-  val obsMode: ObsMode                  = ObsMode("DarkNight")
-  val irisResource: Resource            = Resource(IRIS)
-  val tcsResource: Resource             = Resource(TCS)
-  val eswResource: Resource             = Resource(ESW)
-  val wfosResource: Resource            = Resource(WFOS)
-  val darkNightSequencers: Sequencers   = Sequencers(ESW, TCS)
-  val darkNight2Sequencers: Sequencers  = Sequencers(ESW)
-  val darkNight3Sequencers: Sequencers  = Sequencers(ESW, WFOS)
-  val sequencerComponentId: ComponentId = ComponentId(sequencerPrefix, Sequencer)
+  private val agentPrefix         = Prefix(ESW, "agent")
+  private val seqCompPrefix       = Prefix(ESW, "seq_comp")
+  val eswSequencerPrefix: Prefix  = Prefix(ESW, "DarkNight")
+  val irisSequencerPrefix: Prefix = Prefix(IRIS, "DarkNight")
+  val obsMode: ObsMode            = ObsMode("DarkNight")
+  val irisResource: Resource      = Resource(IRIS)
+  val tcsResource: Resource       = Resource(TCS)
+  val eswResource: Resource       = Resource(ESW)
+  val wfosResource: Resource      = Resource(WFOS)
+  val eswSequencerId: SequencerId = SequencerId(ESW, Some("Variation1"))
+
+  val darkNightSequencers: Sequencers   = Sequencers(eswSequencerId, SequencerId(TCS))
+  val darkNight2Sequencers: Sequencers  = Sequencers(eswSequencerId)
+  val darkNight3Sequencers: Sequencers  = Sequencers(eswSequencerId, SequencerId(WFOS))
+  val sequencerComponentId: ComponentId = ComponentId(eswSequencerPrefix, Sequencer)
   val agentComponentId: ComponentId     = ComponentId(agentPrefix, Machine)
   val seqCompComponentId: ComponentId   = ComponentId(seqCompPrefix, SequenceComponent)
   val akkaLocation: AkkaLocation =
@@ -44,7 +47,7 @@ trait SequenceManagerData {
   val configure: Configure                                              = Configure(obsMode)
   val provision: Provision                                              = Provision(provisionConfig)
   val getObsModesDetails: GetObsModesDetails.type                       = GetObsModesDetails
-  val startSequencer: StartSequencer                                    = StartSequencer(ESW, obsMode)
+  val startSequencer: StartSequencer                                    = StartSequencer(eswSequencerPrefix)
   val restartSequencer: RestartSequencer                                = RestartSequencer(ESW, obsMode)
   val shutdownSequencer: ShutdownSequencer                              = ShutdownSequencer(ESW, obsMode)
   val shutdownSubsystemSequencers: ShutdownSubsystemSequencers          = ShutdownSubsystemSequencers(ESW)
@@ -70,7 +73,7 @@ trait SequenceManagerData {
   val nonConfigurableObsMode: ObsModeDetails =
     models.ObsModeDetails(
       ObsMode("DarkNight_3"),
-      NonConfigurable(List(IRIS)),
+      NonConfigurable(List(irisSequencerPrefix)),
       Resources(eswResource, irisResource, wfosResource),
       darkNightSequencers
     )
@@ -84,8 +87,10 @@ trait SequenceManagerData {
   val shutdownSequenceComponentSuccess: ShutdownSequenceComponentResponse.Success.type = ShutdownSequenceComponentResponse.Success
   val loadScriptError: LoadScriptError                                                 = LoadScriptError("error")
   val locationServiceError: LocationServiceError                                       = LocationServiceError("location service error")
-  val sequenceComponentNotAvailable: SequenceComponentNotAvailable                     = SequenceComponentNotAvailable(List(ESW))
-  val unhandled: Unhandled                                                             = Unhandled("state", "messageType")
+  val sequenceComponentNotAvailable: SequenceComponentNotAvailable = SequenceComponentNotAvailable(
+    List(eswSequencerPrefix)
+  )
+  val unhandled: Unhandled = Unhandled("state", "messageType")
 
   def failedResponse(sequenceManagerRequest: String): FailedResponse =
     FailedResponse(

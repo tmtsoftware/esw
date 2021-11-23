@@ -23,7 +23,7 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
     subscription.ready().futureValue
     subscriptionProbe.expectMessageType[SystemEvent] // discard msg
 
-    val sequencer = spawnSequencerRef(tcsSubsystem, tcsObsMode)
+    val sequencer = spawnSequencerRef(Prefix(tcsSubsystem, tcsObsMode.name))
 
     val shutdownProbe = TestProbe[Ok.type]()
     sequencer ! Shutdown(shutdownProbe.ref)

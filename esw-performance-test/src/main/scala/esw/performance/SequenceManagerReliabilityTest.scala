@@ -12,13 +12,14 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
-import esw.performance.constants.ObsModes._
+import esw.performance.constants.ObsModes.*
 import esw.performance.constants.SMReliabilityConstants
 import esw.performance.utils.PerfUtils.{printResults, recordResults}
 import esw.performance.utils.Timing
 import esw.sm.api.actor.client.SequenceManagerApiFactory
+import esw.sm.api.models.SequencerId
 import esw.sm.api.protocol.ConfigureResponse.Failure
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 import org.HdrHistogram.Histogram
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 
@@ -141,7 +142,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     // step9: shutdown obsMode4 using subsystem shutdown
     getObsModesDetails
       .filter(_.obsMode == obsMode4)
-      .foreach(_.sequencers.subsystems.foreach(shutdownSubsystemSequencers))
+      .foreach(_.sequencers.sequencerIds.foreach(shutdownSubsystemSequencers))
 
     // step10: configure obsMode1
     configureObsMode(obsMode1, configureHist)
@@ -187,8 +188,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     getObsModesDetails
       .find(_.obsMode == obsMode)
       .foreach(obsModeDetails =>
-        obsModeDetails.sequencers.subsystems.foreach((subSystem: Subsystem) => {
-          restartSequencer(subSystem, obsMode, histogram)
+        obsModeDetails.sequencers.sequencerIds.foreach((sequencersWithMayBeVariation: SequencerId) => {
+          restartSequencer(sequencersWithMayBeVariation.subsystem, obsMode, histogram)
         })
       )
   }
@@ -219,8 +220,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     getObsModesDetails
       .find(_.obsMode == obsMode)
       .foreach(obsModeDetails => {
-        obsModeDetails.sequencers.subsystems.foreach((subsystem: Subsystem) => {
-          shutdownSequencer(subsystem, obsMode, histogram)
+        obsModeDetails.sequencers.sequencerIds.foreach((sequencersWithMayBeVariation: SequencerId) => {
+          shutdownSequencer(sequencersWithMayBeVariation.subsystem, obsMode, histogram)
         })
       })
   }
@@ -239,13 +240,13 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     Thread.sleep(SMReliabilityConstants.timeout)
   }
 
-  private def shutdownSubsystemSequencers(subsystem: Subsystem): Unit = {
-    val shutdownResponse = smClient.shutdownSubsystemSequencers(subsystem).futureValue
+  private def shutdownSubsystemSequencers(sequencersWithMayBeVariation: SequencerId): Unit = {
+    val shutdownResponse = smClient.shutdownSubsystemSequencers(sequencersWithMayBeVariation.subsystem).futureValue
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
-        log.info(s"sequencers for $subsystem shutdown Successfully")
+        log.info(s"sequencers for $sequencersWithMayBeVariation shutdown Successfully")
       case failure: ShutdownSequencersResponse.Failure =>
-        throw new Exception(s"Failed to shutdown sequencers for $subsystem : ${failure.getMessage}")
+        throw new Exception(s"Failed to shutdown sequencers for $sequencersWithMayBeVariation : ${failure.getMessage}")
     }
     // to simulate actual observation
     Thread.sleep(SMReliabilityConstants.timeout)

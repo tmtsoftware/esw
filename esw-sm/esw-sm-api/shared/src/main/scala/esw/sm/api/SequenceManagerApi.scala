@@ -3,7 +3,7 @@ package esw.sm.api
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 
 import scala.concurrent.Future
 
@@ -35,12 +35,12 @@ trait SequenceManagerApi {
   def getObsModesDetails: Future[ObsModesDetailsResponse]
 
   /**
-   * Starts sequencer of provided Subsystem and Observing mode.
-   * @param subsystem for sequencer needs to be started
-   * @param obsMode for sequencer needs to be started
+   * Starts sequencer of provided Prefix.
+   *
+   * @param prefix for sequencer needs to be started
    * @return a future of [[esw.sm.api.protocol.StartSequencerResponse]] which completes with Success or Failure response ADT.
    */
-  def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse]
+  def startSequencer(prefix: Prefix): Future[StartSequencerResponse]
 
   /**
    * Restarts running sequencer of provided Subsystem and Observing mode.

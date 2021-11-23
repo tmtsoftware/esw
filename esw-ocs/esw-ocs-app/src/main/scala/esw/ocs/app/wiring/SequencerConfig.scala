@@ -1,8 +1,7 @@
 package esw.ocs.app.wiring
 
 import com.typesafe.config.{Config, ConfigException}
-import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.ObsMode
+import csw.prefix.models.Prefix
 import esw.ocs.impl.script.ScriptLoadingException.ScriptConfigurationMissingException
 
 import java.time.Duration
@@ -23,18 +22,18 @@ private[ocs] final case class SequencerConfig(
 )
 
 private[ocs] object SequencerConfig {
-  def from(config: Config, subsystem: Subsystem, obsMode: ObsMode): SequencerConfig = {
+  def from(config: Config, prefix: Prefix): SequencerConfig = {
     val scriptConfig =
       try {
-        config.getConfig(s"scripts.${subsystem.name}.${obsMode.name}")
+        config.getConfig(s"scripts.$prefix")
       }
       catch {
-        case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(subsystem, obsMode)
+        case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(prefix.subsystem, prefix.componentName)
       }
 
     val scriptClass            = scriptConfig.getString("scriptClass")
     val heartbeatInterval      = config.getDuration("esw.heartbeat-interval")
     val enableThreadMonitoring = config.getBoolean("esw.enable-thread-monitoring")
-    SequencerConfig(Prefix(s"$subsystem.${obsMode.name}"), scriptClass, heartbeatInterval, enableThreadMonitoring)
+    SequencerConfig(prefix, scriptClass, heartbeatInterval, enableThreadMonitoring)
   }
 }

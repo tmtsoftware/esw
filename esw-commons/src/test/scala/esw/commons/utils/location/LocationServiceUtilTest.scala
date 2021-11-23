@@ -306,7 +306,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, obsMode, 200.millis).leftValue shouldBe
+      locationServiceUtil.resolveSequencer(prefix, 200.millis).leftValue shouldBe
       LocationNotFound(s"Could not resolve location matching connection: $akkaConnection")
     }
 
@@ -315,7 +315,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, obsMode, 200.millis).leftValue shouldBe
+      locationServiceUtil.resolveSequencer(prefix, 200.millis).leftValue shouldBe
       RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
@@ -359,7 +359,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(Some(akkaLocation)))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, obsMode, within = 10.millis).rightValue shouldBe akkaLocation
+      locationServiceUtil.resolveSequencer(prefix, within = 10.millis).rightValue shouldBe akkaLocation
 
       verify(locationService).resolve(akkaConnection, 10.millis)
     }
@@ -369,7 +369,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, obsMode, 200.millis).leftValue shouldBe
+      locationServiceUtil.resolveSequencer(prefix, 200.millis).leftValue shouldBe
       LocationNotFound(s"Could not resolve location matching connection: $akkaConnection")
     }
 
@@ -378,7 +378,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(subsystem, obsMode, 200.millis).leftValue shouldBe
+      locationServiceUtil.resolveSequencer(prefix, 200.millis).leftValue shouldBe
       RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }

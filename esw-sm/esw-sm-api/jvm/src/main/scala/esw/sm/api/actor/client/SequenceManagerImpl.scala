@@ -1,6 +1,6 @@
 package esw.sm.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
@@ -9,9 +9,9 @@ import esw.constants.SequenceManagerTimeouts
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 
 import scala.concurrent.Future
 
@@ -34,8 +34,8 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def getObsModesDetails: Future[ObsModesDetailsResponse] =
     (smRef ? GetObsModesDetails)(SequenceManagerTimeouts.GetObsModesDetails, actorSystem.scheduler)
 
-  override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
-    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, obsMode, x) })(
+  override def startSequencer(prefix: Prefix): Future[StartSequencerResponse] =
+    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(prefix, x) })(
       SequenceManagerTimeouts.StartSequencer,
       actorSystem.scheduler
     )

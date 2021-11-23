@@ -133,7 +133,7 @@ the Sequence Component is shared code among all Sequencers.  Therefore, to speci
 use the java -J-D option to override configuration values at runtime.  For log level, the format is:
 
 ```
--J-Dcsw-logging.component-log-levels.<Subsystem>.<obsMode>=<LEVEL>
+-J-Dcsw-logging.component-log-levels.<Prefix>=<LEVEL>
 ```
 
 For example, using the example above:

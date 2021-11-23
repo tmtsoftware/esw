@@ -3,7 +3,7 @@ package esw.ocs.scripts.examples.aoesw
 import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Choice
 import csw.params.events.SystemEvent
-import esw.ocs.api.models.ObsMode
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.highlevel.models.WFOS
@@ -84,7 +84,7 @@ script {
     }
 
     suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) {
-        val tcsSequencer = Sequencer(TCS, ObsMode("darknight"), Duration.seconds(10))
+        val tcsSequencer = Sequencer(Prefix(TCS,"darknight"), Duration.seconds(10))
         tcsSequencer.submitAndWait(
                 sequenceOf(
                         Setup(aosq.prefix, "offset", obsId)

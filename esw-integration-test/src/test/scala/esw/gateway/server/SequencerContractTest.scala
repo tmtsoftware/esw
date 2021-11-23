@@ -19,7 +19,7 @@ class SequencerContractTest extends EswTestKit(Gateway, EventServer) with Gatewa
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnSequencerRef(subsystem, obsMode)
+    spawnSequencerRef(Prefix(subsystem, obsMode.name))
   }
 
   "SequencerApi" must {

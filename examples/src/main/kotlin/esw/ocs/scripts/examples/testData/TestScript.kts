@@ -6,7 +6,6 @@ import csw.params.commands.CommandResponse
 import csw.params.core.states.StateName
 import csw.params.events.Event
 import csw.prefix.models.Prefix
-import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.longKey
@@ -14,7 +13,7 @@ import kotlinx.coroutines.delay
 import kotlin.time.Duration
 
 script {
-    val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10))
+    val lgsfSequencer = Sequencer(Prefix(LGSF,"darknight"), Duration.seconds(10))
     val testAssembly = Assembly(ESW, "test", Duration.seconds(10))
 
     // ESW-134: Reuse code by ability to import logic from one script into another
@@ -50,7 +49,7 @@ script {
         val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
-        val tcsSequencer = Sequencer(TCS, ObsMode("darknight"), Duration.seconds(10))
+        val tcsSequencer = Sequencer(Prefix(TCS,"darknight"), Duration.seconds(10))
         tcsSequencer.submitAndWait(sequence, Duration.seconds(10))
     }
 

@@ -42,7 +42,7 @@ private[esw] class SequenceComponentWiring(
     val sequenceComponentLogger: Logger = loggerFactory.getLogger
 
     sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentPrefix")
-    typedSystem ? { replyTo =>
+    typedSystem ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
         new SequenceComponentBehavior(
           sequenceComponentPrefix,

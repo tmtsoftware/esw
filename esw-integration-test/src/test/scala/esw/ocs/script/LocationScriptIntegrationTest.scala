@@ -10,13 +10,12 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 
 import scala.reflect.ClassTag
 
 class LocationScriptIntegrationTest extends EswTestKit(EventServer) {
-  private lazy val sequencer: SequencerApi = spawnSequencerProxy(ESW, ObsMode("locationScript"))
+  private lazy val sequencer: SequencerApi = spawnSequencerProxy(Prefix(ESW, "locationScript"))
 
   "Script should have access to location service DSL | ESW-277" in {
     val locationKey              = StringKey.make("locationResponse")

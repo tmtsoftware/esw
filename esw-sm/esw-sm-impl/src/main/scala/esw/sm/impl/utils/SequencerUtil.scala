@@ -14,11 +14,11 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
 import esw.sm.api.models.Sequencers
+import esw.sm.api.protocol.*
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.FailedToStartSequencers
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
-import esw.sm.api.protocol._
-import esw.sm.impl.utils.Types.SeqCompLocation
+import esw.sm.impl.utils.Types.{SeqCompLocation, SequencerPrefix}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,11 +27,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  def startSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] =
+  def startSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] = {
+    val prefixes: List[SequencerPrefix] = sequencers.sequencerIds.map(x => x.prefix(obsMode))
     sequenceComponentUtil
-      .allocateSequenceComponents(sequencers)
+      .allocateSequenceComponents(prefixes)
       .flatMapRight(startSequencersByMapping(obsMode, _)) // load scripts for sequencers on mapped sequence components
       .mapToAdt(identity, identity)
+  }
 
   def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
@@ -46,19 +48,17 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     shutdownSequencersAndHandleErrors(getObsModeSequencers(obsMode))
   def shutdownAllSequencers(): Future[ShutdownSequencersResponse] = shutdownSequencersAndHandleErrors(getAllSequencers)
 
-  private[utils] def startSequencersByMapping(
-      obsMode: ObsMode,
-      mappings: List[(Subsystem, SeqCompLocation)]
-  ): Future[ConfigureResponse] =
+  private[utils] def startSequencersByMapping(obsMode: ObsMode, mappings: List[(SequencerPrefix, SeqCompLocation)]) = {
     Future
-      .traverse(mappings) { case (subsystem, seqCompLocation) =>
-        sequenceComponentUtil.loadScript(subsystem, obsMode, seqCompLocation)
+      .traverse(mappings) { case (sequencerPrefix, seqCompLocation) =>
+        sequenceComponentUtil.loadScript(sequencerPrefix, seqCompLocation)
       }
       .map(_.sequence)
       .mapToAdt(
-        _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)),
+        _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)), //TODO get top level seq from mappings
         errors => FailedToStartSequencers(errors.map(_.msg).toSet)
       )
+  }
 
   private def restartSequencer(sequencerLocation: AkkaLocation) =
     makeSequencerClient(sequencerLocation).getSequenceComponent

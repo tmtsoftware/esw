@@ -66,9 +66,9 @@ object SequencerAppCommand {
       @HelpMessage("optional argument: subsystem of sequencer script, ex: tcs, iris etc. Default value: subsystem provided")
       @Short("i")
       seqSubsystem: Option[Subsystem],
-      @HelpMessage("observing mode, ex: darknight")
+      @HelpMessage("component name = obsmode[+variation] ex: IRIS_ImagerAndIFS.IRIS_IMAGER , IRIS_ImagerAndIFS ")
       @Short("m")
-      obsMode: ObsMode,
+      componentName: String,
       @HelpMessage("simulation mode")
       @Short("simulation")
       simulation: Boolean = false

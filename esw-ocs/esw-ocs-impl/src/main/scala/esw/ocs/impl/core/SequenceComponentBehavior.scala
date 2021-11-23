@@ -7,12 +7,12 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
-import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.actor.messages.SequenceComponentMsg._
-import esw.ocs.api.actor.messages._
-import esw.ocs.api.models.{ObsMode, SequenceComponentState}
+import csw.prefix.models.Prefix
+import esw.ocs.api.actor.messages.*
+import esw.ocs.api.actor.messages.SequenceComponentMsg.*
+import esw.ocs.api.models.SequenceComponentState
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.api.protocol.SequenceComponentResponse._
+import esw.ocs.api.protocol.SequenceComponentResponse.*
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 
 import scala.concurrent.ExecutionContext
@@ -46,8 +46,8 @@ class SequenceComponentBehavior(
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (_, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
-        case LoadScript(subsystem, obsMode, replyTo) =>
-          load(subsystem, obsMode, replyTo)
+        case LoadScript(prefix, replyTo) =>
+          load(prefix, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(None)
           Behaviors.same
@@ -64,19 +64,17 @@ class SequenceComponentBehavior(
    * If successful it will transition the sequence component's behavior into Running state
    * If failed it will remain in Idle state
    */
-  private def load(
-      subsystem: Subsystem,
-      obsMode: ObsMode,
-      replyTo: ActorRef[ScriptResponseOrUnhandled]
-  ): Behavior[SequenceComponentMsg] = {
-    val sequencerServer    = sequencerServerFactory.make(subsystem, obsMode, prefix)
+  private def load(sequencerPrefix: Prefix, replyTo: ActorRef[ScriptResponseOrUnhandled]): Behavior[SequenceComponentMsg] = {
+    val sequencerServer    = sequencerServerFactory.make(sequencerPrefix, prefix)
     val registrationResult = sequencerServer.start().fold(identity, SequencerLocation)
     replyTo ! registrationResult
 
     registrationResult match {
       case SequencerLocation(location) =>
-        log.info(s"Successfully started sequencer for subsystem :$subsystem in observation mode: ${obsMode.name}")
-        running(subsystem, obsMode, sequencerServer, location)
+        log.info(
+          s"Successfully started sequencer for subsystem :${prefix.subsystem} in observation mode: ${prefix.componentName}"
+        )
+        running(sequencerPrefix, sequencerServer, location)
       case error: ScriptError =>
         log.error(s"Failed to start sequencer: ${error.msg}")
         Behaviors.same
@@ -87,8 +85,8 @@ class SequenceComponentBehavior(
    * Sequence Component Behaviour when it is in Running state means there is a Sequencer running
    * @return an typed actor [[akka.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
    */
-  private def running(subsystem: Subsystem, obsMode: ObsMode, sequencerServer: SequencerServer, location: AkkaLocation) =
-    receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (ctx, msg) =>
+  private def running(sequencerPrefix: Prefix, sequencerServer: SequencerServer, location: AkkaLocation) =
+    receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (_, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
 
       //unloads script (stops the sequencer)
@@ -104,7 +102,7 @@ class SequenceComponentBehavior(
           idle
         case RestartScript(replyTo) =>
           unload()
-          load(subsystem, obsMode, replyTo)
+          load(sequencerPrefix, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(Some(location))
           Behaviors.same

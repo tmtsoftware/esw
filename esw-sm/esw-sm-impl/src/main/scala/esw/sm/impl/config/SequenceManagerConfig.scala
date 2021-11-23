@@ -3,6 +3,10 @@ package esw.sm.impl.config
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.models.{Resources, Sequencers}
 
+//sealed trait ObsModeSequencers
+//case class SequencerWithOnlySubsystem(subsystem: Subsystem)                            extends ObsModeSequencers
+//case class SequencerWithSubsystemAndVariation(subsystem: Subsystem, variation: String) extends ObsModeSequencers
+
 /**
  * This model class contains the resources and sequencers required for a particular Observing mode
  *

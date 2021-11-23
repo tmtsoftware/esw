@@ -61,13 +61,14 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       unhandled,
       failedResponse(name[ShutdownSequenceComponent])
     ),
-    ModelType(sequencerPrefix),
+    ModelType(eswSequencerPrefix),
     ModelType(obsMode),
     ModelType(Subsystem),
     ModelType(provisionConfig),
     ModelType[ResourcesStatusResponse](resourcesStatusSuccess, resourcesStatusFailed),
     ModelType[Resource](irisResource, tcsResource),
-    ModelType[ResourceStatus](ResourceStatus.InUse, ResourceStatus.Available)
+    ModelType[ResourceStatus](ResourceStatus.InUse, ResourceStatus.Available),
+    ModelType(eswSequencerId)
   )
 
   private val httpRequests = new RequestSet[SequenceManagerRequest] {

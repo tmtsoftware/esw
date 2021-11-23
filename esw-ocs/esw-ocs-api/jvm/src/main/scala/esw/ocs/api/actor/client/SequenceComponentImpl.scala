@@ -4,12 +4,11 @@ import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
-import csw.prefix.models.Subsystem
+import csw.prefix.models.Prefix
 import esw.constants.SequenceComponentTimeouts
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, RestartScript, Shutdown, UnloadScript}
-import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
 
 import scala.concurrent.Future
@@ -28,8 +27,8 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
 
   private val sequenceComponentRef = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
 
-  override def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(subsystem, obsMode, x) })(
+  override def loadScript(prefix: Prefix): Future[ScriptResponseOrUnhandled] =
+    (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(prefix, x) })(
       SequenceComponentTimeouts.LoadScript,
       actorSystem.scheduler
     )

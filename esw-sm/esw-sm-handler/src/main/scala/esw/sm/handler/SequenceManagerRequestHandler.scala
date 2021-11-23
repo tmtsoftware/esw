@@ -27,7 +27,7 @@ class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securit
       case GetResources                         => complete(getResources)
       case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
       case Provision(config)                    => sPost(complete(provision(config)))
-      case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
+      case StartSequencer(prefix)               => sPost(complete(startSequencer(prefix)))
       case RestartSequencer(subsystem, obsMode) => sPost(complete(restartSequencer(subsystem, obsMode)))
 
       // Shutdown sequencers

@@ -37,7 +37,7 @@ object SequenceManagerApiFactory {
   def makeHttpClient(httpLocation: HttpLocation, tokenFactory: () => Option[String])(implicit
       actorSystem: ActorSystem[_]
   ): SequenceManagerApi = {
-    import SequenceManagerServiceCodecs._
+    import SequenceManagerServiceCodecs.*
 
     val baseUri    = httpLocation.uri.toString
     val postUri    = Uri(baseUri).withPath(Path("/post-endpoint")).toString()

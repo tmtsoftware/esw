@@ -1,8 +1,8 @@
 package esw.ocs.dsl.script
 
-import java.util.concurrent.CompletionStage
-
 import csw.params.commands.SequenceCommand
+
+import java.util.concurrent.CompletionStage
 
 /**
  * Implementation of this trait is present at kotlin side

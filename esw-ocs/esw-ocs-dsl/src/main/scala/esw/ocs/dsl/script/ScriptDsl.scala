@@ -1,9 +1,5 @@
 package esw.ocs.dsl.script
 
-import java.util.Optional
-import java.util.concurrent.{CompletableFuture, CompletionStage}
-import java.util.function.Supplier
-
 import akka.Done
 import csw.logging.api.javadsl.ILogger
 import csw.params.commands.{CommandName, Observe, SequenceCommand, Setup}
@@ -14,6 +10,9 @@ import esw.ocs.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.impl.core.SequenceOperator
 import esw.ocs.impl.script.ScriptApi
 
+import java.util.Optional
+import java.util.concurrent.{CompletableFuture, CompletionStage}
+import java.util.function.Supplier
 import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}

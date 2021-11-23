@@ -46,7 +46,7 @@ class HealthCheckIntegrationTest extends EswTestKit {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
+    ocsSequencer = spawnSequencerProxy(Prefix(ocsSubsystem, ocsObsMode.name))
     logBuffer.clear()
   }
 
