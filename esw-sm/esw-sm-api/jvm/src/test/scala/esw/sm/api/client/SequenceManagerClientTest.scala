@@ -63,7 +63,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
 
     "return restart sequencer response for restartSequencer request | ESW-362" in {
       val restartSequencerResponse = mock[RestartSequencerResponse]
-      val restartSequencerMsg      = RestartSequencer(ESW, obsMode)
+      val restartSequencerMsg      = RestartSequencer(sequencerPrefix)
       when(
         postClient.requestResponse[RestartSequencerResponse](argsEq(restartSequencerMsg))(
           any[Decoder[RestartSequencerResponse]](),
@@ -71,12 +71,12 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
         )
       ).thenReturn(Future.successful(restartSequencerResponse))
 
-      client.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
+      client.restartSequencer(sequencerPrefix).futureValue shouldBe restartSequencerResponse
     }
 
     "return ShutdownSequencersResponse for shutdownSequencer request | ESW-326, ESW-362" in {
       val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
-      val shutdownSequencerMsg       = ShutdownSequencer(ESW, obsMode)
+      val shutdownSequencerMsg       = ShutdownSequencer(sequencerPrefix)
       when(
         postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
           any[Decoder[ShutdownSequencersResponse]](),
@@ -84,7 +84,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
         )
       ).thenReturn(Future.successful(shutdownSequencersResponse))
 
-      client.shutdownSequencer(ESW, obsMode).futureValue shouldBe shutdownSequencersResponse
+      client.shutdownSequencer(sequencerPrefix).futureValue shouldBe shutdownSequencersResponse
     }
 
     "return ShutdownSequencersResponse for Shutdown Sequencers for Subsystem request | ESW-345, ESW-362" in {

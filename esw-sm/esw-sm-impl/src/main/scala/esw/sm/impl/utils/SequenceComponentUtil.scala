@@ -46,8 +46,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
     getAllIdleSequenceComponentsFor(List(prefix.subsystem, ESW)) //search idle seq comps for ESW as fallback if needed
       .mapRightE(sequenceComponentAllocator.allocate(_, List(prefix)))
       .flatMapE {
-        case (sequencersWithMayBeVariation, seqCompLocation) :: _ =>
-          loadScript(prefix, seqCompLocation)
+        case (sequencerPrefix, seqCompLocation) :: _ =>
+          loadScript(sequencerPrefix, seqCompLocation)
         case Nil => Future.successful(Left(SequenceComponentNotAvailable(Nil))) // this should never happen
       }
       .mapToAdt(identity, identity)

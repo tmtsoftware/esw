@@ -32,11 +32,11 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerRequest])
   override def startSequencer(prefix: Prefix): Future[StartSequencerResponse] =
     postClient.requestResponse[StartSequencerResponse](StartSequencer(prefix))
 
-  override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
-    postClient.requestResponse[RestartSequencerResponse](RestartSequencer(subsystem, obsMode))
+  override def restartSequencer(prefix: Prefix): Future[RestartSequencerResponse] =
+    postClient.requestResponse[RestartSequencerResponse](RestartSequencer(prefix))
 
-  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencer(subsystem, obsMode))
+  override def shutdownSequencer(prefix: Prefix): Future[ShutdownSequencersResponse] =
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencer(prefix))
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
     postClient.requestResponse[ShutdownSequencersResponse](ShutdownSubsystemSequencers(subsystem))

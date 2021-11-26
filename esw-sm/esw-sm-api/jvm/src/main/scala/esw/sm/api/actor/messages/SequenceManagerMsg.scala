@@ -22,12 +22,10 @@ sealed trait CommonMessage          extends SequenceManagerRemoteMsg
 object SequenceManagerMsg {
   case class Configure(obsMode: ObsMode, replyTo: ActorRef[ConfigureResponse]) extends SequenceManagerIdleMsg
 
-  case class StartSequencer(prefix: Prefix, replyTo: ActorRef[StartSequencerResponse]) extends SequenceManagerIdleMsg
-  case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[RestartSequencerResponse])
-      extends SequenceManagerIdleMsg
+  case class StartSequencer(prefix: Prefix, replyTo: ActorRef[StartSequencerResponse])     extends SequenceManagerIdleMsg
+  case class RestartSequencer(prefix: Prefix, replyTo: ActorRef[RestartSequencerResponse]) extends SequenceManagerIdleMsg
 
-  case class ShutdownSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[ShutdownSequencersResponse])
-      extends SequenceManagerIdleMsg
+  case class ShutdownSequencer(prefix: Prefix, replyTo: ActorRef[ShutdownSequencersResponse]) extends SequenceManagerIdleMsg
   case class ShutdownSubsystemSequencers(subsystem: Subsystem, replyTo: ActorRef[ShutdownSequencersResponse])
       extends SequenceManagerIdleMsg
   case class ShutdownObsModeSequencers(obsMode: ObsMode, replyTo: ActorRef[ShutdownSequencersResponse])

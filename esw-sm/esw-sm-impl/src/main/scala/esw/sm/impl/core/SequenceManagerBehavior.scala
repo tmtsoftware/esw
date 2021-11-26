@@ -7,7 +7,7 @@ import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.prefix.models.Prefix
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
@@ -67,9 +67,9 @@ class SequenceManagerBehavior(
       case Provision(config, replyTo)  => provision(config, self, replyTo)
 
       // Shutdown sequencers
-      case ShutdownSequencer(subsystem, obsMode, replyTo) =>
+      case ShutdownSequencer(prefix, replyTo) =>
         sequencerUtil
-          .shutdownSequencer(subsystem, obsMode)
+          .shutdownSequencer(prefix)
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError[ShutdownSequencer](self)
         processing(self, replyTo)
@@ -95,8 +95,8 @@ class SequenceManagerBehavior(
           .recoverWithProcessingError[ShutdownAllSequencers](self)
         processing(self, replyTo)
 
-      case StartSequencer(prefix, replyTo)               => startSequencer(prefix, self, replyTo)
-      case RestartSequencer(subsystem, obsMode, replyTo) => restartSequencer(subsystem, obsMode, self, replyTo)
+      case StartSequencer(prefix, replyTo)   => startSequencer(prefix, self, replyTo)
+      case RestartSequencer(prefix, replyTo) => restartSequencer(prefix, self, replyTo)
 
       case ShutdownSequenceComponent(prefix, replyTo) =>
         sequenceComponentUtil
@@ -164,13 +164,8 @@ class SequenceManagerBehavior(
     processing(self, replyTo)
   }
 
-  private def restartSequencer(
-      subsystem: Subsystem,
-      obsMode: ObsMode,
-      self: SelfRef,
-      replyTo: ActorRef[RestartSequencerResponse]
-  ): SMBehavior = {
-    val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode)
+  private def restartSequencer(prefix: SequencerPrefix, self: SelfRef, replyTo: ActorRef[RestartSequencerResponse]) = {
+    val restartResponseF = sequencerUtil.restartSequencer(prefix)
     restartResponseF
       .map(self ! ProcessingComplete(_))
       .recoverWithProcessingError[RestartSequencer](self)

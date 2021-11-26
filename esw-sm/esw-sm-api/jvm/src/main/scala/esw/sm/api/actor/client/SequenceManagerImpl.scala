@@ -40,14 +40,14 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
       actorSystem.scheduler
     )
 
-  override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
-    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, obsMode, x) })(
+  override def restartSequencer(prefix: Prefix): Future[RestartSequencerResponse] =
+    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(prefix, x) })(
       SequenceManagerTimeouts.RestartSequencer,
       actorSystem.scheduler
     )
 
-  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    (smRef ? (ShutdownSequencer(subsystem, obsMode, _)))(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)
+  override def shutdownSequencer(prefix: Prefix): Future[ShutdownSequencersResponse] =
+    (smRef ? (ShutdownSequencer(prefix, _)))(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
     (smRef ? (ShutdownSubsystemSequencers(subsystem, _)))(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)

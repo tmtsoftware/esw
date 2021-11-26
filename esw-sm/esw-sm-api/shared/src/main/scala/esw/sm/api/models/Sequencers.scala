@@ -35,8 +35,7 @@ object SequencerId {
    */
   def fromString(sequencerIdString: String): SequencerId = {
     sequencerIdString.split('.').toList match {
-      case Nil =>
-        throw new RuntimeException("") //This case will never trigger because split always returns a non-empty array
+      case Nil                    => throw new RuntimeException("") //This case will never trigger because split always returns a non-empty array
       case subsystem :: Nil       => SequencerId(Subsystem.withNameInsensitive(subsystem), None)
       case subsystem :: variation => SequencerId(Subsystem.withNameInsensitive(subsystem), Some(variation.mkString(".")))
     }

@@ -12,14 +12,14 @@ object SequenceManagerRequest {
   case class Provision(config: ProvisionConfig) extends SequenceManagerRequest
   case object GetObsModesDetails                extends SequenceManagerRequest
 
-  case class StartSequencer(prefix: Prefix)                           extends SequenceManagerRequest
-  case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode) extends SequenceManagerRequest
+  case class StartSequencer(prefix: Prefix)   extends SequenceManagerRequest
+  case class RestartSequencer(prefix: Prefix) extends SequenceManagerRequest
 
   // Shutdown sequencers
-  case class ShutdownSequencer(subsystem: Subsystem, obsMode: ObsMode) extends SequenceManagerRequest
-  case class ShutdownSubsystemSequencers(subsystem: Subsystem)         extends SequenceManagerRequest
-  case class ShutdownObsModeSequencers(obsMode: ObsMode)               extends SequenceManagerRequest
-  case object ShutdownAllSequencers                                    extends SequenceManagerRequest
+  case class ShutdownSequencer(prefix: Prefix)                 extends SequenceManagerRequest
+  case class ShutdownSubsystemSequencers(subsystem: Subsystem) extends SequenceManagerRequest
+  case class ShutdownObsModeSequencers(obsMode: ObsMode)       extends SequenceManagerRequest
+  case object ShutdownAllSequencers                            extends SequenceManagerRequest
 
   case class ShutdownSequenceComponent(prefix: Prefix) extends SequenceManagerRequest
   case object ShutdownAllSequenceComponents            extends SequenceManagerRequest

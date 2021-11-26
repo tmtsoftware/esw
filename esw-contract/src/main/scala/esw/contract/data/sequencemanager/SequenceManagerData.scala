@@ -48,8 +48,8 @@ trait SequenceManagerData {
   val provision: Provision                                              = Provision(provisionConfig)
   val getObsModesDetails: GetObsModesDetails.type                       = GetObsModesDetails
   val startSequencer: StartSequencer                                    = StartSequencer(eswSequencerPrefix)
-  val restartSequencer: RestartSequencer                                = RestartSequencer(ESW, obsMode)
-  val shutdownSequencer: ShutdownSequencer                              = ShutdownSequencer(ESW, obsMode)
+  val restartSequencer: RestartSequencer                                = RestartSequencer(eswSequencerPrefix)
+  val shutdownSequencer: ShutdownSequencer                              = ShutdownSequencer(eswSequencerPrefix)
   val shutdownSubsystemSequencers: ShutdownSubsystemSequencers          = ShutdownSubsystemSequencers(ESW)
   val shutdownObsModeSequencers: ShutdownObsModeSequencers              = ShutdownObsModeSequencers(obsMode)
   val shutdownAllSequencers: ShutdownAllSequencers.type                 = ShutdownAllSequencers

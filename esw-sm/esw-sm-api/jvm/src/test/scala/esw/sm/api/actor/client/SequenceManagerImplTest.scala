@@ -40,7 +40,7 @@ class SequenceManagerImplTest extends ActorTestSuit {
       }
     }
 
-    "startSequencer | ESW-362" in {
+    "startSequencer | ESW-362, ESW-561" in {
       val startSequencerResponse = mock[StartSequencerResponse]
       withBehavior { case SequenceManagerMsg.StartSequencer(`prefix`, replyTo) =>
         replyTo ! startSequencerResponse
@@ -49,21 +49,21 @@ class SequenceManagerImplTest extends ActorTestSuit {
       }
     }
 
-    "restartSequencer | ESW-362" in {
+    "restartSequencer | ESW-362, ESW-561" in {
       val restartSequencerResponse = mock[RestartSequencerResponse]
-      withBehavior { case SequenceManagerMsg.RestartSequencer(`subsystem`, `obsMode`, replyTo) =>
+      withBehavior { case SequenceManagerMsg.RestartSequencer(`prefix`, replyTo) =>
         replyTo ! restartSequencerResponse
       } check { sm =>
-        sm.restartSequencer(subsystem, obsMode).futureValue should ===(restartSequencerResponse)
+        sm.restartSequencer(prefix).futureValue should ===(restartSequencerResponse)
       }
     }
 
-    "shutdownSequencer | ESW-326, ESW-362" in {
+    "shutdownSequencer | ESW-326, ESW-362, ESW-561" in {
       val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
-      withBehavior { case SequenceManagerMsg.ShutdownSequencer(`subsystem`, `obsMode`, replyTo) =>
+      withBehavior { case SequenceManagerMsg.ShutdownSequencer(`prefix`, replyTo) =>
         replyTo ! shutdownSequencersResponse
       } check { sm =>
-        sm.shutdownSequencer(subsystem, obsMode).futureValue should ===(shutdownSequencersResponse)
+        sm.shutdownSequencer(prefix).futureValue should ===(shutdownSequencersResponse)
       }
     }
 

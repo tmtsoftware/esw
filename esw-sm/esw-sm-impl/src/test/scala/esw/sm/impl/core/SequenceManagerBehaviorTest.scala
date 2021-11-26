@@ -90,7 +90,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "Sequence Manager " must {
-
+    val eswDarkNightPrefix = Prefix(ESW, darkNight.name)
     "be able to handle next messages if the previous Provision call times-out due to downstream error | ESW-473" in {
       val exceptionReason = "Ask timed out after [29000] ms"
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
@@ -146,18 +146,18 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(locationServiceUtil).find(connection)
     }
 
-    "be able to handle next messages if the previous ShutdownSequencer call times-out due to downstream error | ESW-473" in {
+    "be able to handle next messages if the previous ShutdownSequencer call times-out due to downstream error | ESW-473, ESW-561" in {
       val exceptionReason = "Ask timed out after [10000] ms"
-      when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
+      when(sequencerUtil.shutdownSequencer(eswDarkNightPrefix)).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
 
       val testProbe = TestProbe[ShutdownSequencersResponse]()
       assertState(Idle)
-      smRef ! ShutdownSequencer(ESW, darkNight, testProbe.ref)
+      smRef ! ShutdownSequencer(eswDarkNightPrefix, testProbe.ref)
       // goes back to idle after exception
       assertState(Idle)
 
       testProbe.expectMessage(FailedResponse(s"Sequence Manager Operation(ShutdownSequencer) failed due to: $exceptionReason"))
-      verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
+      verify(sequencerUtil).shutdownSequencer(eswDarkNightPrefix)
     }
 
     "be able to handle next messages if the previous ShutdownSubsystemSequencers call times-out due to downstream error | ESW-473" in {
@@ -210,16 +210,16 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "be able to handle next messages if the previous RestartSequencer call times-out due to downstream error | ESW-473" in {
       val exceptionReason = "Ask timed out after [15000] ms"
-      when(sequencerUtil.restartSequencer(ESW, darkNight)).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
+      when(sequencerUtil.restartSequencer(eswDarkNightPrefix)).thenReturn(failedFuture(exceptionReason, delay = 1.seconds))
 
       val testProbe = TestProbe[RestartSequencerResponse]()
       assertState(Idle)
-      smRef ! RestartSequencer(ESW, darkNight, testProbe.ref)
+      smRef ! RestartSequencer(eswDarkNightPrefix, testProbe.ref)
       // goes back to idle after exception
       assertState(Idle)
 
       testProbe.expectMessage(FailedResponse(s"Sequence Manager Operation(RestartSequencer) failed due to: $exceptionReason"))
-      verify(sequencerUtil).restartSequencer(ESW, darkNight)
+      verify(sequencerUtil).restartSequencer(eswDarkNightPrefix)
     }
 
     "be able to handle next messages if the previous ShutdownSequenceComponent call times-out due to downstream error | ESW-473" in {
@@ -315,7 +315,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "StartSequencer" must {
-    "transition sm from Idle -> Processing -> Idle state and return componentId of started sequencer | ESW-176, ESW-342" in {
+    "transition sm from Idle -> Processing -> Idle state and return componentId of started sequencer | ESW-176, ESW-342, ESW-561" in {
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
 
@@ -335,7 +335,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(locationServiceUtil).find(httpConnection)
     }
 
-    "return AlreadyRunning if sequencer for given obs mode is already running | ESW-176" in {
+    "return AlreadyRunning if sequencer for given obs mode is already running | ESW-176, ESW-561" in {
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
       val httpLocation   = HttpLocation(httpConnection, new URI("uri"), Metadata.empty)
@@ -352,7 +352,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(locationServiceUtil).find(httpConnection)
     }
 
-    "return Error if start sequencer returns error | ESW-176" in {
+    "return Error if start sequencer returns error | ESW-176, ESW-561" in {
       val componentId           = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val httpConnection        = HttpConnection(componentId)
       val expectedErrorResponse = LoadScriptError("error")
@@ -373,9 +373,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "ShutdownSequencer" must {
     val responseProbe = TestProbe[ShutdownSequencersResponse]()
-    val shutdownMsg   = ShutdownSequencer(ESW, darkNight, responseProbe.ref)
-    s"transition sm from Idle -> Processing -> Idle state and stop| ESW-326, ESW-345, ESW-166, ESW-324, ESW-342, ESW-351" in {
-      when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
+    val prefix        = Prefix(ESW, darkNight.name)
+    val shutdownMsg   = ShutdownSequencer(prefix, responseProbe.ref)
+    s"transition sm from Idle -> Processing -> Idle state and stop| ESW-326, ESW-345, ESW-166, ESW-324, ESW-342, ESW-351, ESW-561" in {
+      when(sequencerUtil.shutdownSequencer(prefix)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
       // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
       assertState(Idle)
@@ -384,17 +385,17 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       assertState(Idle)
 
       responseProbe.expectMessage(ShutdownSequencersResponse.Success)
-      verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
+      verify(sequencerUtil).shutdownSequencer(prefix)
     }
 
-    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324, ESW-351" in {
+    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324, ESW-351, ESW-561" in {
       val err = LocationServiceError("error")
-      when(sequencerUtil.shutdownSequencer(ESW, darkNight)).thenReturn(Future.successful(err))
+      when(sequencerUtil.shutdownSequencer(prefix)).thenReturn(Future.successful(err))
 
       smRef ! shutdownMsg
       responseProbe.expectMessage(err)
 
-      verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
+      verify(sequencerUtil).shutdownSequencer(prefix)
     }
   }
 
@@ -480,23 +481,23 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "RestartSequencer" must {
-    "transition sm from Idle -> Processing -> Idle state and return success on restart | ESW-327, ESW-342" in {
+    "transition sm from Idle -> Processing -> Idle state and return success on restart | ESW-327, ESW-342, ESW-561" in {
       val prefix      = Prefix(ESW, darkNight.name)
       val componentId = ComponentId(prefix, Sequencer)
 
-      when(sequencerUtil.restartSequencer(ESW, darkNight))
+      when(sequencerUtil.restartSequencer(prefix))
         .thenReturn(future(1.seconds, RestartSequencerResponse.Success(componentId)))
 
       val restartSequencerResponseProbe = TestProbe[RestartSequencerResponse]()
 
       // STATE TRANSITION: Idle -> RestartSequencer -> Processing -> Idle
       assertState(Idle)
-      smRef ! RestartSequencer(ESW, darkNight, restartSequencerResponseProbe.ref)
+      smRef ! RestartSequencer(prefix, restartSequencerResponseProbe.ref)
       assertState(Processing)
       assertState(Idle)
 
       restartSequencerResponseProbe.expectMessage(RestartSequencerResponse.Success(componentId))
-      verify(sequencerUtil).restartSequencer(ESW, darkNight)
+      verify(sequencerUtil).restartSequencer(prefix)
     }
 
     val errors = Table(
@@ -506,16 +507,17 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     )
 
     forAll(errors) { (errorName, error, process) =>
-      s"return $errorName if $errorName encountered while sequencer $process | ESW-327" in {
-        when(sequencerUtil.restartSequencer(ESW, darkNight))
+      s"return $errorName if $errorName encountered while sequencer $process | ESW-327, ESW-561" in {
+        val prefix = Prefix(ESW, darkNight.name)
+        when(sequencerUtil.restartSequencer(prefix))
           .thenReturn(future(1.seconds, error))
 
         val restartSequencerResponseProbe = TestProbe[RestartSequencerResponse]()
 
-        smRef ! RestartSequencer(ESW, darkNight, restartSequencerResponseProbe.ref)
+        smRef ! RestartSequencer(prefix, restartSequencerResponseProbe.ref)
         restartSequencerResponseProbe.expectMessage(error)
 
-        verify(sequencerUtil).restartSequencer(ESW, darkNight)
+        verify(sequencerUtil).restartSequencer(prefix)
       }
     }
   }
@@ -626,8 +628,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "Processing -> Unhandled" must {
-    "return Unhandled if msg is unhandled in processing state | ESW-349" in {
+    "return Unhandled if msg is unhandled in processing state | ESW-349, ESW-561" in {
       // hold configure completion by delay of 60 seconds. So SM will remain in processing state
+      val eswDarkNightPrefix = Prefix(ESW, darkNight.name)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(60.seconds, Right(List.empty)))
 
       val configureProbe  = TestProbe[ConfigureResponse]()
@@ -644,11 +647,11 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         state = Processing,
         ShutdownAllSequencers,
         Configure(clearSkies, _),
-        ShutdownSequencer(ESW, darkNight, _),
+        ShutdownSequencer(eswDarkNightPrefix, _),
         ShutdownObsModeSequencers(clearSkies, _),
         ShutdownSubsystemSequencers(ESW, _),
         StartSequencer(Prefix(ESW, darkNight.name), _),
-        RestartSequencer(ESW, darkNight, _),
+        RestartSequencer(eswDarkNightPrefix, _),
         ShutdownSequenceComponent(Prefix(ESW, "primary"), _),
         ShutdownAllSequenceComponents,
         Provision(provisionConfig, _)

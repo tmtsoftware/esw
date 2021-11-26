@@ -34,10 +34,10 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
   override def startSequencer(prefix: Prefix): Future[StartSequencerResponse] =
     Future.successful(StartSequencerResponse.Started(ComponentId(prefix, Sequencer)))
 
-  override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
-    Future.successful(RestartSequencerResponse.Success(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
+  override def restartSequencer(prefix: Prefix): Future[RestartSequencerResponse] =
+    Future.successful(RestartSequencerResponse.Success(ComponentId(prefix, Sequencer)))
 
-  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+  override def shutdownSequencer(prefix: Prefix): Future[ShutdownSequencersResponse] =
     Future.successful(ShutdownSequencersResponse.Success)
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =

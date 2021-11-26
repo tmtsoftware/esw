@@ -43,20 +43,20 @@ trait SequenceManagerApi {
   def startSequencer(prefix: Prefix): Future[StartSequencerResponse]
 
   /**
-   * Restarts running sequencer of provided Subsystem and Observing mode.
-   * @param subsystem for sequencer needs to be re-started
-   * @param obsMode for sequencer needs to be re-started
+   * Restarts running sequencer of provided Prefix.
+   *
+   * @param prefix for sequencer needs to be re-started
    * @return a future of [[esw.sm.api.protocol.RestartSequencerResponse]] which completes with Success or Failure response ADT.
    */
-  def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse]
+  def restartSequencer(prefix: Prefix): Future[RestartSequencerResponse]
 
   /**
-   * Shutdown running sequencer of provided Subsystem and Observing mode.
-   * @param subsystem of sequencer needs to be shutdown
-   * @param obsMode of sequencer needs to be shutdown
+   * Shutdown running sequencer of provided Prefix.
+   *
+   * @param prefix of sequencer needs to be shutdown
    * @return a future of [[esw.sm.api.protocol.ShutdownSequencersResponse]] which completes with Success or Failure response ADT.
    */
-  def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse]
+  def shutdownSequencer(prefix: Prefix): Future[ShutdownSequencersResponse]
 
   /**
    * Shutdown all running sequencers of provided Subsystem

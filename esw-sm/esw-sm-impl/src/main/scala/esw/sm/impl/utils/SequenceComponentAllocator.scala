@@ -19,11 +19,11 @@ class SequenceComponentAllocator() {
     }
     var locations = sequenceComponents
     val mapping = for {
-      sequencersWithMayBeVariation <- partitionedSubsystems
-      seqCompLocation              <- findSeqComp(sequencersWithMayBeVariation.subsystem, locations)
+      sequencerId     <- partitionedSubsystems
+      seqCompLocation <- findSeqComp(sequencerId.subsystem, locations)
     } yield {
       locations = locations.filterNot(_.equals(seqCompLocation))
-      (sequencersWithMayBeVariation, seqCompLocation)
+      (sequencerId, seqCompLocation)
     }
 
     // check if each sequencer subsystem has allocated sequence component

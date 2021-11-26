@@ -633,7 +633,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       resolveHTTPLocation(Prefix(AOESW, IRIS_CAL.name), Sequencer)
 
       // ESW-326, ESW-167 Verify that shutdown sequencer returns Success
-      val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
+      val shutdownResponse = sequenceManagerClient.shutdownSequencer(Prefix(ESW, IRIS_DARKNIGHT.name)).futureValue
       shutdownResponse should ===(ShutdownSequencersResponse.Success)
 
       // verify that sequencer is shut down
@@ -647,7 +647,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       resolveSequenceComponentLocation(Prefix(AOESW, "primary"))
 
       // ESW-351
-      val shutdownResponse2 = sequenceManagerClient.shutdownSequencer(AOESW, IRIS_CAL).futureValue
+      val shutdownResponse2 = sequenceManagerClient.shutdownSequencer(Prefix(AOESW, IRIS_CAL.name)).futureValue
       shutdownResponse2 should ===(ShutdownSequencersResponse.Success)
 
       // verify that sequencer is shut down
@@ -675,7 +675,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val initialLocation = resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer)
 
       // restart sequencer that is already running
-      val secondRestartResponse = sequenceManagerClient.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
+      val secondRestartResponse = sequenceManagerClient.restartSequencer(Prefix(ESW, IRIS_DARKNIGHT.name)).futureValue
       // verify that restart sequencer return Success response with component id
       secondRestartResponse should ===(RestartSequencerResponse.Success(componentId))
 
@@ -695,7 +695,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
       // restart sequencer that is not already running
-      val secondRestartResponse = sequenceManagerClient.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
+      val secondRestartResponse = sequenceManagerClient.restartSequencer(componentId.prefix).futureValue
       // verify that restart sequencer return Error response with connection
       secondRestartResponse should ===(LocationServiceError(s"Could not find location matching connection: $connection"))
       TestSetup.cleanup()
