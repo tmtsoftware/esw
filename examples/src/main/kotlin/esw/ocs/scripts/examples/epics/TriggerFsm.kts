@@ -1,8 +1,7 @@
 package esw.ocs.scripts.examples.epics
 
-import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.FsmScript
-import esw.ocs.dsl.highlevel.models.LGSF
+import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.params.booleanKey
 import kotlin.time.Duration
 
@@ -54,6 +53,6 @@ FsmScript("INIT") {
         //do some actions to stop
 
         //send stop command to downstream sequencer
-        Sequencer(Prefix(LGSF,"darknight"), Duration.seconds(10)).stop()
+        Sequencer(Prefix("LGSF.darknight"), Duration.seconds(10)).stop()
     }
 }
