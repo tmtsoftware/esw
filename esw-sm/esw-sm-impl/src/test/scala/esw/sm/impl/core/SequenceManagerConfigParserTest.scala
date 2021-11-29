@@ -6,7 +6,7 @@ import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.*
 import esw.ocs.api.models.{ObsMode, SequencerId}
-import esw.sm.api.models.{Resource, Resources, Sequencers}
+import esw.sm.api.models.{Resource, Resources, SequencerIds}
 import esw.sm.impl.config.*
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Borer.Error.InvalidInputData
@@ -48,8 +48,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
     forAll(args) { (readObsModeConfigArg, getConfigArg, fileLocation) =>
       s"read obs mode config file from $fileLocation | ESW-162,ESW-561" in {
         val path = Paths.get("testObsModeConfig.conf")
-        val darkNightSequencers: Sequencers =
-          Sequencers(
+        val darkNightSequencers: SequencerIds =
+          SequencerIds(
             irisSequencerIdWithIFS,
             irisSequencerIdWithImager,
             irisSequencerId,
@@ -57,8 +57,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
             tcsSequencerId,
             aoeswSequencerId
           )
-        val calSequencers: Sequencers = Sequencers(irisSequencerId, eswSequencerId, aoeswSequencerId)
-        val testConfig                = ConfigFactory.parseResources(path.getFileName.toString)
+        val calSequencers: SequencerIds = SequencerIds(irisSequencerId, eswSequencerId, aoeswSequencerId)
+        val testConfig                  = ConfigFactory.parseResources(path.getFileName.toString)
 
         when(configUtils.getConfig(inputFilePath = path, isLocal = getConfigArg)).thenReturn(Future.successful(testConfig))
 

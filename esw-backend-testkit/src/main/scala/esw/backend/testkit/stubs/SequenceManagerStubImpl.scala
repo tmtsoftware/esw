@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.backend.testkit.utils.IOUtils
-import esw.ocs.api.models.{ObsMode, SequencerId}
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.*
@@ -20,10 +20,7 @@ import scala.concurrent.Future
 
 class SequenceManagerStubImpl extends SequenceManagerApi {
 
-  private val obsMode                      = ObsMode("darknight")
-  private val eswSequencerId: SequencerId  = SequencerId(ESW)
-  private val tcsSequencerId: SequencerId  = SequencerId(TCS)
-  private val irisSequencerId: SequencerId = SequencerId(IRIS, Some("IRIS_IMAGER"))
+  private val obsMode = ObsMode("darknight")
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] = {
     val componentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
     Future.successful(ConfigureResponse.Success(componentId))
@@ -73,19 +70,19 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
             ObsMode("DarkNight_1"),
             ObsModeStatus.Configured,
             Resources(Set(Resource(ESW), Resource(IRIS))),
-            Sequencers(List(eswSequencerId, tcsSequencerId))
+            Sequencers(List(Prefix(ESW, "DarkNight_1"), Prefix(TCS, "DarkNight_1")))
           ),
           ObsModeDetails(
             ObsMode("DarkNight_2"),
             ObsModeStatus.Configurable,
             Resources(Set(Resource(IRIS), Resource(TCS))),
-            Sequencers(List(eswSequencerId, irisSequencerId))
+            Sequencers(List(Prefix(ESW, "DarkNight_2"), Prefix(IRIS, "DarkNight_2.IRIS_IMAGER")))
           ),
           ObsModeDetails(
             ObsMode("DarkNight_3"),
             ObsModeStatus.NonConfigurable(List(Prefix(TCS, "DarkNight_3"))),
             Resources(Set(Resource(TCS))),
-            Sequencers(List(tcsSequencerId))
+            Sequencers(List(Prefix(TCS, "DarkNight_3")))
           )
         )
       )

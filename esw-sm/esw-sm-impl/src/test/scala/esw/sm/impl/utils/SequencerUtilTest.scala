@@ -14,7 +14,7 @@ import esw.ocs.api.models.{ObsMode, SequencerId}
 import esw.ocs.api.models.SequenceComponentState.Idle
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
-import esw.sm.api.models.Sequencers
+import esw.sm.api.models.SequencerIds
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
@@ -275,7 +275,7 @@ class SequencerUtilTest extends BaseTestSuite {
     val tcsSequencerPrefix  = Prefix(TCS, darkNightObsMode.name)
     val irisSequencerPrefix = Prefix(IRIS, darkNightObsMode.name)
     val sequencerPrefixes   = List(irisSequencerPrefix, eswSequencerPrefix, tcsSequencerPrefix)
-    val sequencerIds        = Sequencers(SequencerId(IRIS), SequencerId(ESW), SequencerId(TCS))
+    val sequencerIds        = SequencerIds(SequencerId(IRIS), SequencerId(ESW), SequencerId(TCS))
 
     "return success when adequate idle sequence components are available and all sequencers are started successfully | ESW-178, ESW-561" in {
       when(sequenceComponentUtil.allocateSequenceComponents(sequencerPrefixes))

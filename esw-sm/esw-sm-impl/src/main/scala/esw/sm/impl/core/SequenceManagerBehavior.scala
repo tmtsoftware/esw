@@ -312,8 +312,9 @@ class SequenceManagerBehavior(
           val obsModes = sequenceManagerConfig.obsModes.toSet
           val obsModesStatus =
             obsModes.map { case (obsMode, cfg @ ObsModeConfig(resources, sequencers)) =>
-              val obsMOdeStatus = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
-              ObsModeDetails(obsMode, obsMOdeStatus, resources, sequencers)
+              val sequencerPrefixes = sequencers.sequencerIds.map(_.prefix(obsMode))
+              val obsMOdeStatus     = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
+              ObsModeDetails(obsMode, obsMOdeStatus, resources, Sequencers(sequencerPrefixes))
             }
 
           val response = ObsModesDetailsResponse.Success(obsModesStatus)

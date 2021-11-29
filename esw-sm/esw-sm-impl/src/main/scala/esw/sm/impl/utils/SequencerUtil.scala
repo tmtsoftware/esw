@@ -13,7 +13,7 @@ import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
-import esw.sm.api.models.Sequencers
+import esw.sm.api.models.SequencerIds
 import esw.sm.api.protocol.*
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.FailedToStartSequencers
@@ -27,7 +27,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  def startSequencers(obsMode: ObsMode, sequencers: Sequencers): Future[ConfigureResponse] = {
+  def startSequencers(obsMode: ObsMode, sequencers: SequencerIds): Future[ConfigureResponse] = {
     val prefixes: List[SequencerPrefix] = sequencers.sequencerIds.map(x => x.prefix(obsMode))
     sequenceComponentUtil
       .allocateSequenceComponents(prefixes)

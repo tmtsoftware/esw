@@ -2,7 +2,7 @@ package esw.sm.impl.config
 
 import csw.prefix.models.Subsystem.*
 import esw.ocs.api.models.{ObsMode, SequencerId}
-import esw.sm.api.models.{Resource, Resources, Sequencers}
+import esw.sm.api.models.{Resource, Resources, SequencerIds}
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
@@ -27,11 +27,11 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
   private val nfiraosSequencerId        = SequencerId(NFIRAOS)
 
   private val ConfigMap = Map(
-    DarkNight  -> ObsModeConfig(Resources(esw, tcs), Sequencers(eswSequencerId, tcsSequencerId)),
-    ClearSkies -> ObsModeConfig(Resources(aoesw, iris), Sequencers(aoeswSequencerId, irisSequencerId)),
+    DarkNight  -> ObsModeConfig(Resources(esw, tcs), SequencerIds(eswSequencerId, tcsSequencerId)),
+    ClearSkies -> ObsModeConfig(Resources(aoesw, iris), SequencerIds(aoeswSequencerId, irisSequencerId)),
     IRISImagerAndIFS -> ObsModeConfig(
       Resources(tcs, iris),
-      Sequencers(
+      SequencerIds(
         eswSequencerId,
         irisSequencerId,
         irisSequencerIdWithIFS,
@@ -58,7 +58,7 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
 
   "Sequencers needed for observing mode" must {
     "create from subsystems" in {
-      val sequencers = Sequencers(eswSequencerId, tcsSequencerId, nfiraosSequencerId)
+      val sequencers = SequencerIds(eswSequencerId, tcsSequencerId, nfiraosSequencerId)
 
       sequencers.sequencerIds should ===(List(eswSequencerId, tcsSequencerId, nfiraosSequencerId))
     }
@@ -66,7 +66,7 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
       val eswSequencerId     = SequencerId(ESW)
       val tcsSequencerId     = SequencerId(TCS, Some("Variation1"))
       val nfiraosSequencerId = SequencerId(NFIRAOS, Some("Variation1"))
-      val sequencers         = Sequencers(eswSequencerId, tcsSequencerId, nfiraosSequencerId)
+      val sequencers         = SequencerIds(eswSequencerId, tcsSequencerId, nfiraosSequencerId)
 
       sequencers.sequencerIds should ===(List(eswSequencerId, tcsSequencerId, nfiraosSequencerId))
     }
@@ -89,14 +89,14 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
 
     "return sequencers if obsMode present in map | ESW-162" in {
       val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
-      sequenceManagerConfig.sequencers(DarkNight) should ===(Some(Sequencers(eswSequencerId, tcsSequencerId)))
+      sequenceManagerConfig.sequencers(DarkNight) should ===(Some(SequencerIds(eswSequencerId, tcsSequencerId)))
     }
 
     "return sequencers with variation if obsMode present in map | ESW-561" in {
       val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
       sequenceManagerConfig.sequencers(IRISImagerAndIFS) should ===(
         Some(
-          Sequencers(
+          SequencerIds(
             eswSequencerId,
             irisSequencerId,
             irisSequencerIdWithIFS,

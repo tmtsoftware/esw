@@ -38,28 +38,31 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   private val loggerFactory: LoggerFactory = new LoggerFactory(Prefix("ESW.sequence_manager"))
   private implicit val logger: Logger      = loggerFactory.getLogger
 
-  private val darkNight                        = ObsMode("DarkNight")
-  private val clearSkies                       = ObsMode("ClearSkies")
-  private val irisMCAO                         = ObsMode("IRIS_MCAO")
-  private val randomObsMode                    = ObsMode("RandomObsMode")
-  private val eswSequencerId                   = SequencerId(ESW)
-  private val tcsSequencerId                   = SequencerId(TCS)
-  private val wfosSequencerId                  = SequencerId(WFOS)
-  private val darkNightSequencers: Sequencers  = Sequencers(eswSequencerId, tcsSequencerId)
-  private val clearSkiesSequencers: Sequencers = Sequencers(eswSequencerId)
-  private val irisMCAOSequencers: Sequencers   = Sequencers(eswSequencerId, wfosSequencerId)
-  private val clearSkiesSequencersPrefix       = List(Prefix(ESW, clearSkies.name))
-  private val darkNightSequencersPrefix        = List(Prefix(ESW, darkNight.name), Prefix(TCS, darkNight.name))
-  private val irisMCAOSequencersPrefix         = List(Prefix(ESW, irisMCAO.name), Prefix(WFOS, irisMCAO.name))
-  private val apsResource: Resource            = Resource(APS)
-  private val tcsResource: Resource            = Resource(TCS)
-  private val irisResource: Resource           = Resource(IRIS)
-  private val wfosResource: Resource           = Resource(WFOS)
+  private val darkNight                            = ObsMode("DarkNight")
+  private val clearSkies                           = ObsMode("ClearSkies")
+  private val irisMCAO                             = ObsMode("IRIS_MCAO")
+  private val randomObsMode                        = ObsMode("RandomObsMode")
+  private val eswSequencerId                       = SequencerId(ESW)
+  private val tcsSequencerId                       = SequencerId(TCS)
+  private val wfosSequencerId                      = SequencerId(WFOS)
+  private val darkNightSequencerIds: SequencerIds  = SequencerIds(eswSequencerId, tcsSequencerId)
+  private val clearSkiesSequencerIds: SequencerIds = SequencerIds(eswSequencerId)
+  private val irisMCAOSequencerIds: SequencerIds   = SequencerIds(eswSequencerId, wfosSequencerId)
+  private val clearSkiesSequencersPrefix           = List(Prefix(ESW, clearSkies.name))
+  private val darkNightSequencersPrefix            = List(Prefix(ESW, darkNight.name), Prefix(TCS, darkNight.name))
+  private val irisMCAOSequencersPrefix             = List(Prefix(ESW, irisMCAO.name), Prefix(WFOS, irisMCAO.name))
+  private val apsResource: Resource                = Resource(APS)
+  private val tcsResource: Resource                = Resource(TCS)
+  private val irisResource: Resource               = Resource(IRIS)
+  private val wfosResource: Resource               = Resource(WFOS)
+  private val darkNightSequencers: Sequencers      = Sequencers(Prefix(ESW, darkNight.name), Prefix(TCS, darkNight.name))
+  private val clearSkiesSequencers: Sequencers     = Sequencers(Prefix(ESW, clearSkies.name))
+  private val irisMCAOSequencers: Sequencers       = Sequencers(Prefix(ESW, irisMCAO.name), Prefix(WFOS, irisMCAO.name))
   private val config = SequenceManagerConfig(
     Map(
-      darkNight  -> ObsModeConfig(Resources(apsResource, tcsResource), darkNightSequencers),
-      clearSkies -> ObsModeConfig(Resources(tcsResource, irisResource), clearSkiesSequencers),
-      irisMCAO   -> ObsModeConfig(Resources(wfosResource), irisMCAOSequencers)
+      darkNight  -> ObsModeConfig(Resources(apsResource, tcsResource), darkNightSequencerIds),
+      clearSkies -> ObsModeConfig(Resources(tcsResource, irisResource), clearSkiesSequencerIds),
+      irisMCAO   -> ObsModeConfig(Resources(wfosResource), irisMCAOSequencerIds)
     )
   )
 
@@ -116,7 +119,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "be able to handle next messages if the previous Configure call times-out due to downstream error | ESW-473" in {
       val exceptionReason = "Ask timed out after [7000] ms"
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
-      when(sequencerUtil.startSequencers(darkNight, darkNightSequencers))
+      when(sequencerUtil.startSequencers(darkNight, darkNightSequencerIds))
         .thenReturn(failedFuture(exceptionReason, delay = 0.seconds))
 
       val configureProbe = TestProbe[ConfigureResponse]()
@@ -128,7 +131,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       configureProbe.expectMessage(FailedResponse(s"Sequence Manager Operation(Configure) failed due to: $exceptionReason"))
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil).startSequencers(darkNight, darkNightSequencers)
+      verify(sequencerUtil).startSequencers(darkNight, darkNightSequencerIds)
     }
 
     "be able to handle next messages if the previous StartSequencer call times-out due to downstream error | ESW-473" in {
@@ -262,7 +265,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val configResponse = Success(componentId)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
-      when(sequencerUtil.startSequencers(darkNight, darkNightSequencers))
+      when(sequencerUtil.startSequencers(darkNight, darkNightSequencerIds))
         .thenReturn(Future.successful(configResponse))
       val configureProbe = TestProbe[ConfigureResponse]()
 
@@ -274,7 +277,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       configureProbe.expectMessage(configResponse)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil).startSequencers(darkNight, darkNightSequencers)
+      verify(sequencerUtil).startSequencers(darkNight, darkNightSequencerIds)
     }
 
     "return LocationServiceError if location service fails to return running observation mode | ESW-164, ESW-178" in {
@@ -299,7 +302,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       probe.expectMessage(ConflictingResourcesWithRunningObsMode(Set(clearSkies)))
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil, times(0)).startSequencers(darkNight, darkNightSequencers)
+      verify(sequencerUtil, times(0)).startSequencers(darkNight, darkNightSequencerIds)
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164, ESW-178" in {

@@ -1,8 +1,8 @@
 package esw.sm.api.models
 
-import esw.ocs.api.models.SequencerId
+import csw.prefix.models.Prefix
 
-case class Sequencers(sequencerIds: List[SequencerId])
+case class Sequencers(sequencers: List[Prefix])
 object Sequencers {
-  def apply(sequencerIds: SequencerId*): Sequencers = new Sequencers(sequencerIds.toList)
+  def apply(sequencers: Prefix*): Sequencers = new Sequencers(sequencers.toList)
 }

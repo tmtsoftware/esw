@@ -940,14 +940,11 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     "getObsModesDetails should return all ObsModes with their status | ESW-466, ESW-529" in {
       locationService.unregisterAll().futureValue
       registerKeycloak()
-      val irisSequencerId = SequencerId(IRIS)
-      val eswSequencerId  = SequencerId(ESW)
-      val tcsSequencerId  = SequencerId(TCS)
       val darkNightSequencers: Sequencers =
-        Sequencers(irisSequencerId, eswSequencerId, tcsSequencerId)
+        Sequencers(Prefix(IRIS, IRIS_DARKNIGHT.name), Prefix(ESW, IRIS_DARKNIGHT.name), Prefix(TCS, IRIS_DARKNIGHT.name))
       val irisCalSequencers: Sequencers =
-        Sequencers(irisSequencerId, eswSequencerId, SequencerId(AOESW))
-      val wfosCalSequencers: Sequencers = Sequencers(SequencerId(WFOS), eswSequencerId)
+        Sequencers(Prefix(IRIS, IRIS_CAL.name), Prefix(ESW, IRIS_CAL.name), Prefix(AOESW, IRIS_CAL.name))
+      val wfosCalSequencers: Sequencers = Sequencers(Prefix(WFOS, WFOS_CAL.name), Prefix(ESW, WFOS_CAL.name))
       val eswSeqCompPrefix              = Prefix(ESW, "primary")
       val eswSecondarySeqCompPrefix     = Prefix(ESW, "secondary")
       val irisSeqCompPrefix             = Prefix(IRIS, "primary")
