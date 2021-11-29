@@ -5,6 +5,7 @@ import csw.params.core.models.Choice
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.Prefix
+import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.*
 import kotlin.math.sqrt
 import kotlin.time.Duration
