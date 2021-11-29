@@ -48,7 +48,7 @@ script {
         val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
-        val tcsSequencer = Sequencer(Prefix("TCS,darknight"), Duration.seconds(10))
+        val tcsSequencer = Sequencer(Prefix("TCS.darknight"), Duration.seconds(10))
         tcsSequencer.submitAndWait(sequence, Duration.seconds(10))
     }
 
@@ -110,7 +110,7 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(Prefix("NFIRAOS.trombone"), "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major)
         delay(500)
     }

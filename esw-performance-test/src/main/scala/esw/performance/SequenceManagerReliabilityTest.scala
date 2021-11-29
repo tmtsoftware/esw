@@ -10,14 +10,13 @@ import csw.logging.client.scaladsl.{LoggerFactory, LoggingSystemFactory}
 import csw.network.utils.Networks
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.Prefix
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, SequencerId}
 import esw.ocs.testkit.utils.LocationUtils
 import esw.performance.constants.ObsModes.*
 import esw.performance.constants.SMReliabilityConstants
 import esw.performance.utils.PerfUtils.{printResults, recordResults}
 import esw.performance.utils.Timing
 import esw.sm.api.actor.client.SequenceManagerApiFactory
-import esw.sm.api.models.SequencerId
 import esw.sm.api.protocol.ConfigureResponse.Failure
 import esw.sm.api.protocol.*
 import org.HdrHistogram.Histogram

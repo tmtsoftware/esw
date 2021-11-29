@@ -7,6 +7,7 @@ import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.Prefix
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.SequencerId
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.core.SequenceOperator
@@ -37,6 +38,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   val scriptContext = new ScriptContext(
     heartbeatInterval,
     prefix,
+    SequencerId.obsMode(prefix),
     logger,
     sequenceOperatorFactory,
     actorSystem,

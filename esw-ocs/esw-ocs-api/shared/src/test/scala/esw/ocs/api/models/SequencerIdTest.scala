@@ -1,13 +1,10 @@
-package esw.sm.api.models
+package esw.ocs.api.models
 
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, IRIS}
-import esw.ocs.api.models.ObsMode
+import csw.prefix.models.Subsystem.IRIS
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.wordspec.AnyWordSpec
-
-import scala.util.Random
 
 class SequencerIdTest extends AnyWordSpec with Matchers {
 
@@ -26,7 +23,7 @@ class SequencerIdTest extends AnyWordSpec with Matchers {
       val sequencerIdString1 = "IRIS"
       val sequencerIdString2 = "IRIS.variation1"
       val sequencerIdString3 = "IRIS.variation1.variation2"
-      val darkNightObsMode   = ObsMode("darknight")
+
       SequencerId.fromString(sequencerIdString1) shouldBe SequencerId(IRIS)
       SequencerId.fromString(sequencerIdString2) shouldBe SequencerId(IRIS, Some("variation1"))
       SequencerId.fromString(sequencerIdString3) shouldBe SequencerId(IRIS, Some("variation1.variation2"))

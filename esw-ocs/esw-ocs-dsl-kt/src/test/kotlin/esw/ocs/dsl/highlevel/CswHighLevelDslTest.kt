@@ -33,7 +33,7 @@ class CswHighLevelDslTest {
     private val cswServices: CswServices = mockk()
     private val locationService: LocationService = mockk()
     private val iLocationService: ILocationService = mockk()
-    private val scriptContext = ScriptContext(mockk(), Prefix("TCS.filter.wheel"), mockk(), mockk(), system, mockk(), mockk(), mockk(), config)
+    private val scriptContext = ScriptContext(mockk(), Prefix("TCS.filter.wheel"), mockk(), mockk(), mockk(), system, mockk(), mockk(), mockk(), config)
 
     init {
         every { config.getConfig("csw-alarm") }.returns(alarmConfig)

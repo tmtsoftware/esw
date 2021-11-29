@@ -5,16 +5,16 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS, WFOS}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, SequencerId}
 import esw.sm.api.models
+import esw.sm.api.models.*
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
-import esw.sm.api.models._
+import esw.sm.api.protocol.*
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, FailedToStartSequencers, _}
+import esw.sm.api.protocol.ConfigureResponse.*
 import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, SpawningSequenceComponentsFailed, Success}
-import esw.sm.api.protocol.SequenceManagerRequest.{GetObsModesDetails, _}
-import esw.sm.api.protocol.StartSequencerResponse._
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.SequenceManagerRequest.*
+import esw.sm.api.protocol.StartSequencerResponse.*
 
 import java.net.URI
 

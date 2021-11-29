@@ -1,8 +1,8 @@
 package esw.sm.impl.config
 
 import csw.prefix.models.Subsystem.*
-import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.{Resource, Resources, SequencerId, Sequencers}
+import esw.ocs.api.models.{ObsMode, SequencerId}
+import esw.sm.api.models.{Resource, Resources, Sequencers}
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike

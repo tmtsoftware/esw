@@ -10,11 +10,11 @@ import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, SequencerId}
 import esw.ocs.api.models.SequenceComponentState.Idle
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
-import esw.sm.api.models.{SequencerId, Sequencers}
+import esw.sm.api.models.Sequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
@@ -385,7 +385,7 @@ class SequencerUtilTest extends BaseTestSuite {
     val masterSeqConnection: HttpConnection = HttpConnection(eswDarkNightSequencer)
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""), Metadata.empty)
 
-    val eswDarkNightSequencerPrefix = Prefix(ESW, darkNightObsMode.name)
+    val eswDarkNightSequencerPrefix: Prefix = Prefix(ESW, darkNightObsMode.name)
 
     val sequencerUtil: SequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil) {
       override private[sm] def makeSequencerClient(sequencerLocation: Location) =

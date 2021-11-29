@@ -36,6 +36,7 @@ import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerServiceCodecs
+import esw.ocs.api.models.SequencerId
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
@@ -104,6 +105,7 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
     prefix,
+    SequencerId.obsMode(prefix),
     jLogger,
     sequenceOperatorFactory,
     actorSystem,

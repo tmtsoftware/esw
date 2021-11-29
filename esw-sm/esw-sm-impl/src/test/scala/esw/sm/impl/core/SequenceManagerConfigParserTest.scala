@@ -5,8 +5,8 @@ import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.*
-import esw.ocs.api.models.ObsMode
-import esw.sm.api.models.{Resource, Resources, SequencerId, Sequencers}
+import esw.ocs.api.models.{ObsMode, SequencerId}
+import esw.sm.api.models.{Resource, Resources, Sequencers}
 import esw.sm.impl.config.*
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Borer.Error.InvalidInputData

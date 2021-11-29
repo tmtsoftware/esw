@@ -7,6 +7,7 @@ import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.Prefix
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.impl.core.SequenceOperator
 
 import java.time.Duration
@@ -17,7 +18,7 @@ import java.util.concurrent.CompletionStage
  *
  * @param heartbeatInterval - heart beat interval for health check
  * @param prefix - prefix of the sequencer
- * @param componentName - obsMode of the sequencer
+ * @param obsMode - obsMode of the sequencer
  * @param jLogger - java typed Logger
  * @param sequenceOperatorFactory - sequenceOperatorFactory
  * @param actorSystem - An Akka ActorSystem
@@ -29,6 +30,7 @@ import java.util.concurrent.CompletionStage
 class ScriptContext(
     val heartbeatInterval: Duration,
     val prefix: Prefix,
+    val obsMode: ObsMode,
     val jLogger: ILogger,
     val sequenceOperatorFactory: () => SequenceOperator,
     val actorSystem: ActorSystem[SpawnProtocol.Command],

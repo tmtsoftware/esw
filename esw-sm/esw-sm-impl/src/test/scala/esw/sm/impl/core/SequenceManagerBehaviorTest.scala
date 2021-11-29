@@ -11,7 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.*
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, SequencerId}
 import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.*

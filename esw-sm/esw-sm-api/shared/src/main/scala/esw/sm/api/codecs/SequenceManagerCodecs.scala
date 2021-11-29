@@ -33,6 +33,4 @@ trait SequenceManagerCodecs extends LocationCodecs with BasicCodecs with OcsCode
   implicit lazy val resourceStatusCodec: Codec[ResourceStatus]                   = deriveAllCodecs
   implicit lazy val resourceCodec: Codec[Resource]                               = CompactMapBasedCodecs.deriveCodec
   implicit lazy val processingTimeoutCodec: Codec[FailedResponse]                = deriveCodec
-  implicit lazy val sequencerIdCodec: Codec[SequencerId] =
-    Codec.bimap[String, SequencerId](_.toString, SequencerId.fromString)
 }

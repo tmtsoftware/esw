@@ -1,8 +1,7 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.highlevel.models.TCS
+import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.params.intKey
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
