@@ -5,7 +5,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS, WFOS}
-import esw.ocs.api.models.{ObsMode, SequencerId}
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.models
 import esw.sm.api.models.*
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
@@ -22,19 +22,15 @@ import java.net.URI
  * This object contains all the Sequence Manager data models which will be sent on wire.
  */
 trait SequenceManagerData {
+  val obsMode: ObsMode                  = ObsMode("DarkNight")
   private val agentPrefix               = Prefix(ESW, "agent")
   private val seqCompPrefix             = Prefix(ESW, "seq_comp")
-  val eswSequencerPrefix: Prefix        = Prefix(ESW, "DarkNight")
-  val irisSequencerPrefix: Prefix       = Prefix(IRIS, "DarkNight")
-  val obsMode: ObsMode                  = ObsMode("DarkNight")
+  val eswSequencerPrefix: Prefix        = Prefix(ESW, obsMode.name)
+  val irisSequencerPrefix: Prefix       = Prefix(IRIS, obsMode.name)
   val irisResource: Resource            = Resource(IRIS)
   val tcsResource: Resource             = Resource(TCS)
   val eswResource: Resource             = Resource(ESW)
   val wfosResource: Resource            = Resource(WFOS)
-  val eswSequencerId: SequencerId       = SequencerId(ESW, Some("Variation1"))
-  val darkNightSequencers: Sequencers   = Sequencers(eswSequencerPrefix, Prefix(TCS, "DarkNight"))
-  val darkNight2Sequencers: Sequencers  = Sequencers(eswSequencerPrefix)
-  val darkNight3Sequencers: Sequencers  = Sequencers(eswSequencerPrefix, Prefix(WFOS, "DarkNight"))
   val sequencerComponentId: ComponentId = ComponentId(eswSequencerPrefix, Sequencer)
   val agentComponentId: ComponentId     = ComponentId(agentPrefix, Machine)
   val seqCompComponentId: ComponentId   = ComponentId(seqCompPrefix, SequenceComponent)
@@ -65,16 +61,30 @@ trait SequenceManagerData {
     List("failed sequence component")
   )
   val provisionSuccess: ProvisionResponse.Success.type = Success
+  val darkNight1ObsMode: ObsMode                       = ObsMode("DarkNight_1")
+  val darkNight2ObsMode: ObsMode                       = ObsMode("DarkNight_2")
+  val darkNight3ObsMode: ObsMode                       = ObsMode("DarkNight_3")
   val configuredObsMode: ObsModeDetails =
-    models.ObsModeDetails(ObsMode("DarkNight_1"), Configured, Resources(eswResource, tcsResource), darkNightSequencers)
+    models.ObsModeDetails(
+      darkNight2ObsMode,
+      Configured,
+      Resources(eswResource, tcsResource),
+      Sequencers(Prefix(ESW, darkNight2ObsMode.name), Prefix(TCS, darkNight2ObsMode.name))
+    )
+
   val configurableObsMode: ObsModeDetails =
-    models.ObsModeDetails(ObsMode("DarkNight_2"), Configurable, Resources(eswResource, irisResource), darkNight2Sequencers)
+    models.ObsModeDetails(
+      darkNight2ObsMode,
+      Configurable,
+      Resources(eswResource, irisResource),
+      Sequencers(Prefix(ESW, darkNight2ObsMode.name))
+    )
   val nonConfigurableObsMode: ObsModeDetails =
     models.ObsModeDetails(
-      ObsMode("DarkNight_3"),
-      NonConfigurable(List(irisSequencerPrefix)),
+      darkNight3ObsMode,
+      NonConfigurable(List(Prefix(IRIS, darkNight3ObsMode.name))),
       Resources(eswResource, irisResource, wfosResource),
-      darkNightSequencers
+      Sequencers(Prefix(ESW, darkNight3ObsMode.name), Prefix(TCS, darkNight3ObsMode.name))
     )
   val ObsModesDetailsSuccess: ObsModesDetailsResponse.Success = ObsModesDetailsResponse.Success(
     Set(configuredObsMode, configurableObsMode, nonConfigurableObsMode)
