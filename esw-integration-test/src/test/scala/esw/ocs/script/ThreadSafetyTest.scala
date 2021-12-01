@@ -8,6 +8,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 
 class ThreadSafetyTest extends EswTestKit(EventServer) {
@@ -35,7 +36,7 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
           }
         )
 
-      val threadSafeSequencer: SequencerApi = spawnSequencerProxy(Prefix(ESW, "threadSafe"))
+      val threadSafeSequencer: SequencerApi = spawnSequencerProxy(ESW, ObsMode("threadSafe"))
 
       val incrementCommand  = Setup(Prefix("esw.counter"), CommandName("increment"), None)
       val getCounterCommand = Observe(Prefix("esw.counter"), CommandName("get-counter"), None)

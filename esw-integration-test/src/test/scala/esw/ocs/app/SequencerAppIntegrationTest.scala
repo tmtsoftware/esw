@@ -55,7 +55,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val probe      = TestProbe[ScriptResponseOrUnhandled]()
-      seqCompRef ! LoadScript(Prefix(ESW, ObsMode("darknight").name), probe.ref)
+      seqCompRef ! LoadScript(ESW, ObsMode("darknight"), None, probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
       val response          = probe.expectMessageType[SequencerLocation]
@@ -142,7 +142,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val loadScriptResponse: ScriptResponseOrUnhandled =
         seqCompRef
-          .ask((ref: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(Prefix(unexpectedSubsystem, obsMode.name), ref))(
+          .ask((ref: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(unexpectedSubsystem, obsMode, None, ref))(
             timeout,
             schedulerFromActorSystem
           )

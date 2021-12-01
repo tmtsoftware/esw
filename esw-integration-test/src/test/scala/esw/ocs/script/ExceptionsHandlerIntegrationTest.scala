@@ -24,8 +24,6 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   private val tcsSubsystem = TCS
   private val ocsObsMode   = ObsMode("exceptionscript")  // ExceptionTestScript.kt
   private val tcsObsMode   = ObsMode("exceptionscript2") // ExceptionTestScript2.kt
-  private val ocsSeqPrefix = Prefix(ocsSubsystem, ocsObsMode.name)
-  private val tcsSeqPrefix = Prefix(tcsSubsystem, tcsObsMode.name)
 
   private val prefix = Prefix("tcs.filter.wheel")
 
@@ -53,7 +51,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
     forAll(idleStateTestCases) { (msg, failureMessage) =>
       s"invoke exception handler when $failureMessage | ESW-139, CSW-81" in {
-        val sequencer = spawnSequencerRef(ocsSeqPrefix)
+        val sequencer = spawnSequencerRef(ocsSubsystem, ocsObsMode)
 
         val eventKey = EventKey(prefix, EventName(failureMessage))
         val probe    = createProbeFor(eventKey)
@@ -73,7 +71,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
     forAll(runningStateTestCases) { (msg, failureMessage) =>
       s"invoke exception handler when $failureMessage | ESW-139, CSW-81" in {
-        val sequencerRef = spawnSequencerRef(ocsSeqPrefix)
+        val sequencerRef = spawnSequencerRef(ocsSubsystem, ocsObsMode)
         val sequencer    = new SequencerImpl(sequencerRef)
 
         val eventKey = EventKey(prefix, EventName(failureMessage))
@@ -97,7 +95,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   "Script2" must {
 
     "invoke exception handlers when exception is thrown from handler and must fail the command with message of given exception | ESW-139, CSW-81" in {
-      val sequencer = spawnSequencerProxy(ocsSeqPrefix)
+      val sequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
 
       val command  = Setup(Prefix("TCS.test"), CommandName("fail-setup"), None)
       val sequence = Sequence(command)
@@ -128,7 +126,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val eventKey                    = EventKey(prefix, EventName(globalExHandlerEventMessage))
       val testProbe                   = createProbeFor(eventKey)
 
-      val sequencer = spawnSequencerProxy(tcsSeqPrefix)
+      val sequencer = spawnSequencerProxy(tcsSubsystem, tcsObsMode)
 
       sequencer.goOffline().futureValue
       sequencer.goOnline()
@@ -143,7 +141,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val onErrorEventKey       = EventKey(prefix, EventName(onErrorEventMessage))
       val onErrorEventTestProbe = createProbeFor(onErrorEventKey)
 
-      val sequencer     = spawnSequencerProxy(tcsSeqPrefix)
+      val sequencer     = spawnSequencerProxy(tcsSubsystem, tcsObsMode)
       val failCmdName   = CommandName("error-handling")
       val setupSequence = Sequence(Setup(prefix, failCmdName, None))
 
@@ -168,7 +166,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val negativeSubmitResEventKey       = EventKey(prefix, EventName(negativeSubmitResEventMessage))
       val negativeSubmitResEventTestProbe = createProbeFor(negativeSubmitResEventKey)
 
-      val sequencer     = spawnSequencerProxy(tcsSeqPrefix)
+      val sequencer     = spawnSequencerProxy(tcsSubsystem, tcsObsMode)
       val setupSequence = Sequence(Setup(prefix, CommandName("negative-submit-response"), None))
 
       val submitResponse = sequencer.submit(setupSequence).futureValue

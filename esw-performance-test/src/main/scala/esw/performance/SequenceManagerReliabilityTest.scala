@@ -194,13 +194,19 @@ object SequenceManagerReliabilityTest extends LocationUtils {
       )
   }
 
-  private def restartSequencer(prefix: Prefix, histogram: Histogram): Unit = {
-    val (restartResponse, restartLatency) = Timing.measureTimeMillis(smClient.restartSequencer(prefix).futureValue)
+  private def restartSequencer(
+      prefix: Prefix,
+      histogram: Histogram
+  ): Unit = {
+    val (restartResponse, restartLatency) =
+      Timing.measureTimeMillis(smClient.restartSequencer(prefix.subsystem, ObsMode(prefix.componentName)).futureValue)
     restartResponse match {
       case RestartSequencerResponse.Success(componentId) =>
-        log.info(s"Restart ${prefix.subsystem} sequencer response ---> RestartSequencerResponse.Success($componentId)")
+        log.info(s"Restart $prefix sequencer response ---> RestartSequencerResponse.Success($componentId)")
       case failure: RestartSequencerResponse.Failure =>
-        throw new Exception(s"Failure to restart sequencer of prefix:$prefix : ${failure.getMessage}")
+        throw new Exception(
+          s"Failure to restart sequencer of prefix:$prefix : ${failure.getMessage}"
+        )
     }
     histogram.recordValue(restartLatency)
     // to simulate actual observation
@@ -226,9 +232,13 @@ object SequenceManagerReliabilityTest extends LocationUtils {
       })
   }
 
-  private def shutdownSequencer(prefix: Prefix, histogram: Histogram): Unit = {
+  private def shutdownSequencer(
+      prefix: Prefix,
+      histogram: Histogram
+  ): Unit = {
     val (shutdownResponse, shutdownSeqLatency) =
-      Timing.measureTimeMillis(smClient.shutdownSequencer(prefix).futureValue)
+      Timing.measureTimeMillis(smClient.shutdownSequencer(prefix.subsystem, ObsMode(prefix.componentName)).futureValue)
+
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
         log.info(s"$prefix sequencer shutdown Successfully")

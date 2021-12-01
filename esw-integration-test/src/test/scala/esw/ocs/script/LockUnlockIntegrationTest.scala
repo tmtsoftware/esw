@@ -9,6 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.server.testdata.AssemblyBehaviourFactory
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 
 class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
@@ -20,7 +21,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
   }
 
   override def beforeEach(): Unit = {
-    ocsSequencer = spawnSequencerProxy(Prefix(ESW, "lockUnlockScript"))
+    ocsSequencer = spawnSequencerProxy(ESW, ObsMode("lockUnlockScript"))
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()

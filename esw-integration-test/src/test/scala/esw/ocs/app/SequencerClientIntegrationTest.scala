@@ -18,9 +18,9 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.actor.messages.InternalSequencerState.{Loaded, Offline}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.{SequencerState, ObsMode, Step, StepList}
+import esw.ocs.api.models.{ObsMode, SequencerState, Step, StepList}
+import esw.ocs.api.protocol.*
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
-import esw.ocs.api.protocol._
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future
@@ -41,14 +41,14 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   override protected def beforeEach(): Unit = {
     //ocs sequencer, starts with TestScript2
-    spawnSequencer(Prefix(subsystem, obsMode.name))
+    spawnSequencer(subsystem, obsMode)
 
     ocsSequencer = sequencerClient(subsystem, obsMode)
 
     // tcs sequencer, starts with TestScript3
     val tcsSequencerId      = TCS
     val tcsSequencerObsMode = ObsMode("moonnight")
-    spawnSequencer(Prefix(tcsSequencerId, tcsSequencerObsMode.name))
+    spawnSequencer(tcsSequencerId, tcsSequencerObsMode)
     tcsSequencer = sequencerClient(tcsSequencerId, tcsSequencerObsMode)
   }
 
@@ -303,7 +303,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     //start sequencer
     val obsMode  = ObsMode("darknight")
-    val response = sequenceComponentImpl.loadScript(Prefix(ESW, obsMode.name)).futureValue
+    val response = sequenceComponentImpl.loadScript(ESW, obsMode).futureValue
     response shouldBe a[SequencerLocation]
 
     val sequencer: SequencerApi = sequencerClient(ESW, obsMode)

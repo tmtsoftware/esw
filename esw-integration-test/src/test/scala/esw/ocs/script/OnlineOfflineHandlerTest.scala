@@ -17,7 +17,7 @@ class OnlineOfflineHandlerTest extends EswTestKit(EventServer) {
   private var ocsSequencer: SequencerApi = _
 
   override def beforeEach(): Unit = {
-    ocsSequencer = spawnSequencerProxy(Prefix(ocsSubsystem, ocsObsMode.name))
+    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
   }
 
   "onOnline/onOffline handler should be called again if goOnline/goOffline message received while sequencer is online/offline respectively | ESW-287" in {

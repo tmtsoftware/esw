@@ -23,7 +23,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.server.{GatewaySetup, GatewayWiring}
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
-import esw.ocs.api.models.{ObsMode, VariationId}
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
@@ -217,7 +217,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       // start sequencer i.e. load IRIS darknight script
       val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
-      val loadScriptResponse = seqCompApi.loadScript(Prefix(IRIS, darknight.name)).futureValue
+      val loadScriptResponse = seqCompApi.loadScript(IRIS, darknight).futureValue
 
       // verify sequencer location from load script and looked up from location service is the same
       loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
@@ -375,7 +375,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       agentService.spawnSequenceComponent(eswAgentPrefix, "primary", ocsVersionOpt).futureValue
       agentService.spawnSequenceComponent(irisAgentPrefix, "primary", ocsVersionOpt).futureValue
 
-      sequenceManager.startSequencer(Prefix(IRIS, IRIS_DARKNIGHT.name))
+      sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT)
       sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT, None)
 
       val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
@@ -619,9 +619,9 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       // verify that sequencer is not present
       intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer))
 
-      val response  = sequenceManagerClient.startSequencer(Prefix(ESW, IRIS_DARKNIGHT.name)).futureValue
-      val response2 = sequenceManagerClient.startSequencer(Prefix(IRIS, IRIS_CAL.name)).futureValue
-      val response3 = sequenceManagerClient.startSequencer(Prefix(AOESW, IRIS_CAL.name)).futureValue
+      val response  = sequenceManagerClient.startSequencer(ESW, IRIS_DARKNIGHT).futureValue
+      val response2 = sequenceManagerClient.startSequencer(IRIS, IRIS_CAL).futureValue
+      val response3 = sequenceManagerClient.startSequencer(AOESW, IRIS_CAL).futureValue
 
       // ESW-176 Verify that start sequencer return Started response with component id for master sequencer
       response should ===(StartSequencerResponse.Started(ComponentId(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer)))
@@ -634,7 +634,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       resolveHTTPLocation(Prefix(AOESW, IRIS_CAL.name), Sequencer)
 
       // ESW-326, ESW-167 Verify that shutdown sequencer returns Success
-      val shutdownResponse = sequenceManagerClient.shutdownSequencer(Prefix(ESW, IRIS_DARKNIGHT.name)).futureValue
+      val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
       shutdownResponse should ===(ShutdownSequencersResponse.Success)
 
       // verify that sequencer is shut down
@@ -648,7 +648,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       resolveSequenceComponentLocation(Prefix(AOESW, "primary"))
 
       // ESW-351
-      val shutdownResponse2 = sequenceManagerClient.shutdownSequencer(Prefix(AOESW, IRIS_CAL.name)).futureValue
+      val shutdownResponse2 = sequenceManagerClient.shutdownSequencer(AOESW, IRIS_CAL).futureValue
       shutdownResponse2 should ===(ShutdownSequencersResponse.Success)
 
       // verify that sequencer is shut down
@@ -670,13 +670,13 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
-      sequenceManagerClient.startSequencer(Prefix(ESW, IRIS_DARKNIGHT.name))
+      sequenceManagerClient.startSequencer(ESW, IRIS_DARKNIGHT)
 
       // verify that sequencer is started
       val initialLocation = resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer)
 
       // restart sequencer that is already running
-      val secondRestartResponse = sequenceManagerClient.restartSequencer(Prefix(ESW, IRIS_DARKNIGHT.name)).futureValue
+      val secondRestartResponse = sequenceManagerClient.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
       // verify that restart sequencer return Success response with component id
       secondRestartResponse should ===(RestartSequencerResponse.Success(componentId))
 
@@ -696,7 +696,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
       // restart sequencer that is not already running
-      val secondRestartResponse = sequenceManagerClient.restartSequencer(componentId.prefix).futureValue
+      val secondRestartResponse = sequenceManagerClient.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
       // verify that restart sequencer return Error response with connection
       secondRestartResponse should ===(LocationServiceError(s"Could not find location matching connection: $connection"))
       TestSetup.cleanup()
@@ -708,8 +708,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT.name)
       val wfosCalPrefix       = Prefix(WFOS, WFOS_CAL.name)
 
-      val darkNightSequencerL = spawnSequencer(Prefix(ESW, IRIS_DARKNIGHT.name))
-      val calSequencerL       = spawnSequencer(Prefix(WFOS, WFOS_CAL.name))
+      val darkNightSequencerL = spawnSequencer(ESW, IRIS_DARKNIGHT)
+      val calSequencerL       = spawnSequencer(WFOS, WFOS_CAL)
 
       // verify all sequencers are started
       resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
@@ -733,8 +733,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT.name)
       val irisCalPrefix       = Prefix(ESW, IRIS_CAL.name)
 
-      val darkNightSequencerL = spawnSequencer(Prefix(ESW, IRIS_DARKNIGHT.name))
-      val calSequencerL       = spawnSequencer(Prefix(ESW, IRIS_CAL.name))
+      val darkNightSequencerL = spawnSequencer(ESW, IRIS_DARKNIGHT)
+      val calSequencerL       = spawnSequencer(ESW, IRIS_CAL)
 
       // verify Sequencers are started
       resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
@@ -760,7 +760,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       // verify that sequencer is not present
       intercept[Exception](resolveHTTPLocation(Prefix(ESW, "invalid_obs_mode"), Sequencer))
 
-      val response: StartSequencerResponse = sequenceManagerClient.startSequencer(Prefix(ESW, "invalid_obs_mode")).futureValue
+      val response: StartSequencerResponse = sequenceManagerClient.startSequencer(ESW, ObsMode("invalid_obs_mode")).futureValue
 
       response shouldBe a[LoadScriptError]
       val loadScriptError: LoadScriptError = response.asInstanceOf[LoadScriptError]

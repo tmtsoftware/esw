@@ -55,9 +55,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
   override def beforeEach(): Unit = {
     //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
-    ocsSequencer = spawnSequencerProxy(Prefix(ocsSubsystem, ocsObsMode.name))
-    tcsSequencer = spawnSequencerProxy(Prefix(tcsSubsystem, tcsObsMode.name))
-    lgsfSequencer = spawnSequencerProxy(Prefix(lgsfSubsystem, lgsfObsMode.name))
+    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
+    tcsSequencer = spawnSequencerProxy(tcsSubsystem, tcsObsMode)
+    lgsfSequencer = spawnSequencerProxy(lgsfSubsystem, lgsfObsMode)
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()
