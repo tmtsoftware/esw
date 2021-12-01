@@ -5,7 +5,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation, VariationId}
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
 import esw.testcommons.BaseTestSuite
 
@@ -16,10 +16,10 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
   val eswSecondarySeqCompLoc: AkkaLocation = akkaLocation(ComponentId(Prefix(ESW, "secondary"), SequenceComponent))
   val tcsPrimarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(TCS, "primary"), SequenceComponent))
   val irisPrimarySeqCompLoc: AkkaLocation  = akkaLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
-  val clearSkies                           = ObsMode("clearSkies")
-  private val eswPrefix: Prefix            = Prefix(ESW, clearSkies.name)
-  private val irisPrefix: Prefix           = Prefix(IRIS, clearSkies.name)
-  private val tcsPrefix: Prefix            = Prefix(TCS, clearSkies.name)
+  val clearSkies: ObsMode                  = ObsMode("clearSkies")
+  private val eswVariationId: VariationId  = VariationId(ESW, Some(Variation("variation")))
+  private val irisVariationId: VariationId = VariationId(IRIS, Some(Variation("variation")))
+  private val tcsVariationId: VariationId  = VariationId(TCS, Some(Variation("variation")))
   val sequenceComponentAllocator           = new SequenceComponentAllocator()
 
   "allocate" must {
@@ -27,12 +27,17 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
       val sequencerToSeqCompMapping = sequenceComponentAllocator
         .allocate(
           List(tcsPrimarySeqCompLoc, irisPrimarySeqCompLoc, eswPrimarySeqCompLoc, eswSecondarySeqCompLoc),
-          List(tcsPrefix, irisPrefix, eswPrefix)
+          clearSkies,
+          List(tcsVariationId, irisVariationId, eswVariationId)
         )
         .rightValue
 
       val expected =
-        List((eswPrefix, eswPrimarySeqCompLoc), (tcsPrefix, tcsPrimarySeqCompLoc), (irisPrefix, irisPrimarySeqCompLoc))
+        List(
+          (eswVariationId, eswPrimarySeqCompLoc),
+          (tcsVariationId, tcsPrimarySeqCompLoc),
+          (irisVariationId, irisPrimarySeqCompLoc)
+        )
 
       sequencerToSeqCompMapping should ===(expected)
     }
@@ -41,12 +46,17 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
       val sequencerToSeqCompMapping = sequenceComponentAllocator
         .allocate(
           List(irisPrimarySeqCompLoc, eswPrimarySeqCompLoc, eswSecondarySeqCompLoc),
-          List(tcsPrefix, irisPrefix, eswPrefix)
+          clearSkies,
+          List(tcsVariationId, irisVariationId, eswVariationId)
         )
         .rightValue
 
       val expected =
-        List((eswPrefix, eswPrimarySeqCompLoc), (tcsPrefix, eswSecondarySeqCompLoc), (irisPrefix, irisPrimarySeqCompLoc))
+        List(
+          (eswVariationId, eswPrimarySeqCompLoc),
+          (tcsVariationId, eswSecondarySeqCompLoc),
+          (irisVariationId, irisPrimarySeqCompLoc)
+        )
 
       sequencerToSeqCompMapping should ===(expected)
     }
@@ -55,12 +65,13 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
       val sequencerToSeqCompMapping =
         sequenceComponentAllocator.allocate(
           List(tcsPrimarySeqCompLoc, eswPrimarySeqCompLoc),
-          List(eswPrefix, tcsPrefix, irisPrefix)
+          clearSkies,
+          List(eswVariationId, tcsVariationId, irisVariationId)
         )
 
       val response = sequencerToSeqCompMapping.leftValue
       response shouldBe a[SequenceComponentNotAvailable]
-      response.sequencerPrefixes shouldBe List(irisPrefix) // because IRIS is last in the List.
+      response.sequencerPrefixes shouldBe List(irisVariationId) // because IRIS is last in the List.
     }
   }
 

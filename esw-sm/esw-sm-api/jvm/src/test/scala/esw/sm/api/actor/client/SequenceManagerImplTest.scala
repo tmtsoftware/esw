@@ -7,7 +7,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.*
@@ -28,7 +28,7 @@ class SequenceManagerImplTest extends ActorTestSuit {
 
   private val obsMode   = ObsMode(randomString5)
   private val subsystem = randomSubsystem
-  private val prefix    = Prefix(subsystem, obsMode.name)
+  private val variation = Some(Variation(randomString5))
 
   "SequenceManagerImpl" must {
     "configure | ESW-362" in {
@@ -42,28 +42,28 @@ class SequenceManagerImplTest extends ActorTestSuit {
 
     "startSequencer | ESW-362, ESW-561" in {
       val startSequencerResponse = mock[StartSequencerResponse]
-      withBehavior { case SequenceManagerMsg.StartSequencer(`prefix`, replyTo) =>
+      withBehavior { case SequenceManagerMsg.StartSequencer(`subsystem`, `obsMode`, `variation`, replyTo) =>
         replyTo ! startSequencerResponse
       } check { sm =>
-        sm.startSequencer(prefix).futureValue should ===(startSequencerResponse)
+        sm.startSequencer(subsystem, obsMode, variation).futureValue should ===(startSequencerResponse)
       }
     }
 
     "restartSequencer | ESW-362, ESW-561" in {
       val restartSequencerResponse = mock[RestartSequencerResponse]
-      withBehavior { case SequenceManagerMsg.RestartSequencer(`prefix`, replyTo) =>
+      withBehavior { case SequenceManagerMsg.RestartSequencer(`subsystem`, `obsMode`, `variation`, replyTo) =>
         replyTo ! restartSequencerResponse
       } check { sm =>
-        sm.restartSequencer(prefix).futureValue should ===(restartSequencerResponse)
+        sm.restartSequencer(subsystem, obsMode, variation).futureValue should ===(restartSequencerResponse)
       }
     }
 
     "shutdownSequencer | ESW-326, ESW-362, ESW-561" in {
       val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
-      withBehavior { case SequenceManagerMsg.ShutdownSequencer(`prefix`, replyTo) =>
+      withBehavior { case SequenceManagerMsg.ShutdownSequencer(`subsystem`, `obsMode`, `variation`, replyTo) =>
         replyTo ! shutdownSequencersResponse
       } check { sm =>
-        sm.shutdownSequencer(prefix).futureValue should ===(shutdownSequencersResponse)
+        sm.shutdownSequencer(subsystem, obsMode, variation).futureValue should ===(shutdownSequencersResponse)
       }
     }
 

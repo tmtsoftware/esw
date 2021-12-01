@@ -10,11 +10,11 @@ import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.{ObsMode, SequencerId}
 import esw.ocs.api.models.SequenceComponentState.Idle
+import esw.ocs.api.models.{ObsMode, Variation, VariationId}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
-import esw.sm.api.models.SequencerIds
+import esw.sm.api.models.VariationIds
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
@@ -44,31 +44,32 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "startSequencersByMapping" must {
-    val eswSequencerPrefix = Prefix(ESW, darkNightObsMode.name)
-    val tcsSequencerPrefix = Prefix(TCS, darkNightObsMode.name)
+    val eswSequencerVariationId = VariationId(ESW, Some(Variation("red")))
+    val tcsSequencerVariationId = VariationId(TCS, Some(Variation("red")))
+
     "start all the given sequencers | ESW-178, ESW-561" in {
-      when(sequenceComponentUtil.loadScript(eswSequencerPrefix, eswPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, None, eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(eswDarkNightSequencer))))
-      when(sequenceComponentUtil.loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
 
       // returns success with master sequencer location after starting all the sequencers
       val response = sequencerUtil
         .startSequencersByMapping(
           darkNightObsMode,
-          List((eswSequencerPrefix, eswPrimarySeqCompLoc), (tcsSequencerPrefix, tcsPrimarySeqCompLoc))
+          List((eswSequencerVariationId, eswPrimarySeqCompLoc), (tcsSequencerVariationId, tcsPrimarySeqCompLoc))
         )
         .futureValue
 
       response should ===(Success(eswDarkNightSequencer))
-      verify(sequenceComponentUtil).loadScript(eswSequencerPrefix, eswPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, None, eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc)
     }
 
     "start all the given sequencers concurrently | ESW-178, ESW-561" in {
-      when(sequenceComponentUtil.loadScript(eswSequencerPrefix, eswPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, None, eswPrimarySeqCompLoc))
         .thenReturn(future(1.seconds, Right(Started(eswDarkNightSequencer))))
-      when(sequenceComponentUtil.loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc))
         .thenReturn(future(1.seconds, Right(Started(tcsDarkNightSequencer))))
 
       // each load script call taking 1 second
@@ -77,33 +78,34 @@ class SequencerUtilTest extends BaseTestSuite {
         sequencerUtil
           .startSequencersByMapping(
             darkNightObsMode,
-            List((eswSequencerPrefix, eswPrimarySeqCompLoc), (tcsSequencerPrefix, tcsPrimarySeqCompLoc))
+            List((eswSequencerVariationId, eswPrimarySeqCompLoc), (tcsSequencerVariationId, tcsPrimarySeqCompLoc))
           ),
         1200.millis
       )
 
       response should ===(Success(eswDarkNightSequencer))
-      verify(sequenceComponentUtil).loadScript(eswSequencerPrefix, eswPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, None, eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc)
     }
 
     "return all the errors caused while starting the sequencers  | ESW-178, ESW-561" in {
       // load script error for ESW
       val loadScriptError = LoadScriptError("load script error")
-      when(sequenceComponentUtil.loadScript(eswSequencerPrefix, eswPrimarySeqCompLoc)).thenReturn(futureLeft(loadScriptError))
-      when(sequenceComponentUtil.loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, None, eswPrimarySeqCompLoc))
+        .thenReturn(futureLeft(loadScriptError))
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
 
       val response = sequencerUtil
         .startSequencersByMapping(
           darkNightObsMode,
-          List((eswSequencerPrefix, eswPrimarySeqCompLoc), (tcsSequencerPrefix, tcsPrimarySeqCompLoc))
+          List((eswSequencerVariationId, eswPrimarySeqCompLoc), (tcsSequencerVariationId, tcsPrimarySeqCompLoc))
         )
         .futureValue
 
       response should ===(FailedToStartSequencers(Set(loadScriptError.msg)))
-      verify(sequenceComponentUtil).loadScript(eswSequencerPrefix, eswPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, None, eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc)
     }
   }
 
@@ -271,79 +273,79 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "startSequencers" must {
-    val eswSequencerPrefix  = Prefix(ESW, darkNightObsMode.name)
-    val tcsSequencerPrefix  = Prefix(TCS, darkNightObsMode.name)
-    val irisSequencerPrefix = Prefix(IRIS, darkNightObsMode.name)
-    val sequencerPrefixes   = List(irisSequencerPrefix, eswSequencerPrefix, tcsSequencerPrefix)
-    val sequencerIds        = SequencerIds(SequencerId(IRIS), SequencerId(ESW), SequencerId(TCS))
+    val eswSequencerVariationId  = VariationId(ESW, Some(Variation("red")))
+    val tcsSequencerVariationId  = VariationId(TCS, Some(Variation("red")))
+    val irisSequencerVariationId = VariationId(IRIS, Some(Variation("red")))
+    val sequencerVariations      = List(irisSequencerVariationId, eswSequencerVariationId, tcsSequencerVariationId)
+    val sequencerIds             = VariationIds(VariationId(IRIS), VariationId(ESW), VariationId(TCS))
 
     "return success when adequate idle sequence components are available and all sequencers are started successfully | ESW-178, ESW-561" in {
-      when(sequenceComponentUtil.allocateSequenceComponents(sequencerPrefixes))
+      when(sequenceComponentUtil.allocateSequenceComponents(darkNightObsMode, sequencerVariations))
         .thenReturn(
           futureRight(
             List(
-              (irisSequencerPrefix, eswPrimarySeqCompLoc),
-              (eswSequencerPrefix, eswSecondarySeqCompLoc),
-              (tcsSequencerPrefix, tcsPrimarySeqCompLoc)
+              (irisSequencerVariationId, eswPrimarySeqCompLoc),
+              (eswSequencerVariationId, eswSecondarySeqCompLoc),
+              (tcsSequencerVariationId, tcsPrimarySeqCompLoc)
             )
           )
         )
-      when(sequenceComponentUtil.loadScript(eswSequencerPrefix, eswSecondarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, None, eswSecondarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(eswDarkNightSequencer))))
-      when(sequenceComponentUtil.loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
-      when(sequenceComponentUtil.loadScript(irisSequencerPrefix, eswPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(IRIS, darkNightObsMode, None, eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(irisDarkNightSequencer))))
 
       sequencerUtil.startSequencers(darkNightObsMode, sequencerIds).futureValue should ===(Success(eswDarkNightSequencer))
 
-      verify(sequenceComponentUtil).allocateSequenceComponents(sequencerPrefixes)
-      verify(sequenceComponentUtil).loadScript(eswSequencerPrefix, eswSecondarySeqCompLoc)
-      verify(sequenceComponentUtil).loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).loadScript(irisSequencerPrefix, eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).allocateSequenceComponents(darkNightObsMode, sequencerVariations)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, None, eswSecondarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(IRIS, darkNightObsMode, None, eswPrimarySeqCompLoc)
     }
 
     "return failure when adequate sequence components are not available to start sequencers | ESW-178, ESW-340, ESW-561" in {
-      when(sequenceComponentUtil.allocateSequenceComponents(sequencerPrefixes))
-        .thenReturn(futureLeft(SequenceComponentNotAvailable(List(eswSequencerPrefix))))
+      when(sequenceComponentUtil.allocateSequenceComponents(darkNightObsMode, sequencerVariations))
+        .thenReturn(futureLeft(SequenceComponentNotAvailable(List(eswSequencerVariationId.prefix(darkNightObsMode)))))
 
       sequencerUtil
         .startSequencers(darkNightObsMode, sequencerIds)
-        .futureValue should ===(SequenceComponentNotAvailable(List(eswSequencerPrefix)))
+        .futureValue should ===(SequenceComponentNotAvailable(List(eswSequencerVariationId.prefix(darkNightObsMode))))
 
-      verify(sequenceComponentUtil).allocateSequenceComponents(sequencerPrefixes)
+      verify(sequenceComponentUtil).allocateSequenceComponents(darkNightObsMode, sequencerVariations)
     }
 
     "return failure when location service error | ESW-178, ESW-561" in {
-      when(sequenceComponentUtil.allocateSequenceComponents(sequencerPrefixes))
+      when(sequenceComponentUtil.allocateSequenceComponents(darkNightObsMode, sequencerVariations))
         .thenReturn(Future.successful(Left(LocationServiceError("error"))))
 
       sequencerUtil.startSequencers(darkNightObsMode, sequencerIds).futureValue should ===(
         LocationServiceError("error")
       )
 
-      verify(sequenceComponentUtil).allocateSequenceComponents(sequencerPrefixes)
+      verify(sequenceComponentUtil).allocateSequenceComponents(darkNightObsMode, sequencerVariations)
     }
 
     "return failure when load script fails | ESW-178, ESW-561" in {
       val eswLoadScriptError  = LoadScriptError("error for esw sequencer")
       val irisLoadScriptError = LoadScriptError("error for iris sequencer")
 
-      when(sequenceComponentUtil.allocateSequenceComponents(sequencerPrefixes))
+      when(sequenceComponentUtil.allocateSequenceComponents(darkNightObsMode, sequencerVariations))
         .thenReturn(
           futureRight(
             List(
-              (irisSequencerPrefix, irisPrimarySeqCompLoc),
-              (eswSequencerPrefix, eswPrimarySeqCompLoc),
-              (tcsSequencerPrefix, tcsPrimarySeqCompLoc)
+              (irisSequencerVariationId, irisPrimarySeqCompLoc),
+              (eswSequencerVariationId, eswPrimarySeqCompLoc),
+              (tcsSequencerVariationId, tcsPrimarySeqCompLoc)
             )
           )
         )
-      when(sequenceComponentUtil.loadScript(eswSequencerPrefix, eswPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, None, eswPrimarySeqCompLoc))
         .thenReturn(Future.successful(Left(eswLoadScriptError)))
-      when(sequenceComponentUtil.loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc))
         .thenReturn(Future.successful(Right(Started(tcsDarkNightSequencer))))
-      when(sequenceComponentUtil.loadScript(irisSequencerPrefix, irisPrimarySeqCompLoc))
+      when(sequenceComponentUtil.loadScript(IRIS, darkNightObsMode, None, irisPrimarySeqCompLoc))
         .thenReturn(Future.successful(Left(irisLoadScriptError)))
 
       val actualError = sequencerUtil.startSequencers(darkNightObsMode, sequencerIds).futureValue
@@ -352,10 +354,10 @@ class SequencerUtilTest extends BaseTestSuite {
         s"Failed to configure: failed to start sequencers Set(${irisLoadScriptError.msg}, ${eswLoadScriptError.msg})"
       )
 
-      verify(sequenceComponentUtil).allocateSequenceComponents(sequencerPrefixes)
-      verify(sequenceComponentUtil).loadScript(eswSequencerPrefix, eswPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).loadScript(tcsSequencerPrefix, tcsPrimarySeqCompLoc)
-      verify(sequenceComponentUtil).loadScript(irisSequencerPrefix, irisPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).allocateSequenceComponents(darkNightObsMode, sequencerVariations)
+      verify(sequenceComponentUtil).loadScript(ESW, darkNightObsMode, None, eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(TCS, darkNightObsMode, None, tcsPrimarySeqCompLoc)
+      verify(sequenceComponentUtil).loadScript(IRIS, darkNightObsMode, None, irisPrimarySeqCompLoc)
     }
   }
 

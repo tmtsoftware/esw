@@ -5,8 +5,8 @@ import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.*
-import esw.ocs.api.models.{ObsMode, SequencerId}
-import esw.sm.api.models.{Resource, Resources, SequencerIds}
+import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.sm.api.models.{Resource, Resources, VariationIds}
 import esw.sm.impl.config.*
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Borer.Error.InvalidInputData
@@ -23,12 +23,12 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
   private val tcs: Resource             = Resource(TCS)
   private val nfiraos: Resource         = Resource(NFIRAOS)
   private val aps: Resource             = Resource(Subsystem.APS)
-  private val eswSequencerId            = SequencerId(ESW)
-  private val tcsSequencerId            = SequencerId(TCS)
-  private val aoeswSequencerId          = SequencerId(AOESW)
-  private val irisSequencerId           = SequencerId(IRIS)
-  private val irisSequencerIdWithImager = SequencerId(IRIS, Some("IRIS_IMAGER"))
-  private val irisSequencerIdWithIFS    = SequencerId(IRIS, Some("IRIS_IFS"))
+  private val eswSequencerId            = VariationId(ESW)
+  private val tcsSequencerId            = VariationId(TCS)
+  private val aoeswSequencerId          = VariationId(AOESW)
+  private val irisSequencerId           = VariationId(IRIS)
+  private val irisSequencerIdWithImager = VariationId(IRIS, Some(Variation("IRIS_IMAGER")))
+  private val irisSequencerIdWithIFS    = VariationId(IRIS, Some(Variation("IRIS_IFS")))
 
   private val configUtils                 = mock[ConfigUtils]
   private val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
@@ -48,8 +48,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
     forAll(args) { (readObsModeConfigArg, getConfigArg, fileLocation) =>
       s"read obs mode config file from $fileLocation | ESW-162,ESW-561" in {
         val path = Paths.get("testObsModeConfig.conf")
-        val darkNightSequencers: SequencerIds =
-          SequencerIds(
+        val darkNightSequencers: VariationIds =
+          VariationIds(
             irisSequencerIdWithIFS,
             irisSequencerIdWithImager,
             irisSequencerId,
@@ -57,7 +57,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite with TableDrivenProp
             tcsSequencerId,
             aoeswSequencerId
           )
-        val calSequencers: SequencerIds = SequencerIds(irisSequencerId, eswSequencerId, aoeswSequencerId)
+        val calSequencers: VariationIds = VariationIds(irisSequencerId, eswSequencerId, aoeswSequencerId)
         val testConfig                  = ConfigFactory.parseResources(path.getFileName.toString)
 
         when(configUtils.getConfig(inputFilePath = path, isLocal = getConfigArg)).thenReturn(Future.successful(testConfig))

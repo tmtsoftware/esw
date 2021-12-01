@@ -1,7 +1,7 @@
 package esw.sm.api.client
 
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.ProvisionConfig
@@ -29,14 +29,26 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerRequest])
   override def getObsModesDetails: Future[ObsModesDetailsResponse] =
     postClient.requestResponse[ObsModesDetailsResponse](GetObsModesDetails)
 
-  override def startSequencer(prefix: Prefix): Future[StartSequencerResponse] =
-    postClient.requestResponse[StartSequencerResponse](StartSequencer(prefix))
+  override def startSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[StartSequencerResponse] =
+    postClient.requestResponse[StartSequencerResponse](StartSequencer(subsystem, obsMode, variation))
 
-  override def restartSequencer(prefix: Prefix): Future[RestartSequencerResponse] =
-    postClient.requestResponse[RestartSequencerResponse](RestartSequencer(prefix))
+  override def restartSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[RestartSequencerResponse] =
+    postClient.requestResponse[RestartSequencerResponse](RestartSequencer(subsystem, obsMode, variation))
 
-  override def shutdownSequencer(prefix: Prefix): Future[ShutdownSequencersResponse] =
-    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencer(prefix))
+  override def shutdownSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[ShutdownSequencersResponse] =
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencer(subsystem, obsMode, variation))
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
     postClient.requestResponse[ShutdownSequencersResponse](ShutdownSubsystemSequencers(subsystem))
