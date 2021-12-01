@@ -25,7 +25,7 @@ import esw.testcommons.BaseTestSuite
 import java.net.URI
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
-
+import org.mockito.Mockito.{reset, verify, when}
 class LocationServiceUtilTest extends BaseTestSuite {
 
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")

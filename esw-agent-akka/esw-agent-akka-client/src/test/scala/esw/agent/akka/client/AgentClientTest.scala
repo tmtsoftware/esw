@@ -17,6 +17,7 @@ import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 import java.net.URI
 import java.nio.file.Path
 import scala.concurrent.Future
+import org.mockito.Mockito.when
 
 class AgentClientTest extends ActorTestSuit {
 

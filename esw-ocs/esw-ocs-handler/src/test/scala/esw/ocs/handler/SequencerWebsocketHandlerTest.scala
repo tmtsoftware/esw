@@ -12,8 +12,8 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.SequencerState.Idle
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.{SequencerStateResponse, SequencerStreamRequest}
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
+import esw.ocs.api.protocol.{SequencerStateResponse, SequencerStreamRequest}
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
@@ -24,10 +24,10 @@ import msocket.http.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.SourceExtension.RichSource
 import msocket.jvm.metrics.LabelExtractor
+import org.mockito.Mockito.{reset, when}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
-
 class SequencerWebsocketHandlerTest
     extends BaseTestSuite
     with ScalatestRouteTest

@@ -13,11 +13,12 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
-import esw.ocs.api.actor.messages.InternalSequencerState._
-import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.InternalSequencerState.*
+import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.models.{SequencerState, StepList}
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
+import org.mockito.Mockito.when
 
 import java.net.URI
 import scala.concurrent.Await
@@ -31,7 +32,7 @@ class SequencerImplTest extends ActorTestSuit {
     }
   }
 
-  import askProxyTestKit._
+  import askProxyTestKit.*
 
   private implicit val timeout: Timeout = 10.seconds
   private val command                   = Setup(Prefix("esw.test"), CommandName("command-1"), None)

@@ -12,7 +12,7 @@ import org.scalatest.prop.Tables.Table
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
-
+import org.mockito.Mockito.when
 class VersionManagerTest extends BaseTestSuite {
   val actorTestKit: ActorTestKit            = ActorTestKit()
   val actorSystem: ActorSystem[_]           = actorTestKit.system

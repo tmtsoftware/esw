@@ -11,7 +11,7 @@ object Dependencies {
       Libs.`scala-java8-compat`,
       Libs.`msocket-api`.value,
       Libs.scalatest.value % Test,
-      Libs.`mockito-scala` % Test
+      Libs.`mockito`       % Test
     )
   )
 
@@ -33,7 +33,7 @@ object Dependencies {
       Libs.scalatest.value         % Test,
       AkkaHttp.`akka-http-testkit` % Test,
       Akka.`akka-stream-testkit`   % Test,
-      Libs.`mockito-scala`         % Test
+      Libs.`mockito`               % Test
     )
   )
 
@@ -51,7 +51,7 @@ object Dependencies {
       Libs.scalatest.value            % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`tmt-test-reporter`        % Test,
-      Libs.`mockito-scala`            % Test
+      Libs.`mockito`                  % Test
     )
   )
 
@@ -60,7 +60,7 @@ object Dependencies {
       Libs.`case-app`,
       Libs.`msocket-http`,
       Libs.scalatest.value            % Test,
-      Libs.`mockito-scala`            % Test,
+      Libs.`mockito`                  % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
@@ -83,7 +83,7 @@ object Dependencies {
     Seq(
       Csw.`csw-location-client`,
       Libs.scalatest.value     % Test,
-      Libs.`mockito-scala`     % Test,
+      Libs.`mockito`           % Test,
       Libs.`tmt-test-reporter` % Test
     )
   )
@@ -93,7 +93,7 @@ object Dependencies {
       Libs.`case-app`,
       Libs.`msocket-http`,
       Libs.scalatest.value         % Test,
-      Libs.`mockito-scala`         % Test,
+      Libs.`mockito`               % Test,
       Libs.`tmt-test-reporter`     % Test,
       AkkaHttp.`akka-http-testkit` % Test
     )
@@ -107,7 +107,7 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Akka.`akka-stream`,
       Libs.scalatest.value            % Test,
-      Libs.`mockito-scala`            % Test,
+      Libs.`mockito`                  % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
@@ -117,7 +117,7 @@ object Dependencies {
     Seq(
       Csw.`csw-prefix`.value,
       Akka.`akka-actor-typed`,
-      Libs.`mockito-scala`            % Test,
+      Libs.`mockito`                  % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
@@ -133,7 +133,7 @@ object Dependencies {
       AkkaHttp.`akka-http-cors`,
       Libs.`scala-async`,
       Libs.scalatest.value     % Test,
-      Libs.`mockito-scala`     % Test,
+      Libs.`mockito`           % Test,
       Libs.`tmt-test-reporter` % Test
     )
   )
@@ -149,7 +149,7 @@ object Dependencies {
       Csw.`csw-config-client`,
       Csw.`csw-time-scheduler`,
       Libs.scalatest.value     % Test,
-      Libs.`mockito-scala`     % Test,
+      Libs.`mockito`           % Test,
       Libs.`tmt-test-reporter` % Test
     )
   )
@@ -173,7 +173,7 @@ object Dependencies {
       Csw.`csw-command-client`,
       Csw.`csw-alarm-client`,
       Csw.`csw-config-client`,
-      Libs.`mockito-scala`            % Test,
+      Libs.`mockito`                  % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
@@ -209,7 +209,7 @@ object Dependencies {
       Csw.`csw-event-client`,
       Libs.caffeine,
       Csw.`csw-location-api`.value,
-      Libs.`mockito-scala`            % Test,
+      Libs.`mockito`                  % Test,
       Libs.scalatest.value            % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-remote`              % Test,
@@ -225,7 +225,7 @@ object Dependencies {
       Libs.`case-app`,
       Libs.`msocket-http`,
       Libs.`tmt-test-reporter`        % Test,
-      Libs.`mockito-scala`            % Test,
+      Libs.`mockito`                  % Test,
       Libs.scalatest.value            % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       AkkaHttp.`akka-http-testkit`    % Test,
@@ -247,7 +247,7 @@ object Dependencies {
       Csw.`csw-location-api`.value,
       Csw.`csw-config-client`,
       Akka.`akka-actor-typed`,
-      Libs.`mockito-scala`     % Test,
+      Libs.`mockito`           % Test,
       Libs.scalatest.value     % Test,
       Libs.`tmt-test-reporter` % Test
     )
@@ -258,7 +258,7 @@ object Dependencies {
       Borer.`borer-core`.value,
       Borer.`borer-derivation`.value,
       Csw.`csw-location-api`.value,
-      Libs.`mockito-scala` % Test,
+      Libs.`mockito`       % Test,
       Libs.scalatest.value % Test
     )
   )
@@ -275,7 +275,7 @@ object Dependencies {
     Seq(
       Libs.`case-app`,
       Libs.scalatest.value            % Test,
-      Libs.`mockito-scala`            % Test,
+      Libs.`mockito`                  % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
@@ -300,7 +300,7 @@ object Dependencies {
       Libs.`case-app`                 % Provided,
       Akka.`akka-remote`              % Test,
       Akka.`akka-actor-testkit-typed` % Test,
-      Libs.`mockito-scala`            % Test,
+      Libs.`mockito`                  % Test,
       Libs.scalatest.value            % Test
     )
   )
@@ -310,7 +310,7 @@ object Dependencies {
       Libs.`case-app`,
       Csw.`csw-services`,
       Libs.scalatest.value     % Test,
-      Libs.`mockito-scala`     % Test,
+      Libs.`mockito`           % Test,
       Libs.`tmt-test-reporter` % Test
     )
   )
@@ -321,7 +321,7 @@ object Dependencies {
       Akka.`akka-remote`,
       Csw.`csw-prefix`.value,
       Libs.scalatest.value,
-      Libs.`mockito-scala`,
+      Libs.`mockito`,
       Libs.`tmt-test-reporter`
     )
   )

@@ -11,10 +11,10 @@ object Libs {
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.6"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.7.0") //MIT License
-  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.16.42" // MIT License
+  val `mockito`            = "org.scalatestplus"              %% "mockito-3-4"        % "3.2.10.0"
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.1" //BSD 3-clause "New" or "Revised" License
   val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.2.10") //Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "1.0.1"   //BSD 3-clause "New" or "Revised" License
+  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "1.0.1" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
   val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "3.0.4"

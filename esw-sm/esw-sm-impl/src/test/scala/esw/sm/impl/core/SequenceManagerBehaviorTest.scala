@@ -2,17 +2,17 @@ package esw.sm.impl.core
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import csw.location.api.models.ComponentType._
+import csw.location.api.models.ComponentType.*
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem._
+import csw.prefix.models.Subsystem.*
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.actor.messages.{SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
 import esw.sm.api.models.SequenceManagerState.{Idle, Processing}
@@ -29,6 +29,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import org.mockito.Mockito.{never, reset, times, verify, when}
 
 class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenPropertyChecks {
 

@@ -56,6 +56,7 @@ object Common {
         "-Xasync"
         // -Y options are rarely needed, please look for -W equivalents
       ),
+      javaOptions += "-XX:+AllowRedefinitionToAddDeleteMethods",
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
       Test / testOptions ++= reporterOptions,
       Test / packageBin / publishArtifact := true,

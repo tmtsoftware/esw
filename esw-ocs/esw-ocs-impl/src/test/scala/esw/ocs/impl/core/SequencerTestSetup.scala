@@ -24,7 +24,6 @@ import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
-import org.mockito.MockitoSugar
 import org.scalatest.Assertion
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.matchers.should.Matchers
@@ -32,10 +31,10 @@ import org.scalatest.matchers.should.Matchers
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Random, Success}
-
+import org.mockito.Mockito.{verify, when}
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
-  import org.mockito.MockitoSugar._
+  import org.scalatestplus.mockito.MockitoSugar._
 
   implicit private val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
   implicit val ec: ExecutionContext                   = system.executionContext
@@ -87,7 +86,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   def loadAndStartSequenceThenAssertRunning(): Assertion = {
     val probe = TestProbe[SequencerSubmitResponse]()
 
-    when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
+    when { script.executeNewSequenceHandler() }.thenReturn(Future.successful(Done))
 
     sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
 
@@ -206,7 +205,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
       case Running                                 => stepList.get.nextPending shouldBe None
       case x: InternalSequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
     }
-    verify(script, timeout(1000)).executeAbort()
+    verify(script).executeAbort()
     probe
   }
 
@@ -236,7 +235,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
       case Running                                 => stepList shouldNot be(None)
       case x: InternalSequencerState[SequencerMsg] => assert(false, s"$x is not valid state after Stop")
     }
-    verify(script, timeout(1000)).executeStop()
+    verify(script).executeStop()
     probe
   }
 
@@ -302,7 +301,9 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val probe = TestProbe[DiagnosticModeResponse]()
     sequencerActor ! DiagnosticMode(startTime, hint, probe.ref)
 
-    verify(script, timeout(1000)).executeDiagnosticMode(startTime, hint)
+    Thread.sleep(500)
+    verify(script).executeDiagnosticMode(startTime, hint)
+
     probe.expectMessage(response)
   }
 
@@ -315,7 +316,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val probe = TestProbe[OperationsModeResponse]()
     sequencerActor ! OperationsMode(probe.ref)
 
-    verify(script, timeout(1000)).executeOperationsMode()
+    Thread.sleep(500)
+    verify(script).executeOperationsMode()
     probe.expectMessage(response)
   }
 
@@ -399,8 +401,6 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
 object SequencerTestSetup {
 
-  import org.mockito.MockitoSugar.when
-
   def idle(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     testSetup
@@ -431,7 +431,7 @@ object SequencerTestSetup {
 
   def offline(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
-    MockitoSugar.when(testSetup.script.executeGoOffline()).thenReturn(Future.successful(Done))
+    when(testSetup.script.executeGoOffline()).thenReturn(Future.successful(Done))
     testSetup.goOfflineAndAssertResponse(Ok)
     testSetup
   }
@@ -440,7 +440,7 @@ object SequencerTestSetup {
     val sequencerSetup = idle(sequence)
     import sequencerSetup._
 
-    when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
+    when { script.executeNewSequenceHandler() }.thenReturn(Future.successful(Done))
 
     val probe = TestProbe[SubmitResponse]()
     sequencerActor ! SubmitSequence(sequence, probe.ref)

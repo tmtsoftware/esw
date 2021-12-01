@@ -10,7 +10,7 @@ import esw.testcommons.BaseTestSuite
 import org.mockito.Mockito
 
 import scala.concurrent.Future
-
+import org.mockito.Mockito.{verify, when}
 class ConfigServiceExtTest extends BaseTestSuite {
   private val configService    = mock[ConfigService]
   private val configServiceExt = new ConfigServiceExt(configService)

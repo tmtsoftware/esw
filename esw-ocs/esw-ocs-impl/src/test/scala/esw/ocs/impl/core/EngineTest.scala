@@ -11,6 +11,7 @@ import esw.ocs.impl.script.ScriptApi
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
+import org.mockito.Mockito.{verify, when}
 
 class EngineTest extends BaseTestSuite {
   private implicit val test: ActorSystem = ActorSystem("test")

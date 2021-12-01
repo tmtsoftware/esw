@@ -27,6 +27,7 @@ import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
+import org.mockito.Mockito.{reset, verify, when}
 
 class SequenceComponentBehaviorTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "sequencer-test-system")

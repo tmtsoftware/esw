@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.SecurityDirectives
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
@@ -15,14 +15,15 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.protocol.SequencerRequest._
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.SequencerRequest.*
+import esw.ocs.api.protocol.*
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
 
 import scala.concurrent.Future
+import org.mockito.Mockito.{reset, times, verify, when}
 
 class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with SequencerServiceCodecs with ClientHttpCodecs {
 
@@ -307,7 +308,7 @@ class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest wit
       when(sequencer.getSequence).thenReturn(Future.failed(new RuntimeException("test")))
 
       Post("/post-endpoint", GetSequence.narrow) ~> route ~> check {
-        verify(sequencer, atLeast(1)).getSequence
+        verify(sequencer, times(1)).getSequence
         status should ===(StatusCodes.InternalServerError)
       }
     }

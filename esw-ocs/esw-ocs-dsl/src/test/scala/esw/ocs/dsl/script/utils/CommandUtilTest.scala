@@ -1,11 +1,9 @@
 package esw.ocs.dsl.script.utils
 
-import java.util.concurrent.TimeUnit
-
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
-import csw.location.api.extensions.ActorExtension._
+import csw.location.api.extensions.ActorExtension.*
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.prefix.models.Prefix
@@ -14,9 +12,10 @@ import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
 import esw.testcommons.BaseTestSuite
+import org.mockito.Mockito.{reset, verify, when}
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionException, Future}
-
 class CommandUtilTest extends BaseTestSuite {
   implicit val testSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
 

@@ -1,7 +1,6 @@
 package esw.ocs.impl.internal
 
 import java.net.URI
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
@@ -12,7 +11,7 @@ import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFaile
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models._
+import csw.location.api.models.*
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
@@ -20,12 +19,12 @@ import esw.commons.utils.location.EswLocationError
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.Stop
 import esw.testcommons.BaseTestSuite
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.captor.ArgCaptor
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
 import scala.concurrent.{ExecutionContext, Future}
-
+import org.mockito.Mockito.{reset, times, verify, when}
 class SequenceComponentRegistrationTest extends BaseTestSuite {
   private val subsystem = Subsystem.TCS
   private val uri       = new URI("uri")
@@ -245,13 +244,13 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       metadata: Metadata,
       noOfInvocation: Int = 1
   ): Unit = {
-    val captor = ArgCaptor[AkkaRegistration]
-    verify(locationService, times(noOfInvocation)).register(captor)
-    captor.values.foreach { value =>
-      value.connection.componentId.prefix.toString().contains(s"$subsystem.${subsystem}_") shouldBe true
-      value.connection.componentId.componentType should ===(SequenceComponent)
-      value.actorRefURI should ===(sequenceComponentProbe.ref.toURI)
-      value.metadata should ===(metadata)
-    }
+    val captor: ArgumentCaptor[AkkaRegistration] = ArgumentCaptor.forClass(classOf[AkkaRegistration])
+    verify(locationService, times(noOfInvocation)).register(captor.capture())
+    val value = captor.getValue
+    value.connection.componentId.prefix.toString().contains(s"$subsystem.${subsystem}_") shouldBe true
+    value.connection.componentId.componentType should ===(SequenceComponent)
+    value.actorRefURI should ===(sequenceComponentProbe.ref.toURI)
+    value.metadata should ===(metadata)
+
   }
 }
