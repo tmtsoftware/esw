@@ -10,7 +10,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.ocs.api.actor.messages.*
 import esw.ocs.api.actor.messages.SequenceComponentMsg.*
-import esw.ocs.api.models.SequenceComponentState
+import esw.ocs.api.models.{SequenceComponentState, Variation}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.*
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
@@ -46,8 +46,9 @@ class SequenceComponentBehavior(
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (_, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
-        case LoadScript(prefix, replyTo) =>
-          load(prefix, replyTo)
+        case LoadScript(subsystem, obsMode, variation, replyTo) =>
+          val sequencerPrefix = Variation.prefix(subsystem, obsMode, variation)
+          load(sequencerPrefix, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(None)
           Behaviors.same

@@ -6,13 +6,14 @@ import caseapp.RemainingArgs
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.location.client.utils.LocationServerStatus
-import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem
 import esw.commons.cli.EswCommandApp
 import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.constants.{CommonTimeouts, SequenceComponentTimeouts}
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.app.SequencerAppCommand.*
@@ -47,10 +48,10 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
       if (enableLogging) startLogging(sequenceCompLocation.prefix.toString())
       command match {
         case _: SequenceComponent => // sequence component is already started
-        case Sequencer(seqCompSubsystem, _, _, seqSubsystem, componentName, _) =>
-          val sequencerPrefix = new Prefix(seqSubsystem.getOrElse(seqCompSubsystem), componentName)
+        case Sequencer(seqCompSubsystem, _, _, seqSubsystem, obsMode, variation, _) =>
+          val subsystem = seqSubsystem.getOrElse(seqCompSubsystem)
           reportSequencer(
-            loadAndStartSequencer(sequencerPrefix, sequenceCompLocation, wiring)
+            loadAndStartSequencer(subsystem, obsMode, variation, sequenceCompLocation, wiring)
           )
       }
     }
@@ -70,7 +71,9 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   }
 
   private def loadAndStartSequencer(
-      sequencerPrefix: Prefix,
+      sequencerSubsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation],
       sequenceComponentLocation: AkkaLocation,
       sequenceComponentWiring: SequenceComponentWiring
   ) = {
@@ -78,7 +81,9 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     import actorRuntime.*
     val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
     val response: Future[ScriptResponseOrUnhandled] =
-      (actorRef ? ((replyTo: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(sequencerPrefix, replyTo)))(
+      (actorRef ? ((replyTo: ActorRef[ScriptResponseOrUnhandled]) =>
+        LoadScript(sequencerSubsystem, obsMode, variation, replyTo)
+      ))(
         SequenceComponentTimeouts.LoadScript,
         actorRuntime.typedSystem.scheduler
       )

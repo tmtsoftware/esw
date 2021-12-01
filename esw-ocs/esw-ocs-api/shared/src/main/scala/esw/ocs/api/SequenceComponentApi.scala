@@ -1,6 +1,7 @@
 package esw.ocs.api
 
-import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
 
 import scala.concurrent.Future
@@ -17,7 +18,7 @@ trait SequenceComponentApi {
    * @param prefix - subsystem of sequencer
    * @return a [[esw.ocs.api.protocol.SequenceComponentResponse.ScriptResponseOrUnhandled]] as a Future value
    */
-  def loadScript(prefix: Prefix): Future[ScriptResponseOrUnhandled]
+  def loadScript(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation] = None): Future[ScriptResponseOrUnhandled]
 
   /**
    * Restarts the sequencer. In other words, unloads the running script and loads it again.

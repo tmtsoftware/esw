@@ -9,7 +9,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.*
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponseOrUnhandled}
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
@@ -34,14 +34,14 @@ class SequenceComponentImplTest extends ActorTestSuit {
 
   private val obsMode   = ObsMode(randomString5)
   private val subsystem = randomSubsystem
-  private val seqPrefix = Prefix(subsystem, obsMode.name)
+  private val variation = Some(Variation(randomString5))
 
   "LoadScript | ESW-103, ESW-362, ESW-561" in {
     val loadScriptResponse = mock[ScriptResponseOrUnhandled]
-    withBehavior { case LoadScript(`seqPrefix`, replyTo) =>
+    withBehavior { case LoadScript(`subsystem`, `obsMode`, `variation`, replyTo) =>
       replyTo ! loadScriptResponse
     } check { sc =>
-      sc.loadScript(seqPrefix).futureValue should ===(loadScriptResponse)
+      sc.loadScript(subsystem, obsMode, variation).futureValue should ===(loadScriptResponse)
     }
   }
 

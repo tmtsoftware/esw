@@ -4,7 +4,7 @@ import caseapp.core.Error
 import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, HelpMessage, ExtraName => Short}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 
 import scala.util.Try
 
@@ -66,9 +66,14 @@ object SequencerAppCommand {
       @HelpMessage("optional argument: subsystem of sequencer script, ex: tcs, iris etc. Default value: subsystem provided")
       @Short("i")
       seqSubsystem: Option[Subsystem],
-      @HelpMessage("component name = obsmode[+variation] ex: IRIS_ImagerAndIFS.IRIS_IMAGER , IRIS_ImagerAndIFS ")
+      @HelpMessage("component name = obsmode ex: IRIS_ImagerAndIFS , IRIS_ImagerOnly ")
       @Short("m")
-      componentName: String,
+      obsMode: ObsMode,
+      @HelpMessage(
+        "optional variation part of the sequencer prefix ex: Sequencer Prefix(IRIS.IRIS_ImagerAndIFS.IRIS_IFS), IRIS_IFS needs to be provided as variation"
+      )
+      @Short("v")
+      variation: Option[Variation],
       @HelpMessage("simulation mode")
       @Short("simulation")
       simulation: Boolean = false
