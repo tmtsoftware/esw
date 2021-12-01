@@ -71,7 +71,7 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
 
       val response = sequencerToSeqCompMapping.leftValue
       response shouldBe a[SequenceComponentNotAvailable]
-      response.sequencerPrefixes shouldBe List(irisVariationId) // because IRIS is last in the List.
+      response.sequencerPrefixes shouldBe List(irisVariationId.prefix(clearSkies)) // because IRIS is last in the List.
     }
   }
 

@@ -51,7 +51,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val subsystem               = ESW
       val obsMode                 = ObsMode("darknight")
       val variation               = Some(Variation("variation"))
-      val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get}")
+      val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get.name}")
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
 
       when(sequencerServerFactory.make(prefix, sequenceComponentPrefix)).thenReturn(sequencerServer)
@@ -76,7 +76,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       //Assert if get status returns AkkaLocation of sequencer currently running
       val getStatusResponseOrUnhandled = getStatusProbe.receiveMessage(5.seconds)
       getStatusResponseOrUnhandled shouldBe a[GetStatusResponse]
-      val getStatusLocationResponse: Location = getStatusResponseOrUnhandled.asInstanceOf[GetStatusResponse].response.get
+      val getStatusLocationResponse: Location = getStatusResponseOrUnhandled.response.get
       getStatusLocationResponse.connection shouldEqual AkkaConnection(
         ComponentId(prefix, ComponentType.Sequencer)
       )
@@ -99,7 +99,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val subsystem               = IRIS
       val obsMode                 = ObsMode("darknight")
       val variation               = Some(Variation("variation"))
-      val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get}")
+      val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get.name}")
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
       when(sequencerServerFactory.make(prefix, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
@@ -166,7 +166,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val subsystem               = ESW
       val obsMode                 = ObsMode("darknight")
       val variation               = Some(Variation("variation"))
-      val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get}")
+      val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get.name}")
       val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
       val restartResponseProbe    = TestProbe[ScriptResponseOrUnhandled]()
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
