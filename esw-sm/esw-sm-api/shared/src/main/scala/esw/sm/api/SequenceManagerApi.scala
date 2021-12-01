@@ -1,7 +1,7 @@
 package esw.sm.api
 
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.*
 
@@ -37,26 +37,40 @@ trait SequenceManagerApi {
   /**
    * Starts sequencer of provided Prefix.
    *
-   * @param prefix for sequencer needs to be started
+   * @param subsystem for sequencer needs to be started
+   * @param obsMode for sequencer needs to be started
+   * @param variation a optional part of the sequencer prefix to be started
    * @return a future of [[esw.sm.api.protocol.StartSequencerResponse]] which completes with Success or Failure response ADT.
    */
-  def startSequencer(prefix: Prefix): Future[StartSequencerResponse]
+  def startSequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation] = None): Future[StartSequencerResponse]
 
   /**
    * Restarts running sequencer of provided Prefix.
    *
-   * @param prefix for sequencer needs to be re-started
+   * @param subsystem for sequencer needs to be started
+   * @param obsMode for sequencer needs to be started
+   * @param variation a optional part of the sequencer prefix to be started
    * @return a future of [[esw.sm.api.protocol.RestartSequencerResponse]] which completes with Success or Failure response ADT.
    */
-  def restartSequencer(prefix: Prefix): Future[RestartSequencerResponse]
+  def restartSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation] = None
+  ): Future[RestartSequencerResponse]
 
   /**
    * Shutdown running sequencer of provided Prefix.
    *
-   * @param prefix of sequencer needs to be shutdown
+   * @param subsystem for sequencer needs to be started
+   * @param obsMode for sequencer needs to be started
+   * @param variation a optional part of the sequencer prefix to be started
    * @return a future of [[esw.sm.api.protocol.ShutdownSequencersResponse]] which completes with Success or Failure response ADT.
    */
-  def shutdownSequencer(prefix: Prefix): Future[ShutdownSequencersResponse]
+  def shutdownSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation] = None
+  ): Future[ShutdownSequencersResponse]
 
   /**
    * Shutdown all running sequencers of provided Subsystem

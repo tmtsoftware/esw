@@ -3,6 +3,8 @@ package esw.sm.impl.utils
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
+import esw.ocs.api.models.{ObsMode, VariationId}
+import esw.sm.api.models.VariationIds
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
 import esw.sm.impl.utils.Types.*
 
@@ -11,10 +13,11 @@ class SequenceComponentAllocator() {
   // map sequencers to available seq comp for subsystem or ESW (fallback)
   def allocate(
       sequenceComponents: List[SeqCompLocation],
-      sequencerPrefixes: List[SequencerPrefix]
-  ): Either[SequenceComponentNotAvailable, List[(SequencerPrefix, SeqCompLocation)]] = {
-    val partitionedSubsystems: List[SequencerPrefix] = {
-      val partByESW = sequencerPrefixes.partition(p => p.subsystem == Subsystem.ESW)
+      obsMode: ObsMode,
+      variationIds: List[VariationId]
+  ): Either[SequenceComponentNotAvailable, List[(VariationId, SeqCompLocation)]] = {
+    val partitionedSubsystems: List[VariationId] = {
+      val partByESW = variationIds.partition(p => p.subsystem == Subsystem.ESW)
       partByESW._1 ++ partByESW._2
     }
     var locations = sequenceComponents
@@ -28,7 +31,7 @@ class SequenceComponentAllocator() {
 
     // check if each sequencer subsystem has allocated sequence component
     val diff = partitionedSubsystems.diff(mapping.map(_._1))
-    if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(diff))
+    if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(diff.map(_.prefix(obsMode))))
   }
 
   // find sequence component for provided subsystem or ESW (fallback)
@@ -38,5 +41,5 @@ class SequenceComponentAllocator() {
 }
 
 object SequenceComponentAllocator {
-  type SequencerToSequenceComponentMap = List[(SequencerPrefix, SeqCompLocation)]
+  type SequencerToSequenceComponentMap = List[(VariationId, SeqCompLocation)]
 }

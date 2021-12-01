@@ -6,12 +6,12 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
+import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.Prefix
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation, VariationId}
 import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.*
@@ -22,7 +22,7 @@ import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{ConfigurationMissing, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.protocol.StartSequencerResponse.AlreadyRunning
 import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
-import esw.sm.impl.utils.Types.{AgentLocation, SequencerPrefix}
+import esw.sm.impl.utils.Types.AgentLocation
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
@@ -67,9 +67,9 @@ class SequenceManagerBehavior(
       case Provision(config, replyTo)  => provision(config, self, replyTo)
 
       // Shutdown sequencers
-      case ShutdownSequencer(prefix, replyTo) =>
+      case ShutdownSequencer(subsystem, obsMode, variation, replyTo) =>
         sequencerUtil
-          .shutdownSequencer(prefix)
+          .shutdownSequencer(Variation.prefix(subsystem, obsMode, variation))
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError[ShutdownSequencer](self)
         processing(self, replyTo)
@@ -95,8 +95,9 @@ class SequenceManagerBehavior(
           .recoverWithProcessingError[ShutdownAllSequencers](self)
         processing(self, replyTo)
 
-      case StartSequencer(prefix, replyTo)   => startSequencer(prefix, self, replyTo)
-      case RestartSequencer(prefix, replyTo) => restartSequencer(prefix, self, replyTo)
+      case StartSequencer(subsystem, obsMode, variation, replyTo) => startSequencer(subsystem, obsMode, variation, self, replyTo)
+      case RestartSequencer(subsystem, obsMode, variation, replyTo) =>
+        restartSequencer(subsystem, obsMode, variation, self, replyTo)
 
       case ShutdownSequenceComponent(prefix, replyTo) =>
         sequenceComponentUtil
@@ -149,14 +150,20 @@ class SequenceManagerBehavior(
   //return Resources of a particular obsMode from the SequenceManagerConfig
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
 
-  private def startSequencer(prefix: Prefix, self: SelfRef, replyTo: ActorRef[StartSequencerResponse]) = {
-
+  private def startSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation],
+      self: SelfRef,
+      replyTo: ActorRef[StartSequencerResponse]
+  ) = {
+    val prefix = Variation.prefix(subsystem, obsMode, variation)
     // resolve is not needed here. Find should suffice
     // no concurrent start sequencer or configure is allowed
     locationServiceUtil
       .find(HttpConnection(ComponentId(prefix, Sequencer)))
       .flatMap {
-        case Left(_)         => sequenceComponentUtil.loadScript(prefix)
+        case Left(_)         => sequenceComponentUtil.loadScript(subsystem, obsMode, variation)
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
       .map(self ! ProcessingComplete(_))
@@ -164,7 +171,14 @@ class SequenceManagerBehavior(
     processing(self, replyTo)
   }
 
-  private def restartSequencer(prefix: SequencerPrefix, self: SelfRef, replyTo: ActorRef[RestartSequencerResponse]) = {
+  private def restartSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation],
+      self: SelfRef,
+      replyTo: ActorRef[RestartSequencerResponse]
+  ) = {
+    val prefix           = Variation.prefix(subsystem, obsMode, variation)
     val restartResponseF = sequencerUtil.restartSequencer(prefix)
     restartResponseF
       .map(self ! ProcessingComplete(_))
@@ -282,18 +296,17 @@ class SequenceManagerBehavior(
       configuredObsModes: Set[ObsMode],
       allIdleSequenceComps: List[AgentLocation]
   ): ObsModeStatus = {
-    def allocateSequenceComponents(sequencerPrefixes: List[SequencerPrefix]) = {
+    def allocateSequenceComponents(variationIds: List[VariationId]) = {
       val allocator = sequenceComponentUtil.sequenceComponentAllocator
       val subsystemSpecificIdleSeqComps =
-        allIdleSequenceComps.filter(location => sequencerPrefixes.map(_.subsystem).contains(location.prefix.subsystem))
-      allocator.allocate(subsystemSpecificIdleSeqComps, sequencerPrefixes)
+        allIdleSequenceComps.filter(location => variationIds.map(_.subsystem).contains(location.prefix.subsystem))
+      allocator.allocate(subsystemSpecificIdleSeqComps, obsMode, variationIds)
     }
 
     if (configuredObsModes.contains(obsMode)) Configured
     else {
       val conflicting          = isConflicting(obsModeConfig.resources, configuredObsModes)
-      val prefixes             = obsModeConfig.sequencers.sequencerIds.map(_.prefix(obsMode))
-      val missingSequenceComps = allocateSequenceComponents(prefixes)
+      val missingSequenceComps = allocateSequenceComponents(obsModeConfig.sequencers.variationIds)
       missingSequenceComps.fold(
         e => NonConfigurable(e.sequencerPrefixes),
         _ => if (conflicting) NonConfigurable(Nil) else Configurable
@@ -312,7 +325,7 @@ class SequenceManagerBehavior(
           val obsModes = sequenceManagerConfig.obsModes.toSet
           val obsModesStatus =
             obsModes.map { case (obsMode, cfg @ ObsModeConfig(resources, sequencers)) =>
-              val sequencerPrefixes = sequencers.sequencerIds.map(_.prefix(obsMode))
+              val sequencerPrefixes = sequencers.variationIds.map(_.prefix(obsMode))
               val obsMOdeStatus     = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
               ObsModeDetails(obsMode, obsMOdeStatus, resources, Sequencers(sequencerPrefixes))
             }
