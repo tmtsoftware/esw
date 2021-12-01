@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.backend.testkit.utils.IOUtils
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.*
@@ -28,13 +28,29 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
 
   override def provision(config: ProvisionConfig): Future[ProvisionResponse] = Future.successful(ProvisionResponse.Success)
 
-  override def startSequencer(prefix: Prefix): Future[StartSequencerResponse] =
+  override def startSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[StartSequencerResponse] = {
+    val prefix = Variation.prefix(subsystem, obsMode, variation)
     Future.successful(StartSequencerResponse.Started(ComponentId(prefix, Sequencer)))
+  }
 
-  override def restartSequencer(prefix: Prefix): Future[RestartSequencerResponse] =
+  override def restartSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[RestartSequencerResponse] = {
+    val prefix = Variation.prefix(subsystem, obsMode, variation)
     Future.successful(RestartSequencerResponse.Success(ComponentId(prefix, Sequencer)))
+  }
 
-  override def shutdownSequencer(prefix: Prefix): Future[ShutdownSequencersResponse] =
+  override def shutdownSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[ShutdownSequencersResponse] =
     Future.successful(ShutdownSequencersResponse.Success)
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =

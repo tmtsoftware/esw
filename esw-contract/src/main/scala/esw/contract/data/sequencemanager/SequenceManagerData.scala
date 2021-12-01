@@ -5,7 +5,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS, WFOS}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.sm.api.models
 import esw.sm.api.models.*
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
@@ -42,9 +42,10 @@ trait SequenceManagerData {
   val configure: Configure                                              = Configure(obsMode)
   val provision: Provision                                              = Provision(provisionConfig)
   val getObsModesDetails: GetObsModesDetails.type                       = GetObsModesDetails
-  val startSequencer: StartSequencer                                    = StartSequencer(eswSequencerPrefix)
-  val restartSequencer: RestartSequencer                                = RestartSequencer(eswSequencerPrefix)
-  val shutdownSequencer: ShutdownSequencer                              = ShutdownSequencer(eswSequencerPrefix)
+  val redVariation: Variation                                           = Variation("red")
+  val startSequencer: StartSequencer                                    = StartSequencer(ESW, obsMode, Some(redVariation))
+  val restartSequencer: RestartSequencer                                = RestartSequencer(ESW, obsMode, Some(redVariation))
+  val shutdownSequencer: ShutdownSequencer                              = ShutdownSequencer(ESW, obsMode, Some(redVariation))
   val shutdownSubsystemSequencers: ShutdownSubsystemSequencers          = ShutdownSubsystemSequencers(ESW)
   val shutdownObsModeSequencers: ShutdownObsModeSequencers              = ShutdownObsModeSequencers(obsMode)
   val shutdownAllSequencers: ShutdownAllSequencers.type                 = ShutdownAllSequencers
@@ -82,9 +83,9 @@ trait SequenceManagerData {
   val nonConfigurableObsMode: ObsModeDetails =
     models.ObsModeDetails(
       darkNight3ObsMode,
-      NonConfigurable(List(Prefix(IRIS, darkNight3ObsMode.name))),
+      NonConfigurable(List(Prefix(IRIS, darkNight3ObsMode.name + "." + redVariation.name))),
       Resources(eswResource, irisResource, wfosResource),
-      Sequencers(Prefix(ESW, darkNight3ObsMode.name), Prefix(TCS, darkNight3ObsMode.name))
+      Sequencers(Prefix(ESW, darkNight3ObsMode.name), Prefix(TCS, darkNight3ObsMode.name + "." + redVariation.name))
     )
   val ObsModesDetailsSuccess: ObsModesDetailsResponse.Success = ObsModesDetailsResponse.Success(
     Set(configuredObsMode, configurableObsMode, nonConfigurableObsMode)

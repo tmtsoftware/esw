@@ -23,7 +23,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.server.{GatewaySetup, GatewayWiring}
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
-import esw.ocs.api.models.{ObsMode, SequencerId}
+import esw.ocs.api.models.{ObsMode, VariationId}
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
@@ -375,7 +375,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       agentService.spawnSequenceComponent(eswAgentPrefix, "primary", ocsVersionOpt).futureValue
       agentService.spawnSequenceComponent(irisAgentPrefix, "primary", ocsVersionOpt).futureValue
 
-      sequenceManager.startSequencer(Prefix(IRIS, IRIS_DARKNIGHT.name)).futureValue
+      sequenceManager.startSequencer(Prefix(IRIS, IRIS_DARKNIGHT.name))
+      sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT, None)
 
       val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
 
