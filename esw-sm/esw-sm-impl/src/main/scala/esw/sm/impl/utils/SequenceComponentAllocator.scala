@@ -4,7 +4,6 @@ import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.{ObsMode, VariationId}
-import esw.sm.api.models.VariationIds
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
 import esw.sm.impl.utils.Types.*
 

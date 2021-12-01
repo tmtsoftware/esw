@@ -37,6 +37,11 @@ object SequencerAppCommand {
       Right(ObsMode(obsModeName))
     }
 
+  implicit val variationParser: SimpleArgParser[Variation] =
+    SimpleArgParser.from[Variation]("variation") { variation =>
+      Right(Variation(variation))
+    }
+
   @CommandName("seqcomp")
   final case class SequenceComponent(
       @HelpMessage("subsystem of the sequence component, ex: tcs")
