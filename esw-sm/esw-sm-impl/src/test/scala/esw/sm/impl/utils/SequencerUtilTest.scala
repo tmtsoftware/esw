@@ -224,7 +224,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "shutdownObsModeSequencers" must {
     "stop all the sequencers running for specified Obs Mode | ESW-166, ESW-351" in {
-      when(locationServiceUtil.listAkkaLocationsBy(darkNightObsMode.name, Sequencer))
+      when(locationServiceUtil.listSequencersAkkaLocationsBy(darkNightObsMode.name))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, tcsDarkNightSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswPrimarySeqCompLoc)).thenReturn(Future.successful(Ok))
@@ -240,7 +240,7 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-166, ESW-351" in {
-      when(locationServiceUtil.listAkkaLocationsBy(darkNightObsMode.name, Sequencer))
+      when(locationServiceUtil.listSequencersAkkaLocationsBy(darkNightObsMode.name))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
       sequencerUtil.shutdownObsModeSequencers(darkNightObsMode).futureValue should ===(

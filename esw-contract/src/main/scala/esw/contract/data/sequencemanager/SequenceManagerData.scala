@@ -44,8 +44,11 @@ trait SequenceManagerData {
   val getObsModesDetails: GetObsModesDetails.type                       = GetObsModesDetails
   val redVariation: Variation                                           = Variation("red")
   val startSequencer: StartSequencer                                    = StartSequencer(ESW, obsMode, Some(redVariation))
+  val startSequencerWithoutVariation: StartSequencer                    = StartSequencer(ESW, obsMode, None)
   val restartSequencer: RestartSequencer                                = RestartSequencer(ESW, obsMode, Some(redVariation))
+  val restartSequencerWithoutVariation: RestartSequencer                = RestartSequencer(ESW, obsMode, None)
   val shutdownSequencer: ShutdownSequencer                              = ShutdownSequencer(ESW, obsMode, Some(redVariation))
+  val shutdownSequencerWithoutVariation: ShutdownSequencer              = ShutdownSequencer(ESW, obsMode, None)
   val shutdownSubsystemSequencers: ShutdownSubsystemSequencers          = ShutdownSubsystemSequencers(ESW)
   val shutdownObsModeSequencers: ShutdownObsModeSequencers              = ShutdownObsModeSequencers(obsMode)
   val shutdownAllSequencers: ShutdownAllSequencers.type                 = ShutdownAllSequencers
