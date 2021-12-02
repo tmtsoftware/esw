@@ -58,7 +58,7 @@ class Wiring(cmd: Command) {
 
   private lazy val sequencerScriptsSha = "153b6748e0"
   private lazy val eswVersionDefault   = this.getClass.getPackage.getSpecificationVersion
-
+  println(s"------eswVersionDefault------------*************$eswVersionDefault**------------------*************")
   private lazy val (scriptVersion, eswVersion) = cmd match {
     case _: Start              => (sequencerScriptsSha, eswVersionDefault)
     case s: StartEngUIServices => (s.scriptsVersion.getOrElse(sequencerScriptsSha), s.eswVersion.getOrElse(eswVersionDefault))
