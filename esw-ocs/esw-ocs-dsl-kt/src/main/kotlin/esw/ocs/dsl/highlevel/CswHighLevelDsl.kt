@@ -34,6 +34,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
         AlarmServiceDsl, TimeServiceDsl, DatabaseServiceDsl, LoopDsl {
     val isOnline: Boolean
     val prefix: String
+    val obsMode: String
     val sequencerObserveEvent: SequencerObserveEvent
 
     /**

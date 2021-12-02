@@ -51,6 +51,7 @@ class CswHighLevelDslTest {
         override val coroutineScope: CoroutineScope = mockk()
         override val isOnline: Boolean get() = true
         override val prefix: String = scriptContext.prefix().toString()
+        override val obsMode: String = scriptContext.obsMode().toString()
         override val sequencerObserveEvent: SequencerObserveEvent = SequencerObserveEvent(Prefix(prefix))
         override val actorSystem: ActorSystem<SpawnProtocol.Command> = system
 
