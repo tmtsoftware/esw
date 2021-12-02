@@ -62,7 +62,7 @@ object Common {
       // jitpack provides the env variable VERSION=<version being built> # A tag or commit
       // we make use of it so that the version in class metadata (this.getClass.getPackage.getSpecificationVersion)
       // and the maven repo match
-      version := sys.env.getOrElse("VERSION", "0.1.0-SNAPSHOT"),
+      version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
       fork := true,
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),
