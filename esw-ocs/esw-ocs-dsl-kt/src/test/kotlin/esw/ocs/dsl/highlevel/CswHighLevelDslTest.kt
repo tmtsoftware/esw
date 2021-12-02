@@ -6,6 +6,7 @@ import com.typesafe.config.Config
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.scaladsl.LocationService
 import csw.params.events.SequencerObserveEvent
+import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.highlevel.models.Prefix
@@ -51,7 +52,7 @@ class CswHighLevelDslTest {
         override val coroutineScope: CoroutineScope = mockk()
         override val isOnline: Boolean get() = true
         override val prefix: String = scriptContext.prefix().toString()
-        override val obsMode: String = scriptContext.obsMode().toString()
+        override val obsMode: ObsMode = scriptContext.obsMode()
         override val sequencerObserveEvent: SequencerObserveEvent = SequencerObserveEvent(Prefix(prefix))
         override val actorSystem: ActorSystem<SpawnProtocol.Command> = system
 
