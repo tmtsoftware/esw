@@ -5,9 +5,9 @@ import com.typesafe.config.Config
 import csw.alarm.api.javadsl.IAlarmService
 import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
-import csw.prefix.models.Prefix
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.impl.core.SequenceOperator
 
 import java.time.Duration
@@ -36,6 +36,6 @@ class ScriptContext(
     val actorSystem: ActorSystem[SpawnProtocol.Command],
     val eventService: IEventService,
     val alarmService: IAlarmService,
-    val sequencerApiFactory: Prefix => CompletionStage[SequencerApi],
+    val sequencerApiFactory: (Subsystem, ObsMode, Option[Variation]) => CompletionStage[SequencerApi],
     val config: Config
 )

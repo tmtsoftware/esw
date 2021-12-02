@@ -24,9 +24,9 @@ class VariationIdTest extends AnyWordSpec with Matchers {
       val variationIdString2 = "IRIS.variation1"
       val variationIdString3 = "IRIS.variation1.variation2"
 
-      VariationId.fromString(variationIdString1) shouldBe VariationId(IRIS)
-      VariationId.fromString(variationIdString2) shouldBe VariationId(IRIS, Some(Variation("variation1")))
-      VariationId.fromString(variationIdString3) shouldBe VariationId(IRIS, Some(Variation("variation1.variation2")))
+      VariationId.from(variationIdString1) shouldBe VariationId(IRIS)
+      VariationId.from(variationIdString2) shouldBe VariationId(IRIS, Some(Variation("variation1")))
+      VariationId.from(variationIdString3) shouldBe VariationId(IRIS, Some(Variation("variation1.variation2")))
     }
   }
 }

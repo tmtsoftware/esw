@@ -28,7 +28,7 @@ object VariationId {
    * IRIS //Subsystem
    * @return VariationId
    */
-  def fromString(variationIdString: String): VariationId = {
+  def from(variationIdString: String): VariationId = {
     variationIdString.split('.').toList match {
       case Nil              => throw new RuntimeException("") //This case will never trigger because split always returns a non-empty array
       case subsystem :: Nil => VariationId(Subsystem.withNameInsensitive(subsystem), None)

@@ -5,8 +5,11 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.Variation
 import esw.ocs.api.protocol.*
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.isFailed
@@ -19,13 +22,15 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
 class RichSequencer(
-        internal val prefix: Prefix,
-        private val sequencerApiFactory: (Prefix) -> CompletionStage<SequencerApi>,
+        internal val subsystem: Subsystem,
+        private val obsMode: ObsMode,
+        private val variation: Variation?,
+        private val sequencerApiFactory: (Subsystem, ObsMode, Variation?) -> CompletionStage<SequencerApi>,
         private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
 
-    private suspend fun sequencerService() = sequencerApiFactory(prefix).await()
+    private suspend fun sequencerService() = sequencerApiFactory(subsystem, obsMode, variation).await()
 
     /**
      * Submit a sequence to the sequencer and return the immediate response If it returns as `Started` get a

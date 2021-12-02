@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.constants.CommonTimeouts
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.ocs.api.models.{ObsMode, Variation}
 
 import scala.concurrent.{ExecutionContext, Future}
 

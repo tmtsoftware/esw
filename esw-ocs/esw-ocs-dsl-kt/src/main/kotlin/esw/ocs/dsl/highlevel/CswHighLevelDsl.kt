@@ -11,6 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.Variation
 import esw.ocs.dsl.epics.*
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
@@ -20,6 +21,7 @@ import esw.ocs.dsl.script.utils.CommandUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
+import scala.Option
 import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 
@@ -238,11 +240,42 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
     /**
      * Creates an instance of RichSequencer for Sequencer of given subsystem and obsMode
      *
-     * @param prefix - Prefix of the sequencer
+     * @param subsystem - Subsystem of the sequencer
+     * @param obsMode - ObsMode of the sequencer
+     * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
+     */
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode): RichSequencer
+
+    /**
+     * Creates an instance of RichSequencer for Sequencer of given subsystem and obsMode
+     *
+     * @param subsystem - Subsystem of the sequencer
+     * @param obsMode - ObsMode of the sequencer
      * @param defaultTimeout - default timeout for the response of the RichSequencer's API
      * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
      */
-    fun Sequencer(prefix: Prefix, defaultTimeout: Duration = Duration.hours(10)): RichSequencer
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration): RichSequencer
+
+    /**
+     * Creates an instance of RichSequencer for Sequencer of given subsystem and obsMode
+     *
+     * @param subsystem - Subsystem of the sequencer
+     * @param obsMode - ObsMode of the sequencer
+     * @param variation - variation of the sequencer
+     * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
+     */
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation): RichSequencer
+
+    /**
+     * Creates an instance of RichSequencer for Sequencer of given subsystem and obsMode
+     *
+     * @param subsystem - Subsystem of the sequencer
+     * @param obsMode - ObsMode of the sequencer
+     * @param variation - variation of the sequencer
+     * @param defaultTimeout - default timeout for the response of the RichSequencer's API
+     * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
+     */
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation, defaultTimeout: Duration): RichSequencer
 
     /**
      * TODO
@@ -306,12 +339,20 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
     private fun richComponent(prefix: Prefix, componentType: ComponentType, defaultTimeout: Duration): RichComponent =
             RichComponent(prefix, componentType, lockUnlockUtil, commandUtil, actorSystem, defaultTimeout, coroutineScope)
 
-    private fun richSequencer(prefix: Prefix, defaultTimeout: Duration): RichSequencer =
-            RichSequencer(prefix, { p -> scriptContext.sequencerApiFactory().apply(p) }, defaultTimeout, coroutineScope)
+    private fun richSequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation?, defaultTimeout: Duration): RichSequencer =
+            RichSequencer(subsystem, obsMode, variation, { s, o, v -> scriptContext.sequencerApiFactory().apply(s, o, Option.apply(v)) }, defaultTimeout, coroutineScope)
 
     override fun Assembly(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, Assembly, defaultTimeout)
     override fun Hcd(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, HCD, defaultTimeout)
-    override fun Sequencer(prefix: Prefix, defaultTimeout: Duration): RichSequencer = richSequencer(prefix, defaultTimeout)
+
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode): RichSequencer = richSequencer(subsystem, obsMode, null, Duration.hours(10))
+
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode,  defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, obsMode, null, defaultTimeout)
+
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation): RichSequencer = richSequencer(subsystem, obsMode, variation, Duration.hours(10))
+
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation , defaultTimeout: Duration): RichSequencer =
+            richSequencer(subsystem, obsMode, variation, defaultTimeout)
 
     /************* Fsm helpers **********/
     override suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm =

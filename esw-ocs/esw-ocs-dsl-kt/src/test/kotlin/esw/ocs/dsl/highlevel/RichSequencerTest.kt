@@ -9,6 +9,7 @@ import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.Variation
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.highlevel.models.TCS
@@ -38,9 +39,10 @@ class RichSequencerTest {
     private val subsystem: Subsystem = TCS
     private val obsMode: ObsMode = ObsMode("darknight")
     private val sequence: Sequence = mockk()
+    private val variation = Variation("random")
 
     //ESW-561
-    private val sequencerApiFactory: (Prefix) -> CompletableFuture<SequencerApi> = { _ -> CompletableFuture.completedFuture(sequencerApi) }
+    private val sequencerApiFactory: (Subsystem, ObsMode, Variation?) -> CompletableFuture<SequencerApi> = { _, _, _ -> CompletableFuture.completedFuture(sequencerApi) }
 
     private val timeoutDuration: Duration = Duration.seconds(10)
     private val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
@@ -49,7 +51,7 @@ class RichSequencerTest {
     private val defaultTimeout = Timeout(defaultTimeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
     //ESW-561
-    private val tcsSequencer = RichSequencer(Prefix(subsystem, obsMode.name()), sequencerApiFactory, defaultTimeoutDuration, coroutineScope)
+    private val tcsSequencer = RichSequencer(subsystem, obsMode, variation, sequencerApiFactory, defaultTimeoutDuration, coroutineScope)
 
     private val sequencerApi: SequencerApi = mockk()
 

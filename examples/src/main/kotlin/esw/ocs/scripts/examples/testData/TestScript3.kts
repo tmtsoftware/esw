@@ -1,15 +1,15 @@
 package esw.ocs.scripts.examples.testData
 
+import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.ESW
-import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.isCompleted
 import esw.ocs.dsl.params.stringKey
 import kotlin.time.Duration
 
 script {
 
-    val sequencer = Sequencer(Prefix("ESW.moonnight"))
+    val sequencer = Sequencer(ESW, ObsMode("moonnight"))
     onSetup("command-1") { command ->
         //submit sequence to ESW.moonnight sequencer which is running in simulation mode
         val submitResponse = sequencer.submitAndWait(sequenceOf(command))

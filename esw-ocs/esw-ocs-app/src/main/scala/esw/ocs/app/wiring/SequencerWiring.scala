@@ -28,7 +28,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
-import csw.prefix.models.Prefix
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
@@ -36,7 +36,7 @@ import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
@@ -96,16 +96,17 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  private lazy val sequencerImplFactory = (_prefix: Prefix) => //todo: revisit timeout value
-    locationServiceUtil
-      .resolveSequencer(_prefix, CommonTimeouts.ResolveLocation)
-      .mapRight(SequencerApiFactory.make)
-      .toJava
+  private lazy val sequencerImplFactory =
+    (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => //todo: revisit timeout value
+      locationServiceUtil
+        .resolveSequencer(Variation.prefix(_subsystem, _obsMode, _variation), CommonTimeouts.ResolveLocation)
+        .mapRight(SequencerApiFactory.make)
+        .toJava
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
     prefix,
-    ObsMode.fromPrefix(prefix),
+    ObsMode.from(prefix),
     jLogger,
     sequenceOperatorFactory,
     actorSystem,
