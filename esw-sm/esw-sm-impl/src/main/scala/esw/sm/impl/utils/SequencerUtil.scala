@@ -71,9 +71,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private def getSequencer(prefix: SequencerPrefix): Future[Either[EswLocationError.FindLocationError, List[SeqCompLocation]]] =
     locationServiceUtil.findSequencer(prefix).mapRight(List(_))
+
   private def getSubsystemSequencers(subsystem: Subsystem) = locationServiceUtil.listAkkaLocationsBy(subsystem, Sequencer)
-  private def getObsModeSequencers(obsMode: ObsMode)       = locationServiceUtil.listAkkaLocationsBy(obsMode.name, Sequencer)
-  private def getAllSequencers                             = locationServiceUtil.listAkkaLocationsBy(Sequencer)
+
+  private def getObsModeSequencers(obsMode: ObsMode) = locationServiceUtil
+    .listSequencersAkkaLocationsBy(obsMode.name)
+
+  private def getAllSequencers = locationServiceUtil.listAkkaLocationsBy(Sequencer)
 
   private def shutdownSequencersAndHandleErrors(sequencers: Future[Either[EswLocationError, List[AkkaLocation]]]) =
     sequencers.flatMapRight(unloadScripts).mapToAdt(identity, locationErrorToShutdownSequencersResponse)

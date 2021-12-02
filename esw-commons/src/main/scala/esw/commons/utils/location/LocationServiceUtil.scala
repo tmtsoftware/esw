@@ -5,11 +5,11 @@ import akka.actor.typed.ActorSystem
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models._
+import csw.location.api.models.*
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.extensions.FutureEitherExt._
-import esw.commons.utils.location.EswLocationError._
+import esw.commons.extensions.FutureEitherExt.*
+import esw.commons.utils.location.EswLocationError.*
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -63,6 +63,11 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       componentType: ComponentType
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
     listAkkaLocationsBy(componentType, _.prefix.componentName == componentName)
+
+  def listSequencersAkkaLocationsBy(
+      obsMode: String
+  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
+    listAkkaLocationsBy(Sequencer, getObsModeString(_) == obsMode)
 
   def listAkkaLocationsBy(
       componentType: ComponentType,
@@ -126,4 +131,12 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
 
   private[esw] def findSequencer(prefix: Prefix) =
     find(AkkaConnection(ComponentId(prefix, Sequencer)))
+
+  private def getObsModeString(location: AkkaLocation): String = {
+    location.prefix.componentName.split('.').toList match {
+      case Nil            => throw new RuntimeException("empty component name") // Not Applicable. Prefix always has non-empty component name
+      case obsMode :: Nil => obsMode
+      case obsMode :: _   => obsMode
+    }
+  }
 }
