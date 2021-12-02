@@ -1,6 +1,9 @@
 jdk:
   - adoptopenjdk11
 before_install:
+  - export JITPACK_VERSION1=$VERSION
+  - echo "my version1 is"
+  - echo $JITPACK_VERSION1
   - wget https://repo1.maven.org/maven2/org/scala-sbt/sbt-launch/1.5.5/sbt-launch-1.5.5.jar
 install:
   - echo $VERSION
