@@ -4,6 +4,7 @@ import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.{ObsMode, VariationId}
+import esw.sm.api.models.VariationIds
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
 import esw.sm.impl.utils.Types.*
 
@@ -30,7 +31,7 @@ class SequenceComponentAllocator() {
 
     // check if each sequencer subsystem has allocated sequence component
     val diff = partitionedSubsystems.diff(mapping.map(_._1))
-    if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(diff.map(_.prefix(obsMode))))
+    if (diff.isEmpty) Right(mapping) else Left(SequenceComponentNotAvailable(VariationIds(diff)))
   }
 
   // find sequence component for provided subsystem or ESW (fallback)

@@ -10,7 +10,7 @@ case class VariationId(subsystem: Subsystem, variation: Option[Variation] = None
   def prefix(obsMode: ObsMode): Prefix = Variation.prefix(subsystem, obsMode, variation)
 
   override def toString: String = variation match {
-    case Some(variation) => s"$subsystem.$variation"
+    case Some(variation) => s"$subsystem.${variation.name}"
     case None            => subsystem.name
   }
 }

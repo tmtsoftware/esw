@@ -308,8 +308,8 @@ class SequenceManagerBehavior(
       val conflicting          = isConflicting(obsModeConfig.resources, configuredObsModes)
       val missingSequenceComps = allocateSequenceComponents(obsModeConfig.sequencers.variationIds)
       missingSequenceComps.fold(
-        e => NonConfigurable(e.sequencerPrefixes),
-        _ => if (conflicting) NonConfigurable(Nil) else Configurable
+        e => NonConfigurable(e.variationIds),
+        _ => if (conflicting) NonConfigurable(VariationIds.empty) else Configurable
       )
     }
   }
@@ -325,9 +325,8 @@ class SequenceManagerBehavior(
           val obsModes = sequenceManagerConfig.obsModes.toSet
           val obsModesStatus =
             obsModes.map { case (obsMode, cfg @ ObsModeConfig(resources, sequencers)) =>
-              val sequencerPrefixes = sequencers.variationIds.map(_.prefix(obsMode))
-              val obsMOdeStatus     = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
-              ObsModeDetails(obsMode, obsMOdeStatus, resources, Sequencers(sequencerPrefixes))
+              val obsModeStatus = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
+              ObsModeDetails(obsMode, obsModeStatus, resources, sequencers)
             }
 
           val response = ObsModesDetailsResponse.Success(obsModesStatus)

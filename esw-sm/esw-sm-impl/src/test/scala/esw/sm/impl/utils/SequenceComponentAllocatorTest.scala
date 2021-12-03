@@ -6,6 +6,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.sm.api.models.VariationIds
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
 import esw.testcommons.BaseTestSuite
 
@@ -71,7 +72,7 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
 
       val response = sequencerToSeqCompMapping.leftValue
       response shouldBe a[SequenceComponentNotAvailable]
-      response.sequencerPrefixes shouldBe List(irisVariationId.prefix(clearSkies)) // because IRIS is last in the List.
+      response.variationIds shouldBe VariationIds(irisVariationId) // because IRIS is last in the List.
     }
   }
 

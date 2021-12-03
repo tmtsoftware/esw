@@ -42,19 +42,16 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   private val clearSkies                           = ObsMode("ClearSkies")
   private val irisMCAO                             = ObsMode("IRIS_MCAO")
   private val randomObsMode                        = ObsMode("RandomObsMode")
-  private val eswVariatonId                        = VariationId(ESW)
+  private val eswVariationId                       = VariationId(ESW)
   private val tcsVariationId                       = VariationId(TCS)
   private val wfosVariationId                      = VariationId(WFOS)
-  private val darkNightVariationIds: VariationIds  = VariationIds(eswVariatonId, tcsVariationId)
-  private val clearSkiesVariationIds: VariationIds = VariationIds(eswVariatonId)
-  private val irisMCAOVariationIds: VariationIds   = VariationIds(eswVariatonId, wfosVariationId)
+  private val darkNightVariationIds: VariationIds  = VariationIds(eswVariationId, tcsVariationId)
+  private val clearSkiesVariationIds: VariationIds = VariationIds(eswVariationId)
+  private val irisMCAOVariationIds: VariationIds   = VariationIds(eswVariationId, wfosVariationId)
   private val apsResource: Resource                = Resource(APS)
   private val tcsResource: Resource                = Resource(TCS)
   private val irisResource: Resource               = Resource(IRIS)
   private val wfosResource: Resource               = Resource(WFOS)
-  private val darkNightSequencers: Sequencers      = Sequencers(Prefix(ESW, darkNight.name), Prefix(TCS, darkNight.name))
-  private val clearSkiesSequencers: Sequencers     = Sequencers(Prefix(ESW, clearSkies.name))
-  private val irisMCAOSequencers: Sequencers       = Sequencers(Prefix(ESW, irisMCAO.name), Prefix(WFOS, irisMCAO.name))
   private val config = SequenceManagerConfig(
     Map(
       darkNight  -> ObsModeConfig(Resources(apsResource, tcsResource), darkNightVariationIds),
@@ -680,7 +677,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
       when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
       List((clearSkiesVariationIds, clearSkies), (darkNightVariationIds, darkNight), (irisMCAOVariationIds, irisMCAO)).foreach(
-        (tuple) =>
+        tuple =>
           when(sequenceComponentAllocator.allocate(idleSeqComps, tuple._2, tuple._1.variationIds)).thenReturn(Right(List.empty))
       )
 
@@ -690,9 +687,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
-          ObsModeDetails(clearSkies, Configurable, Resources(tcsResource, irisResource), clearSkiesSequencers),
-          ObsModeDetails(darkNight, Configurable, Resources(apsResource, tcsResource), darkNightSequencers),
-          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOSequencers)
+          ObsModeDetails(clearSkies, Configurable, Resources(tcsResource, irisResource), clearSkiesVariationIds),
+          ObsModeDetails(darkNight, Configurable, Resources(apsResource, tcsResource), darkNightVariationIds),
+          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOVariationIds)
         )
       )
       probe.expectMessage(expectedMessage)
@@ -707,7 +704,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
       when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
       List((clearSkiesVariationIds, clearSkies), (darkNightVariationIds, darkNight), (irisMCAOVariationIds, irisMCAO)).foreach(
-        (tuple) =>
+        tuple =>
           when(sequenceComponentAllocator.allocate(idleSeqComps, tuple._2, tuple._1.variationIds)).thenReturn(Right(List.empty))
       )
       val obsModesDetailsResponseProbe = TestProbe[ObsModesDetailsResponse]()
@@ -715,9 +712,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
-          ObsModeDetails(clearSkies, Configured, Resources(tcsResource, irisResource), clearSkiesSequencers),
-          ObsModeDetails(darkNight, NonConfigurable(List.empty), Resources(apsResource, tcsResource), darkNightSequencers),
-          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOSequencers)
+          ObsModeDetails(clearSkies, Configured, Resources(tcsResource, irisResource), clearSkiesVariationIds),
+          ObsModeDetails(
+            darkNight,
+            NonConfigurable(VariationIds.empty),
+            Resources(apsResource, tcsResource),
+            darkNightVariationIds
+          ),
+          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOVariationIds)
         )
       )
       obsModesDetailsResponseProbe.expectMessage(expectedMessage)
@@ -732,9 +734,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
       when(sequenceComponentUtil.sequenceComponentAllocator).thenReturn(sequenceComponentAllocator)
       when(sequenceComponentAllocator.allocate(idleSeqComps, darkNight, darkNightVariationIds.variationIds))
-        .thenReturn(Left(SequenceComponentNotAvailable(List(Prefix(TCS, darkNight.name)))))
+        .thenReturn(Left(SequenceComponentNotAvailable(VariationIds(tcsVariationId))))
 
-      List((clearSkiesVariationIds, clearSkies), (irisMCAOVariationIds, irisMCAO)).foreach((tuple) =>
+      List((clearSkiesVariationIds, clearSkies), (irisMCAOVariationIds, irisMCAO)).foreach(tuple =>
         when(sequenceComponentAllocator.allocate(idleSeqComps, tuple._2, tuple._1.variationIds)).thenReturn(Right(List.empty))
       )
 
@@ -743,14 +745,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val expectedMessage = ObsModesDetailsResponse.Success(
         Set(
-          ObsModeDetails(clearSkies, Configurable, Resources(tcsResource, irisResource), clearSkiesSequencers),
+          ObsModeDetails(clearSkies, Configurable, Resources(tcsResource, irisResource), clearSkiesVariationIds),
           ObsModeDetails(
             darkNight,
-            NonConfigurable(List(Prefix(TCS, darkNight.name))),
+            NonConfigurable(VariationIds(tcsVariationId)),
             Resources(apsResource, tcsResource),
-            darkNightSequencers
+            darkNightVariationIds
           ),
-          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOSequencers)
+          ObsModeDetails(irisMCAO, Configurable, Resources(wfosResource), irisMCAOVariationIds)
         )
       )
       obsModesDetailsResponseProbe.expectMessage(expectedMessage)

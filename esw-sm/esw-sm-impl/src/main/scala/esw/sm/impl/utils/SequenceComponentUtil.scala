@@ -13,6 +13,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.{ObsMode, Variation, VariationId}
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
+import esw.sm.api.models.VariationIds
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
@@ -50,7 +51,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
       .flatMapE {
         case (variationId, seqCompLocation) :: _ =>
           loadScript(variationId.subsystem, obsMode, variationId.variation, seqCompLocation)
-        case Nil => Future.successful(Left(SequenceComponentNotAvailable(Nil))) // this should never happen
+        case Nil => Future.successful(Left(SequenceComponentNotAvailable(VariationIds.empty))) // this should never happen
       }
       .mapToAdt(identity, identity)
   }

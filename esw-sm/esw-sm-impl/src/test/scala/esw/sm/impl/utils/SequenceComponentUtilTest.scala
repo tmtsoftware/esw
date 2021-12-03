@@ -15,6 +15,7 @@ import esw.ocs.api.models.{ObsMode, Variation, VariationId}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
+import esw.sm.api.models.VariationIds
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
@@ -182,12 +183,12 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(seqComps)))
       when(sequenceComponentAllocator.allocate(seqComps, obsMode, sequencerVariations))
-        .thenReturn(Left(SequenceComponentNotAvailable(sequencerVariations.map(_.prefix(obsMode)))))
+        .thenReturn(Left(SequenceComponentNotAvailable(VariationIds(sequencerVariations))))
 
       val response: ConfigureResponse.Failure =
         sequenceComponentUtil.allocateSequenceComponents(obsMode, sequencerVariations).leftValue
 
-      response should ===(SequenceComponentNotAvailable(sequencerVariations.map(_.prefix(obsMode))))
+      response should ===(SequenceComponentNotAvailable(VariationIds(sequencerVariations)))
     }
 
     "return LocationServiceError if location service returns error | ESW-178" in {

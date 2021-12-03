@@ -5,7 +5,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS, WFOS}
-import esw.ocs.api.models.{ObsMode, Variation}
+import esw.ocs.api.models.{ObsMode, Variation, VariationId}
 import esw.sm.api.models
 import esw.sm.api.models.*
 import esw.sm.api.models.ObsModeStatus.{Configurable, Configured, NonConfigurable}
@@ -65,6 +65,8 @@ trait SequenceManagerData {
     List("failed sequence component")
   )
   val provisionSuccess: ProvisionResponse.Success.type = Success
+  val variation: Variation                             = Variation("red")
+  val variationId: VariationId                         = VariationId(ESW, Some(variation))
   val darkNight1ObsMode: ObsMode                       = ObsMode("DarkNight_1")
   val darkNight2ObsMode: ObsMode                       = ObsMode("DarkNight_2")
   val darkNight3ObsMode: ObsMode                       = ObsMode("DarkNight_3")
@@ -73,7 +75,7 @@ trait SequenceManagerData {
       darkNight2ObsMode,
       Configured,
       Resources(eswResource, tcsResource),
-      Sequencers(Prefix(ESW, darkNight2ObsMode.name), Prefix(TCS, darkNight2ObsMode.name))
+      VariationIds(VariationId(ESW), VariationId(TCS, Some(variation)))
     )
 
   val configurableObsMode: ObsModeDetails =
@@ -81,14 +83,14 @@ trait SequenceManagerData {
       darkNight2ObsMode,
       Configurable,
       Resources(eswResource, irisResource),
-      Sequencers(Prefix(ESW, darkNight2ObsMode.name))
+      VariationIds(variationId)
     )
   val nonConfigurableObsMode: ObsModeDetails =
     models.ObsModeDetails(
       darkNight3ObsMode,
-      NonConfigurable(List(Prefix(IRIS, darkNight3ObsMode.name + "." + redVariation.name))),
+      NonConfigurable(VariationIds(VariationId(IRIS, Some(redVariation)))),
       Resources(eswResource, irisResource, wfosResource),
-      Sequencers(Prefix(ESW, darkNight3ObsMode.name), Prefix(TCS, darkNight3ObsMode.name + "." + redVariation.name))
+      VariationIds(VariationId(ESW), VariationId(IRIS, Some(redVariation)))
     )
   val ObsModesDetailsSuccess: ObsModesDetailsResponse.Success = ObsModesDetailsResponse.Success(
     Set(configuredObsMode, configurableObsMode, nonConfigurableObsMode)
@@ -101,7 +103,7 @@ trait SequenceManagerData {
   val loadScriptError: LoadScriptError                                                 = LoadScriptError("error")
   val locationServiceError: LocationServiceError                                       = LocationServiceError("location service error")
   val sequenceComponentNotAvailable: SequenceComponentNotAvailable = SequenceComponentNotAvailable(
-    List(eswSequencerPrefix)
+    VariationIds(variationId)
   )
   val unhandled: Unhandled = Unhandled("state", "messageType")
 

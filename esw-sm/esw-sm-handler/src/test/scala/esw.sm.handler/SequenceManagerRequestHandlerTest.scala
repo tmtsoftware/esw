@@ -81,7 +81,7 @@ class SequenceManagerRequestHandlerTest
 
     "return observation modes with status for getObsModesDetails request | ESW-466" in {
       val expectedObsModesDetailsResponse =
-        ObsModesDetailsResponse.Success(Set(ObsModeDetails(obsMode, Configurable, Resources(), Sequencers())))
+        ObsModesDetailsResponse.Success(Set(ObsModeDetails(obsMode, Configurable, Resources(), VariationIds.empty)))
       when(sequenceManagerApi.getObsModesDetails)
         .thenReturn(Future.successful(expectedObsModesDetailsResponse))
 

@@ -307,11 +307,11 @@ class SequencerUtilTest extends BaseTestSuite {
 
     "return failure when adequate sequence components are not available to start sequencers | ESW-178, ESW-340, ESW-561" in {
       when(sequenceComponentUtil.allocateSequenceComponents(darkNightObsMode, sequencerVariations))
-        .thenReturn(futureLeft(SequenceComponentNotAvailable(List(eswSequencerVariationId.prefix(darkNightObsMode)))))
+        .thenReturn(futureLeft(SequenceComponentNotAvailable(VariationIds(eswSequencerVariationId))))
 
       sequencerUtil
         .startSequencers(darkNightObsMode, sequencerIds)
-        .futureValue should ===(SequenceComponentNotAvailable(List(eswSequencerVariationId.prefix(darkNightObsMode))))
+        .futureValue should ===(SequenceComponentNotAvailable(VariationIds(eswSequencerVariationId)))
 
       verify(sequenceComponentUtil).allocateSequenceComponents(darkNightObsMode, sequencerVariations)
     }
