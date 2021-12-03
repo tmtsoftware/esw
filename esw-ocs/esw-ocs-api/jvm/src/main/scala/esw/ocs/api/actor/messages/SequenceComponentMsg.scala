@@ -30,10 +30,10 @@ object SequenceComponentMsg {
   final case class Shutdown(replyTo: ActorRef[Ok.type]) extends SequenceComponentRemoteMsg with CommonMsg
 
   final case class LoadScript(
+      replyTo: ActorRef[ScriptResponseOrUnhandled],
       subsystem: Subsystem,
       obsMode: ObsMode,
-      variation: Option[Variation],
-      replyTo: ActorRef[ScriptResponseOrUnhandled]
+      variation: Option[Variation]
   ) extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
       with IdleStateSequenceComponentMsg

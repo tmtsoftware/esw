@@ -33,7 +33,7 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
       obsMode: ObsMode,
       variation: Option[Variation]
   ): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(subsystem, obsMode, variation, x) })(
+    (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(x, subsystem, obsMode, variation) })(
       SequenceComponentTimeouts.LoadScript,
       actorSystem.scheduler
     )

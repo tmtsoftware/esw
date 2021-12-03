@@ -58,7 +58,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
 
       //LoadScript
-      sequenceComponentRef ! LoadScript(subsystem, obsMode, variation, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       val scriptResponseOrUnhandled = loadScriptResponseProbe.receiveMessage()
@@ -105,7 +105,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
 
       //LoadScript
-      sequenceComponentRef ! LoadScript(subsystem, obsMode, variation, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       val response = loadScriptResponseProbe.receiveMessage()
@@ -113,7 +113,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val loadScriptLocationResponse: AkkaLocation = response.asInstanceOf[SequencerLocation].location
       loadScriptLocationResponse.connection shouldEqual akkaConnection
 
-      sequenceComponentRef ! LoadScript(TCS, obsMode, variation, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, TCS, obsMode, variation)
       val response1 = loadScriptResponseProbe.receiveMessage()
       response1 should ===(Unhandled(Running, "LoadScript"))
 
@@ -135,7 +135,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(sequencerServer.start()).thenReturn(Left(loadingScriptFailed))
 
       //LoadScript
-      sequenceComponentRef ! LoadScript(subsystem, obsMode, None, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, None)
 
       val response = loadScriptResponseProbe.receiveMessage()
       response shouldBe a[LoadingScriptFailed]
@@ -178,7 +178,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       )
 
       //Assert if script loaded and returns AkkaLocation of sequencer
-      sequenceComponentRef ! LoadScript(subsystem, obsMode, variation, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
       val message = loadScriptResponseProbe.receiveMessage()
       message shouldBe a[SequencerLocation]
       val initialLocation = message.asInstanceOf[SequencerLocation].location

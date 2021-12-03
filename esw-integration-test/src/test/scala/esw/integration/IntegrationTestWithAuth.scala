@@ -376,7 +376,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       agentService.spawnSequenceComponent(irisAgentPrefix, "primary", ocsVersionOpt).futureValue
 
       sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT)
-      sequenceManager.startSequencer(IRIS, IRIS_DARKNIGHT, None)
 
       val sequencerLocation = resolveSequencerLocation(IRIS, IRIS_DARKNIGHT)
 

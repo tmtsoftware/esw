@@ -46,7 +46,7 @@ class SequenceComponentBehavior(
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (_, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
-        case LoadScript(subsystem, obsMode, variation, replyTo) =>
+        case LoadScript(replyTo, subsystem, obsMode, variation) =>
           val sequencerPrefix = Variation.prefix(subsystem, obsMode, variation)
           load(sequencerPrefix, replyTo)
         case GetStatus(replyTo) =>

@@ -39,7 +39,7 @@ trait SequenceManagerApi {
    *
    * @param subsystem for sequencer needs to be started
    * @param obsMode for sequencer needs to be started
-   * @param variation a optional part of the sequencer prefix to be started
+   * @param variation an optional sub type of a sequencer to be started
    * @return a future of [[esw.sm.api.protocol.StartSequencerResponse]] which completes with Success or Failure response ADT.
    */
   def startSequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation] = None): Future[StartSequencerResponse]
@@ -49,7 +49,7 @@ trait SequenceManagerApi {
    *
    * @param subsystem for sequencer needs to be started
    * @param obsMode for sequencer needs to be started
-   * @param variation a optional part of the sequencer prefix to be started
+   * @param variation an optional sub type of a sequencer to be started
    * @return a future of [[esw.sm.api.protocol.RestartSequencerResponse]] which completes with Success or Failure response ADT.
    */
   def restartSequencer(
@@ -63,7 +63,7 @@ trait SequenceManagerApi {
    *
    * @param subsystem for sequencer needs to be started
    * @param obsMode for sequencer needs to be started
-   * @param variation a optional part of the sequencer prefix to be started
+   * @param variation an optional sub type of a sequencer to be started
    * @return a future of [[esw.sm.api.protocol.ShutdownSequencersResponse]] which completes with Success or Failure response ADT.
    */
   def shutdownSequencer(

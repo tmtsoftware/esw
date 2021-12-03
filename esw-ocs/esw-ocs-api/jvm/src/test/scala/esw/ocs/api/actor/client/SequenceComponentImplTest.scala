@@ -38,7 +38,7 @@ class SequenceComponentImplTest extends ActorTestSuit {
 
   "LoadScript | ESW-103, ESW-362, ESW-561" in {
     val loadScriptResponse = mock[ScriptResponseOrUnhandled]
-    withBehavior { case LoadScript(`subsystem`, `obsMode`, `variation`, replyTo) =>
+    withBehavior { case LoadScript(replyTo, `subsystem`, `obsMode`, `variation`) =>
       replyTo ! loadScriptResponse
     } check { sc =>
       sc.loadScript(subsystem, obsMode, variation).futureValue should ===(loadScriptResponse)

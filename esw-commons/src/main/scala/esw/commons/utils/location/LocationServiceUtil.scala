@@ -3,9 +3,9 @@ package esw.commons.utils.location
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorSystem
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
+import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.*
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.*
@@ -134,9 +134,8 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
 
   private def getObsModeString(location: AkkaLocation): String = {
     location.prefix.componentName.split('.').toList match {
-      case Nil            => throw new RuntimeException("empty component name") // Not Applicable. Prefix always has non-empty component name
-      case obsMode :: Nil => obsMode
-      case obsMode :: _   => obsMode
+      case Nil          => throw new RuntimeException("empty component name") // Not Applicable. Prefix always has non-empty component name
+      case obsMode :: _ => obsMode
     }
   }
 }

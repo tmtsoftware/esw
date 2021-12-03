@@ -82,7 +82,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
     val response: Future[ScriptResponseOrUnhandled] =
       (actorRef ? ((replyTo: ActorRef[ScriptResponseOrUnhandled]) =>
-        LoadScript(sequencerSubsystem, obsMode, variation, replyTo)
+        LoadScript(replyTo, sequencerSubsystem, obsMode, variation)
       ))(
         SequenceComponentTimeouts.LoadScript,
         actorRuntime.typedSystem.scheduler
