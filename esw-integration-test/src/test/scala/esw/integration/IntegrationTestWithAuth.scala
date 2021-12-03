@@ -943,11 +943,11 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val darkNightSequencers: VariationIds =
         VariationIds(VariationId(IRIS), VariationId(ESW), VariationId(TCS))
       val irisCalSequencers: VariationIds =
-        VariationIds(VariationId(IRIS, Some(Variation("red"))), VariationId(ESW), VariationId(AOESW))
+        VariationIds(VariationId(IRIS), VariationId(ESW), VariationId(AOESW))
       val wfosCalSequencers: VariationIds = VariationIds(VariationId(WFOS), VariationId(ESW))
       val eswSeqCompPrefix                = Prefix(ESW, "primary")
       val eswSecondarySeqCompPrefix       = Prefix(ESW, "secondary")
-      val irisSeqCompPrefix               = Prefix(IRIS, "primary.red")
+      val irisSeqCompPrefix               = Prefix(IRIS, "primary")
       val aoeswSeqCompPrefix              = Prefix(AOESW, "primary")
       val wfosSeqCompPrefix               = Prefix(WFOS, "primary")
       val tcsSeqCompPrefix                = Prefix(TCS, "primary")
