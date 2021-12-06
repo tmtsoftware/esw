@@ -7,12 +7,12 @@ import csw.location.api.models.{AkkaLocation, ComponentType}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory, SequencerImpl}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
+import esw.ocs.app.simulation.SimulationSequencerWiring
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.internal.SequencerServerFactory
-import esw.ocs.app.simulation.SimulationSequencerWiring
 
 import scala.collection.mutable
 
@@ -25,30 +25,41 @@ trait SequencerUtils extends LocationUtils {
     sequenceComponentLocations.clear()
   }
 
-  def spawnSequencerRef(subsystem: Subsystem, obsMode: ObsMode): ActorRef[SequencerMsg] =
-    spawnSequencer(subsystem, obsMode).sequencerRef
+  def spawnSequencerRef(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation] = None): ActorRef[SequencerMsg] =
+    spawnSequencer(subsystem, obsMode, variation).sequencerRef
 
-  def spawnSequencerProxy(subsystem: Subsystem, obsMode: ObsMode): SequencerApi =
-    new SequencerImpl(spawnSequencerRef(subsystem, obsMode))
+  def spawnSequencerProxy(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation] = None) =
+    new SequencerImpl(spawnSequencerRef(subsystem, obsMode, variation))
 
-  def spawnSequencer(subsystem: Subsystem, obsMode: ObsMode, agentPrefix: Option[Prefix] = None): AkkaLocation =
-    loadScript(spawnSequenceComponent(subsystem, None, agentPrefix), subsystem, obsMode)
+  def spawnSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation] = None,
+      agentPrefix: Option[Prefix] = None
+  ): AkkaLocation =
+    loadScript(spawnSequenceComponent(subsystem, None, agentPrefix), subsystem, obsMode, variation)
 
-  def spawnSequencerInSimulation(subsystem: Subsystem, obsMode: ObsMode, agentPrefix: Option[Prefix] = None): AkkaLocation =
-    loadScript(spawnSequenceComponentInSimulation(subsystem, None, agentPrefix), subsystem, obsMode)
+  def spawnSequencerInSimulation(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation] = None,
+      agentPrefix: Option[Prefix] = None
+  ): AkkaLocation =
+    loadScript(spawnSequenceComponentInSimulation(subsystem, None, agentPrefix), subsystem, obsMode, variation)
 
-  def sequencerClient(subsystem: Subsystem, obsMode: ObsMode): SequencerApi =
-    SequencerApiFactory.make(resolveHTTPLocation(Prefix(subsystem, obsMode.name), ComponentType.Sequencer))
+  def sequencerClient(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation] = None): SequencerApi = {
+    SequencerApiFactory.make(resolveHTTPLocation(Variation.prefix(subsystem, obsMode, variation), ComponentType.Sequencer))
+  }
 
   def spawnSequenceComponent(subsystem: Subsystem, name: Option[String], agentPrefix: Option[Prefix] = None): AkkaLocation =
-    spawnSequenceComponent(subsystem, name, agentPrefix, new SequencerWiring(_, _, _).sequencerServer)
+    spawnSequenceComponent(subsystem, name, agentPrefix, new SequencerWiring(_, _).sequencerServer)
 
   def spawnSequenceComponentInSimulation(
       subsystem: Subsystem,
       name: Option[String],
       agentPrefix: Option[Prefix] = None
   ): AkkaLocation =
-    spawnSequenceComponent(subsystem, name, agentPrefix, new SimulationSequencerWiring(_, _, _).sequencerServer)
+    spawnSequenceComponent(subsystem, name, agentPrefix, new SimulationSequencerWiring(_, _).sequencerServer)
 
   private def spawnSequenceComponent(
       subsystem: Subsystem,
@@ -64,8 +75,13 @@ trait SequencerUtils extends LocationUtils {
     loc.rightValue
   }
 
-  def loadScript(seqCompLocation: AkkaLocation, subsystem: Subsystem, obsMode: ObsMode): AkkaLocation =
-    new SequenceComponentImpl(seqCompLocation).loadScript(subsystem, obsMode).futureValue match {
+  def loadScript(
+      seqCompLocation: AkkaLocation,
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation] = None
+  ): AkkaLocation =
+    new SequenceComponentImpl(seqCompLocation).loadScript(subsystem, obsMode, variation).futureValue match {
       case SequencerLocation(location) => location
       case error: ScriptError          => throw new RuntimeException(s"failed to load script: ${error.msg}")
       case Unhandled(_, _, msg)        => throw new RuntimeException(s"failed to load script: $msg")

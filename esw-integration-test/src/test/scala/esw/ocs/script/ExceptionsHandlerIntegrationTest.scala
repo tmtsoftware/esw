@@ -3,8 +3,8 @@ package esw.ocs.script
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
+import csw.params.commands.*
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
-import csw.params.commands.{CommandResponse, _}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
@@ -12,18 +12,17 @@ import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.gateway.server.testdata.HcdBehaviourFactory
 import esw.ocs.api.actor.client.SequencerImpl
-import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.models.ObsMode
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 import esw.ocs.testkit.EswTestKit
-import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.scalatest.prop.TableDrivenPropertyChecks.*
 import org.scalatest.prop.TableFor2
 
 class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   private val ocsSubsystem = ESW
-  private val ocsObsMode   = ObsMode("exceptionscript") // ExceptionTestScript.kt
-
   private val tcsSubsystem = TCS
+  private val ocsObsMode   = ObsMode("exceptionscript")  // ExceptionTestScript.kt
   private val tcsObsMode   = ObsMode("exceptionscript2") // ExceptionTestScript2.kt
 
   private val prefix = Prefix("tcs.filter.wheel")

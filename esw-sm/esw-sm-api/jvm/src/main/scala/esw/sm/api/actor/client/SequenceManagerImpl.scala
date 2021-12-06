@@ -1,17 +1,17 @@
 package esw.sm.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.constants.SequenceManagerTimeouts
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 
 import scala.concurrent.Future
 
@@ -34,20 +34,35 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def getObsModesDetails: Future[ObsModesDetailsResponse] =
     (smRef ? GetObsModesDetails)(SequenceManagerTimeouts.GetObsModesDetails, actorSystem.scheduler)
 
-  override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
-    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, obsMode, x) })(
+  override def startSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[StartSequencerResponse] =
+    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, obsMode, variation, x) })(
       SequenceManagerTimeouts.StartSequencer,
       actorSystem.scheduler
     )
 
-  override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
-    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, obsMode, x) })(
+  override def restartSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[RestartSequencerResponse] =
+    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, obsMode, variation, x) })(
       SequenceManagerTimeouts.RestartSequencer,
       actorSystem.scheduler
     )
 
-  override def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    (smRef ? (ShutdownSequencer(subsystem, obsMode, _)))(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)
+  override def shutdownSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[ShutdownSequencersResponse] =
+    (smRef ? (ShutdownSequencer(subsystem, obsMode, variation, _)))(
+      SequenceManagerTimeouts.ShutdownSequencer,
+      actorSystem.scheduler
+    )
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
     (smRef ? (ShutdownSubsystemSequencers(subsystem, _)))(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)

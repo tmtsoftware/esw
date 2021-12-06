@@ -4,10 +4,12 @@ import akka.util.Timeout
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
+import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.Variation
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.highlevel.models.TCS
@@ -37,8 +39,10 @@ class RichSequencerTest {
     private val subsystem: Subsystem = TCS
     private val obsMode: ObsMode = ObsMode("darknight")
     private val sequence: Sequence = mockk()
+    private val variation = Variation("random")
 
-    private val sequencerApiFactory: (Subsystem, ObsMode) -> CompletableFuture<SequencerApi> = { _, _ -> CompletableFuture.completedFuture(sequencerApi) }
+    //ESW-561
+    private val sequencerApiFactory: (Subsystem, ObsMode, Variation?) -> CompletableFuture<SequencerApi> = { _, _, _ -> CompletableFuture.completedFuture(sequencerApi) }
 
     private val timeoutDuration: Duration = Duration.seconds(10)
     private val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
@@ -46,7 +50,8 @@ class RichSequencerTest {
     private val defaultTimeoutDuration: Duration = Duration.seconds(5)
     private val defaultTimeout = Timeout(defaultTimeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
-    private val tcsSequencer = RichSequencer(subsystem, obsMode, sequencerApiFactory, defaultTimeoutDuration, coroutineScope)
+    //ESW-561
+    private val tcsSequencer = RichSequencer(subsystem, obsMode, variation, sequencerApiFactory, defaultTimeoutDuration, coroutineScope)
 
     private val sequencerApi: SequencerApi = mockk()
 

@@ -12,9 +12,9 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.models.{SequencerState, StepList}
-import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerRequest.*
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
-import esw.ocs.api.protocol.{GoOnlineResponse, OkOrUnhandledResponse, SequencerRequest, _}
+import esw.ocs.api.protocol.*
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport

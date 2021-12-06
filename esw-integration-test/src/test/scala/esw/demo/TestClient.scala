@@ -31,7 +31,7 @@ object TestClient extends App {
   implicit val sched: Scheduler = system.scheduler
 
   private val akkaLocation: AkkaLocation = new LocationServiceUtil(_locationService)
-    .findSequencer(IRIS, "darknight")
+    .findSequencer(Prefix(IRIS, "darknight"))
     .futureValue
     .toOption
     .get

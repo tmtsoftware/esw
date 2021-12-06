@@ -1,9 +1,9 @@
 package esw.sm.api
 
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 
 import scala.concurrent.Future
 
@@ -35,28 +35,42 @@ trait SequenceManagerApi {
   def getObsModesDetails: Future[ObsModesDetailsResponse]
 
   /**
-   * Starts sequencer of provided Subsystem and Observing mode.
+   * Starts sequencer of provided Prefix.
+   *
    * @param subsystem for sequencer needs to be started
    * @param obsMode for sequencer needs to be started
+   * @param variation an optional sub type of a sequencer to be started
    * @return a future of [[esw.sm.api.protocol.StartSequencerResponse]] which completes with Success or Failure response ADT.
    */
-  def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse]
+  def startSequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation] = None): Future[StartSequencerResponse]
 
   /**
-   * Restarts running sequencer of provided Subsystem and Observing mode.
-   * @param subsystem for sequencer needs to be re-started
-   * @param obsMode for sequencer needs to be re-started
+   * Restarts running sequencer of provided Prefix.
+   *
+   * @param subsystem for sequencer needs to be started
+   * @param obsMode for sequencer needs to be started
+   * @param variation an optional sub type of a sequencer to be started
    * @return a future of [[esw.sm.api.protocol.RestartSequencerResponse]] which completes with Success or Failure response ADT.
    */
-  def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse]
+  def restartSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation] = None
+  ): Future[RestartSequencerResponse]
 
   /**
-   * Shutdown running sequencer of provided Subsystem and Observing mode.
-   * @param subsystem of sequencer needs to be shutdown
-   * @param obsMode of sequencer needs to be shutdown
+   * Shutdown running sequencer of provided Prefix.
+   *
+   * @param subsystem for sequencer needs to be started
+   * @param obsMode for sequencer needs to be started
+   * @param variation an optional sub type of a sequencer to be started
    * @return a future of [[esw.sm.api.protocol.ShutdownSequencersResponse]] which completes with Success or Failure response ADT.
    */
-  def shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[ShutdownSequencersResponse]
+  def shutdownSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation] = None
+  ): Future[ShutdownSequencersResponse]
 
   /**
    * Shutdown all running sequencers of provided Subsystem

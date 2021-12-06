@@ -21,7 +21,7 @@ script {
 
     val galilAssembly = Assembly(WFOS, "FilterWheel")
 
-    onSetup("move") { command ->
+    onSetup("move") {
         //#keys
         // Primitive keys
         val encoderKey: Key<Int> = intKey("encoder")

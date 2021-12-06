@@ -7,7 +7,7 @@ import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.core.SequenceOperator
@@ -27,9 +27,8 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val sequenceOperatorFactory = () => mock[SequenceOperator]
   private val iEventService           = mock[IEventService]
   private val iAlarmService           = mock[IAlarmService]
-  private val sequencerClientFactory  = mock[(Subsystem, ObsMode) => CompletionStage[SequencerApi]]
+  private val sequencerClientFactory  = mock[(Subsystem, ObsMode, Option[Variation]) => CompletionStage[SequencerApi]]
   private val prefix                  = Prefix("ESW.filter.wheel")
-  private val obsMode                 = mock[ObsMode]
   private val config                  = mock[Config]
   private val heartbeatInterval       = Duration.ofSeconds(3)
 
@@ -39,7 +38,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   val scriptContext = new ScriptContext(
     heartbeatInterval,
     prefix,
-    obsMode,
+    ObsMode.from(prefix),
     logger,
     sequenceOperatorFactory,
     actorSystem,

@@ -5,7 +5,6 @@ import csw.alarm.models.Key.AlarmKey
 import csw.params.commands.CommandResponse
 import csw.params.core.states.StateName
 import csw.params.events.Event
-import csw.prefix.models.Prefix
 import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
@@ -112,7 +111,7 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(Prefix("NFIRAOS.trombone"), "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major)
         delay(500)
     }

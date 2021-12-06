@@ -1,13 +1,13 @@
 package esw.contract.data.sequencemanager
 
 import csw.contract.ResourceFetcher
-import csw.contract.generator.ClassNameHelpers._
-import csw.contract.generator._
+import csw.contract.generator.*
+import csw.contract.generator.ClassNameHelpers.*
 import csw.prefix.models.Subsystem
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
-import esw.sm.api.models.{ObsModeDetails, ObsModeStatus, Resource, ResourceStatus}
-import esw.sm.api.protocol.SequenceManagerRequest._
-import esw.sm.api.protocol._
+import esw.sm.api.models.*
+import esw.sm.api.protocol.*
+import esw.sm.api.protocol.SequenceManagerRequest.*
 
 // ESW-355 Contract samples for sequence manager service. These samples are also used in `RoundTripTest`
 object SequenceManagerContract extends SequenceManagerServiceCodecs with SequenceManagerData {
@@ -31,7 +31,11 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       failedResponse(name[Provision])
     ),
     ModelType[ObsModeDetails](configuredObsMode),
-    ModelType[ObsModeStatus](ObsModeStatus.Configurable, ObsModeStatus.Configured, ObsModeStatus.NonConfigurable(List.empty)),
+    ModelType[ObsModeStatus](
+      ObsModeStatus.Configurable,
+      ObsModeStatus.Configured,
+      ObsModeStatus.NonConfigurable(VariationInfos(variationInfo))
+    ),
     ModelType[ObsModesDetailsResponse](ObsModesDetailsSuccess, locationServiceError),
     ModelType[StartSequencerResponse](
       alreadyRunning,
@@ -61,7 +65,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
       unhandled,
       failedResponse(name[ShutdownSequenceComponent])
     ),
-    ModelType(sequencerPrefix),
+    ModelType(eswSequencerPrefix),
     ModelType(obsMode),
     ModelType(Subsystem),
     ModelType(provisionConfig),
@@ -74,9 +78,9 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     requestType(configure)
     requestType(provision)
     requestType(getObsModesDetails)
-    requestType(startSequencer)
-    requestType(restartSequencer)
-    requestType(shutdownSequencer)
+    requestType(startSequencer, startSequencerWithoutVariation)
+    requestType(restartSequencer, restartSequencerWithoutVariation)
+    requestType(shutdownSequencer, shutdownSequencerWithoutVariation)
     requestType(shutdownSubsystemSequencers)
     requestType(shutdownObsModeSequencers)
     requestType(shutdownAllSequencers)

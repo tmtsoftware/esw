@@ -18,9 +18,9 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.actor.messages.InternalSequencerState.{Loaded, Offline}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.{SequencerState, ObsMode, Step, StepList}
+import esw.ocs.api.models.{ObsMode, SequencerState, Step, StepList}
+import esw.ocs.api.protocol.*
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
-import esw.ocs.api.protocol._
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future

@@ -2,7 +2,7 @@ package esw.sm.impl.config
 
 import com.typesafe.config.ConfigRenderOptions
 import csw.config.client.commons.ConfigUtils
-import io.bullet.borer._
+import io.bullet.borer.*
 
 import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
@@ -10,7 +10,7 @@ import scala.concurrent.{ExecutionContext, Future}
 // Reads config file for all observing modes and parse it into SequenceManagerConfig
 //(Map observing mode to Resources and Sequencers)
 class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
-  import ConfigCodecs._
+  import ConfigCodecs.*
   private val EswSmKey    = "esw-sm"
   private val ObsModesKey = "obsModes"
 

@@ -48,7 +48,7 @@ script {
     onSetup("multi-node") { command ->
         val sequence = sequenceOf(command)
 
-        val tcs = Sequencer(TCS, ObsMode("moonnight"), Duration.seconds(10))
+        val tcs = Sequencer(TCS ,ObsMode("moonnight"), Duration.seconds(10))
         tcs.submitAndWait(sequence, Duration.seconds(10))
     }
 

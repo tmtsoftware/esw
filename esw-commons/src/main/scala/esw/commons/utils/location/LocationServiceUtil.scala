@@ -3,13 +3,13 @@ package esw.commons.utils.location
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorSystem
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
+import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.extensions.FutureEitherExt._
-import esw.commons.utils.location.EswLocationError._
+import esw.commons.extensions.FutureEitherExt.*
+import esw.commons.utils.location.EswLocationError.*
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -63,6 +63,11 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       componentType: ComponentType
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
     listAkkaLocationsBy(componentType, _.prefix.componentName == componentName)
+
+  def listSequencersAkkaLocationsBy(
+      obsMode: String
+  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
+    listAkkaLocationsBy(Sequencer, getObsModeString(_) == obsMode)
 
   def listAkkaLocationsBy(
       componentType: ComponentType,
@@ -121,16 +126,16 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       }
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
-  private[esw] def resolveSequencer(
-      subsystem: Subsystem,
-      obsMode: String,
-      within: FiniteDuration
-  ): Future[Either[FindLocationError, AkkaLocation]] =
-    resolve(AkkaConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)), within)
+  private[esw] def resolveSequencer(prefix: Prefix, within: FiniteDuration) =
+    resolve(AkkaConnection(ComponentId(prefix, Sequencer)), within)
 
-  private[esw] def findSequencer(
-      subsystem: Subsystem,
-      obsMode: String
-  ): Future[Either[FindLocationError, AkkaLocation]] =
-    find(AkkaConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
+  private[esw] def findSequencer(prefix: Prefix) =
+    find(AkkaConnection(ComponentId(prefix, Sequencer)))
+
+  private def getObsModeString(location: AkkaLocation): String = {
+    location.prefix.componentName.split('.').toList match {
+      case Nil          => throw new RuntimeException("empty component name") // Not Applicable. Prefix always has non-empty component name
+      case obsMode :: _ => obsMode
+    }
+  }
 }

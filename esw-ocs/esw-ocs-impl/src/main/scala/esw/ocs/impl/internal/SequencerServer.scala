@@ -2,8 +2,7 @@ package esw.ocs.impl.internal
 
 import akka.Done
 import csw.location.api.models.AkkaLocation
-import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.ObsMode
+import csw.prefix.models.Prefix
 import esw.ocs.api.protocol.ScriptError
 
 // Note: The APIs in this service are blocking. SequenceComponentBehavior consumes this api and since
@@ -15,5 +14,5 @@ trait SequencerServer {
 }
 
 trait SequencerServerFactory {
-  def make(subsystem: Subsystem, obsMode: ObsMode, sequenceComponentPrefix: Prefix): SequencerServer
+  def make(sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix): SequencerServer
 }

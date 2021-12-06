@@ -2,7 +2,7 @@ package esw.sm.api.actor.messages
 
 import akka.actor.typed.ActorRef
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.sm.api.codecs.SmAkkaSerializable
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol.*
@@ -22,13 +22,26 @@ sealed trait CommonMessage          extends SequenceManagerRemoteMsg
 object SequenceManagerMsg {
   case class Configure(obsMode: ObsMode, replyTo: ActorRef[ConfigureResponse]) extends SequenceManagerIdleMsg
 
-  case class StartSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[StartSequencerResponse])
-      extends SequenceManagerIdleMsg
-  case class RestartSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[RestartSequencerResponse])
-      extends SequenceManagerIdleMsg
+  case class StartSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation],
+      replyTo: ActorRef[StartSequencerResponse]
+  ) extends SequenceManagerIdleMsg
 
-  case class ShutdownSequencer(subsystem: Subsystem, obsMode: ObsMode, replyTo: ActorRef[ShutdownSequencersResponse])
-      extends SequenceManagerIdleMsg
+  case class RestartSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation],
+      replyTo: ActorRef[RestartSequencerResponse]
+  ) extends SequenceManagerIdleMsg
+
+  case class ShutdownSequencer(
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation],
+      replyTo: ActorRef[ShutdownSequencersResponse]
+  ) extends SequenceManagerIdleMsg
   case class ShutdownSubsystemSequencers(subsystem: Subsystem, replyTo: ActorRef[ShutdownSequencersResponse])
       extends SequenceManagerIdleMsg
   case class ShutdownObsModeSequencers(obsMode: ObsMode, replyTo: ActorRef[ShutdownSequencersResponse])

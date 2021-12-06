@@ -33,12 +33,14 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configServiceExt: 
 
   //does provision on SM with the given provision config and sequence script version
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse = {
+    val eswVersion = this.getClass.getPackage.getSpecificationVersion
+
     val sm = service
     val seqScriptsVersion =
       s"""
-         |scripts {
-         |  version = $sequencerScriptsVersion
-         |}""".stripMargin
+         |scripts = $sequencerScriptsVersion
+         |esw = $eswVersion
+         |""".stripMargin
 
     val configData        = ConfigData.fromString(seqScriptsVersion)
     val versionConfigPath = Paths.get(SequencerScriptVersionConfigPath)

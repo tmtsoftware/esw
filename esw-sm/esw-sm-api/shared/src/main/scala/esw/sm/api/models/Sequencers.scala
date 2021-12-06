@@ -1,9 +1,8 @@
 package esw.sm.api.models
 
-import csw.prefix.models.Subsystem
+import csw.prefix.models.Prefix
 
-//todo: subsystems in sequencers cannot be duplicate (replace List by Set)
-case class Sequencers(subsystems: List[Subsystem])
+case class Sequencers(sequencers: List[Prefix])
 object Sequencers {
-  def apply(subsystems: Subsystem*): Sequencers = new Sequencers(subsystems.toList)
+  def apply(sequencers: Prefix*): Sequencers = new Sequencers(sequencers.toList)
 }
