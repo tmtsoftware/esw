@@ -23,7 +23,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.server.{GatewaySetup, GatewayWiring}
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.ocs.api.models.{ObsMode, VariationInfo}
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
@@ -940,22 +940,22 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
     "getObsModesDetails should return all ObsModes with their status | ESW-466, ESW-529" in {
       locationService.unregisterAll().futureValue
       registerKeycloak()
-      val darkNightSequencers: VariationIds =
-        VariationIds(VariationId(IRIS), VariationId(ESW), VariationId(TCS))
-      val irisCalSequencers: VariationIds =
-        VariationIds(VariationId(IRIS), VariationId(ESW), VariationId(AOESW))
-      val wfosCalSequencers: VariationIds = VariationIds(VariationId(WFOS), VariationId(ESW))
-      val eswSeqCompPrefix                = Prefix(ESW, "primary")
-      val eswSecondarySeqCompPrefix       = Prefix(ESW, "secondary")
-      val irisSeqCompPrefix               = Prefix(IRIS, "primary")
-      val aoeswSeqCompPrefix              = Prefix(AOESW, "primary")
-      val wfosSeqCompPrefix               = Prefix(WFOS, "primary")
-      val tcsSeqCompPrefix                = Prefix(TCS, "primary")
-      val irisResource                    = Resource(IRIS)
-      val apsResource                     = Resource(APS)
-      val nfiraosResource                 = Resource(NFIRAOS)
-      val tcsResource                     = Resource(TCS)
-      val wfosResource                    = Resource(WFOS)
+      val darkNightSequencers: VariationInfos =
+        VariationInfos(VariationInfo(IRIS), VariationInfo(ESW), VariationInfo(TCS))
+      val irisCalSequencers: VariationInfos =
+        VariationInfos(VariationInfo(IRIS), VariationInfo(ESW), VariationInfo(AOESW))
+      val wfosCalSequencers: VariationInfos = VariationInfos(VariationInfo(WFOS), VariationInfo(ESW))
+      val eswSeqCompPrefix                  = Prefix(ESW, "primary")
+      val eswSecondarySeqCompPrefix         = Prefix(ESW, "secondary")
+      val irisSeqCompPrefix                 = Prefix(IRIS, "primary")
+      val aoeswSeqCompPrefix                = Prefix(AOESW, "primary")
+      val wfosSeqCompPrefix                 = Prefix(WFOS, "primary")
+      val tcsSeqCompPrefix                  = Prefix(TCS, "primary")
+      val irisResource                      = Resource(IRIS)
+      val apsResource                       = Resource(APS)
+      val nfiraosResource                   = Resource(NFIRAOS)
+      val tcsResource                       = Resource(TCS)
+      val wfosResource                      = Resource(WFOS)
 
       TestSetup.startSequenceComponents(
         eswSeqCompPrefix,
@@ -991,7 +991,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
           ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource), wfosCalSequencers),
           ObsModeDetails(
             IRIS_DARKNIGHT,
-            NonConfigurable(VariationIds(VariationId(IRIS), VariationId(TCS))),
+            NonConfigurable(VariationInfos(VariationInfo(IRIS), VariationInfo(TCS))),
             Resources(irisResource, tcsResource, nfiraosResource),
             darkNightSequencers
           )
@@ -1009,7 +1009,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
           ObsModeDetails(WFOS_CAL, Configurable, Resources(wfosResource), wfosCalSequencers),
           ObsModeDetails(
             IRIS_DARKNIGHT,
-            NonConfigurable(VariationIds(VariationId(IRIS))),
+            NonConfigurable(VariationInfos(VariationInfo(IRIS))),
             Resources(irisResource, tcsResource, nfiraosResource),
             darkNightSequencers
           )

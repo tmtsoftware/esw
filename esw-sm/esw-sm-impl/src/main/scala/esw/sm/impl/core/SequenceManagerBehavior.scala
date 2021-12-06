@@ -11,7 +11,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
 import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.*
@@ -296,20 +296,20 @@ class SequenceManagerBehavior(
       configuredObsModes: Set[ObsMode],
       allIdleSequenceComps: List[AgentLocation]
   ): ObsModeStatus = {
-    def allocateSequenceComponents(variationIds: List[VariationId]) = {
+    def allocateSequenceComponents(variationInfos: List[VariationInfo]) = {
       val allocator = sequenceComponentUtil.sequenceComponentAllocator
       val subsystemSpecificIdleSeqComps =
-        allIdleSequenceComps.filter(location => variationIds.map(_.subsystem).contains(location.prefix.subsystem))
-      allocator.allocate(subsystemSpecificIdleSeqComps, obsMode, variationIds)
+        allIdleSequenceComps.filter(location => variationInfos.map(_.subsystem).contains(location.prefix.subsystem))
+      allocator.allocate(subsystemSpecificIdleSeqComps, obsMode, variationInfos)
     }
 
     if (configuredObsModes.contains(obsMode)) Configured
     else {
       val conflicting          = isConflicting(obsModeConfig.resources, configuredObsModes)
-      val missingSequenceComps = allocateSequenceComponents(obsModeConfig.sequencers.variationIds)
+      val missingSequenceComps = allocateSequenceComponents(obsModeConfig.sequencers.variationInfos)
       missingSequenceComps.fold(
-        e => NonConfigurable(e.variationIds),
-        _ => if (conflicting) NonConfigurable(VariationIds.empty) else Configurable
+        e => NonConfigurable(e.variationInfos),
+        _ => if (conflicting) NonConfigurable(VariationInfos.empty) else Configurable
       )
     }
   }

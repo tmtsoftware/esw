@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.backend.testkit.utils.IOUtils
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
 import esw.ocs.testkit.utils.LocationUtils
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.*
@@ -86,22 +86,22 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
             ObsMode("DarkNight_1"),
             ObsModeStatus.Configured,
             Resources(Set(Resource(ESW), Resource(IRIS))),
-            VariationIds(VariationId(ESW, Some(Variation("DarkNight_1"))), VariationId(TCS, Some(Variation("DarkNight_1"))))
+            VariationInfos(VariationInfo(ESW, Some(Variation("DarkNight_1"))), VariationInfo(TCS, Some(Variation("DarkNight_1"))))
           ),
           ObsModeDetails(
             ObsMode("DarkNight_2"),
             ObsModeStatus.Configurable,
             Resources(Set(Resource(IRIS), Resource(TCS))),
-            VariationIds(
-              VariationId(ESW, Some(Variation("DarkNight_2"))),
-              VariationId(IRIS, Some(Variation("DarkNight_2.IRIS_IMAGER")))
+            VariationInfos(
+              VariationInfo(ESW, Some(Variation("DarkNight_2"))),
+              VariationInfo(IRIS, Some(Variation("DarkNight_2.IRIS_IMAGER")))
             )
           ),
           ObsModeDetails(
             ObsMode("DarkNight_3"),
-            ObsModeStatus.NonConfigurable(VariationIds(VariationId(TCS, Some(Variation("DarkNight_3"))))),
+            ObsModeStatus.NonConfigurable(VariationInfos(VariationInfo(TCS, Some(Variation("DarkNight_3"))))),
             Resources(Set(Resource(TCS))),
-            VariationIds(VariationId(TCS, Some(Variation("DarkNight_3"))))
+            VariationInfos(VariationInfo(TCS, Some(Variation("DarkNight_3"))))
           )
         )
       )

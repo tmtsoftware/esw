@@ -62,15 +62,15 @@ object StartSequencerResponse {
     override def msg: String = s"Failed to load sequencer script: $reason"
   }
 
-  case class SequenceComponentNotAvailable private[sm] (variationIds: VariationIds, msg: String)
+  case class SequenceComponentNotAvailable private[sm] (variationInfos: VariationInfos, msg: String)
       extends Failure
       with ConfigureResponse.Failure
 
   object SequenceComponentNotAvailable {
-    def apply(variationIds: VariationIds): SequenceComponentNotAvailable =
+    def apply(variationInfos: VariationInfos): SequenceComponentNotAvailable =
       new SequenceComponentNotAvailable(
-        variationIds,
-        s"No sequence components found for sequencers : ${variationIds.variationIds.map(_.toString).mkString(",")}"
+        variationInfos,
+        s"No sequence components found for sequencers : ${variationInfos.variationInfos.map(_.toString).mkString(",")}"
       )
   }
 }

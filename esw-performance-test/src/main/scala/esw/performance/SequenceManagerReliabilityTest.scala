@@ -10,7 +10,7 @@ import csw.logging.client.scaladsl.{LoggerFactory, LoggingSystemFactory}
 import csw.network.utils.Networks
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.ocs.api.models.{ObsMode, VariationId}
+import esw.ocs.api.models.{ObsMode, VariationInfo}
 import esw.ocs.testkit.utils.LocationUtils
 import esw.performance.constants.ObsModes.*
 import esw.performance.constants.SMReliabilityConstants
@@ -141,7 +141,7 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     // step9: shutdown obsMode4 using subsystem shutdown
     getObsModesDetails
       .filter(_.obsMode == obsMode4)
-      .foreach(_.sequencers.variationIds.foreach(shutdownSubsystemSequencers))
+      .foreach(_.sequencers.variationInfos.foreach(shutdownSubsystemSequencers))
 
     // step10: configure obsMode1
     configureObsMode(obsMode1, configureHist)
@@ -187,8 +187,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     getObsModesDetails
       .find(_.obsMode == obsMode)
       .foreach(obsModeDetails =>
-        obsModeDetails.sequencers.variationIds.foreach((variationId: VariationId) => {
-          restartSequencer(variationId.prefix(obsMode), histogram)
+        obsModeDetails.sequencers.variationInfos.foreach((variationInfo: VariationInfo) => {
+          restartSequencer(variationInfo.prefix(obsMode), histogram)
         })
       )
   }
@@ -225,8 +225,8 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     getObsModesDetails
       .find(_.obsMode == obsMode)
       .foreach(obsModeDetails => {
-        obsModeDetails.sequencers.variationIds.foreach((variationId: VariationId) => {
-          shutdownSequencer(variationId.prefix(obsMode), histogram)
+        obsModeDetails.sequencers.variationInfos.foreach((variationInfo: VariationInfo) => {
+          shutdownSequencer(variationInfo.prefix(obsMode), histogram)
         })
       })
   }
@@ -249,13 +249,13 @@ object SequenceManagerReliabilityTest extends LocationUtils {
     Thread.sleep(SMReliabilityConstants.timeout)
   }
 
-  private def shutdownSubsystemSequencers(variationId: VariationId): Unit = {
-    val shutdownResponse = smClient.shutdownSubsystemSequencers(variationId.subsystem).futureValue
+  private def shutdownSubsystemSequencers(variationInfo: VariationInfo): Unit = {
+    val shutdownResponse = smClient.shutdownSubsystemSequencers(variationInfo.subsystem).futureValue
     shutdownResponse match {
       case ShutdownSequencersResponse.Success =>
-        log.info(s"sequencers for ${variationId.subsystem} shutdown Successfully")
+        log.info(s"sequencers for ${variationInfo.subsystem} shutdown Successfully")
       case failure: ShutdownSequencersResponse.Failure =>
-        throw new Exception(s"Failed to shutdown sequencers for ${variationId.subsystem} : ${failure.getMessage}")
+        throw new Exception(s"Failed to shutdown sequencers for ${variationInfo.subsystem} : ${failure.getMessage}")
     }
     // to simulate actual observation
     Thread.sleep(SMReliabilityConstants.timeout)

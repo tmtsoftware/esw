@@ -10,10 +10,10 @@ import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
-import esw.ocs.api.models.{ObsMode, VariationId}
+import esw.ocs.api.models.{ObsMode, VariationInfo}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
-import esw.sm.api.models.VariationIds
+import esw.sm.api.models.VariationInfos
 import esw.sm.api.protocol.*
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.FailedToStartSequencers
@@ -27,9 +27,9 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  def startSequencers(obsMode: ObsMode, variationIds: VariationIds): Future[ConfigureResponse] =
+  def startSequencers(obsMode: ObsMode, variationInfos: VariationInfos): Future[ConfigureResponse] =
     sequenceComponentUtil
-      .allocateSequenceComponents(obsMode, variationIds.variationIds)
+      .allocateSequenceComponents(obsMode, variationInfos.variationInfos)
       .flatMapRight(startSequencersByMapping(obsMode, _)) // load scripts for sequencers on mapped sequence components
       .mapToAdt(identity, identity)
 
@@ -49,10 +49,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def shutdownAllSequencers(): Future[ShutdownSequencersResponse] = shutdownSequencersAndHandleErrors(getAllSequencers)
 
-  private[utils] def startSequencersByMapping(obsMode: ObsMode, mappings: List[(VariationId, SeqCompLocation)]) = {
+  private[utils] def startSequencersByMapping(obsMode: ObsMode, mappings: List[(VariationInfo, SeqCompLocation)]) = {
     Future
-      .traverse(mappings) { case (variationId, seqCompLocation) =>
-        sequenceComponentUtil.loadScript(variationId.subsystem, obsMode, variationId.variation, seqCompLocation)
+      .traverse(mappings) { case (variationInfo, seqCompLocation) =>
+        sequenceComponentUtil.loadScript(variationInfo.subsystem, obsMode, variationInfo.variation, seqCompLocation)
       }
       .map(_.sequence)
       .mapToAdt(

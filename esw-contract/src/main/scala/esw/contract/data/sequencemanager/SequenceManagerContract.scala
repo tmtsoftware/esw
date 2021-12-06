@@ -34,7 +34,7 @@ object SequenceManagerContract extends SequenceManagerServiceCodecs with Sequenc
     ModelType[ObsModeStatus](
       ObsModeStatus.Configurable,
       ObsModeStatus.Configured,
-      ObsModeStatus.NonConfigurable(VariationIds(variationId))
+      ObsModeStatus.NonConfigurable(VariationInfos(variationInfo))
     ),
     ModelType[ObsModesDetailsResponse](ObsModesDetailsSuccess, locationServiceError),
     ModelType[StartSequencerResponse](

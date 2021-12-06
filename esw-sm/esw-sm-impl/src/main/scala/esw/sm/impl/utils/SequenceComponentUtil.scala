@@ -10,10 +10,10 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
-import esw.sm.api.models.VariationIds
+import esw.sm.api.models.VariationInfos
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
@@ -30,10 +30,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
 
   def allocateSequenceComponents(
       obsMode: ObsMode,
-      variationIds: List[VariationId]
+      variationInfos: List[VariationInfo]
   ): Future[Either[ConfigureResponse.Failure, SequencerToSequenceComponentMap]] =
-    getAllIdleSequenceComponentsFor(variationIds.map(_.subsystem))
-      .mapRightE(sequenceComponentAllocator.allocate(_, obsMode, variationIds))
+    getAllIdleSequenceComponentsFor(variationInfos.map(_.subsystem))
+      .mapRightE(sequenceComponentAllocator.allocate(_, obsMode, variationInfos))
 
   def getAllIdleSequenceComponents: Future[Either[LocationServiceError, List[SeqCompLocation]]] =
     locationServiceUtil
@@ -47,11 +47,11 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
 
   def loadScript(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation]): Future[StartSequencerResponse] = {
     getAllIdleSequenceComponentsFor(List(subsystem, ESW)) //search idle seq comps for ESW as fallback if needed
-      .mapRightE(sequenceComponentAllocator.allocate(_, obsMode, List(VariationId(subsystem, variation))))
+      .mapRightE(sequenceComponentAllocator.allocate(_, obsMode, List(VariationInfo(subsystem, variation))))
       .flatMapE {
-        case (variationId, seqCompLocation) :: _ =>
-          loadScript(variationId.subsystem, obsMode, variationId.variation, seqCompLocation)
-        case Nil => Future.successful(Left(SequenceComponentNotAvailable(VariationIds.empty))) // this should never happen
+        case (variationInfo, seqCompLocation) :: _ =>
+          loadScript(variationInfo.subsystem, obsMode, variationInfo.variation, seqCompLocation)
+        case Nil => Future.successful(Left(SequenceComponentNotAvailable(VariationInfos.empty))) // this should never happen
       }
       .mapToAdt(identity, identity)
   }

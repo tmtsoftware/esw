@@ -11,10 +11,10 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.SequenceComponentState.Idle
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
-import esw.sm.api.models.VariationIds
+import esw.sm.api.models.VariationInfos
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
@@ -44,8 +44,8 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "startSequencersByMapping" must {
-    val eswSequencerVariationId = VariationId(ESW, Some(Variation("red")))
-    val tcsSequencerVariationId = VariationId(TCS, Some(Variation("red")))
+    val eswSequencerVariationId = VariationInfo(ESW, Some(Variation("red")))
+    val tcsSequencerVariationId = VariationInfo(TCS, Some(Variation("red")))
 
     "start all the given sequencers | ESW-178, ESW-561" in {
       when(sequenceComponentUtil.loadScript(ESW, darkNightObsMode, eswSequencerVariationId.variation, eswPrimarySeqCompLoc))
@@ -273,11 +273,11 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "startSequencers" must {
-    val eswSequencerVariationId  = VariationId(ESW, Some(Variation("red")))
-    val tcsSequencerVariationId  = VariationId(TCS, Some(Variation("red")))
-    val irisSequencerVariationId = VariationId(IRIS, Some(Variation("red")))
+    val eswSequencerVariationId  = VariationInfo(ESW, Some(Variation("red")))
+    val tcsSequencerVariationId  = VariationInfo(TCS, Some(Variation("red")))
+    val irisSequencerVariationId = VariationInfo(IRIS, Some(Variation("red")))
     val sequencerVariations      = List(irisSequencerVariationId, eswSequencerVariationId, tcsSequencerVariationId)
-    val sequencerIds             = VariationIds(irisSequencerVariationId, eswSequencerVariationId, tcsSequencerVariationId)
+    val sequencerIds             = VariationInfos(irisSequencerVariationId, eswSequencerVariationId, tcsSequencerVariationId)
 
     "return success when adequate idle sequence components are available and all sequencers are started successfully | ESW-178, ESW-561" in {
       when(sequenceComponentUtil.allocateSequenceComponents(darkNightObsMode, sequencerVariations))
@@ -307,11 +307,11 @@ class SequencerUtilTest extends BaseTestSuite {
 
     "return failure when adequate sequence components are not available to start sequencers | ESW-178, ESW-340, ESW-561" in {
       when(sequenceComponentUtil.allocateSequenceComponents(darkNightObsMode, sequencerVariations))
-        .thenReturn(futureLeft(SequenceComponentNotAvailable(VariationIds(eswSequencerVariationId))))
+        .thenReturn(futureLeft(SequenceComponentNotAvailable(VariationInfos(eswSequencerVariationId))))
 
       sequencerUtil
         .startSequencers(darkNightObsMode, sequencerIds)
-        .futureValue should ===(SequenceComponentNotAvailable(VariationIds(eswSequencerVariationId)))
+        .futureValue should ===(SequenceComponentNotAvailable(VariationInfos(eswSequencerVariationId)))
 
       verify(sequenceComponentUtil).allocateSequenceComponents(darkNightObsMode, sequencerVariations)
     }

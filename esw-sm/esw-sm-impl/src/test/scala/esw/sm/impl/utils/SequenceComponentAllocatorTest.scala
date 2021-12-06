@@ -5,23 +5,23 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
-import esw.sm.api.models.VariationIds
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
+import esw.sm.api.models.VariationInfos
 import esw.sm.api.protocol.StartSequencerResponse.SequenceComponentNotAvailable
 import esw.testcommons.BaseTestSuite
 
 import java.net.URI
 
 class SequenceComponentAllocatorTest extends BaseTestSuite {
-  val eswPrimarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(ESW, "primary"), SequenceComponent))
-  val eswSecondarySeqCompLoc: AkkaLocation = akkaLocation(ComponentId(Prefix(ESW, "secondary"), SequenceComponent))
-  val tcsPrimarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(TCS, "primary"), SequenceComponent))
-  val irisPrimarySeqCompLoc: AkkaLocation  = akkaLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
-  val clearSkies: ObsMode                  = ObsMode("clearSkies")
-  private val eswVariationId: VariationId  = VariationId(ESW, Some(Variation("variation")))
-  private val irisVariationId: VariationId = VariationId(IRIS, Some(Variation("variation")))
-  private val tcsVariationId: VariationId  = VariationId(TCS, Some(Variation("variation")))
-  val sequenceComponentAllocator           = new SequenceComponentAllocator()
+  val eswPrimarySeqCompLoc: AkkaLocation     = akkaLocation(ComponentId(Prefix(ESW, "primary"), SequenceComponent))
+  val eswSecondarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(ESW, "secondary"), SequenceComponent))
+  val tcsPrimarySeqCompLoc: AkkaLocation     = akkaLocation(ComponentId(Prefix(TCS, "primary"), SequenceComponent))
+  val irisPrimarySeqCompLoc: AkkaLocation    = akkaLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
+  val clearSkies: ObsMode                    = ObsMode("clearSkies")
+  private val eswVariationId: VariationInfo  = VariationInfo(ESW, Some(Variation("variation")))
+  private val irisVariationId: VariationInfo = VariationInfo(IRIS, Some(Variation("variation")))
+  private val tcsVariationId: VariationInfo  = VariationInfo(TCS, Some(Variation("variation")))
+  val sequenceComponentAllocator             = new SequenceComponentAllocator()
 
   "allocate" must {
     "return mapping between provided sequencers and sequence components on first match basis | ESW-178, ESW-561" in {
@@ -72,7 +72,7 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
 
       val response = sequencerToSeqCompMapping.leftValue
       response shouldBe a[SequenceComponentNotAvailable]
-      response.variationIds shouldBe VariationIds(irisVariationId) // because IRIS is last in the List.
+      response.variationInfos shouldBe VariationInfos(irisVariationId) // because IRIS is last in the List.
     }
   }
 

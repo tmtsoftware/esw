@@ -1,8 +1,8 @@
 package esw.sm.impl.config
 
 import csw.prefix.models.Subsystem.*
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
-import esw.sm.api.models.{Resource, Resources, VariationIds}
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
+import esw.sm.api.models.{Resource, Resources, VariationInfos}
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
@@ -18,20 +18,20 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
   private val aoesw: Resource           = Resource(AOESW)
   private val iris: Resource            = Resource(IRIS)
   private val nfiraos: Resource         = Resource(NFIRAOS)
-  private val eswSequencerId            = VariationId(ESW)
-  private val tcsSequencerId            = VariationId(TCS)
-  private val aoeswSequencerId          = VariationId(AOESW)
-  private val irisSequencerId           = VariationId(IRIS)
-  private val irisSequencerIdWithImager = VariationId(IRIS, Some(Variation("IRIS_IMAGER")))
-  private val irisSequencerIdWithIFS    = VariationId(IRIS, Some(Variation("IRIS_IFS")))
-  private val nfiraosSequencerId        = VariationId(NFIRAOS)
+  private val eswSequencerId            = VariationInfo(ESW)
+  private val tcsSequencerId            = VariationInfo(TCS)
+  private val aoeswSequencerId          = VariationInfo(AOESW)
+  private val irisSequencerId           = VariationInfo(IRIS)
+  private val irisSequencerIdWithImager = VariationInfo(IRIS, Some(Variation("IRIS_IMAGER")))
+  private val irisSequencerIdWithIFS    = VariationInfo(IRIS, Some(Variation("IRIS_IFS")))
+  private val nfiraosSequencerId        = VariationInfo(NFIRAOS)
 
   private val ConfigMap = Map(
-    DarkNight  -> ObsModeConfig(Resources(esw, tcs), VariationIds(eswSequencerId, tcsSequencerId)),
-    ClearSkies -> ObsModeConfig(Resources(aoesw, iris), VariationIds(aoeswSequencerId, irisSequencerId)),
+    DarkNight  -> ObsModeConfig(Resources(esw, tcs), VariationInfos(eswSequencerId, tcsSequencerId)),
+    ClearSkies -> ObsModeConfig(Resources(aoesw, iris), VariationInfos(aoeswSequencerId, irisSequencerId)),
     IRISImagerAndIFS -> ObsModeConfig(
       Resources(tcs, iris),
-      VariationIds(
+      VariationInfos(
         eswSequencerId,
         irisSequencerId,
         irisSequencerIdWithIFS,
@@ -58,17 +58,17 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
 
   "Sequencers needed for observing mode" must {
     "create from subsystems" in {
-      val sequencers = VariationIds(eswSequencerId, tcsSequencerId, nfiraosSequencerId)
+      val sequencers = VariationInfos(eswSequencerId, tcsSequencerId, nfiraosSequencerId)
 
-      sequencers.variationIds should ===(List(eswSequencerId, tcsSequencerId, nfiraosSequencerId))
+      sequencers.variationInfos should ===(List(eswSequencerId, tcsSequencerId, nfiraosSequencerId))
     }
     "create from subsystems and variation | ESW-561" in {
-      val eswSequencerId     = VariationId(ESW)
-      val tcsSequencerId     = VariationId(TCS, Some(Variation("Variation1")))
-      val nfiraosSequencerId = VariationId(NFIRAOS, Some(Variation("Variation1")))
-      val sequencers         = VariationIds(eswSequencerId, tcsSequencerId, nfiraosSequencerId)
+      val eswSequencerId     = VariationInfo(ESW)
+      val tcsSequencerId     = VariationInfo(TCS, Some(Variation("Variation1")))
+      val nfiraosSequencerId = VariationInfo(NFIRAOS, Some(Variation("Variation1")))
+      val sequencers         = VariationInfos(eswSequencerId, tcsSequencerId, nfiraosSequencerId)
 
-      sequencers.variationIds should ===(List(eswSequencerId, tcsSequencerId, nfiraosSequencerId))
+      sequencers.variationInfos should ===(List(eswSequencerId, tcsSequencerId, nfiraosSequencerId))
     }
   }
 
@@ -89,14 +89,14 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
 
     "return sequencers if obsMode present in map | ESW-162" in {
       val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
-      sequenceManagerConfig.sequencers(DarkNight) should ===(Some(VariationIds(eswSequencerId, tcsSequencerId)))
+      sequenceManagerConfig.sequencers(DarkNight) should ===(Some(VariationInfos(eswSequencerId, tcsSequencerId)))
     }
 
     "return sequencers with variation if obsMode present in map | ESW-561" in {
       val sequenceManagerConfig = SequenceManagerConfig(ConfigMap)
       sequenceManagerConfig.sequencers(IRISImagerAndIFS) should ===(
         Some(
-          VariationIds(
+          VariationInfos(
             eswSequencerId,
             irisSequencerId,
             irisSequencerIdWithIFS,

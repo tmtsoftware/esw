@@ -38,6 +38,6 @@ trait OcsCodecsBase extends ParamCodecs with LocationCodecs with BasicCodecs {
 
   implicit lazy val scriptErrorCodec: Codec[ScriptError] = deriveAllCodecs
 
-  implicit lazy val variationCodec: Codec[Variation]     = deriveCodec
-  implicit lazy val variationIdCodec: Codec[VariationId] = Codec.bimap[String, VariationId](_.toString, VariationId.from)
+  implicit lazy val variationCodec: Codec[Variation]         = deriveCodec
+  implicit lazy val variationInfoCodec: Codec[VariationInfo] = Codec.bimap[String, VariationInfo](_.toString, VariationInfo.from)
 }

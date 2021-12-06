@@ -5,7 +5,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 /**
  * This class represents an sequencer identifier for an obsMode present in smObsModeConfig.conf
  */
-case class VariationId(subsystem: Subsystem, variation: Option[Variation] = None) {
+case class VariationInfo(subsystem: Subsystem, variation: Option[Variation] = None) {
 
   def prefix(obsMode: ObsMode): Prefix = Variation.prefix(subsystem, obsMode, variation)
 
@@ -15,25 +15,25 @@ case class VariationId(subsystem: Subsystem, variation: Option[Variation] = None
   }
 }
 
-object VariationId {
+object VariationInfo {
 
   /**
-   * Creates VariationId from given variationIdString in smObsModeConfig.conf
-   * @param variationIdString
-   * Possible variationIdStrings
+   * Creates VariationInfo from given variationInfoString in smObsModeConfig.conf
+   * @param variationInfoString
+   * Possible variationInfoStrings
    * IRIS.IRIS_IFS.ONE  - Subsystem . variation(IRIS_IFS.ONE)
    *
    * IRIS.IRIS_IMAGER - Subsystem . variation(IRIS_IMAGER)
    *
    * IRIS //Subsystem
-   * @return VariationId
+   * @return VariationInfo
    */
-  def from(variationIdString: String): VariationId = {
-    variationIdString.split('.').toList match {
+  def from(variationInfoString: String): VariationInfo = {
+    variationInfoString.split('.').toList match {
       case Nil              => throw new RuntimeException("") //This case will never trigger because split always returns a non-empty array
-      case subsystem :: Nil => VariationId(Subsystem.withNameInsensitive(subsystem), None)
+      case subsystem :: Nil => VariationInfo(Subsystem.withNameInsensitive(subsystem), None)
       case subsystem :: variation =>
-        VariationId(Subsystem.withNameInsensitive(subsystem), Some(Variation(variation.mkString("."))))
+        VariationInfo(Subsystem.withNameInsensitive(subsystem), Some(Variation(variation.mkString("."))))
     }
   }
 }

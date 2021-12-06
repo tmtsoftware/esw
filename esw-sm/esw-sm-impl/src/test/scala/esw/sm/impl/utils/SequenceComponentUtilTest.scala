@@ -11,11 +11,11 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.models.SequenceComponentState.Running
-import esw.ocs.api.models.{ObsMode, Variation, VariationId}
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
-import esw.sm.api.models.VariationIds
+import esw.sm.api.models.VariationInfos
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
@@ -138,11 +138,11 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
   }
 
   "mapSequencersToSeqComps" must {
-    val eswVariation: VariationId  = VariationId(ESW, Some(Variation("red")))
-    val wfosVariation: VariationId = VariationId(WFOS, Some(Variation("red")))
-    val tcsVariation: VariationId  = VariationId(TCS, Some(Variation("red")))
-    val sequencerVariations        = List(eswVariation, tcsVariation, wfosVariation)
-    val obsMode                    = ObsMode("clearSkies")
+    val eswVariation: VariationInfo  = VariationInfo(ESW, Some(Variation("red")))
+    val wfosVariation: VariationInfo = VariationInfo(WFOS, Some(Variation("red")))
+    val tcsVariation: VariationInfo  = VariationInfo(TCS, Some(Variation("red")))
+    val sequencerVariations          = List(eswVariation, tcsVariation, wfosVariation)
+    val obsMode                      = ObsMode("clearSkies")
     "return map of sequencer prefixes to sequence component locations | ESW-178, ESW-561" in {
       val eswPrimary   = sequenceComponentLocation("esw.primary")
       val eswSecondary = sequenceComponentLocation("esw.secondary")
@@ -183,12 +183,12 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(seqComps)))
       when(sequenceComponentAllocator.allocate(seqComps, obsMode, sequencerVariations))
-        .thenReturn(Left(SequenceComponentNotAvailable(VariationIds(sequencerVariations))))
+        .thenReturn(Left(SequenceComponentNotAvailable(VariationInfos(sequencerVariations))))
 
       val response: ConfigureResponse.Failure =
         sequenceComponentUtil.allocateSequenceComponents(obsMode, sequencerVariations).leftValue
 
-      response should ===(SequenceComponentNotAvailable(VariationIds(sequencerVariations)))
+      response should ===(SequenceComponentNotAvailable(VariationInfos(sequencerVariations)))
     }
 
     "return LocationServiceError if location service returns error | ESW-178" in {
@@ -239,7 +239,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
     val tcsSeqComp              = akkaLocation(ComponentId(Prefix(TCS, "primary"), Sequencer))
     val eswSeqComp              = akkaLocation(ComponentId(Prefix(ESW, "primary"), Sequencer))
     val tcsSequencerComponentId = ComponentId(Prefix(TCS, darkNight.name), Sequencer)
-    val tcsVariationId          = VariationId(TCS, Some(Variation("random")))
+    val tcsVariationId          = VariationInfo(TCS, Some(Variation("random")))
     val sequencerVariations     = List(tcsVariationId)
 
     "return success when script is loaded successfully when seq comp available for sequencer| ESW-176, ESW-561" in {
