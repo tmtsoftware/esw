@@ -86,22 +86,22 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
             ObsMode("DarkNight_1"),
             ObsModeStatus.Configured,
             Resources(Set(Resource(ESW), Resource(IRIS))),
-            VariationInfos(VariationInfo(ESW, Some(Variation("DarkNight_1"))), VariationInfo(TCS, Some(Variation("DarkNight_1"))))
+            VariationInfos(VariationInfo(ESW, Some(Variation("red"))), VariationInfo(TCS, Some(Variation("red"))))
           ),
           ObsModeDetails(
             ObsMode("DarkNight_2"),
             ObsModeStatus.Configurable,
             Resources(Set(Resource(IRIS), Resource(TCS))),
             VariationInfos(
-              VariationInfo(ESW, Some(Variation("DarkNight_2"))),
-              VariationInfo(IRIS, Some(Variation("DarkNight_2.IRIS_IMAGER")))
+              VariationInfo(ESW, Some(Variation("red"))),
+              VariationInfo(IRIS, Some(Variation("red")))
             )
           ),
           ObsModeDetails(
             ObsMode("DarkNight_3"),
-            ObsModeStatus.NonConfigurable(VariationInfos(VariationInfo(TCS, Some(Variation("DarkNight_3"))))),
+            ObsModeStatus.NonConfigurable(VariationInfos(VariationInfo(TCS, Some(Variation("red"))))),
             Resources(Set(Resource(TCS))),
-            VariationInfos(VariationInfo(TCS, Some(Variation("DarkNight_3"))))
+            VariationInfos(VariationInfo(TCS, Some(Variation("red"))))
           )
         )
       )
