@@ -346,10 +346,12 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
     override fun Assembly(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, Assembly, defaultTimeout)
     override fun Hcd(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, HCD, defaultTimeout)
 
+    //Duration.hours(10) is intentional, as this defaultTimeout is used in submitAndWait and queryFinal APIs and there can be very long-running commands which needs this much timeout.
     override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode): RichSequencer = richSequencer(subsystem, obsMode, null, Duration.hours(10))
 
     override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode,  defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, obsMode, null, defaultTimeout)
 
+    //Duration.hours(10) is intentional, as this defaultTimeout is used in submitAndWait and queryFinal APIs and there can be very long-running commands which needs this much timeout.
     override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation): RichSequencer = richSequencer(subsystem, obsMode, variation, Duration.hours(10))
 
     override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation , defaultTimeout: Duration): RichSequencer =
