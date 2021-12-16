@@ -1,7 +1,6 @@
 package esw.shell.service
 
 import java.nio.file.Paths
-
 import akka.actor.typed.ActorSystem
 import com.typesafe.config.ConfigFactory
 import csw.config.api.ConfigData
@@ -11,6 +10,7 @@ import esw.commons.extensions.FutureExt.FutureOps
 import esw.commons.utils.config.ConfigServiceExt
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.SequenceManagerTimeouts
+import esw.http.core.wiring.HttpService
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.models.ProvisionConfig
@@ -33,7 +33,8 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configServiceExt: 
 
   //does provision on SM with the given provision config and sequence script version
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse = {
-    val eswVersion = this.getClass.getPackage.getSpecificationVersion
+
+    val eswVersion = Option(classOf[HttpService].getClass.getPackage.getSpecificationVersion).getOrElse("0.1.0-SNAPSHOT")
 
     val sm = service
     val seqScriptsVersion =

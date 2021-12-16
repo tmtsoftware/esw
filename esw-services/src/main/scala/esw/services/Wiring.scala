@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem._
+import csw.prefix.models.Subsystem.*
 import esw.agent.akka.app.AgentWiring
 import esw.agent.service.api.models.SpawnResponse
 import esw.agent.service.app.AgentServiceWiring
@@ -19,6 +19,7 @@ import esw.commons.utils.config.ConfigServiceExt
 import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
 import esw.gateway.server.GatewayWiring
+import esw.http.core.wiring.HttpService
 import esw.services.apps.{Agent, AgentService, Gateway, SequenceManager}
 import esw.services.cli.Command
 import esw.services.cli.Command.{Start, StartEngUIServices}
@@ -57,7 +58,9 @@ class Wiring(cmd: Command) {
   private lazy val configServiceExt      = new ConfigServiceExt(configService)
 
   private lazy val sequencerScriptsSha = "153b6748e0"
-  private lazy val eswVersionDefault   = this.getClass.getPackage.getSpecificationVersion
+
+  private lazy val eswVersionDefault =
+    Option(classOf[HttpService].getClass.getPackage.getSpecificationVersion).getOrElse("0.1.0-SNAPSHOT")
 
   private lazy val (scriptVersion, eswVersion) = cmd match {
     case _: Start              => (sequencerScriptsSha, eswVersionDefault)
