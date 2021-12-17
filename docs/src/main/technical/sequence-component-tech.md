@@ -1,21 +1,22 @@
 # Sequence Component Technical Documentation
 
 ## Introduction
+
 The Sequence Component is a standalone application that can load scripts and in doing so, become a Sequencer. In the OCS
 *scripting* approach, the Sequence Component is the reusable environment that supports the execution of different scripts.
 Use of the Sequence Component also reduces the time to load a Sequencer Script--similar to a scripting language shell.
 
-Sequence Component will be a continuously running JVM process which will load and unload different script. 
+Sequence Component will be a continuously running JVM process which will load and unload different script.
 When loading a script, the Sequencer will be started as a part of existing Sequence Component process.
-This step minimizes the start-up time for Sequencer to a fraction of a second. 
+This step minimizes the start-up time for Sequencer to a fraction of a second.
 
 The Sequence Component application and its arguments are described @ref[here](../sequencersandscripts/sequencer-app.md).
 
 ## Modules
 
 * esw-ocs-api -
-This module contains the API for Sequence Component. This is cross-compiled module, which is compiled into JVM as well as JS code. 
-This module includes `SequenceComponentApi`, which defines the interface for Sequence Component. This module also 
+This module contains the API for Sequence Component. This is cross-compiled module, which is compiled into JVM as well as JS code.
+This module includes `SequenceComponentApi`, which defines the interface for Sequence Component. This module also
 consists of core models, actor client, JVM and JS client for Sequence Component.
 
 * esw-ocs-impl -
@@ -62,14 +63,13 @@ useful capabilities.
 
 | Message | Description |
 |:-------:|:----------|
-| LoadScript| Load a script in the Sequence Component to create a Sequencer. Takes a subsystem and observing mode as arguments. |
+| LoadScript| Load a script in the Sequence Component to create a Sequencer. Takes a subsystem, observing mode and variation as arguments. |
 | UnloadScript|Unloads a loaded script returning a Sequence Component. |
 | RestartScript | Unloads and reloads a script causing initialization of state. |
 | GetStatus | Returns the Location of the Sequence Component's loaded Sequencer |
 | Shutdown | Shutdown sequence component and sequencer loaded(if any) |
 
-For more details on the messages handled by the Sequence Component see [here]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/messages/SequenceComponentMsg.scala)
-
+* For more details on the messages handled by the Sequence Component see [here]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/messages/SequenceComponentMsg.scala)
 
 ## Sequence Component Lifecycle
 

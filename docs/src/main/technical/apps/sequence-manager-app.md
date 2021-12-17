@@ -1,6 +1,6 @@
 # Starting the Sequence Manager Application
 
-`esw-sm-app` is a command line application that facilitates starting Sequence Manager, and the HTTP server that is part of 
+`esw-sm-app` is a command line application that facilitates starting Sequence Manager, and the HTTP server that is part of
 Sequence Manager using the `coursier` dependency management application. The `coursier` tool is described with full documentation
 at the [coursier site](https://get-coursier.io).
 
@@ -33,6 +33,7 @@ One can specify the installation directory like the following:
 ```bash
 cs install --install-dir /tmt/apps esw-sm-app
 ```
+
 @@@note
 If you don't provide the version *or* SHA in above command, `esw-sm-app` will be installed with the latest tagged binary of `esw-sm-app`.
 @@@
@@ -43,11 +44,11 @@ Once esw-sm-app is installed, one can simply execute esw-sm-app with the start c
 
 Start command supports following arguments:
 
-- `-p` : optional argument: port on which HTTP server will be bound. If a value is not provided, it will be randomly picked.
-- `-o` : Config file path which has mapping of sequencers and resources needed for different observing modes
-- `-l` : optional argument (true if config is to be read locally or false if from the Configuration Service) default value is false
-- `-a` : optional argument: This argument is used when Sequence Manager is spawned using Agent. It is the prefix for the Agent on 
-        which the Sequence Manager will be spawned (examples: ESW.agent1, IRIS.agent2 etc). For starting standalone Sequence Manager for testing or on local 
+* `-p` : optional argument: port on which HTTP server will be bound. If a value is not provided, it will be randomly picked.
+* `-o` : Config file path which has mapping of sequencers and resources needed for different observing modes
+* `-l` : optional argument (true if config is to be read locally or false if from the Configuration Service) default value is false
+* `-a` : optional argument: This argument is used when Sequence Manager is spawned using Agent. It is the prefix for the Agent on
+        which the Sequence Manager will be spawned (examples: ESW.agent1, IRIS.agent2 etc). For starting standalone Sequence Manager for testing or on local
         this argument is not needed.
 
 This command starts Sequence Manager as well as its HTTP interface.
@@ -72,25 +73,28 @@ has a list of resources required by the obsMode and a list of Sequencers that ar
 
 Resources are currently specified using subsystem names such as ESW or TCS. Sequencers are also specified by a subsystem name. In this case,
 Sequence Manager uses the obsMode and the subsystem to find the correct script to load in the subsystem's Sequencer. The scripts
-are located in the `sequencer-scripts` repository. 
+are located in the `sequencer-scripts` repository.
 
 The obsMode configuration file is written in JSON. An example follows with three obsModes: IRIS_MCAO, IRIS_Calib, and WFOS_Calib.
-By convention obsModes start with the instrument's subsystem name followed by an underscore and some other description.
-
+By convention obsModes start with the instrument's subsystem name followed by an underscore and some other description. The Sequencers can also have a variation now(eg. `IRIS.red`, `IRIS.blue`) to run multiple sequencers concurrently for a subsystem.
 ```
 esw-sm {
   obsModes: {
-    IRIS_MCAO: {
+    IRIS_Darknight: {
       resources: [IRIS, TCS, NFIRAOS]
-      sequencers: [IRIS, ESW, AOESW, TCS]
+      sequencers: [IRIS, ESW, TCS]
     },
-    IRIS_Calib: {
-      resources: [IRIS, NFIRAOS]
-      sequencers: [IRIS, ESW, AOESW]
+    IRIS_ImagerAndIFS: {
+      resources: [IRIS, TCS]
+      sequencers: [IRIS.red, IRIS.blue, ESW]
     },
     WFOS_Calib: {
       resources: [WFOS]
-      sequencers: [WFOS, ESW]
+      sequencers: [ESW, WFOS]
+    },
+    IRIS_FilterWheel: {
+      resources: [IRIS, TCS, NFIRAOS]
+      sequencers: [IRIS, ESW, TCS, AOESW]
     }
   }
 }
@@ -116,6 +120,7 @@ cd /tmt/apps
 ```
 
 ## Starting Sequence Manager in Simulation Mode
+
 The Sequence Manager supports a simulation mode, which is primarily useful for standalone testing of the Sequence
 Manager. When started in simulation mode, the Sequence Manager starts bypasses the Agents, and starts Sequence Components
 internally. The register themselves with the Location Service and load Scripts and Sequencers as normal, but simulated
@@ -146,17 +151,16 @@ cs launch esw-services -- start -s --simulation
 //    -s : to start SequenceManager
 //    --simulation : in simulation mode
 ```
-    
+
 ## 5. Running esw-sm-app in Simulation Mode Without esw-services
 
 ```bash
 cs launch esw-sm-app -- start --simulation
-```   
+```
 
 @@@ warning
 If esw-sm-app is started independent of esw-services in the simulation mode then following things are needed to be taken care of:
+
 * Agents won't be spawned automatically, they have to be started manually.
-* A version.conf needs to be created in config-service for the Provision api to work. 
+* A version.conf needs to be created in config-service for the Provision api to work.
 @@@
-
-

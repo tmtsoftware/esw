@@ -1,7 +1,7 @@
 # Running a Sequencer Using esw-ocs-app
 
-The `esw-ocs-app` is a command line application that facilitates starting a Sequence Component and/or Sequencer 
-using the `coursier` dependency management application. The `coursier` tool is described with full documentation 
+The `esw-ocs-app` is a command line application that facilitates starting a Sequence Component and/or Sequencer
+using the `coursier` dependency management application. The `coursier` tool is described with full documentation
 at the [coursier site](https://get-coursier.io).
 
 ## Prerequisites for Running esw-ocs-app
@@ -58,6 +58,7 @@ Options accepted by this command are described below:
 
 * `-s` : subsystem of the sequence component, for e.g. `tcs`, `iris` etc
 * `-n`, `--name` : optional name for sequence component, for e.g. `primary`, `backup` etc
+* `-a` : `--agent-prefix`  optional argument: agentPrefix on which sequence component will be spawned, for e.g. `ESW.agent1`, `IRIS.agent2` etc
 
 Here are some examples.
 
@@ -93,18 +94,22 @@ When starting a Sequencer, esw-ocs-app spawns two things:
 
 * **Sequence Component:** with provided `subsystem`, `name`
 * **Sequencer:** with provided `observing mode` and
-`subsystem` of sequencer (`-i` option) if specified or else `subsystem` of sequence component (`-s` option)
+`subsystem` of sequencer (`-i` option) if specified or else `subsystem` of sequence component (`-s` option) or variation of the sequencer(`-v` option)
 
 Options accepted by this command are described below:
 
- * `-s` : subsystem of the sequence component, for e.g. `tcs`, `iris` etc.
- * `-n`, `--name` : optional name for sequence component, for e.g. `primary`, `backup` etc.
- * `-i` : optional subsystem of sequencer script, for e.g. `tcs`, `iris` etc. Default value: subsystem provided by `-s` option.
- * `-m`, `--mode` : observing mode, for e.g. `darknight`.
+* `-s` : subsystem of the sequence component, for e.g. `tcs`, `iris` etc.
+* `-n`, `--name` : optional name for sequence component, for e.g. `primary`, `backup` etc.
+* `-a`, `--agent-prefix` : optional argument: agentPrefix on which sequence component will be spawned, for eg: `ESW.agent1`, `IRIS.agent2` etc
+* `-i` : optional subsystem of sequencer script, for e.g. `tcs`, `iris` etc. Default value: subsystem provided by `-s` option.
+* `-m`, `--obs-mode` : observing mode, for e.g. `darknight`
+* `-v`, `--variation` : optional variation part of the sequencer prefix for eg: Sequencer Prefix(IRIS.IRIS_ImagerAndIFS.IRIS_IFS), `IRIS_IFS` needs to be provided as variation
+* `--simulation` : simulation mode
 
 The following command examples start both a Sequence Component and Sequencer:
 
 Example 1: Start a Sequencer with TCS darknight observing mode
+
 ```bash
 //cd to installation directory
 cd /tmt/apps
@@ -114,6 +119,7 @@ cd /tmt/apps
 ```
 
 Example 2: Start the IRIS-darknight Sequencer on an IRIS Sequence Component
+
 ```bash
 //cd to installation directory
 cd /tmt/apps
@@ -123,11 +129,23 @@ cd /tmt/apps
 
 ```
 
+Example 3: Start the IRIS-darknight Sequencer on an IRIS Sequence Component with a variation of red
+
+```bash
+//cd to installation directory
+cd /tmt/apps
+
+//Example below will spawn a Sequence Component `IRIS-primary` and a Sequencer `IRIS-ImagerAndIFS` in it with variation as red
+./esw-ocs-app sequencer -s iris -a IRIS.agent1 -n primary -i iris -m IRIS_ImagerAndIFS -v red
+
+```
+
 @@@note
 Refer supported arguments section or `./esw-ocs-app start --help` for starting esw-ocs-app with specific arguments.
 @@@
 
 ## Setting the Default Log Level
+
 The default log level for any component is specified in the `application.conf` file of the component.  In this case,
 the Sequence Component is shared code among all Sequencers.  Therefore, to specify a log level for your Sequencer,
 use the java -J-D option to override configuration values at runtime.  For log level, the format is:
