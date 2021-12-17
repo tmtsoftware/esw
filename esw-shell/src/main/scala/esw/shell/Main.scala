@@ -4,8 +4,13 @@ import scala.sys.exit
 
 //main to start the esw-shell
 object Main extends App {
-  println("+++++ starting esw.shell +++++")
+  def appVersion: String = BuildInfo.version
+  def progName: String   = BuildInfo.name
+
+  println(s"+++++ starting $progName-$appVersion +++++")
+
   val eswWiring = new EswWiring
+  eswWiring.startLogging(progName, appVersion)
 
   val ammoniteResponse = ammonite
     .Main(

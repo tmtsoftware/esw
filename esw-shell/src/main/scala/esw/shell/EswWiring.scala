@@ -7,6 +7,8 @@ import csw.config.api.scaladsl.ConfigService
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.framework.CswWiring
 import csw.location.api.scaladsl.LocationService
+import csw.logging.client.scaladsl.LoggingSystemFactory
+import csw.network.utils.Networks
 import esw.commons.extensions.FutureExt.FutureOps
 import esw.commons.utils.aas.Keycloak
 import esw.commons.utils.config.ConfigServiceExt
@@ -29,6 +31,9 @@ class EswWiring {
   private lazy val configAdminUsername: String = config.getString("configAdminUsername")
   private lazy val configAdminPassword: String = config.getString("configAdminPassword")
   private lazy val keycloak                    = new Keycloak(locationService)(typedSystem.executionContext)
+
+  def startLogging(name: String, version: String): Unit =
+    LoggingSystemFactory.start(name, version, Networks().hostname, typedSystem)
 
   private def tokenFactory: TokenFactory =
     new TokenFactory {
