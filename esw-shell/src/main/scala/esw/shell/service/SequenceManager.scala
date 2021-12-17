@@ -34,7 +34,7 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configServiceExt: 
   //does provision on SM with the given provision config and sequence script version
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse = {
 
-    val eswVersion = Option(classOf[HttpService].getClass.getPackage.getSpecificationVersion).getOrElse("0.1.0-SNAPSHOT")
+    val eswVersion = Option(classOf[HttpService].getPackage.getSpecificationVersion).getOrElse("0.1.0-SNAPSHOT")
 
     val sm = service
     val seqScriptsVersion =

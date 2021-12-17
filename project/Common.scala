@@ -60,7 +60,7 @@ object Common {
       Test / testOptions ++= reporterOptions,
       Test / packageBin / publishArtifact := true,
       // jitpack provides the env variable VERSION=<version being built> # A tag or commit. We have aliased VERSION to JITPACK_VERSION
-      // we make use of it so that the version in class metadata (e.g. classOf[HttpService].getClass.getPackage.getSpecificationVersion)
+      // we make use of it so that the version in class metadata (e.g. classOf[HttpService].getPackage.getSpecificationVersion)
       // and the maven repo match
       version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
       fork := true,
