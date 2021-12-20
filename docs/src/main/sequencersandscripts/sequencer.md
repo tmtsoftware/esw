@@ -141,7 +141,7 @@ Use of @ sign makes it appear like an email, hence validateSite fails without sp
 | ESW.IRIS_2 | IRIS | IRIS_ImagerAndIFS | blue |IRIS.IRIS_ImagerAndIFS.blue | An IRIS instrument Sequencer running the IRIS script for the IRIS_ImagerAndIFS observing mode using the ESW.IRIS_2 Sequence Component with a variation as blue. |
 | ESW.primary | ESW |  IRIS_ImagerAndIFS | | ESW.IRIS_ImagerAndIFS | An ESW Sequencer running the ESW script for the IRIS_ImagerAndIFS observing mode using the ESW.primary Sequence Component. |
 
-As shown above, the observing mode is the instrument name, and an instrument-specific label related to observing mode features. Variation is used to differentiate between any two sequence components of one subsystem(eg. IRIS).  Each instrument
+As shown above, the observing mode is the instrument name, and an instrument-specific label related to observing mode features.  Variation is used to differentiate between any two sequencers of one subsystem(eg. IRIS).  Each instrument
 includes its scripts inside its specific package. The subsystem, observing mode and variation are used to look up the correct script in the script repository.
 Once the Sequencer script is loaded in a Sequence Component, the Sequencer API exposes a `GetSequenceComponent` command which returns the
 Location of the Sequence Component allowing the Sequence Manager or other client to determine which Sequence Component is executing
@@ -158,7 +158,7 @@ The naming convention allows the following:
 1. The Sequence Manager can search for all Sequencers related to an observing mode.
 2. The Sequence Manager can identify the Sequencer running a subsystem’s instrument observing mode script.
 3. The Sequence Manager can identify which Sequence Component is running a specific subsystem’s instrument observing mode.
-4. The Sequence Manager can identify which variation of the sequence component of same subsystem us running a specific instrument observing mode. 
+4. The Sequence Manager can identify which sequencer of same subsystem is running a specific instrument observing mode using variation.
 
 ## Sequencer Technical Design
 

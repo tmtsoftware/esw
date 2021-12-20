@@ -104,7 +104,6 @@ Options accepted by this command are described below:
 * `-i` : optional subsystem of sequencer script, for e.g. `tcs`, `iris` etc. Default value: subsystem provided by `-s` option.
 * `-m`, `--obs-mode` : observing mode, for e.g. `darknight`
 * `-v`, `--variation` : optional variation part of the sequencer prefix for eg: Sequencer Prefix(IRIS.IRIS_ImagerAndIFS.IRIS_IFS), `IRIS_IFS` needs to be provided as variation
-* `--simulation` : simulation mode
 
 The following command examples start both a Sequence Component and Sequencer:
 
