@@ -170,8 +170,8 @@ This use case explains the most important way Sequence Manager is used.
 
 Apart from APIs explained above, Sequence Manager also provides following useful APIs:
 
-* startSequencer - start a Sequencer for the provided subsystem and observing mode
-* restartSequencer - re-start a Sequencer for provided subsystem and observing mode
+* startSequencer - start a Sequencer for the provided subsystem, observing mode and optional variation
+* restartSequencer - re-start a Sequencer for provided subsystem, observing mode and and optional variation
 * shutdownSequenceComponent - shutdown a Sequence Component with provided prefix
 * shutdownAllSequenceComponents - shutdown all running Sequence Components
 

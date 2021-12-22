@@ -76,11 +76,12 @@ trait SequenceManagerApi {
   def configure(obsMode: ObsMode): Future[ConfigureResponse]
 
   /**
-   * Shutdown running sequencer of provided Subsystem and Observing mode.
+   * Shutdown running sequencer of provided Subsystem, Observing mode and optional parameter Variation
    */
   def shutdownSequencer(
     subsystem: Subsystem,
-    obsMode: ObsMode
+    obsMode: ObsMode,
+    variation: Option[Variation] = None
   ): Future[ShutdownSequencersResponse]
 
   // other APIs ...
@@ -128,7 +129,7 @@ class for the layer below to be passed in as an argument to the layer above. Thi
 dependency injection because it makes mocking that lower layer possible.
 
 We will take a look at each layer, and examine the way it is defined and how to write the tests. We
-will focus on one particular method, `shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode)`,
+will focus on one particular method, `shutdownSequencer(subsystem: Subsystem, obsMode: ObsMode,variation: Option[Variation] = None)`,
 because it is complete enough to demonstrate our testing philosophy, but simple enough to not
 over complicate this document. We will take a top-down look at the layers, so we will start with the
 HTTP Client.  
@@ -142,7 +143,8 @@ class has the msocket POST client passed in. The following snippet shows the imp
 ```scala
 override def shutdownSequencer(
   subsystem: Subsystem,
-  obsMode: ObsMode
+  obsMode: ObsMode,
+  variation: Option[Variation] = None
 ): Future[ShutdownSequencersResponse] =
   postClient.requestResponse[ShutdownSequencersResponse](
     ShutdownSequencer(subsystem, obsMode)
@@ -173,25 +175,18 @@ To do this, we need to implement mocked behavior for `postClient.requestResponse
 this looks like this:
 
 ```scala
-"SequenceManagerClient" must {
-  "return ShutdownSequencersResponse for shutdownSequencer request" in {
-    val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
-    val shutdownSequencerMsg       = ShutdownSequencer(ESW, obsMode)
-    when(
-      postClient.requestResponse[ShutdownSequencersResponse](
-        argsEq(shutdownSequencerMsg)
-      )(
-        any[Decoder[ShutdownSequencersResponse]](),
-        any[Encoder[ShutdownSequencersResponse]]()
-      )
-    ).thenReturn(Future.successful(shutdownSequencersResponse))
+ "return ShutdownSequencersResponse for shutdownSequencer request" in {
+      val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
+      val shutdownSequencerMsg       = ShutdownSequencer(ESW, obsMode, None)
+      when(
+        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
+          any[Decoder[ShutdownSequencersResponse]](),
+          any[Encoder[ShutdownSequencersResponse]]()
+        )
+      ).thenReturn(Future.successful(shutdownSequencersResponse))
 
-    client.shutdownSequencer(
-      ESW,
-      obsMode
-    ).futureValue shouldBe shutdownSequencersResponse
-  }
-}   
+      client.shutdownSequencer(ESW, obsMode, None).futureValue shouldBe shutdownSequencersResponse
+    }
 ```
 
 One thing to note is that we are also mocking the response. This insures that the response we get
@@ -208,31 +203,38 @@ Now we will move on to the [SequenceManagerRequestHandler]($github.base_url$/esw
 class, which is called in msocket to handle this request. The code for the handler looks like this:
 
 ```scala
-class SequenceManagerRequestHandler(
-    sequenceManager: SequenceManagerApi,
-    securityDirectives: SecurityDirectives
-) extends HttpPostHandler[SequenceManagerRequest]
-  with ServerHttpCodecs {
+class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securityDirectives: SecurityDirectives)
+    extends HttpPostHandler[SequenceManagerRequest]
+    with ServerHttpCodecs {
 
-  import sequenceManager._
+  import sequenceManager.*
   override def handle(request: SequenceManagerRequest): Route =
     request match {
-      case Configure(obsMode) => 
-        sPost(complete(configure(obsMode)))
-  
-      case ShutdownSequencer(subsystem, obsMode) => 
-        sPost(complete(shutdownSequencer(subsystem, obsMode)))
+      case GetObsModesDetails                              => complete(getObsModesDetails)
+      case GetResources                                    => complete(getResources)
+      case Configure(obsMode)                              => sPost(complete(configure(obsMode)))
+      case Provision(config)                               => sPost(complete(provision(config)))
+      case StartSequencer(subsystem, obsMode, variation)   => sPost(complete(startSequencer(subsystem, obsMode, variation)))
+      case RestartSequencer(subsystem, obsMode, variation) => sPost(complete(restartSequencer(subsystem, obsMode, variation)))
 
-      // other ...
+      // Shutdown sequencers
+      case ShutdownSequencer(subsystem, obsMode, variation) => sPost(complete(shutdownSequencer(subsystem, obsMode, variation)))
+      case ShutdownSubsystemSequencers(subsystem)           => sPost(complete(shutdownSubsystemSequencers(subsystem)))
+      case ShutdownObsModeSequencers(obsMode)               => sPost(complete(shutdownObsModeSequencers(obsMode)))
+      case ShutdownAllSequencers                            => sPost(complete(shutdownAllSequencers()))
+
+      case ShutdownSequenceComponent(prefix) => sPost(complete(shutdownSequenceComponent(prefix)))
+      case ShutdownAllSequenceComponents     => sPost(complete(shutdownAllSequenceComponents()))
+
     }
 
-  def sPost(route: => Route): Route = securityDirectives.sPost(EswUserRolePolicy())(_ => route)
+  def sPost(route: => Route): Route = securityDirectives.sPost(AuthPolicies.eswUserRolePolicy)(_ => route)
 }
 ```
 
 Here, the lower layer is the **SequenceManagerImpl**, passed in as the `sequenceManager`. For our
 method, the `handle` method matches the request model as a **ShutdownSequencer** type, and then
-calls `shutdownSequencer(subsystem, obsMode)` which is an imported method of `sequenceManager`
+calls `shutdownSequencer(subsystem, obsMode, variation)` which is an imported method of `sequenceManager`
 object. This call is wrapped in an `sPost` method, which provides AAS security, and `complete`, is
 an Akka-HTTP method to complete the HTTP request.
 
@@ -243,21 +245,37 @@ is mocked too, since this is already tested as part of AAS:
 
 ```scala
 class SequenceManagerRequestHandlerTest
-  extends BaseTestSuite
-  with ScalatestRouteTest
-  with SequenceManagerServiceCodecs
-  with ClientHttpCodecs {
-
+    extends BaseTestSuite
+    with ScalatestRouteTest
+    with SequenceManagerServiceCodecs
+    with ClientHttpCodecs {
   private val sequenceManagerApi = mock[SequenceManagerApi]
   private val securityDirectives = mock[SecurityDirectives]
+  private val postHandler        = new SequenceManagerRequestHandler(sequenceManagerApi, securityDirectives)
 
-  private val postHandler = 
-    new SequenceManagerRequestHandler(sequenceManagerApi, securityDirectives)
+  import LabelExtractor.Implicits.default
+  private val route = new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler).make()
 
-  private val route =
-    new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler)
-      .make()
-}
+  private val string10    = randomString(10)
+  private val string5     = randomString(5)
+  private val obsMode     = ObsMode(string10)
+  private val variation   = Some(Variation(string5))
+  private val componentId = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
+
+  private val eswUserPolicy        = AuthPolicies.eswUserRolePolicy
+  private val accessToken          = mock[AccessToken]
+  private val accessTokenDirective = BasicDirectives.extract(_ => accessToken)
+
+  override def clientContentType: ContentType = ContentType.Json
+
+  override protected def afterEach(): Unit = {
+    super.afterEach()
+    reset(securityDirectives, sequenceManagerApi)
+  }
+
+  implicit class Narrower(x: SequenceManagerRequest) {
+    def narrow: SequenceManagerRequest = x
+  }
 ```
 
 The test creates a `post-endpoint` route via msocket, just like we using in our msocket-based HTTP
@@ -268,21 +286,16 @@ expect.
 ```scala
 "SequenceManagerRequestHandler" must {
     "return shutdown sequencer success for shutdownSequencer request" in {
-    
-    when(securityDirectives.sPost(eswUserPolicy))
-      .thenReturn(accessTokenDirective)
-    when(sequenceManagerApi.shutdownSequencer(ESW, obsMode))
-      .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
+      when(sequenceManagerApi.shutdownSequencer(ESW, obsMode, None))
+        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-    Post("/post-endpoint", ShutdownSequencer(ESW, obsMode).narrow) ~> route ~> check {
-      verify(securityDirectives).sPost(eswUserPolicy)
-      verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode)
-
-      responseAs[ShutdownSequencersResponse] should ===(
-        ShutdownSequencersResponse.Success
-      )
+      Post("/post-endpoint", ShutdownSequencer(ESW, obsMode, None).narrow) ~> route ~> check {
+        verify(securityDirectives).sPost(eswUserPolicy)
+        verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode, None)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
+      }
     }
-  }
 }
 ```
 
@@ -305,14 +318,29 @@ properly using both `CBOR` and `JSON` formats.
 
 ```scala
 class RoundTripTest extends AnyFreeSpec with Matchers {
+
   EswData.services.data.foreach { case (serviceName, service) =>
-    s"$serviceName" - {
+    s"$serviceName " - {
       "models" - {
         service.models.modelTypes.foreach { modelType =>
-          modelType.name - { validate(modelType) }
+          modelType.name - {
+            validate(modelType)
+          }
         }
       }
-    // similarly for "http requests" and  "websocket requests"
+
+      "http requests" - {
+        service.`http-contract`.requests.modelTypes.foreach { modelType =>
+          validate(modelType)
+        }
+      }
+
+      "websocket requests" - {
+        service.`websocket-contract`.requests.modelTypes.foreach { modelType =>
+          validate(modelType)
+        }
+      }
+    }
   }
 
   private def validate(modelType: ModelType[_]): Unit = {
@@ -356,14 +384,10 @@ and registered with the Location Service. Therefore, just the location is passed
 reference is obtained from that:
 
 ```scala
-class SequenceManagerImpl(
-    location: AkkaLocation
-)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
+class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
 
-  private val smRef: ActorRef[SequenceManagerMsg] =
-    location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
+  private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
-}
 ```
 
 The code for our method simply creates an Akka message the actor can handle (in this case,
@@ -372,12 +396,14 @@ by sending this message to the SM actor and transforming the reply into a Future
 
 ```scala
 override def shutdownSequencer(
-  subsystem: Subsystem,
-  obsMode: ObsMode
-): Future[ShutdownSequencersResponse] =
-  (smRef ? (ShutdownSequencer(subsystem, obsMode, _)))(
-    SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler
-  )
+      subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation]
+  ): Future[ShutdownSequencersResponse] =
+    (smRef ? (ShutdownSequencer(subsystem, obsMode, variation, _)))(
+      SequenceManagerTimeouts.ShutdownSequencer,
+      actorSystem.scheduler
+    )
 ```
 
 For testing, instead of mocking the actor behavior directly, we use the [AskProxyTestKit]($github.base_url$/esw-test-commons/src/main/scala/esw/testcommons/AskProxyTestKit.scala).
@@ -389,19 +415,10 @@ The test kit is set up by overriding the `make` method to return an instance of 
 be used in the test kit features.
 
 ```scala
-private val askProxyTestKit =
-  new AskProxyTestKit[SequenceManagerMsg, SequenceManagerImpl] {
-    override def make(
-      actorRef: ActorRef[SequenceManagerMsg]
-    ): SequenceManagerImpl = {
+private val askProxyTestKit = new AskProxyTestKit[SequenceManagerMsg, SequenceManagerImpl] {
+    override def make(actorRef: ActorRef[SequenceManagerMsg]): SequenceManagerImpl = {
       val location =
-        AkkaLocation(
-          AkkaConnection(
-            ComponentId(Prefix(ESW, "sequence_manager"), Service)
-          ), 
-          actorRef.toURI, Metadata.empty
-        )
-    
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), actorRef.toURI, Metadata.empty)
       new SequenceManagerImpl(location)
     }
   }
@@ -412,16 +429,13 @@ The use of the test kit for our method is shown below, **SequenceManagerImplTest
 ```scala
 "SequenceManagerImpl" must {
   "shutdownSequencer" in {
-    val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
-    withBehavior {
-      case SequenceManagerMsg.ShutdownSequencer(`subsystem`, `obsMode`, replyTo) => 
+      val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
+      withBehavior { case SequenceManagerMsg.ShutdownSequencer(`subsystem`, `obsMode`, `variation`, replyTo) =>
         replyTo ! shutdownSequencersResponse
-    } check { sm =>
-      sm.shutdownSequencer(subsystem, obsMode).futureValue should ===(
-        shutdownSequencersResponse
-      )
+      } check { sm =>
+        sm.shutdownSequencer(subsystem, obsMode, variation).futureValue should ===(shutdownSequencersResponse)
+      }
     }
-  }
 }
 ```
 
@@ -440,18 +454,18 @@ which uses utility classes to carry out operations. For this operation, it requi
 behavior. Here is a snippet of handling our message:
 
 ```scala
-private def idle(self: SelfRef): SMBehavior =
-  receive[SequenceManagerIdleMsg](Idle) {
-    case Configure(obsMode, replyTo) => configure(obsMode, self, replyTo)
-    case Provision(config, replyTo)  => provision(config, self, replyTo)
+ private def idle(self: SelfRef) =
+    receive[SequenceManagerIdleMsg](Idle) {
+      case Configure(obsMode, replyTo) => configure(obsMode, self, replyTo)
+      case Provision(config, replyTo)  => provision(config, self, replyTo)
 
-    // Shutdown sequencers
-    case ShutdownSequencer(subsystem, obsMode, replyTo) =>
-      sequencerUtil.shutdownSequencer(
-        subsystem, obsMode
-      ).map(self ! ProcessingComplete(_))
-
-      processing(self, replyTo)
+      // Shutdown sequencers
+      case ShutdownSequencer(subsystem, obsMode, variation, replyTo) =>
+        sequencerUtil
+          .shutdownSequencer(Variation.prefix(subsystem, obsMode, variation))
+          .map(self ! ProcessingComplete(_))
+          .recoverWithProcessingError[ShutdownSequencer](self)
+        processing(self, replyTo)
   }
 ```
 
@@ -463,7 +477,7 @@ to the `replyTo` actor of the original message, and the SM actor returns to the 
 This means our test fixture needs to verify the following things:
 
 - When the actor receives the **ShutdownSequencer** message, it calls the `shutdownSequencer` method
-of sequencerUtil with the `subsystem` and `obsMode` from the message.
+of sequencerUtil with the `subsystem`,`obsMode` and `variation` from the message.
 - The actor then transitions to the processing state.
 - The response from our `sequenceUtil.shutdownSequencer` is returned to the replyTo actor in the
 **ShutdownSequencer** message.
@@ -473,19 +487,41 @@ As seen below, this is what our test does.  As we seen before the lower layer
 (or layers, in this case), are mocked.
 
 ```scala
-class SequenceManagerBehaviorTest
-  extends BaseTestSuite
-  with TableDrivenPropertyChecks {
+class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenPropertyChecks {
 
-  private val locationServiceUtil: LocationServiceUtil =
-    mock[LocationServiceUtil]
+  private implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+    ActorSystem(SpawnProtocol(), "sequence-manager-system")
 
-  private val agentUtil: AgentUtil         = mock[AgentUtil]
-  private val sequencerUtil: SequencerUtil = mock[SequencerUtil]
+  private val loggerFactory: LoggerFactory = new LoggerFactory(Prefix("ESW.sequence_manager"))
+  private implicit val logger: Logger      = loggerFactory.getLogger
 
-  private val sequenceComponentUtil: SequenceComponentUtil =
-    mock[SequenceComponentUtil]
+  private val darkNight                              = ObsMode("DarkNight")
+  private val clearSkies                             = ObsMode("ClearSkies")
+  private val irisMCAO                               = ObsMode("IRIS_MCAO")
+  private val randomObsMode                          = ObsMode("RandomObsMode")
+  private val eswVariationId                         = VariationInfo(ESW)
+  private val tcsVariationId                         = VariationInfo(TCS)
+  private val wfosVariationId                        = VariationInfo(WFOS)
+  private val darkNightVariationIds: VariationInfos  = VariationInfos(eswVariationId, tcsVariationId)
+  private val clearSkiesVariationIds: VariationInfos = VariationInfos(eswVariationId)
+  private val irisMCAOVariationIds: VariationInfos   = VariationInfos(eswVariationId, wfosVariationId)
+  private val apsResource: Resource                  = Resource(APS)
+  private val tcsResource: Resource                  = Resource(TCS)
+  private val irisResource: Resource                 = Resource(IRIS)
+  private val wfosResource: Resource                 = Resource(WFOS)
+  private val config = SequenceManagerConfig(
+    Map(
+      darkNight  -> ObsModeConfig(Resources(apsResource, tcsResource), darkNightVariationIds),
+      clearSkies -> ObsModeConfig(Resources(tcsResource, irisResource), clearSkiesVariationIds),
+      irisMCAO   -> ObsModeConfig(Resources(wfosResource), irisMCAOVariationIds)
+    )
+  )
 
+  private val locationServiceUtil: LocationServiceUtil               = mock[LocationServiceUtil]
+  private val agentUtil: AgentUtil                                   = mock[AgentUtil]
+  private val sequencerUtil: SequencerUtil                           = mock[SequencerUtil]
+  private val sequenceComponentUtil: SequenceComponentUtil           = mock[SequenceComponentUtil]
+  private val sequenceComponentAllocator: SequenceComponentAllocator = mock[SequenceComponentAllocator]
   private val sequenceManagerBehavior = new SequenceManagerBehavior(
     config,
     locationServiceUtil,
@@ -494,24 +530,24 @@ class SequenceManagerBehaviorTest
     sequenceComponentUtil
   )
   
-  "ShutdownSequencer" must {
-    val responseProbe = TestProbe[ShutdownSequencersResponse]()
-    val shutdownMsg   = ShutdownSequencer(ESW, darkNight, responseProbe.ref)
-    
-    "transition sm from Idle -> Processing -> Idle state and stop" in {
-      when(sequencerUtil.shutdownSequencer(ESW, darkNight))
-        .thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
+  "ShutdownSequenceComponents" must {
+    "transition sm from Idle -> Processing -> Idle state and return success on shutdown" in {
+      val prefix = Prefix(ESW, "primary")
 
-      // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
+      when(sequenceComponentUtil.shutdownSequenceComponent(prefix))
+        .thenReturn(future(1.second, ShutdownSequenceComponentResponse.Success))
+
+      val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
+
+      // STATE TRANSITION: Idle -> ShutdownSequenceComponents -> Processing -> Idle
       assertState(Idle)
-      smRef ! shutdownMsg
+      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
       assertState(Processing)
       assertState(Idle)
 
-      responseProbe.expectMessage(ShutdownSequencersResponse.Success)
-      verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
+      shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
+      verify(sequenceComponentUtil).shutdownSequenceComponent(prefix)
     }
-  }
 }
 ```
 
@@ -529,36 +565,30 @@ class SequencerUtil(
   sequenceComponentUtil: SequenceComponentUtil
 )(implicit actorSystem: ActorSystem[_]) {
 
-  def shutdownSequencer(
-    subsystem: Subsystem,
-    obsMode: ObsMode
-  ): Future[ShutdownSequencersResponse] =
-    shutdownSequencersAndHandleErrors(getSequencer(subsystem, obsMode))
+  def shutdownSequencer(prefix: SequencerPrefix): Future[ShutdownSequencersResponse] =
+    shutdownSequencersAndHandleErrors(getSequencer(prefix))
 
-  private def getSequencer(subsystem: Subsystem, obsMode: ObsMode) =
-    locationServiceUtil.findSequencer(subsystem, obsMode.name).mapRight(List(_))
+  private def getSequencer(prefix: SequencerPrefix): Future[Either[EswLocationError.FindLocationError, List[SeqCompLocation]]] =
+    locationServiceUtil.findSequencer(prefix).mapRight(List(_))
 
   private def shutdownSequencersAndHandleErrors(
-    sequencers: Future[Either[EswLocationError, List[AkkaLocation]]]
+  sequencers: Future[Either[EswLocationError, List[AkkaLocation]]]
   ) =
     sequencers
     .flatMapRight(unloadScripts)
     .mapToAdt(identity, locationErrorToShutdownSequencersResponse)
 
-  private def unloadScripts(sequencerLocations: List[AkkaLocation]) =
-    Future
-    .traverse(sequencerLocations)(unloadScript)
-    .map(_ => ShutdownSequencersResponse.Success)
-
-  // get sequence component from Sequencer and unload sequencer script
+    // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(sequencerLocation: AkkaLocation) =
-    makeSequencerClient(sequencerLocation)
-    .getSequenceComponent
-    .flatMap(sequenceComponentUtil.unloadScript)
-    .map(_ => ShutdownSequencersResponse.Success)
+    makeSequencerClient(sequencerLocation).getSequenceComponent
+      .flatMap(sequenceComponentUtil.unloadScript)
+      .map(_ => ShutdownSequencersResponse.Success)
+
+  private def unloadScripts(sequencerLocations: List[AkkaLocation]) =
+    Future.traverse(sequencerLocations)(unloadScript).map(_ => ShutdownSequencersResponse.Success)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
-  private[sm] def makeSequencerClient(sequencerLocation: Location): SequencerApi =
+  private[sm] def makeSequencerClient(sequencerLocation: Location): SequencerApi = 
     SequencerApiFactory.make(sequencerLocation)
 }
 ```
@@ -583,11 +613,12 @@ class SequenceComponentUtil(
   sequenceComponentAllocator: SequenceComponentAllocator
 )(implicit actorSystem: ActorSystem[_]) {
 
-  def unloadScript(seqCompLocation: SeqCompLocation): Future[Ok.type] =
+  def unloadScript(seqCompLocation: SeqCompLocation): Future[Ok.type] = 
     sequenceComponentApi(seqCompLocation).unloadScript()
 
+
   private[sm] def sequenceComponentApi(
-    seqCompLocation: SeqCompLocation
+  seqCompLocation: SeqCompLocation
   ): SequenceComponentApi = new SequenceComponentImpl(seqCompLocation)
 }
 ```
@@ -600,27 +631,28 @@ The testing for this class must have tests for the methods we use, which in this
 
 ```scala
 "unloadScript" must {
-  val mockSeqCompApi = mock[SequenceComponentApi]
+    val mockSeqCompApi = mock[SequenceComponentApi]
 
-  val sequenceComponentUtil = 
-    new SequenceComponentUtil(
-      locationServiceUtil,
+    val sequenceComponentUtil = 
+      new SequenceComponentUtil(
+      locationServiceUtil, 
       sequenceComponentAllocator
-    ) {
+      ) {
       override private[sm] def sequenceComponentApi(
-        seqCompLocation: AkkaLocation
+      seqCompLocation: AkkaLocation
       ): SequenceComponentApi = mockSeqCompApi
     }
 
-  "return Ok if unload script is successful | ESW-166" in {
-    val seqCompLocation = sequenceComponentLocation("esw.primary")
-    when(mockSeqCompApi.unloadScript()).thenReturn(Future.successful(Ok))
+    "return Ok if unload script is successful" in {
+      val seqCompLocation = sequenceComponentLocation("esw.primary")
+      when(mockSeqCompApi.unloadScript()).thenReturn(Future.successful(Ok))
 
-    sequenceComponentUtil.unloadScript(seqCompLocation).futureValue should ===(Ok)
+      sequenceComponentUtil.unloadScript(seqCompLocation).futureValue should ===(Ok)
 
-    verify(mockSeqCompApi).unloadScript()
+      verify(mockSeqCompApi).unloadScript()
+    }
   }
-}
+
 ```
 
 Here, the Akka client for the Sequence Component is mocked, and it’s shown that when the
@@ -644,51 +676,46 @@ alternate scenarios represent cases in which the logic for the command come to a
 shown in the testing for this class:
 
 ```scala
-"shutdownSequencer" must {
-  "return Success even if sequencer is not running" in {
-    // mimic the exception thrown from LocationServiceUtil.findSequencer
-    val findLocationFailed = futureLeft(LocationNotFound("location service error"))
-    
-    when(locationServiceUtil.findSequencer(ESW, darkNightObsMode.name))
+ "shutdownSequencer" must {
+    "return Success even if sequencer is not running" in {
+      // mimic the exception thrown from LocationServiceUtil.findSequencer
+      val findLocationFailed = futureLeft(LocationNotFound("location service error"))
+
+      when(locationServiceUtil.findSequencer(eswDarkNightSequencerPrefix))
       .thenReturn(findLocationFailed)
 
-    sequencerUtil.shutdownSequencer(ESW,darkNightObsMode).futureValue should ===(
-      ShutdownSequencersResponse.Success
-    )
+      sequencerUtil.shutdownSequencer(eswDarkNightSequencerPrefix).futureValue should ===(
+      ShutdownSequencersResponse.Success)
 
-    verify(locationServiceUtil).findSequencer(ESW, darkNightObsMode.name)
-    verify(eswSequencerApi, never).getSequenceComponent
+      verify(locationServiceUtil).findSequencer(eswDarkNightSequencerPrefix)
+      verify(eswSequencerApi, never).getSequenceComponent
+    }
+
+    "return Failure response when location service returns RegistrationListingFailed error" in {
+      when(locationServiceUtil.findSequencer(eswDarkNightSequencerPrefix))
+        .thenReturn(futureLeft(RegistrationListingFailed("Error")))
+
+      sequencerUtil.shutdownSequencer(eswDarkNightSequencerPrefix).futureValue should ===(
+      LocationServiceError("Error"))
+
+      verify(locationServiceUtil).findSequencer(eswDarkNightSequencerPrefix)
+    }
   }
 
-  "return Failure response when location service returns RegistrationListingFailed error" in {
-    when(locationServiceUtil.findSequencer(ESW, darkNightObsMode.name))
-      .thenReturn(futureLeft(RegistrationListingFailed("Error")))
-
-    sequencerUtil.shutdownSequencer(ESW, darkNightObsMode).futureValue should ===(
-      LocationServiceError("Error")
-    )
-
-    verify(locationServiceUtil).findSequencer(ESW, darkNightObsMode.name)
-  }
-}
 ```
 
 If we take another look at the **SequencerUtil** class, we can see that when this Location Service
 error occurs, it’s actually transformed to another type:
 
 ```scala
-private def shutdownSequencersAndHandleErrors(
-  sequencers: Future[Either[EswLocationError, List[AkkaLocation]]]
-) =
-  sequencers.flatMapRight(unloadScripts).mapToAdt(
-    identity, locationErrorToShutdownSequencersResponse
-  )
+ private def shutdownSequencersAndHandleErrors(sequencers: Future[Either[EswLocationError, List[AkkaLocation]]]) =
+    sequencers.flatMapRight(unloadScripts).mapToAdt(identity, locationErrorToShutdownSequencersResponse)
 
-private def locationErrorToShutdownSequencersResponse(err: EswLocationError) =
-  err match {
-    case _: EswLocationError.LocationNotFound => ShutdownSequencersResponse.Success
-    case e: EswLocationError                  => LocationServiceError(e.msg)
-  }
+  private def locationErrorToShutdownSequencersResponse(err: EswLocationError) =
+    err match {
+      case _: EswLocationError.LocationNotFound => ShutdownSequencersResponse.Success
+      case e: EswLocationError                  => LocationServiceError(e.msg)
+    }
 ```
 
 The **LocationServiceError** type is a **ShutdownSequencersResponse.Failure** message that can be
@@ -697,19 +724,19 @@ returned to the Akka client. Therefore, this type needs to be tested in the
 
 ```scala
 "ShutdownSequencer" must {
-  val responseProbe = TestProbe[ShutdownSequencersResponse]()
-  val shutdownMsg   = ShutdownSequencer(ESW, darkNight, responseProbe.ref)
+    val responseProbe = TestProbe[ShutdownSequencersResponse]()
+    val prefix        = Prefix(ESW, darkNight.name)
+    val shutdownMsg   = ShutdownSequencer(ESW, darkNight, None, responseProbe.ref)
 
-  s"return LocationServiceError if location service fails" in {
-    val err = LocationServiceError("error")
-    when(sequencerUtil.shutdownSequencer(ESW, darkNight))
-      .thenReturn(Future.successful(err))
+   s"return LocationServiceError if location service fails" in {
+      val err = LocationServiceError("error")
+      when(sequencerUtil.shutdownSequencer(prefix)).thenReturn(Future.successful(err))
 
-    smRef ! shutdownMsg
-    responseProbe.expectMessage(err)
+      smRef ! shutdownMsg
+      responseProbe.expectMessage(err)
 
-    verify(sequencerUtil).shutdownSequencer(ESW, darkNight)
-  }
+      verify(sequencerUtil).shutdownSequencer(prefix)
+    }
 }
 ```
 
