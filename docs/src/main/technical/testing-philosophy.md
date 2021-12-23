@@ -175,6 +175,7 @@ To do this, we need to implement mocked behavior for `postClient.requestResponse
 this looks like this:
 
 ```scala
+"SequenceManagerClient" must {
  "return ShutdownSequencersResponse for shutdownSequencer request" in {
       val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
       val shutdownSequencerMsg       = ShutdownSequencer(ESW, obsMode, None)
@@ -210,21 +211,13 @@ class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securit
   import sequenceManager.*
   override def handle(request: SequenceManagerRequest): Route =
     request match {
-      case GetObsModesDetails                              => complete(getObsModesDetails)
-      case GetResources                                    => complete(getResources)
-      case Configure(obsMode)                              => sPost(complete(configure(obsMode)))
-      case Provision(config)                               => sPost(complete(provision(config)))
-      case StartSequencer(subsystem, obsMode, variation)   => sPost(complete(startSequencer(subsystem, obsMode, variation)))
-      case RestartSequencer(subsystem, obsMode, variation) => sPost(complete(restartSequencer(subsystem, obsMode, variation)))
+     case Configure(obsMode) =>
+        sPost(complete(configure(obsMode)))
+      
+      case ShutdownSequencer(subsystem, obsMode, variation) => 
+        sPost(complete(shutdownSequencer(subsystem, obsMode, variation)))
 
-      // Shutdown sequencers
-      case ShutdownSequencer(subsystem, obsMode, variation) => sPost(complete(shutdownSequencer(subsystem, obsMode, variation)))
-      case ShutdownSubsystemSequencers(subsystem)           => sPost(complete(shutdownSubsystemSequencers(subsystem)))
-      case ShutdownObsModeSequencers(obsMode)               => sPost(complete(shutdownObsModeSequencers(obsMode)))
-      case ShutdownAllSequencers                            => sPost(complete(shutdownAllSequencers()))
-
-      case ShutdownSequenceComponent(prefix) => sPost(complete(shutdownSequenceComponent(prefix)))
-      case ShutdownAllSequenceComponents     => sPost(complete(shutdownAllSequenceComponents()))
+      //other ..
 
     }
 
@@ -255,27 +248,6 @@ class SequenceManagerRequestHandlerTest
 
   import LabelExtractor.Implicits.default
   private val route = new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler).make()
-
-  private val string10    = randomString(10)
-  private val string5     = randomString(5)
-  private val obsMode     = ObsMode(string10)
-  private val variation   = Some(Variation(string5))
-  private val componentId = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
-
-  private val eswUserPolicy        = AuthPolicies.eswUserRolePolicy
-  private val accessToken          = mock[AccessToken]
-  private val accessTokenDirective = BasicDirectives.extract(_ => accessToken)
-
-  override def clientContentType: ContentType = ContentType.Json
-
-  override protected def afterEach(): Unit = {
-    super.afterEach()
-    reset(securityDirectives, sequenceManagerApi)
-  }
-
-  implicit class Narrower(x: SequenceManagerRequest) {
-    def narrow: SequenceManagerRequest = x
-  }
 ```
 
 The test creates a `post-endpoint` route via msocket, just like we using in our msocket-based HTTP
@@ -489,39 +461,16 @@ As seen below, this is what our test does.  As we seen before the lower layer
 ```scala
 class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenPropertyChecks {
 
-  private implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
-    ActorSystem(SpawnProtocol(), "sequence-manager-system")
+  private val locationServiceUtil: LocationServiceUtil = 
+    mock[LocationServiceUtil]
 
-  private val loggerFactory: LoggerFactory = new LoggerFactory(Prefix("ESW.sequence_manager"))
-  private implicit val logger: Logger      = loggerFactory.getLogger
-
-  private val darkNight                              = ObsMode("DarkNight")
-  private val clearSkies                             = ObsMode("ClearSkies")
-  private val irisMCAO                               = ObsMode("IRIS_MCAO")
-  private val randomObsMode                          = ObsMode("RandomObsMode")
-  private val eswVariationId                         = VariationInfo(ESW)
-  private val tcsVariationId                         = VariationInfo(TCS)
-  private val wfosVariationId                        = VariationInfo(WFOS)
-  private val darkNightVariationIds: VariationInfos  = VariationInfos(eswVariationId, tcsVariationId)
-  private val clearSkiesVariationIds: VariationInfos = VariationInfos(eswVariationId)
-  private val irisMCAOVariationIds: VariationInfos   = VariationInfos(eswVariationId, wfosVariationId)
-  private val apsResource: Resource                  = Resource(APS)
-  private val tcsResource: Resource                  = Resource(TCS)
-  private val irisResource: Resource                 = Resource(IRIS)
-  private val wfosResource: Resource                 = Resource(WFOS)
-  private val config = SequenceManagerConfig(
-    Map(
-      darkNight  -> ObsModeConfig(Resources(apsResource, tcsResource), darkNightVariationIds),
-      clearSkies -> ObsModeConfig(Resources(tcsResource, irisResource), clearSkiesVariationIds),
-      irisMCAO   -> ObsModeConfig(Resources(wfosResource), irisMCAOVariationIds)
-    )
-  )
-
-  private val locationServiceUtil: LocationServiceUtil               = mock[LocationServiceUtil]
   private val agentUtil: AgentUtil                                   = mock[AgentUtil]
   private val sequencerUtil: SequencerUtil                           = mock[SequencerUtil]
+
   private val sequenceComponentUtil: SequenceComponentUtil           = mock[SequenceComponentUtil]
+
   private val sequenceComponentAllocator: SequenceComponentAllocator = mock[SequenceComponentAllocator]
+
   private val sequenceManagerBehavior = new SequenceManagerBehavior(
     config,
     locationServiceUtil,
@@ -530,25 +479,33 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     sequenceComponentUtil
   )
   
-  "ShutdownSequenceComponents" must {
-    "transition sm from Idle -> Processing -> Idle state and return success on shutdown" in {
-      val prefix = Prefix(ESW, "primary")
+"ShutdownSequencer" must {
+    val responseProbe = TestProbe[ShutdownSequencersResponse]()
+    val prefix        = Prefix(ESW, darkNight.name)
+    val shutdownMsg   = ShutdownSequencer(ESW, darkNight, None, responseProbe.ref)
+    s"transition sm from Idle -> Processing -> Idle state and stop| ESW-326, ESW-345, ESW-166, ESW-324, ESW-342, ESW-351, ESW-561" in {
+      when(sequencerUtil.shutdownSequencer(prefix)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
-      when(sequenceComponentUtil.shutdownSequenceComponent(prefix))
-        .thenReturn(future(1.second, ShutdownSequenceComponentResponse.Success))
-
-      val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
-
-      // STATE TRANSITION: Idle -> ShutdownSequenceComponents -> Processing -> Idle
+      // STATE TRANSITION: Idle -> ShutdownSequencers -> Processing -> Idle
       assertState(Idle)
-      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
+      smRef ! shutdownMsg
       assertState(Processing)
       assertState(Idle)
 
-      shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
-      verify(sequenceComponentUtil).shutdownSequenceComponent(prefix)
+      responseProbe.expectMessage(ShutdownSequencersResponse.Success)
+      verify(sequencerUtil).shutdownSequencer(prefix)
     }
-}
+
+    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324, ESW-351, ESW-561" in {
+      val err = LocationServiceError("error")
+      when(sequencerUtil.shutdownSequencer(prefix)).thenReturn(Future.successful(err))
+
+      smRef ! shutdownMsg
+      responseProbe.expectMessage(err)
+
+      verify(sequencerUtil).shutdownSequencer(prefix)
+    }
+  }
 ```
 
 ### SequencerUtil
