@@ -9,6 +9,13 @@ Here is the repository for ESW: [ESW](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
+## Changes in Upcoming releases
+
+- Contract Change in SequenceManager API to incorporate another optional parameter `variation` other than `subsystem` and `obsmode` in startSequencer, restartSequencer and shutdownSequencer.
+- Contract change for Sequence Component API in loadScript to incorporate another optional parameter `variation` other than `subsystem` and `obs-mode`.
+- esw-ocs-app now takes additional optional parameter `variation` for starting the single sequencer.
+- Contract change for getObsModeDetail API which now returns list that has subsystem with/without variation.
+
 ## [ESW v0.3.0] - 2021-09-23
 
 - Added Shutdown, Restart, GoOnline, GoOffline, GetContainerLifecycleState and GetComponentLifecycleState Admin API routes in Gateway.
