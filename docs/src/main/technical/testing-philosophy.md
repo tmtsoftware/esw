@@ -495,17 +495,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       responseProbe.expectMessage(ShutdownSequencersResponse.Success)
       verify(sequencerUtil).shutdownSequencer(prefix)
     }
-
-    s"return LocationServiceError if location service fails | ESW-326, ESW-345, ESW-166, ESW-324, ESW-351, ESW-561" in {
-      val err = LocationServiceError("error")
-      when(sequencerUtil.shutdownSequencer(prefix)).thenReturn(Future.successful(err))
-
-      smRef ! shutdownMsg
-      responseProbe.expectMessage(err)
-
-      verify(sequencerUtil).shutdownSequencer(prefix)
-    }
-  }
+}
 ```
 
 ### SequencerUtil
