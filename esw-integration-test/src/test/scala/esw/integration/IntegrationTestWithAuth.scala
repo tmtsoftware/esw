@@ -562,7 +562,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       // Test cleanup
       sequenceManagerClient.shutdownObsModeSequencers(obsMode).futureValue
       configTestKit.deleteServerFiles()
-      configTestKit.terminateServer()
       TestSetup.cleanup()
     }
 
@@ -905,7 +904,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       //clean up the provisioned sequence components
       sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
       configTestKit.deleteServerFiles()
-      configTestKit.terminateServer()
       TestSetup.cleanup()
     }
 
