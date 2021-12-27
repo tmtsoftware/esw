@@ -4,6 +4,7 @@ import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
+import csw.location.api.CswVersionJvm
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
@@ -406,9 +407,10 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
   "sequence manager" must {
 
     "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-173, ESW-366, ESW-332, ESW-532" in {
-      val agentPrefix      = Prefix(ESW, "agent1")
-      val expectedMetadata = Metadata().withAgentPrefix(agentPrefix).withPid(ProcessHandle.current().pid())
-      val port             = 9898
+      val agentPrefix = Prefix(ESW, "agent1")
+      val expectedMetadata =
+        Metadata().withCSWVersion(new CswVersionJvm().get).withAgentPrefix(agentPrefix).withPid(ProcessHandle.current().pid())
+      val port = 9898
 
       // resolving sequence manager fails for Akka and Http
       intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
@@ -449,7 +451,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       // ESW-366 verify SM Location metadata contains pid
       val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
-      smAkkaLocation.metadata shouldBe Metadata().withPid(ProcessHandle.current().pid())
+      smAkkaLocation.metadata shouldBe Metadata().withCSWVersion(new CswVersionJvm().get).withPid(ProcessHandle.current().pid())
 
       val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL.name)
       val irisCalPrefix      = Prefix(IRIS, IRIS_CAL.name)

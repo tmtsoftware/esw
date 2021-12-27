@@ -5,6 +5,7 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern.*
 import akka.util.Timeout
 import csw.command.client.SequencerCommandServiceImpl
+import csw.location.api.CswVersionJvm
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
@@ -34,8 +35,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val agentPrefix             = Prefix(ESW, "agent1")
       val expectedSequencerPrefix = Prefix(ESW, "darknight")
       val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
-      val expectedMetadata        = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
-      val insideHostname          = Networks(NetworkType.Inside.envKey).hostname
+      val expectedMetadata =
+        Metadata().withCSWVersion(new CswVersionJvm().get).withSequenceComponentPrefix(sequenceComponentPrefix)
+      val insideHostname = Networks(NetworkType.Inside.envKey).hostname
 
       // start Sequence Component
       SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "-a", agentPrefix.toString()))
