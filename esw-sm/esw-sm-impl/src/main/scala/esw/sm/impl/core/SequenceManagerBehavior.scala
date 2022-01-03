@@ -6,12 +6,12 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
+import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
 import esw.sm.api.actor.messages.SequenceManagerMsg.*
 import esw.sm.api.actor.messages.{CommonMessage, SequenceManagerIdleMsg, SequenceManagerMsg, UnhandleableSequenceManagerMsg}
 import esw.sm.api.models.*
@@ -67,9 +67,9 @@ class SequenceManagerBehavior(
       case Provision(config, replyTo)  => provision(config, self, replyTo)
 
       // Shutdown sequencers
-      case ShutdownSequencer(subsystem, obsMode, replyTo) =>
+      case ShutdownSequencer(subsystem, obsMode, variation, replyTo) =>
         sequencerUtil
-          .shutdownSequencer(subsystem, obsMode)
+          .shutdownSequencer(Variation.prefix(subsystem, obsMode, variation))
           .map(self ! ProcessingComplete(_))
           .recoverWithProcessingError[ShutdownSequencer](self)
         processing(self, replyTo)
@@ -95,8 +95,9 @@ class SequenceManagerBehavior(
           .recoverWithProcessingError[ShutdownAllSequencers](self)
         processing(self, replyTo)
 
-      case StartSequencer(subsystem, obsMode, replyTo)   => startSequencer(obsMode, subsystem, self, replyTo)
-      case RestartSequencer(subsystem, obsMode, replyTo) => restartSequencer(subsystem, obsMode, self, replyTo)
+      case StartSequencer(subsystem, obsMode, variation, replyTo) => startSequencer(subsystem, obsMode, variation, self, replyTo)
+      case RestartSequencer(subsystem, obsMode, variation, replyTo) =>
+        restartSequencer(subsystem, obsMode, variation, self, replyTo)
 
       case ShutdownSequenceComponent(prefix, replyTo) =>
         sequenceComponentUtil
@@ -150,18 +151,19 @@ class SequenceManagerBehavior(
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
 
   private def startSequencer(
-      obsMode: ObsMode,
       subsystem: Subsystem,
+      obsMode: ObsMode,
+      variation: Option[Variation],
       self: SelfRef,
       replyTo: ActorRef[StartSequencerResponse]
-  ): SMBehavior = {
-
+  ) = {
+    val prefix = Variation.prefix(subsystem, obsMode, variation)
     // resolve is not needed here. Find should suffice
     // no concurrent start sequencer or configure is allowed
     locationServiceUtil
-      .find(HttpConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
+      .find(HttpConnection(ComponentId(prefix, Sequencer)))
       .flatMap {
-        case Left(_)         => sequenceComponentUtil.loadScript(subsystem, obsMode)
+        case Left(_)         => sequenceComponentUtil.loadScript(subsystem, obsMode, variation)
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
       .map(self ! ProcessingComplete(_))
@@ -172,10 +174,12 @@ class SequenceManagerBehavior(
   private def restartSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
+      variation: Option[Variation],
       self: SelfRef,
       replyTo: ActorRef[RestartSequencerResponse]
-  ): SMBehavior = {
-    val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode)
+  ) = {
+    val prefix           = Variation.prefix(subsystem, obsMode, variation)
+    val restartResponseF = sequencerUtil.restartSequencer(prefix)
     restartResponseF
       .map(self ! ProcessingComplete(_))
       .recoverWithProcessingError[RestartSequencer](self)
@@ -292,20 +296,20 @@ class SequenceManagerBehavior(
       configuredObsModes: Set[ObsMode],
       allIdleSequenceComps: List[AgentLocation]
   ): ObsModeStatus = {
-    def allocateSequenceComponents(sequencers: Sequencers) = {
+    def allocateSequenceComponents(variationInfos: List[VariationInfo]) = {
       val allocator = sequenceComponentUtil.sequenceComponentAllocator
       val subsystemSpecificIdleSeqComps =
-        allIdleSequenceComps.filter(location => sequencers.subsystems.contains(location.prefix.subsystem))
-      allocator.allocate(subsystemSpecificIdleSeqComps, sequencers)
+        allIdleSequenceComps.filter(location => variationInfos.map(_.subsystem).contains(location.prefix.subsystem))
+      allocator.allocate(subsystemSpecificIdleSeqComps, obsMode, variationInfos)
     }
 
     if (configuredObsModes.contains(obsMode)) Configured
     else {
       val conflicting          = isConflicting(obsModeConfig.resources, configuredObsModes)
-      val missingSequenceComps = allocateSequenceComponents(obsModeConfig.sequencers)
+      val missingSequenceComps = allocateSequenceComponents(obsModeConfig.sequencers.variationInfos)
       missingSequenceComps.fold(
-        e => NonConfigurable(e.subsystems),
-        _ => if (conflicting) NonConfigurable(Nil) else Configurable
+        e => NonConfigurable(e.variationInfos),
+        _ => if (conflicting) NonConfigurable(VariationInfos.empty) else Configurable
       )
     }
   }
@@ -321,8 +325,8 @@ class SequenceManagerBehavior(
           val obsModes = sequenceManagerConfig.obsModes.toSet
           val obsModesStatus =
             obsModes.map { case (obsMode, cfg @ ObsModeConfig(resources, sequencers)) =>
-              val obsMOdeStatus = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
-              ObsModeDetails(obsMode, obsMOdeStatus, resources, sequencers)
+              val obsModeStatus = getObsModeStatus(obsMode, cfg, configuredObsModes, locs)
+              ObsModeDetails(obsMode, obsModeStatus, resources, sequencers)
             }
 
           val response = ObsModesDetailsResponse.Success(obsModesStatus)

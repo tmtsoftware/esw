@@ -6,10 +6,10 @@ import csw.params.core.generics.KeyType.IntKey
 import csw.params.events.EventKey
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.ocs.api.SequencerApi
-import esw.ocs.testkit.EswTestKit
 import csw.testkit.scaladsl.CSWService.EventServer
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.ObsMode
+import esw.ocs.testkit.EswTestKit
 
 class ThreadSafetyTest extends EswTestKit(EventServer) {
 

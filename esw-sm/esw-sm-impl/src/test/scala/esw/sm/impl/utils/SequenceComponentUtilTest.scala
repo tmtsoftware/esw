@@ -1,6 +1,5 @@
 package esw.sm.impl.utils
 
-import java.net.URI
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.*
 import csw.location.api.models.Connection.AkkaConnection
@@ -11,12 +10,12 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.models.ObsMode
 import esw.ocs.api.models.SequenceComponentState.Running
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation, Unhandled}
-import esw.sm.api.models.Sequencers
+import esw.sm.api.models.VariationInfos
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
@@ -26,6 +25,7 @@ import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.Mockito.{never, reset, times, verify, when}
 import org.scalatest.prop.TableDrivenPropertyChecks
 
+import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
@@ -143,8 +143,12 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
   }
 
   "mapSequencersToSeqComps" must {
-    "return map of sequencer subsystems to sequence component locations | ESW-178" in {
-      val sequencers   = Sequencers(ESW, TCS, WFOS)
+    val eswVariation: VariationInfo  = VariationInfo(ESW, Some(Variation("red")))
+    val wfosVariation: VariationInfo = VariationInfo(WFOS, Some(Variation("red")))
+    val tcsVariation: VariationInfo  = VariationInfo(TCS, Some(Variation("red")))
+    val sequencerVariations          = List(eswVariation, tcsVariation, wfosVariation)
+    val obsMode                      = ObsMode("clearSkies")
+    "return map of sequencer prefixes to sequence component locations | ESW-178, ESW-561" in {
       val eswPrimary   = sequenceComponentLocation("esw.primary")
       val eswSecondary = sequenceComponentLocation("esw.secondary")
       val tcsPrimary   = sequenceComponentLocation("tcs.primary")
@@ -153,11 +157,12 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       val seqComps     = List(eswPrimary, tcsPrimary, wfosPrimary, eswSecondary)
       val idleSeqComps = List(eswPrimary, wfosPrimary, eswSecondary)
 
-      val sequenceToSeqCompMapping = List((ESW, eswPrimary), (TCS, eswSecondary), (WFOS, wfosPrimary))
+      val sequenceToSeqCompMapping = List((eswVariation, eswPrimary), (tcsVariation, eswSecondary), (wfosVariation, wfosPrimary))
 
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(seqComps)))
-      when(sequenceComponentAllocator.allocate(idleSeqComps, sequencers)).thenReturn(Right(sequenceToSeqCompMapping))
+      when(sequenceComponentAllocator.allocate(idleSeqComps, obsMode, sequencerVariations))
+        .thenReturn(Right(sequenceToSeqCompMapping))
 
       val sequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
         override private[sm] def idleSequenceComponent(
@@ -171,41 +176,40 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       }
 
       val sequencerToSeqCompMap: SequencerToSequenceComponentMap =
-        sequenceComponentUtil.allocateSequenceComponents(sequencers).rightValue
+        sequenceComponentUtil.allocateSequenceComponents(obsMode, sequencerVariations).rightValue
 
       sequencerToSeqCompMap should ===(sequenceToSeqCompMapping)
-      verify(sequenceComponentAllocator).allocate(idleSeqComps, sequencers)
+      verify(sequenceComponentAllocator).allocate(idleSeqComps, obsMode, sequencerVariations)
     }
 
-    "return SequenceComponentNotAvailable if adequate idle sequence components available are not available for sequencer subsystems | ESW-178" in {
-      val sequencers = Sequencers(List(ESW, TCS, WFOS))
-      val seqComps   = List.empty[AkkaLocation]
+    "return SequenceComponentNotAvailable if adequate idle sequence components are not available for sequencer prefixes | ESW-178, ESW-561" in {
+      val seqComps = List.empty[AkkaLocation]
 
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(seqComps)))
-      when(sequenceComponentAllocator.allocate(seqComps, sequencers))
-        .thenReturn(Left(SequenceComponentNotAvailable(sequencers.subsystems)))
+      when(sequenceComponentAllocator.allocate(seqComps, obsMode, sequencerVariations))
+        .thenReturn(Left(SequenceComponentNotAvailable(VariationInfos(sequencerVariations))))
 
       val response: ConfigureResponse.Failure =
-        sequenceComponentUtil.allocateSequenceComponents(sequencers).leftValue
+        sequenceComponentUtil.allocateSequenceComponents(obsMode, sequencerVariations).leftValue
 
-      response should ===(SequenceComponentNotAvailable(sequencers.subsystems))
+      response should ===(SequenceComponentNotAvailable(VariationInfos(sequencerVariations)))
     }
 
     "return LocationServiceError if location service returns error | ESW-178" in {
-      val sequencers                = Sequencers(List(ESW, TCS, WFOS))
       val registrationListingFailed = RegistrationListingFailed("error")
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Left(registrationListingFailed)))
 
-      val sequenceComponents = sequenceComponentUtil.allocateSequenceComponents(sequencers)
+      val sequenceComponents = sequenceComponentUtil.allocateSequenceComponents(obsMode, sequencerVariations)
 
       sequenceComponents.leftValue should ===(LocationServiceError("error"))
     }
   }
 
   "loadScript" must {
-    val darkNight = ObsMode("DarkNight")
+    val darkNight          = ObsMode("DarkNight")
+    val eswSequencerPrefix = Prefix(ESW, darkNight.name)
     val sequenceComponentUtil: SequenceComponentUtil =
       new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
         override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation) = sequenceComponentApiMock
@@ -214,8 +218,8 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
     val loadScriptResponses = Table(
       ("seqCompApiResponse", "loadScriptResponse"),
       (
-        SequencerLocation(akkaLocation(ComponentId(Prefix(ESW, "DarkNight"), Sequencer))),
-        Right(StartSequencerResponse.Started(ComponentId(Prefix(ESW, "DarkNight"), Sequencer)))
+        SequencerLocation(akkaLocation(ComponentId(eswSequencerPrefix, Sequencer))),
+        Right(StartSequencerResponse.Started(ComponentId(eswSequencerPrefix, Sequencer)))
       ),
       (ScriptError.LocationServiceError("error"), Left(LocationServiceError("error"))),
       (ScriptError.LoadingScriptFailed("error"), Left(LoadScriptError("error"))),
@@ -223,11 +227,12 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
     )
 
     forAll(loadScriptResponses) { (seqCompApiResponse, loadScriptResponse) =>
-      s"return ${loadScriptResponse.getClass.getSimpleName} when seqCompApi returns ${seqCompApiResponse.getClass.getSimpleName} | ESW-162" in {
-        when(sequenceComponentApiMock.loadScript(ESW, darkNight)).thenReturn(Future.successful(seqCompApiResponse))
+      s"return ${loadScriptResponse.getClass.getSimpleName} when seqCompApi returns ${seqCompApiResponse.getClass.getSimpleName} | ESW-162, ESW-561" in {
+
+        when(sequenceComponentApiMock.loadScript(ESW, darkNight, None)).thenReturn(Future.successful(seqCompApiResponse))
 
         val eventualResponse: Future[Either[StartSequencerResponse.Failure, StartSequencerResponse.Started]] =
-          sequenceComponentUtil.loadScript(ESW, darkNight, sequenceComponentLocation("esw.primary"))
+          sequenceComponentUtil.loadScript(ESW, darkNight, None, sequenceComponentLocation("esw.primary"))
 
         eventualResponse.futureValue should ===(loadScriptResponse)
       }
@@ -235,13 +240,14 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
   }
 
   "loadScript with subsystem and obs mode" must {
-    val darkNight    = ObsMode("DarkNight")
-    val tcsSeqComp   = akkaLocation(ComponentId(Prefix(TCS, "primary"), Sequencer))
-    val eswSeqComp   = akkaLocation(ComponentId(Prefix(ESW, "primary"), Sequencer))
-    val tcsSequencer = ComponentId(Prefix(TCS, darkNight.name), Sequencer)
-    val sequencers   = Sequencers(TCS)
+    val darkNight               = ObsMode("DarkNight")
+    val tcsSeqComp              = akkaLocation(ComponentId(Prefix(TCS, "primary"), Sequencer))
+    val eswSeqComp              = akkaLocation(ComponentId(Prefix(ESW, "primary"), Sequencer))
+    val tcsSequencerComponentId = ComponentId(Prefix(TCS, darkNight.name), Sequencer)
+    val tcsVariationId          = VariationInfo(TCS, Some(Variation("random")))
+    val sequencerVariations     = List(tcsVariationId)
 
-    "return success when script is loaded successfully with subsystem seq comp available | ESW-176" in {
+    "return success when script is loaded successfully when seq comp available for sequencer| ESW-176, ESW-561" in {
       val seqComps = List(tcsSeqComp, eswSeqComp)
 
       val sequenceComponentUtil: SequenceComponentUtil =
@@ -253,15 +259,17 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(List(tcsSeqComp, eswSeqComp))))
-      when(sequenceComponentAllocator.allocate(seqComps, sequencers))
-        .thenReturn(Right(List((TCS, tcsSeqComp))))
-      when(sequenceComponentApiMock.loadScript(TCS, darkNight))
-        .thenReturn(Future.successful(SequencerLocation(akkaLocation(tcsSequencer))))
+      when(sequenceComponentAllocator.allocate(seqComps, darkNight, sequencerVariations))
+        .thenReturn(Right(List((tcsVariationId, tcsSeqComp))))
+      when(sequenceComponentApiMock.loadScript(TCS, darkNight, tcsVariationId.variation))
+        .thenReturn(Future.successful(SequencerLocation(akkaLocation(tcsSequencerComponentId))))
 
-      sequenceComponentUtil.loadScript(TCS, darkNight).futureValue should ===(Started(tcsSequencer))
+      sequenceComponentUtil.loadScript(TCS, darkNight, tcsVariationId.variation).futureValue should ===(
+        Started(tcsSequencerComponentId)
+      )
 
-      verify(sequenceComponentAllocator).allocate(seqComps, sequencers)
-      verify(sequenceComponentApiMock).loadScript(TCS, darkNight)
+      verify(sequenceComponentAllocator).allocate(seqComps, darkNight, sequencerVariations)
+      verify(sequenceComponentApiMock).loadScript(TCS, darkNight, tcsVariationId.variation)
     }
 
     "return success when script is loaded successfully with ESW seq comp as fallback | ESW-176" in {
@@ -279,14 +287,17 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
       when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(List(tcsSeqComp, eswSeqComp))))
-      when(sequenceComponentAllocator.allocate(idleSeqComps, sequencers)).thenReturn(Right(List((TCS, eswSeqComp))))
-      when(sequenceComponentApiMock.loadScript(TCS, darkNight))
-        .thenReturn(Future.successful(SequencerLocation(akkaLocation(tcsSequencer))))
+      when(sequenceComponentAllocator.allocate(idleSeqComps, darkNight, sequencerVariations))
+        .thenReturn(Right(List((tcsVariationId, eswSeqComp))))
+      when(sequenceComponentApiMock.loadScript(TCS, darkNight, tcsVariationId.variation))
+        .thenReturn(Future.successful(SequencerLocation(akkaLocation(tcsSequencerComponentId))))
 
-      sequenceComponentUtil.loadScript(TCS, darkNight).futureValue should ===(Started(tcsSequencer))
+      sequenceComponentUtil.loadScript(TCS, darkNight, tcsVariationId.variation).futureValue should ===(
+        Started(tcsSequencerComponentId)
+      )
 
-      verify(sequenceComponentAllocator).allocate(idleSeqComps, sequencers)
-      verify(sequenceComponentApiMock).loadScript(TCS, darkNight)
+      verify(sequenceComponentAllocator).allocate(idleSeqComps, darkNight, sequencerVariations)
+      verify(sequenceComponentApiMock).loadScript(TCS, darkNight, tcsVariationId.variation)
     }
 
     val loadScriptResponses = Table(
@@ -300,7 +311,6 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       s"return ${loadScriptResponse.getClass.getSimpleName} when seqCompApi returns ${seqCompApiResponse.getClass.getSimpleName} | ESW-176" in {
         val tcsSeqComp = akkaLocation(ComponentId(Prefix(TCS, "primary"), Sequencer))
         val seqComps   = List(tcsSeqComp)
-        val sequencers = Sequencers(TCS)
 
         val sequenceComponentUtil: SequenceComponentUtil =
           new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator) {
@@ -313,10 +323,12 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
         when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
           .thenReturn(Future.successful(Right(List(tcsSeqComp))))
-        when(sequenceComponentAllocator.allocate(seqComps, sequencers)).thenReturn(Right(List((TCS, tcsSeqComp))))
-        when(sequenceComponentApiMock.loadScript(TCS, darkNight)).thenReturn(Future.successful(seqCompApiResponse))
+        when(sequenceComponentAllocator.allocate(seqComps, darkNight, sequencerVariations))
+          .thenReturn(Right(List((tcsVariationId, tcsSeqComp))))
+        when(sequenceComponentApiMock.loadScript(TCS, darkNight, tcsVariationId.variation))
+          .thenReturn(Future.successful(seqCompApiResponse))
 
-        val response = sequenceComponentUtil.loadScript(TCS, darkNight).futureValue
+        val response = sequenceComponentUtil.loadScript(TCS, darkNight, tcsVariationId.variation).futureValue
         response should ===(loadScriptResponse)
       }
     }

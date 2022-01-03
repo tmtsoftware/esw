@@ -1,9 +1,8 @@
 package esw.ocs.dsl.script
 
-import java.util.concurrent.{Executors, ScheduledExecutorService}
-
 import esw.ocs.impl.blockhound.{BlockHoundWiring, ScriptEcIntegration}
 
+import java.util.concurrent.{Executors, ScheduledExecutorService}
 import scala.concurrent.ExecutionContext
 
 //This class is to create a execution context

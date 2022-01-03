@@ -4,12 +4,10 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.IRIS
 import kotlin.time.Duration
-import kotlin.time.minutes
-import kotlin.time.seconds
 
 script {
     println("Loaded script successfully from examples!!!!")
-    val irisSequencer = Sequencer(IRIS, ObsMode("perfTest"), Duration.minutes(5))
+    val irisSequencer = Sequencer(IRIS,ObsMode("perfTest"), Duration.minutes(5))
     println("Iris sequencer resolved successfully !!!!")
 
     onSetup("command-1") {

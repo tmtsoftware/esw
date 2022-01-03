@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.constants.CommonTimeouts
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,6 +32,9 @@ trait LocationUtils extends BaseTestSuite {
 
   def resolveSequencer(subsystem: Subsystem, obsMode: ObsMode): ActorRef[SequencerMsg] =
     resolveSequencerLocation(subsystem, obsMode).uri.toActorRef.unsafeUpcast[SequencerMsg]
+
+  def resolveSequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation): ActorRef[SequencerMsg] =
+    resolveSequencerLocation(Variation.prefix(subsystem, obsMode, Some(variation))).uri.toActorRef.unsafeUpcast[SequencerMsg]
 
   def resolveSequenceComponentLocation(prefix: Prefix): AkkaLocation =
     resolveAkkaLocation(prefix, ComponentType.SequenceComponent)

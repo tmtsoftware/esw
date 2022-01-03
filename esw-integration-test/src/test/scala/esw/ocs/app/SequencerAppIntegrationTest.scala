@@ -2,13 +2,14 @@ package esw.ocs.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.util.Timeout
 import csw.command.client.SequencerCommandServiceImpl
+import csw.location.api.CswVersionJvm
 import csw.location.api.extensions.URIExtension.RichURI
+import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models._
 import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -34,8 +35,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val agentPrefix             = Prefix(ESW, "agent1")
       val expectedSequencerPrefix = Prefix(ESW, "darknight")
       val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
-      val expectedMetadata        = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
-      val insideHostname          = Networks(NetworkType.Inside.envKey).hostname
+      val expectedMetadata =
+        Metadata().withCSWVersion(new CswVersionJvm().get).withSequenceComponentPrefix(sequenceComponentPrefix)
+      val insideHostname = Networks(NetworkType.Inside.envKey).hostname
 
       // start Sequence Component
       SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "-a", agentPrefix.toString()))
@@ -55,7 +57,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val probe      = TestProbe[ScriptResponseOrUnhandled]()
-      seqCompRef ! LoadScript(ESW, ObsMode("darknight"), probe.ref)
+      seqCompRef ! LoadScript(probe.ref, ESW, ObsMode("darknight"), None)
 
       // verify that loaded sequencer is started and able to process sequence command
       val response          = probe.expectMessageType[SequencerLocation]
@@ -142,7 +144,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val loadScriptResponse: ScriptResponseOrUnhandled =
         seqCompRef
-          .ask((ref: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(unexpectedSubsystem, obsMode, ref))(
+          .ask((ref: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(ref, unexpectedSubsystem, obsMode, None))(
             timeout,
             schedulerFromActorSystem
           )

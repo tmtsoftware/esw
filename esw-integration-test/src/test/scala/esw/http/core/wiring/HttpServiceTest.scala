@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives.{complete, get, path}
 import akka.http.scaladsl.server.Route
 import com.typesafe.config.Config
+import csw.location.api.CswVersionJvm
 import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.models.{ComponentType, HttpRegistration, Metadata, NetworkType}
 import csw.location.client.ActorSystemFactory
@@ -52,7 +53,7 @@ class HttpServiceTest extends EswTestKit {
       import testSetup._
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
-      val metadata    = Metadata().add("key1", "value")
+      val metadata    = Metadata().withCSWVersion(new CswVersionJvm().get).add("key1", "value")
 
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe false
 
@@ -80,7 +81,7 @@ class HttpServiceTest extends EswTestKit {
       val (_, registrationResult) = httpService.startAndRegisterServer().futureValue
 
       locationService.find(settings.httpConnection).futureValue.get.connection shouldBe settings.httpConnection
-      registrationResult.location.metadata should ===(Metadata.empty)
+      registrationResult.location.metadata should ===(Metadata().withCSWVersion(new CswVersionJvm().get))
 
     }
 
@@ -126,7 +127,7 @@ class HttpServiceTest extends EswTestKit {
       import testSetup._
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime, NetworkType.Outside)
-      val metadata    = Metadata().add("key1", "value")
+      val metadata    = Metadata().withCSWVersion(new CswVersionJvm().get).add("key1", "value")
 
       SocketUtils.isAddressInUse(insideHostname, _servicePort) shouldBe false
 

@@ -1,7 +1,5 @@
 package esw.sm.impl.utils
 
-import java.net.URI
-
 import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
@@ -10,6 +8,8 @@ import csw.prefix.models.Subsystem.{ESW, IRIS}
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse.CouldNotFindMachines
 import esw.testcommons.BaseTestSuite
+
+import java.net.URI
 
 class AgentAllocatorTest extends BaseTestSuite {
   private val uri           = new URI("test-uri")

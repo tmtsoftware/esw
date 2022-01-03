@@ -1,6 +1,5 @@
 package esw.sm.impl.utils
 
-import java.net.URI
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
@@ -21,6 +20,7 @@ import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, ProvisionVer
 import esw.testcommons.BaseTestSuite
 import org.mockito.Mockito.{verify, when}
 
+import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
@@ -131,7 +131,7 @@ class AgentUtilTest extends BaseTestSuite {
 
     "return SpawningSequenceComponentsFailed if agent fails to spawn sequence component | ESW-347" in {
       val setup = new TestSetup()
-      import setup._
+      import setup.*
 
       val errorMsg        = "failed to spawn"
       val provisionConfig = ProvisionConfig(eswPrimaryMachine.prefix -> 2)
@@ -163,7 +163,7 @@ class AgentUtilTest extends BaseTestSuite {
 
     "return LocationServiceError if location service gives error | ESW-347" in {
       val setup = new TestSetup()
-      import setup._
+      import setup.*
       val errorMsg = "listing failed"
       when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Left(RegistrationListingFailed(errorMsg))))
@@ -176,7 +176,7 @@ class AgentUtilTest extends BaseTestSuite {
 
     "return CouldNotFindMachines error if any subsystem does not have machine available | ESW-347" in {
       val setup = new TestSetup()
-      import setup._
+      import setup.*
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1, Prefix(IRIS, "primary") -> 1)
       val machines        = List(eswPrimaryMachine)
       val error           = CouldNotFindMachines(Set(Prefix(IRIS, "primary")))
@@ -191,7 +191,7 @@ class AgentUtilTest extends BaseTestSuite {
 
     "return ProvisionVersionFailure error if versionConf is not present | ESW-360" in {
       val setup = new TestSetup()
-      import setup._
+      import setup.*
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1, Prefix(IRIS, "primary") -> 1)
       val machines        = List(eswPrimaryMachine)
       val mapping         = List(eswPrimaryMachine -> eswSeqComp1Prefix, eswPrimaryMachine -> eswSeqComp2Prefix)

@@ -1,14 +1,13 @@
 package esw.sm.api.models
 
-import csw.prefix.models.Subsystem
 import esw.ocs.api.models.ObsMode
 
-case class ObsModeDetails(obsMode: ObsMode, status: ObsModeStatus, resources: Resources, sequencers: Sequencers)
+case class ObsModeDetails(obsMode: ObsMode, status: ObsModeStatus, resources: Resources, sequencers: VariationInfos)
 
 sealed trait ObsModeStatus
 
 object ObsModeStatus {
-  case object Configured                                                 extends ObsModeStatus
-  case object Configurable                                               extends ObsModeStatus
-  case class NonConfigurable(missingSequenceComponents: List[Subsystem]) extends ObsModeStatus
+  case object Configured                                                   extends ObsModeStatus
+  case object Configurable                                                 extends ObsModeStatus
+  case class NonConfigurable(missingSequenceComponentsFor: VariationInfos) extends ObsModeStatus
 }

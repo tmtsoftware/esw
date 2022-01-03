@@ -10,17 +10,17 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.api.protocol.{ScriptError, SequenceComponentResponse}
-import esw.sm.api.models.Sequencers
+import esw.sm.api.models.VariationInfos
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse, StartSequencerResponse}
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
-import esw.sm.impl.utils.Types._
+import esw.sm.impl.utils.Types.*
 
-import scala.async.Async._
+import scala.async.Async.*
 import scala.concurrent.Future
 
 class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequenceComponentAllocator: SequenceComponentAllocator)(
@@ -29,9 +29,11 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
   import actorSystem.executionContext
 
   def allocateSequenceComponents(
-      sequencers: Sequencers
+      obsMode: ObsMode,
+      variationInfos: List[VariationInfo]
   ): Future[Either[ConfigureResponse.Failure, SequencerToSequenceComponentMap]] =
-    getAllIdleSequenceComponentsFor(sequencers.subsystems).mapRightE(sequenceComponentAllocator.allocate(_, sequencers))
+    getAllIdleSequenceComponentsFor(variationInfos.map(_.subsystem))
+      .mapRightE(sequenceComponentAllocator.allocate(_, obsMode, variationInfos))
 
   def getAllIdleSequenceComponents: Future[Either[LocationServiceError, List[SeqCompLocation]]] =
     locationServiceUtil
@@ -43,28 +45,32 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
   private def getAllIdleSequenceComponentsFor(subsystems: List[Subsystem]) =
     getAllIdleSequenceComponents.mapRight(seqCompLocs => seqCompLocs.filter(loc => subsystems.contains(loc.prefix.subsystem)))
 
-  def loadScript(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
+  def loadScript(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation]): Future[StartSequencerResponse] = {
     getAllIdleSequenceComponentsFor(List(subsystem, ESW)) //search idle seq comps for ESW as fallback if needed
-      .mapRightE(sequenceComponentAllocator.allocate(_, Sequencers(subsystem)))
+      .mapRightE(sequenceComponentAllocator.allocate(_, obsMode, List(VariationInfo(subsystem, variation))))
       .flatMapE {
-        case (subsystem, seqCompLocation) :: _ => loadScript(subsystem, obsMode, seqCompLocation)
-        case Nil                               => Future.successful(Left(SequenceComponentNotAvailable(Nil))) // this should never happen
+        case (variationInfo, seqCompLocation) :: _ =>
+          loadScript(variationInfo.subsystem, obsMode, variationInfo.variation, seqCompLocation)
+        case Nil => Future.successful(Left(SequenceComponentNotAvailable(VariationInfos.empty))) // this should never happen
       }
       .mapToAdt(identity, identity)
+  }
 
   def loadScript(
       subsystem: Subsystem,
       obsMode: ObsMode,
+      variation: Option[Variation],
       seqCompLocation: SeqCompLocation
-  ): Future[Either[StartSequencerResponse.Failure, Started]] =
+  ): Future[Either[StartSequencerResponse.Failure, Started]] = {
     sequenceComponentApi(seqCompLocation)
-      .loadScript(subsystem, obsMode)
+      .loadScript(subsystem, obsMode, variation)
       .flatMap {
         case SequencerLocation(location)             => Future.successful(Right(Started(location.connection.componentId)))
         case error: ScriptError.LocationServiceError => Future.successful(Left(LocationServiceError(error.msg)))
         case error: ScriptError.LoadingScriptFailed  => Future.successful(Left(LoadScriptError(error.msg)))
         case error: Unhandled                        => Future.successful(Left(LoadScriptError(error.msg)))
       }
+  }
 
   def unloadScript(seqCompLocation: SeqCompLocation): Future[Ok.type] = sequenceComponentApi(seqCompLocation).unloadScript()
 

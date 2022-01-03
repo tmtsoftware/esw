@@ -1,12 +1,11 @@
 package esw.sm.app
 
-import java.nio.file.Path
-
 import caseapp.core.Error
 import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, ExtraName, HelpMessage}
 import csw.prefix.models.Prefix
 
+import java.nio.file.Path
 import scala.util.Try
 
 /**

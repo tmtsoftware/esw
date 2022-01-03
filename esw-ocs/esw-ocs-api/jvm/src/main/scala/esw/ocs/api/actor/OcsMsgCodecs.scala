@@ -4,7 +4,7 @@ import csw.command.client.cbor.MessageCodecs
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.prefix.codecs.CommonCodecs
 import esw.ocs.api.actor.messages.SequencerMessages.EswSequencerRemoteMessage
-import esw.ocs.api.actor.messages.{SequenceComponentRemoteMsg, InternalSequencerState}
+import esw.ocs.api.actor.messages.{InternalSequencerState, SequenceComponentRemoteMsg}
 import esw.ocs.api.codecs.OcsCodecs
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs

@@ -398,6 +398,7 @@ lazy val `esw-backend-testkit` = project
 
 lazy val `esw-shell` = project
   .in(file("esw-shell"))
+  .enablePlugins(EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.EswShell.value,
     fork := false // this is needed for the ammonite shell to run

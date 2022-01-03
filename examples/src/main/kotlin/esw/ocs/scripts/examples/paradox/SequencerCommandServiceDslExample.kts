@@ -17,7 +17,7 @@ script {
 
         // #creating-sequencer
         // create a sequencer entity
-        val wfos = Sequencer(WFOS, ObsMode("wfos_darknight"))
+        val wfos = Sequencer(WFOS,ObsMode("wfos_darknight"))
         // #creating-sequencer
 
         // #creating-sequencer-timeout

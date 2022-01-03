@@ -11,6 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.Variation
 import esw.ocs.dsl.epics.*
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
@@ -20,6 +21,7 @@ import esw.ocs.dsl.script.utils.CommandUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
+import scala.Option
 import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 
@@ -40,63 +42,71 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun presetStart(obsId: ObsId): ObserveEvent       = sequencerObserveEvent.presetStart(obsId)
+    fun presetStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.presetStart(obsId)
 
     /**
      * This event indicates the end of the preset phase of  acquisition
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun presetEnd(obsId: ObsId): ObserveEvent         = sequencerObserveEvent.presetEnd(obsId)
+    fun presetEnd(obsId: ObsId): ObserveEvent = sequencerObserveEvent.presetEnd(obsId)
+
     /**
      * This event indicates the start of locking the telescope to the  sky with guide and WFS targets
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun guidestarAcqStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.guidestarAcqStart(obsId)
+    fun guidestarAcqStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.guidestarAcqStart(obsId)
+
     /**
      * This event indicates the end of locking the telescope to the sky with guide and WFS targets
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun guidestarAcqEnd(obsId: ObsId): ObserveEvent    = sequencerObserveEvent.guidestarAcqEnd(obsId)
+    fun guidestarAcqEnd(obsId: ObsId): ObserveEvent = sequencerObserveEvent.guidestarAcqEnd(obsId)
+
     /**
      * This event indicates the start of acquisition phase where  science target is peaked up as needed after  guidestar locking
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun scitargetAcqStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.scitargetAcqStart(obsId)
+
     /**
      * This event indicates the end of acquisition phase where  science target is centered as needed after  guidestar locking
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun scitargetAcqEnd(obsId: ObsId): ObserveEvent   = sequencerObserveEvent.scitargetAcqEnd(obsId)
+    fun scitargetAcqEnd(obsId: ObsId): ObserveEvent = sequencerObserveEvent.scitargetAcqEnd(obsId)
+
     /**
      * This event indicates the start of execution of actions related  to an observation including acquisition and  science data acquisition.
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun observationStart(obsId: ObsId): ObserveEvent  = sequencerObserveEvent.observationStart(obsId)
+    fun observationStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.observationStart(obsId)
+
     /**
      * This event indicates the end of execution of actions related  to an observation including acquisition and  science data acquisition.
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun observationEnd(obsId: ObsId): ObserveEvent    = sequencerObserveEvent.observationEnd(obsId)
+    fun observationEnd(obsId: ObsId): ObserveEvent = sequencerObserveEvent.observationEnd(obsId)
+
     /**
      * This event indicates the start of execution of actions related  to an Observe command
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun observeStart(obsId: ObsId): ObserveEvent      = sequencerObserveEvent.observeStart(obsId)
+    fun observeStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.observeStart(obsId)
 
     /**
      * This event indicates the end of execution of actions related  to an Observe command
      * @param obsId [[csw.params.core.models.ObsId]] Represents a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun observeEnd(obsId: ObsId): ObserveEvent        = sequencerObserveEvent.observeEnd(obsId)
+    fun observeEnd(obsId: ObsId): ObserveEvent = sequencerObserveEvent.observeEnd(obsId)
+
     /**
      * This event indicates the start of data acquisition that  results in a file produced for DMS. This is a potential metadata event for DMS.
      * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
@@ -106,6 +116,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun exposureStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.exposureStart(exposureId)
+
     /**
      * This event indicates the end of data acquisition that results  in a file produced for DMS. This is a potential metadata event for DMS.
      * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
@@ -115,6 +126,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun exposureEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.exposureEnd(exposureId)
+
     /**
      * This event indicates that a readout that is part of a ramp  has completed.
      * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
@@ -124,6 +136,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun readoutEnd(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.readoutEnd(exposureId)
+
     /**
      * This event indicates that a readout that is part of a ramp  has failed indicating transfer failure or some  other issue.
      * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
@@ -133,6 +146,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun readoutFailed(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.readoutFailed(exposureId)
+
     /**
      * This event indicates that the instrument has started writing  the exposure data file or transfer of exposure  data to DMS.
      * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
@@ -143,6 +157,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun dataWriteStart(exposureId: ExposureId, filename: String): ObserveEvent = sequencerObserveEvent.dataWriteStart(exposureId, filename)
+
     /**
      * This event indicates that the instrument has finished  writing the exposure data file or transfer of  exposure data to DMS.
      * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
@@ -153,6 +168,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun dataWriteEnd(exposureId: ExposureId, filename: String): ObserveEvent = sequencerObserveEvent.dataWriteEnd(exposureId, filename)
+
     /**
      * This event indicates the start of data acquisition that  results in a file produced for DMS. This is a potential metadata event for DMS.
      * @param exposureId [[csw.params.core.models.ExposureId]] is an identifier in ESW/DMS for a single exposure.
@@ -162,6 +178,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun prepareStart(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.prepareStart(exposureId)
+
     /**
      * This event indicates that a request was made to abort the  exposure and it has completed. Normal data events should occur if data is  recoverable.
      * Abort should not fail
@@ -172,16 +189,19 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun exposureAborted(exposureId: ExposureId): ObserveEvent = sequencerObserveEvent.observePaused()
+
     /**
      * This event indicates that a user has paused the current  observation Sequence which will happen after  the current step concludes
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun observePaused(): ObserveEvent  = sequencerObserveEvent.observePaused()
+    fun observePaused(): ObserveEvent = sequencerObserveEvent.observePaused()
+
     /**
      * This event indicates that a user has resumed a paused  observation Sequence.
      * @return [[csw.params.events.ObserveEvent]]
      */
     fun observeResumed(): ObserveEvent = sequencerObserveEvent.observeResumed()
+
     /**
      * This event indicates that something has occurred that  interrupts the normal observing workflow and  time accounting.
      * This event will have a hint (TBD) that indicates  the cause of the downtime for statistics.
@@ -223,10 +243,40 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      *
      * @param subsystem - Subsystem of the sequencer
      * @param obsMode - ObsMode of the sequencer
+     * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
+     */
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode): RichSequencer
+
+    /**
+     * Creates an instance of RichSequencer for Sequencer of given subsystem and obsMode
+     *
+     * @param subsystem - Subsystem of the sequencer
+     * @param obsMode - ObsMode of the sequencer
      * @param defaultTimeout - default timeout for the response of the RichSequencer's API
      * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
      */
-    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration = Duration.hours(10)): RichSequencer
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration): RichSequencer
+
+    /**
+     * Creates an instance of RichSequencer for Sequencer of given subsystem and obsMode
+     *
+     * @param subsystem - Subsystem of the sequencer
+     * @param obsMode - ObsMode of the sequencer
+     * @param variation - variation of the sequencer
+     * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
+     */
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation): RichSequencer
+
+    /**
+     * Creates an instance of RichSequencer for Sequencer of given subsystem and obsMode
+     *
+     * @param subsystem - Subsystem of the sequencer
+     * @param obsMode - ObsMode of the sequencer
+     * @param variation - variation of the sequencer
+     * @param defaultTimeout - default timeout for the response of the RichSequencer's API
+     * @return a [[esw.ocs.dsl.highlevel.RichSequencer]] instance
+     */
+    fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation, defaultTimeout: Duration): RichSequencer
 
     /**
      * TODO
@@ -290,12 +340,22 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
     private fun richComponent(prefix: Prefix, componentType: ComponentType, defaultTimeout: Duration): RichComponent =
             RichComponent(prefix, componentType, lockUnlockUtil, commandUtil, actorSystem, defaultTimeout, coroutineScope)
 
-    private fun richSequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration): RichSequencer =
-            RichSequencer(subsystem, obsMode, { s, o -> scriptContext.sequencerApiFactory().apply(s, o) }, defaultTimeout, coroutineScope)
+    private fun richSequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation?, defaultTimeout: Duration): RichSequencer =
+            RichSequencer(subsystem, obsMode, variation, { s, o, v -> scriptContext.sequencerApiFactory().apply(s, o, Option.apply(v)) }, defaultTimeout, coroutineScope)
 
     override fun Assembly(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, Assembly, defaultTimeout)
     override fun Hcd(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, HCD, defaultTimeout)
-    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, obsMode, defaultTimeout)
+
+    //Duration.hours(10) is intentional, as this defaultTimeout is used in submitAndWait and queryFinal APIs and there can be very long-running commands which needs this much timeout.
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode): RichSequencer = richSequencer(subsystem, obsMode, null, Duration.hours(10))
+
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode,  defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, obsMode, null, defaultTimeout)
+
+    //Duration.hours(10) is intentional, as this defaultTimeout is used in submitAndWait and queryFinal APIs and there can be very long-running commands which needs this much timeout.
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation): RichSequencer = richSequencer(subsystem, obsMode, variation, Duration.hours(10))
+
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation , defaultTimeout: Duration): RichSequencer =
+            richSequencer(subsystem, obsMode, variation, defaultTimeout)
 
     /************* Fsm helpers **********/
     override suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm =

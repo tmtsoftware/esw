@@ -7,13 +7,13 @@ import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.auth.AuthPolicies
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
-import esw.sm.api.models.ObsModeStatus.Configurable
 import esw.sm.api.models.*
-import esw.sm.api.protocol.SequenceManagerRequest.*
+import esw.sm.api.models.ObsModeStatus.Configurable
 import esw.sm.api.protocol.*
+import esw.sm.api.protocol.SequenceManagerRequest.*
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
@@ -36,7 +36,9 @@ class SequenceManagerRequestHandlerTest
   private val route = new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler).make()
 
   private val string10    = randomString(10)
+  private val string5     = randomString(5)
   private val obsMode     = ObsMode(string10)
+  private val variation   = Some(Variation(string5))
   private val componentId = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
 
   private val eswUserPolicy        = AuthPolicies.eswUserRolePolicy
@@ -81,7 +83,7 @@ class SequenceManagerRequestHandlerTest
 
     "return observation modes with status for getObsModesDetails request | ESW-466" in {
       val expectedObsModesDetailsResponse =
-        ObsModesDetailsResponse.Success(Set(ObsModeDetails(obsMode, Configurable, Resources(), Sequencers())))
+        ObsModesDetailsResponse.Success(Set(ObsModeDetails(obsMode, Configurable, Resources(), VariationInfos.empty)))
       when(sequenceManagerApi.getObsModesDetails)
         .thenReturn(Future.successful(expectedObsModesDetailsResponse))
 
@@ -90,14 +92,25 @@ class SequenceManagerRequestHandlerTest
         responseAs[ObsModesDetailsResponse] should ===(expectedObsModesDetailsResponse)
       }
     }
-
     "return start sequencer success for startSequencer request | ESW-171, ESW-332" in {
       when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
-      when(sequenceManagerApi.startSequencer(ESW, obsMode))
+      when(sequenceManagerApi.startSequencer(ESW, obsMode, None))
         .thenReturn(Future.successful(StartSequencerResponse.Started(componentId)))
 
-      Post("/post-endpoint", StartSequencer(ESW, obsMode).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).startSequencer(ESW, obsMode)
+      Post("/post-endpoint", StartSequencer(ESW, obsMode, None).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).startSequencer(ESW, obsMode, None)
+        verify(securityDirectives).sPost(eswUserPolicy)
+        responseAs[StartSequencerResponse] should ===(StartSequencerResponse.Started(componentId))
+      }
+    }
+
+    "return start sequencer success for startSequencer request along with a variation | ESW-171, ESW-332, ESW-561" in {
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
+      when(sequenceManagerApi.startSequencer(ESW, obsMode, variation))
+        .thenReturn(Future.successful(StartSequencerResponse.Started(componentId)))
+
+      Post("/post-endpoint", StartSequencer(ESW, obsMode, variation).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).startSequencer(ESW, obsMode, variation)
         verify(securityDirectives).sPost(eswUserPolicy)
         responseAs[StartSequencerResponse] should ===(StartSequencerResponse.Started(componentId))
       }
@@ -105,11 +118,24 @@ class SequenceManagerRequestHandlerTest
 
     "return shutdown sequencer success for shutdownSequencer request | ESW-171, ESW-332" in {
       when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
-      when(sequenceManagerApi.shutdownSequencer(ESW, obsMode)).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+      when(sequenceManagerApi.shutdownSequencer(ESW, obsMode, None))
+        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequencer(ESW, obsMode).narrow) ~> route ~> check {
+      Post("/post-endpoint", ShutdownSequencer(ESW, obsMode, None).narrow) ~> route ~> check {
         verify(securityDirectives).sPost(eswUserPolicy)
-        verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode)
+        verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode, None)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
+      }
+    }
+
+    "return shutdown sequencer success for shutdownSequencer request along with variation | ESW-171, ESW-332, ESW-561" in {
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
+      when(sequenceManagerApi.shutdownSequencer(ESW, obsMode, variation))
+        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+
+      Post("/post-endpoint", ShutdownSequencer(ESW, obsMode, variation).narrow) ~> route ~> check {
+        verify(securityDirectives).sPost(eswUserPolicy)
+        verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode, variation)
         responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
@@ -150,12 +176,24 @@ class SequenceManagerRequestHandlerTest
 
     "return restart sequencer success for restartSequencer request | ESW-171, ESW-332" in {
       when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
-      when(sequenceManagerApi.restartSequencer(ESW, obsMode))
+      when(sequenceManagerApi.restartSequencer(ESW, obsMode, None))
         .thenReturn(Future.successful(RestartSequencerResponse.Success(componentId)))
 
-      Post("/post-endpoint", RestartSequencer(ESW, obsMode).narrow) ~> route ~> check {
+      Post("/post-endpoint", RestartSequencer(ESW, obsMode, None).narrow) ~> route ~> check {
         verify(securityDirectives).sPost(eswUserPolicy)
-        verify(sequenceManagerApi).restartSequencer(ESW, obsMode)
+        verify(sequenceManagerApi).restartSequencer(ESW, obsMode, None)
+        responseAs[RestartSequencerResponse] should ===(RestartSequencerResponse.Success(componentId))
+      }
+    }
+
+    "return restart sequencer success for restartSequencer request along with variation | ESW-171, ESW-332, ESW-561" in {
+      when(securityDirectives.sPost(eswUserPolicy)).thenReturn(accessTokenDirective)
+      when(sequenceManagerApi.restartSequencer(ESW, obsMode, variation))
+        .thenReturn(Future.successful(RestartSequencerResponse.Success(componentId)))
+
+      Post("/post-endpoint", RestartSequencer(ESW, obsMode, variation).narrow) ~> route ~> check {
+        verify(securityDirectives).sPost(eswUserPolicy)
+        verify(sequenceManagerApi).restartSequencer(ESW, obsMode, variation)
         responseAs[RestartSequencerResponse] should ===(RestartSequencerResponse.Success(componentId))
       }
     }

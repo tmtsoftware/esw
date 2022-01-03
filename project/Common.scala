@@ -59,10 +59,10 @@ object Common {
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
       Test / testOptions ++= reporterOptions,
       Test / packageBin / publishArtifact := true,
-      // jitpack provides the env variable VERSION=<version being built> # A tag or commit
-      // we make use of it so that the version in class metadata (this.getClass.getPackage.getSpecificationVersion)
+      // jitpack provides the env variable VERSION=<version being built> # A tag or commit. We have aliased VERSION to JITPACK_VERSION
+      // we make use of it so that the version in class metadata (e.g. classOf[HttpService].getPackage.getSpecificationVersion)
       // and the maven repo match
-      version := sys.env.getOrElse("VERSION", "0.1.0-SNAPSHOT"),
+      version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
       fork := true,
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),

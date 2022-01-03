@@ -44,8 +44,8 @@ jobs:
           strip_v: true
 
       # This env variable is used when we do Docs Publish
-      - name: Set VERSION environment variable
-        run: echo "VERSION=${{steps.tag.outputs.tag}}" >> $GITHUB_ENV
+      - name: Set JITPACK_VERSION environment variable
+        run: echo "JITPACK_VERSION=${{steps.tag.outputs.tag}}" >> $GITHUB_ENV
 
       - name: Build
         run: |

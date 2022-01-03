@@ -5,7 +5,7 @@ import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse.CouldNotFindMachines
 import esw.sm.impl.utils.AgentAllocator.AllocationResponse
-import esw.sm.impl.utils.Types._
+import esw.sm.impl.utils.Types.*
 
 class AgentAllocator {
   // agent prefix to sequence component prefix mapping is input over here. This method's responsibility is to allocate

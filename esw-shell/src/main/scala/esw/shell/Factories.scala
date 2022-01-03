@@ -7,7 +7,7 @@ import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.framework.scaladsl.ComponentBehaviorFactory
 import csw.location.api.models.ComponentType.{Assembly, HCD, Machine, SequenceComponent}
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
 import esw.agent.service.api.models.SpawnContainersResponse
 import esw.commons.extensions.EitherExt.EitherOps
@@ -69,9 +69,9 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
     eswTestKit.spawnHCD(Prefix(prefix), behaviorFactory)
 
   // ============= ESW ============
-  def sequencerCommandService(subsystem: Subsystem, obsMode: String): SequencerApi = {
+  def sequencerCommandService(prefix: Prefix): SequencerApi = {
     val sequencerRef =
-      locationUtils.findSequencer(subsystem, obsMode).map(_.throwLeft).await().sequencerRef
+      locationUtils.findSequencer(prefix).map(_.throwLeft).await().sequencerRef
     new SequencerImpl(sequencerRef)
   }
 

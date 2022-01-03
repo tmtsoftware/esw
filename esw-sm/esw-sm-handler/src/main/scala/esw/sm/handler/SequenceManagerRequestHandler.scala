@@ -23,18 +23,18 @@ class SequenceManagerRequestHandler(sequenceManager: SequenceManagerApi, securit
   import sequenceManager.*
   override def handle(request: SequenceManagerRequest): Route =
     request match {
-      case GetObsModesDetails                   => complete(getObsModesDetails)
-      case GetResources                         => complete(getResources)
-      case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
-      case Provision(config)                    => sPost(complete(provision(config)))
-      case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
-      case RestartSequencer(subsystem, obsMode) => sPost(complete(restartSequencer(subsystem, obsMode)))
+      case GetObsModesDetails                              => complete(getObsModesDetails)
+      case GetResources                                    => complete(getResources)
+      case Configure(obsMode)                              => sPost(complete(configure(obsMode)))
+      case Provision(config)                               => sPost(complete(provision(config)))
+      case StartSequencer(subsystem, obsMode, variation)   => sPost(complete(startSequencer(subsystem, obsMode, variation)))
+      case RestartSequencer(subsystem, obsMode, variation) => sPost(complete(restartSequencer(subsystem, obsMode, variation)))
 
       // Shutdown sequencers
-      case ShutdownSequencer(subsystem, obsMode)  => sPost(complete(shutdownSequencer(subsystem, obsMode)))
-      case ShutdownSubsystemSequencers(subsystem) => sPost(complete(shutdownSubsystemSequencers(subsystem)))
-      case ShutdownObsModeSequencers(obsMode)     => sPost(complete(shutdownObsModeSequencers(obsMode)))
-      case ShutdownAllSequencers                  => sPost(complete(shutdownAllSequencers()))
+      case ShutdownSequencer(subsystem, obsMode, variation) => sPost(complete(shutdownSequencer(subsystem, obsMode, variation)))
+      case ShutdownSubsystemSequencers(subsystem)           => sPost(complete(shutdownSubsystemSequencers(subsystem)))
+      case ShutdownObsModeSequencers(obsMode)               => sPost(complete(shutdownObsModeSequencers(obsMode)))
+      case ShutdownAllSequencers                            => sPost(complete(shutdownAllSequencers()))
 
       case ShutdownSequenceComponent(prefix) => sPost(complete(shutdownSequenceComponent(prefix)))
       case ShutdownAllSequenceComponents     => sPost(complete(shutdownAllSequenceComponents()))

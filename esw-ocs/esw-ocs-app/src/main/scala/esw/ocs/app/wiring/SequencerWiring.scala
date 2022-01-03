@@ -3,7 +3,7 @@ package esw.ocs.app.wiring
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
@@ -18,8 +18,8 @@ import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.event.client.models.EventStores.RedisStore
 import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.javadsl.ILocationService
+import csw.location.api.models.*
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
@@ -36,13 +36,13 @@ import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.ObsMode
+import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.blockhound.BlockHoundWiring
-import esw.ocs.impl.core._
-import esw.ocs.impl.internal._
+import esw.ocs.impl.core.*
+import esw.ocs.impl.internal.*
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import io.lettuce.core.RedisClient
 import msocket.http.RouteFactory
@@ -55,16 +55,12 @@ import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
-private[ocs] class SequencerWiring(
-    val subsystem: Subsystem,
-    val obsMode: ObsMode,
-    sequenceComponentPrefix: Prefix
-) extends SequencerServiceCodecs {
+private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) extends SequencerServiceCodecs {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   private[ocs] lazy val config: Config  = actorSystem.settings.config
-  private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, subsystem, obsMode)
-  import sequencerConfig._
+  private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
+  import sequencerConfig.*
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
   lazy val actorRuntime              = new ActorRuntime(actorSystem)
@@ -100,16 +96,17 @@ private[ocs] class SequencerWiring(
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: ObsMode) => //todo: revisit timeout value
-    locationServiceUtil
-      .resolveSequencer(_subsystem, _obsMode.name, CommonTimeouts.ResolveLocation)
-      .mapRight(SequencerApiFactory.make)
-      .toJava
+  private lazy val sequencerImplFactory =
+    (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => //todo: revisit timeout value
+      locationServiceUtil
+        .resolveSequencer(Variation.prefix(_subsystem, _obsMode, _variation), CommonTimeouts.ResolveLocation)
+        .mapRight(SequencerApiFactory.make)
+        .toJava
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
     prefix,
-    obsMode,
+    ObsMode.from(prefix),
     jLogger,
     sequenceOperatorFactory,
     actorSystem,
@@ -152,7 +149,9 @@ private[ocs] class SequencerWiring(
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
       try {
-        logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
+        logger.info(
+          s"Starting sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
+        )
         new Engine(script).start(sequenceOperatorFactory())
 
         Await.result(httpServerBinding, CommonTimeouts.Wiring)
@@ -168,7 +167,9 @@ private[ocs] class SequencerWiring(
           s"${prefix.toString()}-cleanup"
         )(() => cleanupResources())
 
-        logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: ${obsMode.name}")
+        logger.info(
+          s"Successfully started Sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
+        )
         if (enableThreadMonitoring) {
           logger.info(s"Thread Monitoring enabled for ${BlockHoundWiring.integrations}")
           BlockHoundWiring.install()
