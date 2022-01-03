@@ -1,15 +1,15 @@
 package esw.agent.akka.app.ext
 
-import java.util.concurrent.CompletableFuture
-import java.util.stream
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import esw.agent.akka.app.ext.ProcessExt.ProcessOps
 import esw.testcommons.BaseTestSuite
+import org.mockito.Mockito.{times, verify, when}
 import org.mockito.verification.VerificationMode
-import org.scalatest.TryValues._
+import org.scalatest.TryValues.*
 
-import scala.concurrent.duration._
+import java.util.concurrent.CompletableFuture
+import java.util.stream
+import scala.concurrent.duration.*
 import scala.concurrent.{Future, Promise}
 import scala.jdk.FutureConverters.FutureOps
 
@@ -29,7 +29,7 @@ class ProcessExtTest extends BaseTestSuite {
       val process = mock[ProcessHandle]
       var isAlive = true
 
-      when(process.onExit()).thenAnswer(CompletableFuture.completedFuture(process))
+      when(process.onExit()).thenReturn(CompletableFuture.completedFuture(process))
 
       process.onComplete(t => isAlive = t.success.value.isAlive)
       eventually(isAlive should ===(false))
@@ -40,7 +40,7 @@ class ProcessExtTest extends BaseTestSuite {
 
     "destroy parent process along with all the children | ESW-325" in {
       val mockedProcesses = new MockedProcesses
-      import mockedProcesses._
+      import mockedProcesses.*
 
       when(parent.descendants()).thenReturn(childrenStream)
 
@@ -49,12 +49,12 @@ class ProcessExtTest extends BaseTestSuite {
 
       parent.kill(5.seconds).futureValue should ===(parent)
       verifyDestroy(List(child1, child2, parent))
-      verifyDestroyForcibly(List(child1, child2, parent), never)
+      verifyDestroyForcibly(List(child1, child2, parent), times(0))
     }
 
     "destroy parent process forcibly along with all the children when graceful termination fails | ESW-325" in {
       val mockedProcesses = new MockedProcesses
-      import mockedProcesses._
+      import mockedProcesses.*
 
       when(parent.descendants()).thenReturn(childrenStream)
 
@@ -66,7 +66,7 @@ class ProcessExtTest extends BaseTestSuite {
       verifyDestroy(List(child1, child2, parent))
 
       // graceful termination succeeds for child1 and child2
-      verifyDestroyForcibly(List(child1, child2), never)
+      verifyDestroyForcibly(List(child1, child2), times(0))
 
       // graceful termination fails for parent, as it does not get terminated within the timeout
       verifyDestroyForcibly(List(parent))

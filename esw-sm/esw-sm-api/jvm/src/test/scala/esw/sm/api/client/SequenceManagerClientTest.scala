@@ -11,6 +11,7 @@ import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
+import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 

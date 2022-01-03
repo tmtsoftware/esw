@@ -20,6 +20,7 @@ import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import msocket.jvm.SourceExtension.RichSource
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
+import org.mockito.Mockito.when
 
 import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global

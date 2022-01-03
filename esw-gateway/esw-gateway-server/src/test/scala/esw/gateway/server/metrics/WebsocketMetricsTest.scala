@@ -18,7 +18,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayStreamRequest.{ComponentCommand, SequencerCommand, Subscribe}
-import esw.gateway.api.protocol._
+import esw.gateway.api.protocol.*
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.handlers.GatewayWebsocketHandler
 import esw.gateway.server.{CswTestMocks, GatewayStreamRequestLabels}
@@ -32,6 +32,7 @@ import msocket.http.CborByteString
 import msocket.http.post.ClientHttpCodecs
 import msocket.http.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.http.ws.WebsocketRouteFactory
+import org.mockito.Mockito.when
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Future, Promise}

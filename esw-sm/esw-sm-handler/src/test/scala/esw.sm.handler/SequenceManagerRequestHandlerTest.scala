@@ -19,6 +19,7 @@ import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
 import msocket.security.models.AccessToken
+import org.mockito.Mockito.{reset, verify, when}
 
 import scala.concurrent.Future
 
@@ -48,7 +49,8 @@ class SequenceManagerRequestHandlerTest
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(securityDirectives, sequenceManagerApi)
+    reset(securityDirectives)
+    reset(sequenceManagerApi)
   }
 
   implicit class Narrower(x: SequenceManagerRequest) {

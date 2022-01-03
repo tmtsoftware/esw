@@ -18,6 +18,7 @@ import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol.*
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
+import org.mockito.Mockito.when
 
 import java.net.URI
 import scala.concurrent.Await

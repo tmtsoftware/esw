@@ -4,9 +4,10 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.KillComponent
-import esw.agent.service.api.models._
+import esw.agent.service.api.models.*
+import org.mockito.Mockito.verify
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
-import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.scalatest.prop.TableDrivenPropertyChecks.*
 
 import scala.concurrent.duration.DurationLong
 
@@ -25,7 +26,8 @@ class KillComponentTest extends AgentSetup {
           killResponseProbe.expectMessage(Killed)
 
           //ensure component was unregistered
-          verify(locationService, timeout(500)).unregister(location.connection)
+          Thread.sleep(500)
+          verify(locationService).unregister(location.connection)
         }
       }
 
@@ -39,7 +41,8 @@ class KillComponentTest extends AgentSetup {
           killResponseProbe.expectMessage(Killed)
 
           //ensure component was unregistered
-          verify(locationService, timeout(500)).unregister(location.connection)
+          Thread.sleep(500)
+          verify(locationService).unregister(location.connection)
         }
       }
 

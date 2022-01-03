@@ -1,17 +1,17 @@
 package esw.gateway.server.utils
 
 import java.net.URI
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
 import csw.location.api.scaladsl.LocationService
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
-import org.scalatest.concurrent.ScalaFutures._
+import org.scalatest.concurrent.ScalaFutures.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt

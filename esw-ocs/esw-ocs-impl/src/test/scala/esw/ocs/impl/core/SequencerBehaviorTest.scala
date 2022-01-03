@@ -30,7 +30,7 @@ import org.scalatest.prop.TableFor2
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
-
+import org.mockito.Mockito.{times, verify, when}
 class SequencerBehaviorTest extends BaseTestSuite {
 
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "sequencer-test-system")
@@ -59,7 +59,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       loadSequenceAndAssertResponse(Ok)
       assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Loaded)
 
-      when(script.executeNewSequenceHandler()).thenAnswer(Future.successful(Done))
+      when(script.executeNewSequenceHandler()).thenReturn(Future.successful(Done))
       sequencerActor ! StartSequence(testProbe.ref)
       val response = testProbe.receiveMessage()
       response shouldBe a[SubmitResult]
@@ -119,7 +119,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
       subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
 
-      when(script.executeNewSequenceHandler()).thenAnswer(Future.successful(Done))
+      when(script.executeNewSequenceHandler()).thenReturn(Future.successful(Done))
       when(script.executeAbort()).thenReturn(Future.successful(Done))
 
       sequencerActor ! SubmitSequence(sequence, testProbe.ref)
@@ -153,7 +153,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       sequencerActor ! SubscribeSequencerState(subscriberProbe.ref)
       subscriberProbe.receiveMessage() shouldEqual SequencerStateResponse(StepList(List.empty), Idle.toExternal)
 
-      when(script.executeNewSequenceHandler()).thenAnswer(Future.successful(Done))
+      when(script.executeNewSequenceHandler()).thenReturn(Future.successful(Done))
       when(script.executeStop()).thenReturn(Future.successful(Done))
 
       sequencerActor ! SubmitSequence(sequence, testProbe.ref)
@@ -229,7 +229,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
 
       val probe = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(probe.ref)
@@ -244,7 +244,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
     "not start executing a sequence when sequencer is loaded and new sequence handler failed| ESW-303" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.failed(new RuntimeException) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.failed(new RuntimeException) }
 
       val probe = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(probe.ref)
@@ -261,7 +261,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
 
       submitSequenceAndAssertStartedResponse()
       pullAllStepsAndAssertSequenceIsFinished()
@@ -272,7 +272,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.failed(new RuntimeException) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.failed(new RuntimeException) }
 
       val probe = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
@@ -288,7 +288,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.idle(sequence1)
       import sequencerSetup._
 
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
 
       val startedResponse = submitSequenceAndAssertStartedResponse()
       verify(script).executeNewSequenceHandler() // ESW-303: verifies newSequenceHandler is called
@@ -310,7 +310,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
 
       submitSequenceAndAssertStartedResponse()
       pullAllStepsAndAssertSequenceIsFinished()
@@ -344,7 +344,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
 
       val startSeqProbe = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(startSeqProbe.ref)
@@ -365,7 +365,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.loaded(sequence1)
       import sequencerSetup._
 
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
 
       val startSeqProbe = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(startSeqProbe.ref)
@@ -964,7 +964,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
 
       val probe = TestProbe[Ok.type]()
       sequencerActor ! ReadyToExecuteNext(probe.ref)
@@ -1279,7 +1279,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       import sequencerSetup._
 
       //start executing sequence
-      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
       val replyTo = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(replyTo.ref)
       startPullNext()

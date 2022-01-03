@@ -19,10 +19,11 @@ import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
 import msocket.security.models.{Access, AccessToken}
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.captor.{ArgCaptor, Captor}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
+import org.mockito.Mockito.{never, reset, verify, when}
 
 import scala.concurrent.Future
 
@@ -47,7 +48,9 @@ class SequencerPostHandlerAuthTest
   private val route: Route = new PostRouteFactory[SequencerRequest]("post-endpoint", postHandler).make()
 
   override protected def beforeEach(): Unit = {
-    reset(sequencer, securityDirectives, accessToken)
+    reset(sequencer)
+    reset(securityDirectives)
+    reset(accessToken)
     super.beforeEach()
   }
 
@@ -86,8 +89,8 @@ class SequencerPostHandlerAuthTest
       val name = msg.getClass.getSimpleName
       s"check for $subsystem subsystem user role policy on $name" in {
 
-        val captor = ArgCaptor[CustomPolicy]
-        when(securityDirectives.sPost(captor)).thenReturn(accessTokenDirective)
+        val captor: ArgumentCaptor[CustomPolicy] = ArgumentCaptor.forClass(classOf[CustomPolicy])
+        when(securityDirectives.sPost(captor.capture())).thenReturn(accessTokenDirective)
         mockApi(api(sequencer), responseF)
 
         Post("/post-endpoint", msg.narrow) ~> route ~> check {
@@ -120,6 +123,6 @@ class SequencerPostHandlerAuthTest
 
   def mockApi[T](call: => T, returnValue: T): Unit = when(call).thenReturn(returnValue)
 
-  def checkSubsystemUserRole(captor: Captor[CustomPolicy]): Unit =
-    captor.value.predicate(AccessToken(realm_access = Access(Set(s"$subsystem-user")))) shouldBe true
+  def checkSubsystemUserRole(captor: ArgumentCaptor[CustomPolicy]): Unit =
+    captor.getValue.predicate(AccessToken(realm_access = Access(Set(s"$subsystem-user")))) shouldBe true
 }

@@ -29,6 +29,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import org.mockito.Mockito.{never, reset, times, verify, when}
 
 class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenPropertyChecks {
 
@@ -78,7 +79,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   override protected def beforeEach(): Unit = {
-    reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil, agentUtil)
+    reset(locationServiceUtil)
+    reset(sequencerUtil)
+    reset(sequenceComponentUtil)
+    reset(agentUtil)
   }
 
   private def failedFuture(reason: String, delay: FiniteDuration) = {

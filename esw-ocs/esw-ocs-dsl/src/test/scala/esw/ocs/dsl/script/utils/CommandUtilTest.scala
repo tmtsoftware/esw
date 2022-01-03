@@ -12,10 +12,10 @@ import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
 import esw.testcommons.BaseTestSuite
+import org.mockito.Mockito.{reset, verify, when}
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionException, Future}
-
 class CommandUtilTest extends BaseTestSuite {
   implicit val testSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
 

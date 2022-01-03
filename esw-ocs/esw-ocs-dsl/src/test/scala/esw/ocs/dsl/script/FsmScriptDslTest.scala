@@ -9,7 +9,7 @@ import esw.ocs.impl.core.SequenceOperator
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
-
+import org.mockito.Mockito.{verify, when}
 class FsmScriptDslTest extends BaseTestSuite {
   private val strandEc           = StrandEc()
   private val seqOperatorFactory = () => mock[SequenceOperator]

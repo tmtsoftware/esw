@@ -20,6 +20,8 @@ import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComponentNotAvailable, Started}
 import esw.sm.api.protocol.{RestartSequencerResponse, ShutdownSequencersResponse}
 import esw.testcommons.BaseTestSuite
+import org.mockito.Mockito
+import org.mockito.Mockito.{reset, verify, when}
 
 import java.net.URI
 import scala.concurrent.duration.DurationInt
@@ -35,7 +37,10 @@ class SequencerUtilTest extends BaseTestSuite {
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(locationServiceUtil, sequenceComponentUtil, eswSequencerApi, tcsSequencerApi)
+    reset(locationServiceUtil)
+    reset(sequenceComponentUtil)
+    reset(eswSequencerApi)
+    reset(tcsSequencerApi)
   }
 
   override def afterAll(): Unit = {
@@ -146,7 +151,7 @@ class SequencerUtilTest extends BaseTestSuite {
       sequencerUtil.restartSequencer(eswDarkNightSequencerPrefix).futureValue should ===(LocationServiceError(errorMsg))
 
       verify(locationServiceUtil).findSequencer(eswDarkNightSequencerPrefix)
-      verify(sequenceComponentUtil, never).restartScript(eswPrimarySeqCompLoc)
+      verify(sequenceComponentUtil, Mockito.never()).restartScript(eswPrimarySeqCompLoc)
     }
 
     "return LoadScriptError error if restart fails with Unhandled| ESW-327, ESW-56" in {
@@ -182,7 +187,7 @@ class SequencerUtilTest extends BaseTestSuite {
       sequencerUtil.shutdownSequencer(eswDarkNightSequencerPrefix).futureValue should ===(ShutdownSequencersResponse.Success)
 
       verify(locationServiceUtil).findSequencer(eswDarkNightSequencerPrefix)
-      verify(eswSequencerApi, never).getSequenceComponent
+      verify(eswSequencerApi, Mockito.never()).getSequenceComponent
     }
 
     "return Failure response when location service returns RegistrationListingFailed error | ESW-326, ESW-351, ESW-56" in {

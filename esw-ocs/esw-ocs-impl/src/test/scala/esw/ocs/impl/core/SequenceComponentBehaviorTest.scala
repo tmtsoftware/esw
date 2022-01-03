@@ -26,6 +26,7 @@ import esw.testcommons.BaseTestSuite
 import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
+import org.mockito.Mockito.{reset, verify, when}
 
 class SequenceComponentBehaviorTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "sequencer-test-system")
@@ -39,7 +40,9 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(locationService, sequencerServer, sequencerServerFactory)
+    reset(locationService)
+    reset(sequencerServer)
+    reset(sequencerServerFactory)
   }
 
   "SequenceComponentBehavior" must {

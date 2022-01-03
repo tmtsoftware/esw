@@ -1,7 +1,6 @@
 package esw.gateway.impl
 
 import java.net.URI
-
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
@@ -20,6 +19,7 @@ import csw.logging.models.{Level, LogMetadata}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.protocol.InvalidComponent
 import esw.testcommons.BaseTestSuite
+import org.mockito.Mockito.when
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}

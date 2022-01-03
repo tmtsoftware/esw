@@ -8,9 +8,10 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.app.process.cs.Coursier
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnSequenceComponent, SpawnSequenceManager}
 import esw.agent.akka.client.AgentCommand.SpawnContainers
-import esw.agent.service.api.models._
+import esw.agent.service.api.models.*
 import esw.commons.utils.config.FetchingScriptVersionFailed
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
 import java.nio.file.{Path, Paths}

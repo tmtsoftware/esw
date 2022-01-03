@@ -13,6 +13,7 @@ import esw.agent.akka.client.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import esw.agent.service.api.models.{Failed, SpawnResponse}
 import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
+import org.mockito.Mockito.{verify, when}
 
 import java.net.URI
 import scala.concurrent.Future

@@ -16,6 +16,7 @@ import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
 import scala.concurrent.Future
+import org.mockito.Mockito.when
 
 class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
 
