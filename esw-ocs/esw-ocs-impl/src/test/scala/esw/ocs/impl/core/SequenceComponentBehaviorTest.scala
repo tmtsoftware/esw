@@ -41,7 +41,9 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(locationService, sequencerServer, sequencerServerFactory)
+    reset(locationService)
+    reset(sequencerServer)
+    reset(sequencerServerFactory)
   }
 
   "SequenceComponentBehavior" must {

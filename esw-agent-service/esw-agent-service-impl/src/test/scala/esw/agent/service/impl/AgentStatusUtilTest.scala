@@ -1,11 +1,9 @@
 package esw.agent.service.impl
 
-import java.net.URI
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.agent.service.api.models.AgentStatusResponse.{LocationServiceError, Success}
@@ -13,6 +11,12 @@ import esw.agent.service.api.models.{AgentStatus, SequenceComponentStatus}
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.BaseTestSuite
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.{any, eq => argEq}
+import org.mockito.Mockito.{times, verify, when}
+
+import java.net.URI
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class AgentStatusUtilTest extends BaseTestSuite {
   private implicit val testSystem: ActorSystem[_] = ActorSystem(SpawnProtocol(), "test")
@@ -64,13 +68,13 @@ class AgentStatusUtilTest extends BaseTestSuite {
       val tcsMachine       = ComponentId(tcsMachinePrefix, Machine)
       val tcsMachineLoc    = seqCompLocationWithAgentPrefix(tcsMachine, None)
 
-      when(locationServiceUtil.listAkkaLocationsBy(Machine))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
         .thenReturn(futureRight(List(eswMachineLoc, tcsMachineLoc)))
 
-      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(futureRight(List(eswSeqCompLoc1, eswSeqCompLoc2, irisSeqCompLoc, tcsSeqCompLoc)))
 
-      when(locationServiceUtil.listAkkaLocationsBy(Sequencer))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(Sequencer), any[AkkaLocation => Boolean]))
         .thenReturn(futureRight(List(eswSequencer1, tcsSequencer1)))
 
       val expectedAgentStatus = List(
@@ -82,17 +86,21 @@ class AgentStatusUtilTest extends BaseTestSuite {
       status.agentStatus.toSet should ===(expectedAgentStatus.toSet)
       status.seqCompsWithoutAgent.toSet should ===(List(irisSeqCompStatus, tcsSeqCompStatus).toSet)
 
-      verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
-      verify(locationServiceUtil).listAkkaLocationsBy(Machine)
-      verify(locationServiceUtil).listAkkaLocationsBy(Sequencer)
+      val captor: ArgumentCaptor[ComponentType] = ArgumentCaptor.forClass(classOf[ComponentType])
+      verify(locationServiceUtil, times(3)).listAkkaLocationsBy(captor.capture(), any())
+
+      val values: List[ComponentType] = captor.getAllValues.asScala.toList
+      values should ===(List(SequenceComponent, Machine, Sequencer))
     }
 
     "return LocationServiceError if location service gives error | ESW-349, ESW-481" in {
       val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
       val agentStatusUtil: AgentStatusUtil         = new AgentStatusUtil(locationServiceUtil)
 
-      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent)).thenReturn(futureLeft(RegistrationListingFailed("error")))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
+        .thenReturn(futureLeft(RegistrationListingFailed("error")))
       agentStatusUtil.getAllAgentStatus.futureValue should ===(LocationServiceError("error"))
+
       verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
     }
 

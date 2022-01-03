@@ -17,12 +17,13 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.AdminApi
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayRequest
-import esw.gateway.api.protocol.GatewayRequest._
+import esw.gateway.api.protocol.GatewayRequest.*
 import esw.gateway.server.handlers.GatewayPostHandler
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.prop.TableFor3
 import org.scalatest.prop.Tables.Table
 
@@ -48,7 +49,8 @@ class GatewayAuthRequestTest extends BaseTestSuite with ScalatestRouteTest with 
     Post("/post-endpoint", entity).addHeader(Authorization(OAuth2BearerToken(token)))
 
   override def afterEach(): Unit = {
-    reset(adminApi, access)
+    reset(adminApi)
+    reset(access)
     super.afterEach()
   }
 
@@ -102,7 +104,7 @@ class GatewayAuthRequestTest extends BaseTestSuite with ScalatestRouteTest with 
         stubRolesInAccessToken((userRoles ::: engRoles).toSet)
 
         post(command: GatewayRequest) ~> route ~> check {
-          api(verify(adminApi, never))
+          api(verify(adminApi, times(0)))
           rejection shouldEqual AuthorizationFailedRejection
         }
       }
@@ -141,7 +143,7 @@ class GatewayAuthRequestTest extends BaseTestSuite with ScalatestRouteTest with 
       stubRolesInAccessToken(roles)
 
       post(SetLogLevel(componentId, level): GatewayRequest) ~> route ~> check {
-        verify(adminApi, never).setLogLevel(componentId, level)
+        verify(adminApi, times(0)).setLogLevel(componentId, level)
         rejection shouldEqual AuthorizationFailedRejection
       }
     }

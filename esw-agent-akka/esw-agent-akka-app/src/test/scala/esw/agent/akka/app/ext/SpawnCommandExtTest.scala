@@ -10,6 +10,7 @@ import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig, Contai
 import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
+import org.mockito.Mockito.when
 import org.scalatest.prop.Tables.Table
 
 import java.nio.file.{Path, Paths}

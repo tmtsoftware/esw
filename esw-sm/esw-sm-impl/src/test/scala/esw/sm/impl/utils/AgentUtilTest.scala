@@ -1,7 +1,6 @@
 package esw.sm.impl.utils
 
 import java.net.URI
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
@@ -14,12 +13,13 @@ import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
 import esw.commons.utils.config.{FetchingScriptVersionFailed, VersionManager}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
+import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ProvisionResponse
 import esw.sm.api.protocol.ProvisionResponse.{CouldNotFindMachines, ProvisionVersionFailure}
 import esw.testcommons.BaseTestSuite
-import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
@@ -113,9 +113,11 @@ class AgentUtilTest extends BaseTestSuite {
       val mapping         = List(eswPrimaryMachine -> eswSeqComp1Prefix, irisPrimaryMachine -> irisSeqComp1Prefix)
       val version         = randomString(10)
 
-      when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
+        .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(eswClient.spawnSequenceComponent(eswSeqComp1Name, Some(version))).thenReturn(Future.successful(Spawned))
+      when(eswClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), simulation = false))
+        .thenReturn(Future.successful(Spawned))
       when(irisClient.spawnSequenceComponent(irisSeqComp1Name, Some(version))).thenReturn(Future.successful(Spawned))
       when(versionManager.getScriptVersion).thenReturn(Future.successful(version))
 
@@ -123,8 +125,8 @@ class AgentUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
-      verify(eswClient).spawnSequenceComponent(eswSeqComp1Name, Some(version))
-      verify(irisClient).spawnSequenceComponent(irisSeqComp1Name, Some(version))
+      verify(eswClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false)
+      verify(irisClient).spawnSequenceComponent(irisSeqComp1Name, Some(version), false)
     }
 
     "return SpawningSequenceComponentsFailed if agent fails to spawn sequence component | ESW-347" in {
@@ -137,10 +139,12 @@ class AgentUtilTest extends BaseTestSuite {
       val mapping         = List(eswPrimaryMachine -> eswSeqComp1Prefix, eswPrimaryMachine -> eswSeqComp2Prefix)
       val version         = randomString(10)
 
-      when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
+        .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(agentClient.spawnSequenceComponent(eswSeqComp1Name, Some(version))).thenReturn(Future.successful(Spawned))
-      when(agentClient.spawnSequenceComponent(eswSeqComp2Name, Some(version))).thenReturn(Future.successful(Failed(errorMsg)))
+      when(agentClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), false)).thenReturn(Future.successful(Spawned))
+      when(agentClient.spawnSequenceComponent(eswSeqComp2Name, Some(version), false))
+        .thenReturn(Future.successful(Failed(errorMsg)))
       when(versionManager.getScriptVersion).thenReturn(Future.successful(version))
 
       val response = agentUtil.provision(provisionConfig).futureValue
@@ -153,21 +157,21 @@ class AgentUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).listAkkaLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
-      verify(agentClient).spawnSequenceComponent(eswSeqComp1Name, Some(version))
-      verify(agentClient).spawnSequenceComponent(eswSeqComp2Name, Some(version))
+      verify(agentClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false)
+      verify(agentClient).spawnSequenceComponent(eswSeqComp2Name, Some(version), false)
     }
 
     "return LocationServiceError if location service gives error | ESW-347" in {
       val setup = new TestSetup()
       import setup._
       val errorMsg = "listing failed"
-      when(locationServiceUtil.listAkkaLocationsBy(Machine))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Left(RegistrationListingFailed(errorMsg))))
 
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2)
       agentUtil.provision(provisionConfig).futureValue should ===(LocationServiceError(errorMsg))
 
-      verify(locationServiceUtil).listAkkaLocationsBy(Machine)
+      verify(locationServiceUtil).listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean])
     }
 
     "return CouldNotFindMachines error if any subsystem does not have machine available | ESW-347" in {
@@ -176,11 +180,12 @@ class AgentUtilTest extends BaseTestSuite {
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1, Prefix(IRIS, "primary") -> 1)
       val machines        = List(eswPrimaryMachine)
       val error           = CouldNotFindMachines(Set(Prefix(IRIS, "primary")))
-      when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
+        .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Left(error))
 
       agentUtil.provision(provisionConfig).futureValue should ===(error)
-      verify(locationServiceUtil).listAkkaLocationsBy(Machine)
+      verify(locationServiceUtil).listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean])
       verify(agentAllocator).allocate(provisionConfig, machines)
     }
 

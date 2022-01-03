@@ -9,11 +9,12 @@ import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
-import esw.gateway.impl._
+import esw.gateway.impl.*
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.SequencerApi
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar._
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration

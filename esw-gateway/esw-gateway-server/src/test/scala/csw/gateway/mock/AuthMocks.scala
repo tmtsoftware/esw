@@ -6,6 +6,7 @@ import msocket.security.api.TokenValidator
 import msocket.security.models.{Access, AccessToken, SecurityStatus}
 import msocket.security.{AccessController, AccessControllerFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
+import org.mockito.Mockito.when
 
 import scala.concurrent.{ExecutionContext, Future}
 

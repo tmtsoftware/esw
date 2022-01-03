@@ -1,13 +1,12 @@
 package esw.sm.impl.utils
 
 import java.net.URI
-
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.location.api.models.ComponentType._
+import csw.location.api.models.ComponentType.*
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem._
+import csw.prefix.models.Subsystem.*
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
@@ -24,6 +23,7 @@ import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
+import org.mockito.Mockito.{never, reset, times, verify, when}
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import scala.concurrent.Future
@@ -39,7 +39,11 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
   private val sequenceComponentApiMock   = mock[SequenceComponentImpl]
   private val sequenceComponentUtil      = new SequenceComponentUtil(locationServiceUtil, sequenceComponentAllocator)
 
-  override def beforeEach(): Unit = reset(locationServiceUtil, sequenceComponentAllocator, sequenceComponentApiMock)
+  override def beforeEach(): Unit = {
+    reset(locationServiceUtil)
+    reset(sequenceComponentAllocator)
+    reset(sequenceComponentApiMock)
+  }
 
   override def afterAll(): Unit = {
     actorSystem.terminate()
@@ -94,7 +98,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
       seqCompUtil.shutdownSequenceComponent(Prefix(prefixStr)).futureValue should ===(LocationServiceError("error"))
 
       verify(locationServiceUtil).find(connection)
-      verify(mockSeqCompImpl, never).shutdown()
+      verify(mockSeqCompImpl, times(0)).shutdown()
     }
 
     "return success when shutting down all sequence components is successful | ESW-346, ESW-351" in {
@@ -109,7 +113,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
           if (seqCompLocation.prefix.subsystem == ESW) eswSeqCompImpl else irisSeqCompImpl
       }
 
-      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Right(List(eswSeqCompLoc, irisSeqCompLoc))))
 
       when(eswSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
@@ -117,7 +121,7 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
 
       seqCompUtil.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
 
-      verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
+      verify(locationServiceUtil).listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean])
       verify(eswSeqCompImpl).shutdown()
       verify(irisSeqCompImpl).shutdown()
     }
@@ -128,13 +132,13 @@ class SequenceComponentUtilTest extends BaseTestSuite with TableDrivenPropertyCh
         override private[sm] def sequenceComponentApi(seqCompLocation: AkkaLocation): SequenceComponentImpl =
           mockSeqCompImpl
       }
-      when(locationServiceUtil.listAkkaLocationsBy(SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("error"))))
 
       seqCompUtil.shutdownAllSequenceComponents().futureValue should ===(LocationServiceError("error"))
 
-      verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
-      verify(mockSeqCompImpl, never).shutdown()
+      verify(locationServiceUtil).listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean])
+      verify(mockSeqCompImpl, never()).shutdown()
     }
   }
 

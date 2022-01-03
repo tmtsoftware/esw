@@ -7,10 +7,12 @@ import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.akka.client.AgentClient
-import esw.agent.service.api.models._
-import esw.commons.utils.location.EswLocationError._
+import esw.agent.service.api.models.*
+import esw.commons.utils.location.EswLocationError.*
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.BaseTestSuite
+import org.mockito.ArgumentMatchers.{anyBoolean, eq => argEq}
+import org.mockito.Mockito.{reset, verify, when}
 
 import java.net.URI
 import java.nio.file.Path
@@ -34,7 +36,9 @@ class AgentServiceImplTest extends BaseTestSuite {
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    reset(locationService, agentStatusUtil, agentClientMock)
+    reset(locationService)
+    reset(agentStatusUtil)
+    reset(agentClientMock)
   }
 
   override protected def afterAll(): Unit = {
@@ -50,7 +54,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       val componentName = randomString(10)
 
       "be able to send spawn sequence component message to given agent" in {
-        when(agentClientMock.spawnSequenceComponent(componentName, version)).thenReturn(Future.successful(spawnRes))
+        when(agentClientMock.spawnSequenceComponent(componentName, version, false)).thenReturn(Future.successful(spawnRes))
         agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue
         verify(agentClientMock).spawnSequenceComponent(componentName, version)
       }
@@ -76,7 +80,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       "be able to send spawn sequence manager message to given agent | ESW-361" in {
 
         val spawnRes = mock[SpawnResponse]
-        when(agentClientMock.spawnSequenceManager(obsConfPath, isConfigLocal = true, version))
+        when(agentClientMock.spawnSequenceManager(obsConfPath, true, version, false))
           .thenReturn(Future.successful(spawnRes))
 
         agentService.spawnSequenceManager(agentPrefix, obsConfPath, isConfigLocal = true, version).futureValue

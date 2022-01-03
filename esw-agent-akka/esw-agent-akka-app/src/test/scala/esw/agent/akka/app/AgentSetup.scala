@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.config.client.commons.ConfigUtils
 import csw.location.api.models.ComponentType.{Container, HCD, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models._
+import csw.location.api.models.*
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Subsystem.ESW
@@ -17,6 +17,7 @@ import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
+import org.mockito.Mockito.{reset, when}
 
 import java.net.URI
 import java.nio.file.{Path, Paths}
@@ -89,7 +90,11 @@ class AgentSetup extends BaseTestSuite {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(locationService, processExecutor, process, logger, configUtils)
+    reset(locationService)
+    reset(processExecutor)
+    reset(process)
+    reset(logger)
+    reset(configUtils)
   }
 
   def spawnAgentActor(

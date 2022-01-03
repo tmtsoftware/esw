@@ -5,12 +5,13 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerServiceCodecs
 import esw.sm.api.models.ProvisionConfig
-import esw.sm.api.protocol.SequenceManagerRequest._
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.SequenceManagerRequest.*
+import esw.sm.api.protocol.*
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
+import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 

@@ -17,17 +17,17 @@ import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.api.models.ComponentType.{Assembly, Sequencer}
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.macros.SourceFactory
-import csw.logging.models.{AnyId, Level, LogMetadata}
+import csw.logging.models.{Level, LogMetadata}
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, ObsId}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Subsystem.IRIS
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.GatewayRequest._
-import esw.gateway.api.protocol._
+import esw.gateway.api.protocol.*
+import esw.gateway.api.protocol.GatewayRequest.*
 import esw.gateway.server.handlers.GatewayPostHandler
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerRequest}
 import esw.testcommons.BaseTestSuite
@@ -35,7 +35,8 @@ import msocket.api.ContentType
 import msocket.api.models.ServiceError
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
-import org.mockito.ArgumentMatchers.{any, eq => argsEq}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, verify, when}
 
 import scala.concurrent.Future
 
@@ -44,7 +45,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   override def clientContentType: ContentType = ContentType.Json
   implicit val typedSystem: ActorSystem[_]    = system.toTyped
   private val cswCtxMocks                     = new CswTestMocks()
-  import cswCtxMocks._
+  import cswCtxMocks.*
 
   private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
   private val commandRoles       = CommandRoles.empty
@@ -59,6 +60,10 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   private val destination = Prefix("tcs.test")
 
   private def post[E: ToEntityMarshaller](entity: E): HttpRequest = Post("/post-endpoint", entity)
+
+  override protected def afterEach(): Unit = {
+    reset(logger)
+  }
 
   "Submit Command" must {
     "handle submit command and return started command response | ESW-91, ESW-216" in {
@@ -273,6 +278,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
   }
 
   "Log" must {
+
     "log the message, metadata and return Done | ESW-200, CSW-63, CSW-78" in {
       val log: GatewayRequest = Log(
         Prefix("esw.test"),
@@ -290,9 +296,8 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
           "additional-info" -> 45,
           "city"            -> "LA"
         )
-        verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
-          any[SourceFactory]()
-        )
+
+        verify(logger).fatal("test-message", expectedMetadata)(SourceFactory.factory)
       }
     }
 
@@ -305,9 +310,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
       post(log) ~> route ~> check {
         responseAs[Done] shouldEqual Done
-        verify(logger).fatal(argsEq("test-message"), argsEq(Map.empty), any[Throwable], any[AnyId])(
-          any[SourceFactory]()
-        )
+        verify(logger).fatal("test-message", Map.empty)(SourceFactory.factory)
       }
     }
   }

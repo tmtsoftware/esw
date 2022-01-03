@@ -1,7 +1,6 @@
 package esw.agent.service.app.handlers
 
 import java.nio.file.Path
-
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -11,15 +10,16 @@ import csw.location.api.models.ComponentType.Service
 import csw.prefix.models.Prefix
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
-import esw.agent.service.api.models._
+import esw.agent.service.api.models.*
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest._
+import esw.agent.service.api.protocol.AgentServiceRequest.*
 import esw.commons.auth.AuthPolicies
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.jvm.metrics.LabelExtractor
 import msocket.security.models.AccessToken
+import org.mockito.Mockito.{reset, verify, when}
 
 import scala.concurrent.Future
 
@@ -43,7 +43,8 @@ class AgentPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with Ag
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    reset(securityDirective, agentService)
+    reset(securityDirective)
+    reset(agentService)
   }
 
   "SpawnSequenceManager" must {
