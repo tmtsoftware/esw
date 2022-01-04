@@ -2,12 +2,12 @@ package esw.ocs.testkit.utils
 
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
-import org.mockito.MockitoSugar
 import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest._
+import org.scalatest.*
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.duration.{Duration, DurationDouble, FiniteDuration}
 import scala.concurrent.{Future, Promise}

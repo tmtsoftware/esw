@@ -27,6 +27,7 @@ import esw.ocs.api.models.{ObsMode, Step, StepList}
 import esw.ocs.api.protocol.*
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.*
+import org.mockito.Mockito.when
 
 import java.nio.file.Path
 import scala.concurrent.Future

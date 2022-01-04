@@ -7,7 +7,9 @@ import msocket.security.AccessControllerFactory
 import msocket.security.api.TokenValidator
 import msocket.security.models.{Access, AccessToken}
 import org.keycloak.adapters.KeycloakDeployment
-import org.mockito.{ArgumentMatchers, MockitoSugar}
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
 

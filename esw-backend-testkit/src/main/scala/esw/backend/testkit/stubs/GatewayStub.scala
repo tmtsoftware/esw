@@ -14,6 +14,7 @@ import esw.gateway.server.utils.Resolver
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.utils.LocationUtils
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 
 import java.nio.file
 import java.nio.file.Paths

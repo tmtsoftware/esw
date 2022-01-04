@@ -10,6 +10,7 @@ import csw.prefix.models.Prefix
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.utils.BaseTestSuite
+import org.mockito.Mockito.when
 
 import java.nio.file.Paths
 import scala.concurrent.{Await, Future}

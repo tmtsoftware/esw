@@ -87,7 +87,7 @@ class AgentStatusUtilTest extends BaseTestSuite {
       status.seqCompsWithoutAgent.toSet should ===(List(irisSeqCompStatus, tcsSeqCompStatus).toSet)
 
       val captor: ArgumentCaptor[ComponentType] = ArgumentCaptor.forClass(classOf[ComponentType])
-      verify(locationServiceUtil, times(3)).listAkkaLocationsBy(captor.capture(), any())
+      verify(locationServiceUtil, times(3)).listAkkaLocationsBy(captor.capture(), any[AkkaLocation => Boolean])
 
       val values: List[ComponentType] = captor.getAllValues.asScala.toList
       values should ===(List(SequenceComponent, Machine, Sequencer))

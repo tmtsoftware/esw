@@ -38,6 +38,7 @@ import esw.sm.api.protocol.StartSequencerResponse.{LoadScriptError, SequenceComp
 import esw.sm.app.TestSetup.obsModeConfigPath
 import esw.sm.app.{SequenceManagerApp, SequenceManagerSetup, TestSetup}
 import msocket.http.HttpError
+import org.mockito.Mockito.when
 
 import java.io.File
 import java.nio.file.{Files, Path, Paths}

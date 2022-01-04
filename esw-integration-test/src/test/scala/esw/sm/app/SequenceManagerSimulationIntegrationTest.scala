@@ -19,6 +19,7 @@ import esw.ocs.testkit.EswTestKit
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ConfigureResponse.Success
 import esw.sm.api.protocol.{ConfigureResponse, ProvisionResponse, ShutdownSequenceComponentResponse, ShutdownSequencersResponse}
+import org.mockito.Mockito.when
 
 import java.nio.file.{Path, Paths}
 import scala.concurrent.duration.DurationInt

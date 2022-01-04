@@ -11,7 +11,6 @@ import esw.agent.service.api.models.*
 import esw.commons.utils.location.EswLocationError.*
 import esw.commons.utils.location.LocationServiceUtil
 import esw.testcommons.BaseTestSuite
-import org.mockito.ArgumentMatchers.{anyBoolean, eq => argEq}
 import org.mockito.Mockito.{reset, verify, when}
 
 import java.net.URI

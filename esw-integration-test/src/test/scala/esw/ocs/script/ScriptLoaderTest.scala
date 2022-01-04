@@ -14,6 +14,7 @@ import esw.ocs.impl.core.SequenceOperator
 import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.testkit.utils.BaseTestSuite
+import org.mockito.Mockito.when
 
 import java.time.Duration
 import java.util.concurrent.CompletionStage
