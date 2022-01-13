@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 class RoundTripTest extends AnyFreeSpec with Matchers {
 
   EswData.services.data.foreach { case (serviceName, service) =>
-    s"$serviceName | ESW-278, ESW-355, ESW-376" - {
+    s"$serviceName" - {
       "models" - {
         service.models.modelTypes.foreach { modelType =>
           modelType.name - {
@@ -35,7 +35,7 @@ class RoundTripTest extends AnyFreeSpec with Matchers {
     modelType.models.zipWithIndex.foreach { case (modelData, index) =>
       s"${modelData.getClass.getSimpleName.stripSuffix("$")}: $index" - {
         List(Json, Cbor).foreach { format =>
-          format.toString in {
+          s"$format | ESW-278, ESW-355, ESW-376" in {
             RoundTrip.roundTrip(modelData, modelType.codec, format) shouldBe modelData
           }
         }
