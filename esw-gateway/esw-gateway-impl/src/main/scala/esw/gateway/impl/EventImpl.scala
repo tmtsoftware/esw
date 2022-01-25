@@ -58,8 +58,8 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
     val stream = maxFrequency match {
       case Some(x) if x <= 0 => Source.failed(InvalidMaxFrequency())
-      case Some(f)           => events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
-      case None              => events
+      case Some(f) => events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
+      case None    => events
     }
 
     stream.withSubscription()

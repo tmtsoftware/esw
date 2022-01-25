@@ -12,7 +12,7 @@ import esw.ocs.api.protocol.EditorError.*
  * @param steps - list of Steps
  */
 final case class StepList private[ocs] (steps: List[Step]) extends OcsAkkaSerializable {
-  //query
+  // query
   private[ocs] def isEmpty: Boolean    = steps.isEmpty
   def isFinished: Boolean              = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))
   def isPaused: Boolean                = nextPending.exists(_.hasBreakpoint)
@@ -24,7 +24,7 @@ final case class StepList private[ocs] (steps: List[Step]) extends OcsAkkaSerial
 
   private def toSteps(commands: List[SequenceCommand]): List[Step] = commands.map(Step.apply)
 
-  //update
+  // update
   def replace(id: Id, commands: List[SequenceCommand]): Either[EditorError, StepList] =
     ifExists(id) { step =>
       if (step.isPending) replaceSteps(id, toSteps(commands))

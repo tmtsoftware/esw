@@ -46,7 +46,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
     getAllIdleSequenceComponents.mapRight(seqCompLocs => seqCompLocs.filter(loc => subsystems.contains(loc.prefix.subsystem)))
 
   def loadScript(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation]): Future[StartSequencerResponse] = {
-    getAllIdleSequenceComponentsFor(List(subsystem, ESW)) //search idle seq comps for ESW as fallback if needed
+    getAllIdleSequenceComponentsFor(List(subsystem, ESW)) // search idle seq comps for ESW as fallback if needed
       .mapRightE(sequenceComponentAllocator.allocate(_, obsMode, List(VariationInfo(subsystem, variation))))
       .flatMapE {
         case (variationInfo, seqCompLocation) :: _ =>
@@ -91,13 +91,13 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
       .flatMapRight(shutdown)
 
-  //shuts down all the running sequence components
+  // shuts down all the running sequence components
   private def shutdownAll(): Future[Either[EswLocationError.RegistrationListingFailed, List[SequenceComponentResponse.Ok.type]]] =
     locationServiceUtil
       .listAkkaLocationsBy(SequenceComponent)
       .flatMapRight(Future.traverse(_)(shutdown))
 
-  //shuts down the sequence component of given location
+  // shuts down the sequence component of given location
   private def shutdown(seqCompLocation: SeqCompLocation) = sequenceComponentApi(seqCompLocation).shutdown()
 
   private def filterIdleSequenceComponents(seqCompLocations: List[SeqCompLocation]) =

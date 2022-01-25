@@ -24,134 +24,134 @@ import scala.concurrent.duration.DurationInt
 
 object SequencerAPIExample extends App {
 
-  //#instantiate-akka-interface
+  // #instantiate-akka-interface
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "example")
-  private val sequencerAkkaConnection: AkkaConnection                  = AkkaConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer))
-  private val locationService: LocationService                         = HttpLocationServiceFactory.makeLocalClient(actorSystem)
+  private val sequencerAkkaConnection: AkkaConnection = AkkaConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer))
+  private val locationService: LocationService        = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   private val sequencerAkkaLocation: AkkaLocation =
     Await.result(locationService.resolve(sequencerAkkaConnection, 10.seconds), 10.seconds).get
 
   private val sequencer: SequencerApi = SequencerApiFactory.make(sequencerAkkaLocation)
-  //#instantiate-akka-interface
+  // #instantiate-akka-interface
 
-  //#instantiate-http-direct-interface
+  // #instantiate-http-direct-interface
   private val sequencerHttpConnection: HttpConnection = HttpConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer))
   private val sequencerHttpLocation: HttpLocation =
     Await.result(locationService.resolve(sequencerHttpConnection, 10.seconds), 10.seconds).get
   private val sequencerHttpClient: SequencerApi = SequencerApiFactory.make(sequencerHttpLocation)
 
   sequencerHttpClient.getSequence
-  //#instantiate-http-direct-interface
+  // #instantiate-http-direct-interface
 
-  //#add
+  // #add
   val stepsToAdd: List[SequenceCommand] = List(
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-iris")),
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-tcs"))
   )
   sequencer.add(stepsToAdd)
-  //#add
+  // #add
 
-  //#prepend
+  // #prepend
   val stepsToPrepend: List[SequenceCommand] = List(
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-iris")),
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-tcs"))
   )
   sequencer.prepend(stepsToPrepend)
-  //#prepend
+  // #prepend
 
-  //#getSequence
+  // #getSequence
   private val stepList: StepList = Await.result(sequencer.getSequence, 1.seconds).get
-  //#getSequence
+  // #getSequence
 
-  //#replace
+  // #replace
   val stepsToReplace: List[SequenceCommand] = List(
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-iris")),
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-tcs"))
   )
   sequencer.replace(stepList.steps(4).id, stepsToReplace)
-  //#replace
+  // #replace
 
-  //#insertAfter
+  // #insertAfter
   val stepsToInsertAfter: List[SequenceCommand] = List(
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-iris")),
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-tcs"))
   )
   sequencer.insertAfter(stepList.steps(4).id, stepsToInsertAfter)
-  //#insertAfter
+  // #insertAfter
 
-  //#delete
+  // #delete
   private val stepToDelete: Id = stepList.steps(4).id
   sequencer.delete(stepToDelete)
-  //#delete
+  // #delete
 
-  //#addRemoveBreakpoint
+  // #addRemoveBreakpoint
   private val breakpointStep: Id = stepList.steps(4).id
   sequencer.addBreakpoint(breakpointStep)
   sequencer.removeBreakpoint(breakpointStep)
-  //#addRemoveBreakpoint
+  // #addRemoveBreakpoint
 
-  //#reset
+  // #reset
   sequencer.reset()
-  //#reset
+  // #reset
 
-  //#pause-resume
+  // #pause-resume
   sequencer.pause
   sequencer.resume
-  //#pause-resume
+  // #pause-resume
 
-  //#getSequenceComponent
+  // #getSequenceComponent
   sequencer.getSequenceComponent
-  //#getSequenceComponent
+  // #getSequenceComponent
 
-  //#isAvailable
+  // #isAvailable
   sequencer.isAvailable
-  //#isAvailable
+  // #isAvailable
 
-  //#online-offline
+  // #online-offline
   sequencer.isOnline
   sequencer.goOnline()
   sequencer.goOffline()
-  //#online-offline
+  // #online-offline
 
-  //#abortSequence
+  // #abortSequence
   sequencer.abortSequence()
-  //#abortSequence
+  // #abortSequence
 
-  //#stop
+  // #stop
   sequencer.stop()
-  //#stop
+  // #stop
 
-  //#getSequencerState
+  // #getSequencerState
   sequencer.getSequencerState
-  //#getSequencerState
+  // #getSequencerState
 
-  //#diagnosticMode
+  // #diagnosticMode
   sequencer.diagnosticMode(UTCTime.now(), "diagnostic-mode")
-  //#diagnosticMode
+  // #diagnosticMode
 
-  //#operationsMode
+  // #operationsMode
   sequencer.operationsMode()
-  //#operationsMode
+  // #operationsMode
 
-  //#subscribeSequencerState
+  // #subscribeSequencerState
   val sequencerStateSource: Source[SequencerStateResponse, Subscription] =
     sequencer.subscribeSequencerState()
-  //#subscribeSequencerState
+  // #subscribeSequencerState
 
-  //#loadSequence
+  // #loadSequence
   val sequence: Sequence = Sequence(
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-iris")),
     Setup(Prefix(ESW, "filter.wheel"), CommandName("setup-tcs"))
   )
   sequencer.loadSequence(sequence)
-  //#loadSequence
+  // #loadSequence
 
-  //#startSequence
+  // #startSequence
   sequencer.startSequence()
-  //#startSequence
+  // #startSequence
 
-  //#getSequenceComponent
+  // #getSequenceComponent
   sequencer.getSequenceComponent
-  //#getSequenceComponent
+  // #getSequenceComponent
 }

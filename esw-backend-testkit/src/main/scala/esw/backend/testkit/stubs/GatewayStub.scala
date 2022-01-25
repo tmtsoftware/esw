@@ -29,15 +29,15 @@ class GatewayStub(val locationService: LocationService)(implicit val actorSystem
   private var gatewayWiring: Option[GatewayWiring] = None
   lazy val gatewayPort: Int                        = SocketUtils.getFreePort
 
-  //command service mocks
+  // command service mocks
   private lazy val _resolver: Resolver            = mock[Resolver]
   private lazy val commandService: CommandService = new CommandServiceStubImpl(locationService, actorSystem)
   private lazy val sequencerApi: SequencerApi     = new SequencerServiceStubImpl(locationService, actorSystem)
 
-  //alarm service mocks
+  // alarm service mocks
   lazy val _alarmApi: AlarmApi = new AlarmStubImpl()
 
-  //event service mocks
+  // event service mocks
   lazy val _eventApi: EventApi = new EventStubImpl(actorSystem)
 
   lazy val _loggingApi: LoggingApi = new LoggerStubImpl()

@@ -56,7 +56,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       }
       .map(_.sequence)
       .mapToAdt(
-        _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)), //TODO get top level seq from mappings
+        _ => ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)), // TODO get top level seq from mappings
         errors => FailedToStartSequencers(errors.map(_.msg).toSet)
       )
   }

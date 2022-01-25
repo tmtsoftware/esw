@@ -139,8 +139,8 @@ private[esw] class ScriptDsl(
   protected final def onObserveCommand(name: String)(handler: CommandHandler[Observe]): Unit =
     observerCommandHandler.add(CommandName(name), handler.execute)
 
-  protected final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
-  protected final def onNewSequence(handler: Supplier[CompletionStage[Void]]): Unit   = newSequenceHandlers.add(_ => handler.get())
+  protected final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit    = onlineHandlers.add(_ => handler.get())
+  protected final def onNewSequence(handler: Supplier[CompletionStage[Void]]): Unit = newSequenceHandlers.add(_ => handler.get())
   protected final def onAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
   protected final def onStop(handler: Supplier[CompletionStage[Void]]): Unit          = stopHandlers.add(_ => handler.get())
   protected final def onShutdown(handler: Supplier[CompletionStage[Void]]): Unit      = shutdownHandlers.add(_ => handler.get())

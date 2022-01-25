@@ -90,7 +90,7 @@ class SequenceComponentBehavior(
     receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (_, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
 
-      //unloads script (stops the sequencer)
+      // unloads script (stops the sequencer)
       def unload(): Unit = {
         sequencerServer.shutDown()
         log.info("Unloaded script successfully")
@@ -112,7 +112,7 @@ class SequenceComponentBehavior(
       }
     }
 
-  //Method to shutdown the sequence component
+  // Method to shutdown the sequence component
   private def shutdown(
       replyTo: ActorRef[Ok.type],
       sequencerServer: Option[SequencerServer]

@@ -9,17 +9,17 @@ import scala.util.Using
 object Libs {
   private val MSocketVersion = "0.6.0"
 
-  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.6"
-  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.7.0") //MIT License
-  val `mockito`            = "org.scalatestplus"              %% "mockito-3-4"        % "3.2.10.0"
-  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "1.0.1" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.2.11") //Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "1.0.2" //BSD 3-clause "New" or "Revised" License
+  val `case-app`    = "com.github.alexarchambault" %% "case-app"    % "2.0.6"
+  val enumeratum    = dep("com.beachape" %%% "enumeratum" % "1.7.0") // MIT License
+  val `mockito`     = "org.scalatestplus"          %% "mockito-3-4" % "3.2.10.0"
+  val `scala-async` = "org.scala-lang.modules"     %% "scala-async" % "1.0.1" // BSD 3-clause "New" or "Revised" License
+  val scalatest     = dep("org.scalatest" %%% "scalatest" % "3.2.11") // Apache License 2.0
+  val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2" // BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
-  val `msocket-http`       = "com.github.tmtsoftware.msocket" %% "msocket-http"       % MSocketVersion
-  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "3.0.5"
-  val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.9.1"
-  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "0.3.0"
+  val `msocket-http`      = "com.github.tmtsoftware.msocket" %% "msocket-http"      % MSocketVersion
+  val caffeine            = "com.github.ben-manes.caffeine"   % "caffeine"          % "3.0.5"
+  val `jupiter-interface` = "net.aichler"                     % "jupiter-interface" % "0.9.1"
+  val `tmt-test-reporter` = "com.github.tmtsoftware"         %% "rtm"               % "0.3.0"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.6.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.6.0"
@@ -77,7 +77,7 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.2.7" //all akka is Apache License 2.0
+  private val Version = "10.2.7" // all akka is Apache License 2.0
 
   val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
   val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
@@ -106,7 +106,7 @@ object Kotlin {
   //  - Executor.asCoroutineDispatcher extension, custom thread pools, and more.
   val `coroutines-core-jvm` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core-jvm" % CoroutinesVersion
 
-  //JDK8 - CompletionStage.await, Guava ListenableFuture.await, and Google Play Services Task.await;
+  // JDK8 - CompletionStage.await, Guava ListenableFuture.await, and Google Play Services Task.await;
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
   val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.1.0"

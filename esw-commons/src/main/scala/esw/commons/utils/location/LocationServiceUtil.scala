@@ -134,7 +134,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
 
   private def getObsModeString(location: AkkaLocation): String = {
     location.prefix.componentName.split('.').toList match {
-      case Nil          => throw new RuntimeException("empty component name") // Not Applicable. Prefix always has non-empty component name
+      case Nil => throw new RuntimeException("empty component name") // Not Applicable. Prefix always has non-empty component name
       case obsMode :: _ => obsMode
     }
   }

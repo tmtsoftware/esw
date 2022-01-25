@@ -30,7 +30,7 @@ object VariationInfo {
    */
   def from(variationInfoString: String): VariationInfo = {
     variationInfoString.split('.').toList match {
-      case Nil              => throw new RuntimeException("") //This case will never trigger because split always returns a non-empty array
+      case Nil => throw new RuntimeException("") // This case will never trigger because split always returns a non-empty array
       case subsystem :: Nil => VariationInfo(Subsystem.withNameInsensitive(subsystem), None)
       case subsystem :: variation =>
         VariationInfo(Subsystem.withNameInsensitive(subsystem), Some(Variation(variation.mkString("."))))

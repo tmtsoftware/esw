@@ -36,7 +36,7 @@ class SequenceComponentRegistration(
     registration().flatMap { akkaRegistration =>
       locationServiceUtil.register(akkaRegistration).flatMap {
         case Left(_: OtherLocationIsRegistered) if retryCount > 0 =>
-          //kill actor ref if registration fails. Retry attempt will create new actor ref
+          // kill actor ref if registration fails. Retry attempt will create new actor ref
           akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
           registerWithRetry(retryCount - 1)
         // Do not retry in case of other errors or 0 retry count or success response

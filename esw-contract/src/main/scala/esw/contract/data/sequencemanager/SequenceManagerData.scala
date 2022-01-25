@@ -95,13 +95,13 @@ trait SequenceManagerData {
   val ObsModesDetailsSuccess: ObsModesDetailsResponse.Success = ObsModesDetailsResponse.Success(
     Set(configuredObsMode, configurableObsMode, nonConfigurableObsMode)
   )
-  val alreadyRunning: AlreadyRunning                                                   = AlreadyRunning(sequencerComponentId)
-  val started: Started                                                                 = Started(sequencerComponentId)
-  val restartSequencerSuccess: RestartSequencerResponse.Success                        = RestartSequencerResponse.Success(sequencerComponentId)
-  val shutdownSequencerSuccess: ShutdownSequencersResponse.Success.type                = ShutdownSequencersResponse.Success
+  val alreadyRunning: AlreadyRunning                                    = AlreadyRunning(sequencerComponentId)
+  val started: Started                                                  = Started(sequencerComponentId)
+  val restartSequencerSuccess: RestartSequencerResponse.Success         = RestartSequencerResponse.Success(sequencerComponentId)
+  val shutdownSequencerSuccess: ShutdownSequencersResponse.Success.type = ShutdownSequencersResponse.Success
   val shutdownSequenceComponentSuccess: ShutdownSequenceComponentResponse.Success.type = ShutdownSequenceComponentResponse.Success
   val loadScriptError: LoadScriptError                                                 = LoadScriptError("error")
-  val locationServiceError: LocationServiceError                                       = LocationServiceError("location service error")
+  val locationServiceError: LocationServiceError = LocationServiceError("location service error")
   val sequenceComponentNotAvailable: SequenceComponentNotAvailable = SequenceComponentNotAvailable(
     VariationInfos(variationInfo)
   )

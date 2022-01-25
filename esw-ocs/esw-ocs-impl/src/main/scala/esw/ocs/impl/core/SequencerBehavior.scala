@@ -273,7 +273,7 @@ class SequencerBehavior(
       case SubmitFailed(replyTo)               => replyTo ! NewSequenceHookFailed(SequenceFailedToSubmitMessage); idle(data)
     }
 
-  //Start the execution of sequence and reply back with the immediate submit response
+  // Start the execution of sequence and reply back with the immediate submit response
   private def startSequence(
       data: SequencerData,
       replyTo: ActorRef[SequencerSubmitResponse]
@@ -292,7 +292,7 @@ class SequencerBehavior(
         replyTo ! NewSequenceHookFailed(SequenceFailedToStartMessage); loaded(data)
     }
 
-  //Handle messages which are common in each states
+  // Handle messages which are common in each states
   private def handleCommonMessage[T <: SequencerMsg](
       message: CommonMessage,
       state: InternalSequencerState[T],

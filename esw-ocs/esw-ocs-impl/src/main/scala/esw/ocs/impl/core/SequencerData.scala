@@ -91,7 +91,7 @@ private[core] case class SequencerData(
       }
       .getOrElse(this) // This will never happen as this method gets called from inProgress data
 
-  //update the current stepList with given stepList and return the new SequencerData
+  // update the current stepList with given stepList and return the new SequencerData
   def updateStepList[T >: Ok.type](
       replyTo: ActorRef[T],
       stepList: Option[StepList]

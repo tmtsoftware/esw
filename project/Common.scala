@@ -26,15 +26,15 @@ object Common {
 
   lazy val CommonSettings: Seq[Setting[_]] =
     Seq(
-      organization := "com.github.tmtsoftware.esw",
+      organization     := "com.github.tmtsoftware.esw",
       organizationName := "TMT Org",
       dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
       dependencyOverrides += Libs.`slf4j-api`,
       scalaVersion := EswKeys.scalaVersion,
-      scmInfo := Some(ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")),
+      scmInfo      := Some(ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")),
       // ======== sbt-docs Settings =========
-      docsRepo := "https://github.com/tmtsoftware/tmtsoftware.github.io.git",
-      docsParentDir := EswKeys.projectName,
+      docsRepo       := "https://github.com/tmtsoftware/tmtsoftware.github.io.git",
+      docsParentDir  := EswKeys.projectName,
       gitCurrentRepo := "https://github.com/tmtsoftware/esw",
       // ================================
       resolvers += "jitpack" at "https://jitpack.io",
@@ -46,10 +46,10 @@ object Common {
         "-feature",
         "-unchecked",
         "-deprecation",
-        //-W Options
+        // -W Options
         "-Wdead-code",
         if (enableFatalWarnings) "-Wconf:any:error" else "-Wconf:any:warning-verbose",
-        //-X Options
+        // -X Options
         "-Xlint:_,-missing-interpolator",
         "-Xsource:3",
         "-Xcheckinit",
@@ -62,12 +62,12 @@ object Common {
       // jitpack provides the env variable VERSION=<version being built> # A tag or commit. We have aliased VERSION to JITPACK_VERSION
       // we make use of it so that the version in class metadata (e.g. classOf[HttpService].getPackage.getSpecificationVersion)
       // and the maven repo match
-      version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
-      fork := true,
+      version     := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
+      fork        := true,
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),
-      cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
-      scalafmtOnCompile := true,
+      cancelable in Global    := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
+      scalafmtOnCompile       := true,
       unidocGenjavadocVersion := "0.18",
       commands += Command.command("openSite") { state =>
         val uri = s"file://${Project.extract(state).get(siteDirectory)}/${docsParentDir.value}/${version.value}/index.html"
@@ -77,8 +77,8 @@ object Common {
       },
       Global / excludeLintKeys := Set(
         SettingKey[Boolean]("ide-skip-project"),
-        aggregate,              //verify if this needs to be here or our configuration is wrong
-        unidocGenjavadocVersion //verify if this needs to be here or our configuration is wrong
+        aggregate,              // verify if this needs to be here or our configuration is wrong
+        unidocGenjavadocVersion // verify if this needs to be here or our configuration is wrong
       )
     )
 }

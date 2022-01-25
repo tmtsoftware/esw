@@ -38,9 +38,9 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
     ManagedService(
       "sequence-manager",
       enable,
-      //start hook for the SM
+      // start hook for the SM
       () => startSM(getConfig(maybeObsModeConfigPath), simulation),
-      //stop hook for the SM
+      // stop hook for the SM
       _ => stopSM()
     )
 

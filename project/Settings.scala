@@ -30,4 +30,3 @@ object ESW_OCS_ENG_UI {
       case None    => "0.1.0-SNAPSHOT"
     }
 }
-

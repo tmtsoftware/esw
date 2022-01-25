@@ -101,7 +101,7 @@ class SequenceManagerWiring(
                                           |  client-id = tmt-backend-app
                                           |  disabled = true
                                           |}""".stripMargin
-  private lazy val simulationConfig  = ConfigFactory.parseString(simulationConfigS)
+  private lazy val simulationConfig = ConfigFactory.parseString(simulationConfigS)
   private lazy val config =
     if (simulation) defaultConfig.withValue("auth-config", simulationConfig.getValue("auth-config")) else defaultConfig
   private lazy val connection = AkkaConnection(ComponentId(prefix, ComponentType.Service))
@@ -124,10 +124,10 @@ class SequenceManagerWiring(
 
   import LabelExtractor.Implicits.default
   import SequenceManagerServiceCodecs.*
-  lazy val routes: Route             = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
-  private lazy val port: Int         = _port.getOrElse(SocketUtils.getFreePort)
-  private lazy val settings          = new Settings(Some(port), Some(prefix), config, ComponentType.Service)
-  private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime)
+  lazy val routes: Route       = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
+  private lazy val port: Int   = _port.getOrElse(SocketUtils.getFreePort)
+  private lazy val settings    = new Settings(Some(port), Some(prefix), config, ComponentType.Service)
+  private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(locationMetadata)
 
   def start(): Either[RegistrationError, AkkaLocation] = {

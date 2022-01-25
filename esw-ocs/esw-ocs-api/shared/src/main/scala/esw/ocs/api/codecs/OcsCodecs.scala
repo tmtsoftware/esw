@@ -18,21 +18,21 @@ trait OcsCodecs extends OcsCodecsBase {
   implicit def responseCodec[T <: EswSequencerResponse]: Codec[T] = responseCodecValue.asInstanceOf[Codec[T]]
 }
 trait OcsCodecsBase extends ParamCodecs with LocationCodecs with BasicCodecs {
-  //StepList Codecs
+  // StepList Codecs
   implicit lazy val stepCodec: Codec[Step]             = deriveCodec
   implicit lazy val stepListCodec: Codec[StepList]     = deriveCodec
   implicit lazy val stepStatusCodec: Codec[StepStatus] = deriveAllCodecs
 
-  //ObsMode Codecs
+  // ObsMode Codecs
   implicit lazy val obsModeCodec: Codec[ObsMode]               = deriveCodec
   implicit lazy val sequencerStateCodec: Codec[SequencerState] = deriveAllCodecs
 
   implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse] = deriveCodec
 
-  //EswSequencerResponse Codecs
+  // EswSequencerResponse Codecs
   lazy val responseCodecValue: Codec[EswSequencerResponse] = deriveAllCodecs
 
-  //SequenceComponentResponse Codecs
+  // SequenceComponentResponse Codecs
   implicit lazy val loadScriptResponseCodec: Codec[ScriptResponseOrUnhandled] = deriveAllCodecs
   implicit lazy val okOrUnhandledCodec: Codec[OkOrUnhandled]                  = deriveAllCodecs
 

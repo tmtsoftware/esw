@@ -31,7 +31,7 @@ trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with Loggin
 
   implicit lazy val websocketRequestCodecValue: Codec[GatewayStreamRequest] = deriveAllCodecs
 
-  //Todo: move to csw
+  // Todo: move to csw
   implicit lazy val eventKeyCodec: Codec[EventKey] = deriveCodec
   implicit lazy val alarmKeyCodec: Codec[AlarmKey] = deriveCodec
 

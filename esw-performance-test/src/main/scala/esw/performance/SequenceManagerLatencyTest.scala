@@ -62,7 +62,7 @@ object SequenceManagerLatencyTest extends LocationUtils {
   }
 
   private def scenario(histogram: Histogram): Unit = {
-    //-------------------- Configure ObsMode1 -------------------------------
+    // -------------------- Configure ObsMode1 -------------------------------
     configureObsMode(obsMode1)
 
     Thread.sleep(SMLatencyConstants.timeout)
@@ -87,7 +87,7 @@ object SequenceManagerLatencyTest extends LocationUtils {
     log.info("latency: " + latency)
 
     // To simulate observation
-    Thread.sleep(SMLatencyConstants.timeout) //todo: async delay
+    Thread.sleep(SMLatencyConstants.timeout) // todo: async delay
   }
 
   private def shutdownObsMode(obsMode: ObsMode): ShutdownSequencersResponse = {

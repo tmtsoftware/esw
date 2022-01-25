@@ -51,9 +51,9 @@ class ProcessManager(
         }
     }
 
-  //it creates a process handle with pid extracted from the metadata of the given location
-  //and returns the processHandle
-  //if there is no pid in the location's metadata it returns the error
+  // it creates a process handle with pid extracted from the metadata of the given location
+  // and returns the processHandle
+  // if there is no pid in the location's metadata it returns the error
   private def getProcessHandle(location: Location): Either[String, ProcessHandle] =
     location.metadata.getPid.toRight(s"$location metadata does not contain Pid").flatMap(parsePid)
 
@@ -64,9 +64,9 @@ class ProcessManager(
 
   def processHandle(pid: Long): Option[ProcessHandle] = ProcessHandle.of(pid).toScala
 
-  //It checks if the component of the given connection is already registered in the location service
-  //If it is registered then it returns an error message string as a Future
-  //otherwise it return an unit value as a Future
+  // It checks if the component of the given connection is already registered in the location service
+  // If it is registered then it returns an error message string as a Future
+  // otherwise it return an unit value as a Future
   private def verifyComponentIsNotAlreadyRegistered(connection: Connection): Future[Either[String, Unit]] =
     locationService
       .find(connection.of[Location])
@@ -76,7 +76,7 @@ class ProcessManager(
       }
       .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
 
-  //starts a process with the executable string of the given spawn command
+  // starts a process with the executable string of the given spawn command
   private def startComponent(command: SpawnCommand) =
     command
       .executableCommandStr(agentSettings.coursierChannel, agentSettings.prefix, versionManager)
@@ -89,10 +89,10 @@ class ProcessManager(
         Left(msg)
       }
 
-  //it checks if the given process is alive
-  //if not it tries to unregister the component of the given connection
-  //and returns the error message as a Future
-  //in case process is still alive it just returns process as a Future
+  // it checks if the given process is alive
+  // if not it tries to unregister the component of the given connection
+  // and returns the error message as a Future
+  // in case process is still alive it just returns process as a Future
   private def reconcile(process: Process, connection: Connection): Future[Either[String, Process]] =
     if (!process.isAlive)
       unregisterComponent(connection).transform(_ =>
@@ -100,9 +100,9 @@ class ProcessManager(
       )
     else Future.successful(Right(process))
 
-  //it checks if the component of the given connection is registered in the location service within the given timeout
-  //if not it returns the error message as a Future
-  //otherwise it just returns unit as a Future
+  // it checks if the component of the given connection is registered in the location service within the given timeout
+  // if not it returns the error message as a Future
+  // otherwise it just returns unit as a Future
   private def waitForRegistration(connection: Connection, timeout: FiniteDuration): Future[Either[String, Unit]] =
     locationService
       .resolve(connection.of[Location], timeout)
@@ -116,7 +116,7 @@ class ProcessManager(
       }
       .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
 
-  //it attaches a job to unregister the started component on the completion of the process
+  // it attaches a job to unregister the started component on the completion of the process
   private def onProcessExit(process: Process, connection: Connection): Unit =
     process.toHandle.onComplete { _ =>
       log.warn(s"Process exited with exit value: ${process.exitValue()}, unregistering ${connection.componentId}")

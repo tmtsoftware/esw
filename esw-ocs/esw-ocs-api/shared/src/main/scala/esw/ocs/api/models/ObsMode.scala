@@ -21,7 +21,7 @@ object ObsMode {
    */
   def from(sequencerPrefix: Prefix): ObsMode = {
     sequencerPrefix.componentName.split('.').toList match {
-      case Nil          => throw new RuntimeException("") //This case will never trigger because split always returns a non-empty array
+      case Nil => throw new RuntimeException("") // This case will never trigger because split always returns a non-empty array
       case obsMode :: _ => ObsMode(obsMode)
     }
   }

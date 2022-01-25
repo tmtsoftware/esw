@@ -147,7 +147,7 @@ class SequenceManagerBehavior(
   private def isConflicting(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
-  //return Resources of a particular obsMode from the SequenceManagerConfig
+  // return Resources of a particular obsMode from the SequenceManagerConfig
   private def getResources(obsMode: ObsMode): Resources = sequenceManagerConfig.resources(obsMode).get
 
   private def startSequencer(

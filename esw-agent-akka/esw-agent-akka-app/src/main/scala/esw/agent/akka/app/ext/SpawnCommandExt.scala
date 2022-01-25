@@ -15,7 +15,7 @@ object SpawnCommandExt {
 
   implicit class SpawnCommandOps(private val command: SpawnCommand) extends AnyVal {
 
-    //returns a list of command strings which can be executed on the command line(e.g., bash etc)
+    // returns a list of command strings which can be executed on the command line(e.g., bash etc)
     def executableCommandStr(coursierChannel: String, agentPrefix: Prefix, versionManager: VersionManager)(implicit
         ec: ExecutionContext
     ): Future[List[String]] = {

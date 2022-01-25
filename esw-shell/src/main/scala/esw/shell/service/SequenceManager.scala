@@ -27,11 +27,11 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configServiceExt: 
   private lazy val SequencerScriptVersionConfigPath: String = config.getString("osw.version.confPath")
   private val SequenceManagerPrefix                         = "ESW.sequence_manager"
 
-  //creates an akka client for the Sequence Manager
+  // creates an akka client for the Sequence Manager
   def service: SequenceManagerApi =
     new SequenceManagerImpl(locationUtils.findAkkaLocation(SequenceManagerPrefix, Service).map(_.throwLeft).await())
 
-  //does provision on SM with the given provision config and sequence script version
+  // does provision on SM with the given provision config and sequence script version
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse = {
 
     val eswVersion = Option(classOf[HttpService].getPackage.getSpecificationVersion).getOrElse("0.1.0-SNAPSHOT")

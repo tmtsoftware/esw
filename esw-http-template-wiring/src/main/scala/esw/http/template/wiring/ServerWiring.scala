@@ -63,7 +63,7 @@ trait ServerWiring {
   final lazy val logger: Logger = cswServices.loggerFactory.getLogger
 
   final lazy val securityDirectives: SecurityDirectives = SecurityDirectives(config, cswServices.locationService)
-  private lazy val service                              = new HttpService(logger, cswServices.locationService, routes, settings, actorRuntime)
+  private lazy val service = new HttpService(logger, cswServices.locationService, routes, settings, actorRuntime)
 
   def start(metadata: Metadata): Future[(Http.ServerBinding, RegistrationResult)] =
     service.startAndRegisterServer(metadata)

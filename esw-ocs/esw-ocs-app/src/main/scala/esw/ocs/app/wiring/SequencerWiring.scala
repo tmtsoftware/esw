@@ -75,8 +75,8 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
     CommonTimeouts.Wiring
   )
 
-  //Pass lambda to break circular dependency shown below.
-  //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
+  // Pass lambda to break circular dependency shown below.
+  // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
   private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
@@ -97,7 +97,7 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
   private lazy val sequencerImplFactory =
-    (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => //todo: revisit timeout value
+    (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => // todo: revisit timeout value
       locationServiceUtil
         .resolveSequencer(Variation.prefix(_subsystem, _obsMode, _variation), CommonTimeouts.ResolveLocation)
         .mapRight(SequencerApiFactory.make)
@@ -127,9 +127,9 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
     new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
   )
 
-  private lazy val metadata          = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
-  private lazy val settings          = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
-  private lazy val httpService       = new HttpService(logger, locationService, routes, settings, actorRuntime, NetworkType.Inside)
+  private lazy val metadata    = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
+  private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
+  private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime, NetworkType.Inside)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(metadata)
 
   private val shutdownHttpService: () => Future[Done] = () =>

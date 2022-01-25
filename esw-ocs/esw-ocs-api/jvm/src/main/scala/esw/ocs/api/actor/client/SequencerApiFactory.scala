@@ -30,7 +30,7 @@ object SequencerApiFactory extends SequencerServiceCodecs {
    */
   def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): SequencerApi =
     componentLocation match {
-      case _: TcpLocation             => throw new RuntimeException("Only AkkaLocation and HttpLocation can be used to access sequencer")
+      case _: TcpLocation => throw new RuntimeException("Only AkkaLocation and HttpLocation can be used to access sequencer")
       case akkaLocation: AkkaLocation => new SequencerImpl(akkaLocation.sequencerRef)
       case httpLocation: HttpLocation => httpClient(httpLocation)
     }

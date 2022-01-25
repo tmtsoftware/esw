@@ -35,11 +35,11 @@ object AgentTimeouts {
 }
 
 object SequenceComponentTimeouts {
-  private val Processing: FiniteDuration = 1.second                                             // This includes time for processing other than 3rd party calls
+  private val Processing: FiniteDuration = 1.second // This includes time for processing other than 3rd party calls
   val Status: FiniteDuration             = 1.second
   val LoadScript: FiniteDuration         = SequencerTimeouts.ScriptHandlerExecution
-  val UnloadScript: FiniteDuration       = SequencerTimeouts.ScriptHandlerExecution + 2.seconds // shutdown redis client
-  val Shutdown: FiniteDuration           = UnloadScript + Processing
+  val UnloadScript: FiniteDuration = SequencerTimeouts.ScriptHandlerExecution + 2.seconds // shutdown redis client
+  val Shutdown: FiniteDuration     = UnloadScript + Processing
   require(Shutdown <= 8.seconds, "max timeout violated for Shutdown")
   val RestartScript: FiniteDuration = UnloadScript + LoadScript
   require(RestartScript <= 12.seconds, "max timeout violated for RestartScript")

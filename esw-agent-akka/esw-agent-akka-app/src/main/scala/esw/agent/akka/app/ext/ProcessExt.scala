@@ -22,8 +22,8 @@ object ProcessExt {
     def kill(terminationTimeout: FiniteDuration)(implicit system: ActorSystem[_]): Future[ProcessHandle] = {
       import system.executionContext
       def destroyF(p: ProcessHandle, f: ProcessHandle => Boolean) = { f(p); p.onExit().asScala }
-      def destroy(p: ProcessHandle)         = destroyF(p, _.destroy())
-      def destroyForcibly(p: ProcessHandle) = destroyF(p, _.destroyForcibly())
+      def destroy(p: ProcessHandle)                               = destroyF(p, _.destroy())
+      def destroyForcibly(p: ProcessHandle)                       = destroyF(p, _.destroyForcibly())
 
       def kill(p: ProcessHandle) =
         destroy(p).timeout(terminationTimeout).recoverWith(_ => destroyForcibly(p))

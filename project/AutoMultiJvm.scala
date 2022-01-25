@@ -10,7 +10,7 @@ object AutoMultiJvm extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] =
     SbtMultiJvm.multiJvmSettings ++ Seq(
       MultiJvm / multiNodeHosts := multiNodeHostNames,
-      MultiJvm / fork := true,
+      MultiJvm / fork           := true,
       MultiJvm / assembly / assemblyMergeStrategy := {
         case "application.conf"                     => MergeStrategy.concat
         case x if x.contains("versions.properties") => MergeStrategy.discard
