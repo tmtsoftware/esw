@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -64,7 +64,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:0.2.0 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:0.3.0 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
 
       - name: Upload RTM
         if: always()
