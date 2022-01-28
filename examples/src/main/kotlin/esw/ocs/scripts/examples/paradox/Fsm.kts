@@ -10,7 +10,8 @@ import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.params.params
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 
 script {
 
@@ -70,12 +71,12 @@ script {
 
     // ------------ ParamVariable ---------------
     val pollingParamVar: ParamVariable<Int> =
-            ParamVariable(0, "ESW.temperature.temp", tempKey, Duration.seconds(2))
+            ParamVariable(0, "ESW.temperature.temp", tempKey, 2.seconds)
 
     pollingParamVar.bind(irisFsm)
 
     // ------------ EventVariable ---------------
-    val pollingEventVar = EventVariable("ESW.IRIS_darkNight.temperature", Duration.seconds(2))
+    val pollingEventVar = EventVariable("ESW.IRIS_darkNight.temperature", 2.seconds)
     pollingEventVar.bind(irisFsm)
     //#polling
 
@@ -109,7 +110,7 @@ script {
             //#entry
 
             //#after
-            after(Duration.milliseconds(100)) {
+            after(100.milliseconds) {
                 // do something
             }
             //#after

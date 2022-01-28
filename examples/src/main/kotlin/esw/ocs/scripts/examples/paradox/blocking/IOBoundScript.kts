@@ -5,11 +5,11 @@ package esw.ocs.scripts.examples.paradox.blocking
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.async
 import java.io.File
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 //#io-bound-call
 script {
-    loopAsync(Duration.milliseconds(100)) {
+    loopAsync(100.milliseconds) {
         // loop represents the computation running on the main script thread.
     }
 

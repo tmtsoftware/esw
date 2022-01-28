@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 class LocationServiceDslTest : LocationServiceDsl {
@@ -68,7 +68,7 @@ class LocationServiceDslTest : LocationServiceDsl {
 
     @Test
     fun `resolveLocation should call underlying resolve method from LocationService | ESW-277`() = runBlocking {
-        val timeoutK = Duration.seconds(1)
+        val timeoutK = 1.seconds
         val timeoutJ = timeoutK.toJavaDuration()
         every { locationService.resolve(httpConnection, timeoutJ) } answers { completedFuture(Optional.of(httpLocation)) }
 

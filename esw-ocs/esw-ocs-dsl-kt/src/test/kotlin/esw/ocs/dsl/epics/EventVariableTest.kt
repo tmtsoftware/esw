@@ -15,7 +15,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class EventVariableTest {
 
@@ -88,7 +88,7 @@ class EventVariableTest {
         val systemEvent: Event = SystemEvent(Prefix(TCS, "test"), EventName("testEvent"))
         val eventKey = systemEvent.eventKey()
         val eventKeyStr = eventKey.key()
-        val duration = Duration.milliseconds(100)
+        val duration = 100.milliseconds
 
         val refreshable = mockk<Refreshable>()
         val cancellable = mockk<Cancellable>()

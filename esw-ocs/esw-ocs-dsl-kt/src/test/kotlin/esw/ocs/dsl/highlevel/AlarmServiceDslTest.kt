@@ -17,13 +17,14 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 // TODO after kotlin 1.5.x upgrade, class AlarmServiceDslTest : AlarmServiceDsl, LoopDsl does not work.
 //  Somehow, LoopDsl needs to be added before AlarmServiceDsl.
 class AlarmServiceDslTest : LoopDsl, AlarmServiceDsl {
 
     override val alarmService: IAlarmService = mockk()
-    override val _alarmRefreshDuration: Duration = Duration.seconds(3)
+    override val _alarmRefreshDuration: Duration = 1.seconds
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     @Test
@@ -53,7 +54,7 @@ class AlarmServiceDslTest : LoopDsl, AlarmServiceDsl {
         every { alarmService.setSeverity(alarmKey2, severity) } answers { doneF }
         every { alarmService.setSeverity(alarmKey3, severity) } answers { doneF }
 
-        eventually(Duration.seconds(5)) {
+        eventually(5.seconds) {
             verify { alarmService.setSeverity(alarmKey1, severity) }
             verify { alarmService.setSeverity(alarmKey2, severity) }
             verify { alarmService.setSeverity(alarmKey3, severity) }

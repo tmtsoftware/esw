@@ -11,7 +11,9 @@ import esw.ocs.dsl.par
 import esw.ocs.dsl.params.floatKey
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.stringKey
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 
 script {
 
@@ -19,13 +21,13 @@ script {
     var diagnosticEventCancellable: Cancellable? = null
 
     // #diagnosticMode
-    val assembly = Assembly(IRIS, "filter.wheel", Duration.seconds(5))
+    val assembly = Assembly(IRIS, "filter.wheel", 5.seconds)
 
     // #onSetup
     onSetup("setupInstrument") {command ->
         // split command and send to downstream
-        val assembly1 = Assembly(WFOS, "filter.blueWheel", Duration.seconds(5))
-        val assembly2 = Assembly(WFOS, "filter.redWheel", Duration.seconds(5))
+        val assembly1 = Assembly(WFOS, "filter.blueWheel", 5.seconds)
+        val assembly2 = Assembly(WFOS, "filter.redWheel", 5.seconds)
         par(
                 { assembly1.submit(Setup("WFOS.wfos_darknight", "move")) },
                 { assembly2.submit(Setup("WFOS.wfos_darknight", "move")) }
@@ -36,7 +38,7 @@ script {
 
     // #onObserve
     // A detector assembly is defined with a long timeout of 60 minutes
-    val detectorAssembly = Assembly(WFOS, "detectorAssembly", Duration.minutes(60))
+    val detectorAssembly = Assembly(WFOS, "detectorAssembly", 60.minutes)
     val exposureKey = floatKey("exposureTime")
 
     onObserve("startExposure") { observe ->
@@ -84,7 +86,7 @@ script {
         when (hint) {
             "engineering" -> {
                 val diagnosticEvent = SystemEvent("ESW.ESW_darknight", "diagnostic")
-                diagnosticEventCancellable = schedulePeriodically(startTime, Duration.milliseconds(50)) {
+                diagnosticEventCancellable = schedulePeriodically(startTime, 50.milliseconds) {
                     publishEvent(diagnosticEvent)
                 }
             }
@@ -113,7 +115,7 @@ script {
 
     // Scenario-2 onSetup handler fails - submit returns negative SubmitResponse
     onSetup("command-2") { command ->
-        val assembly1 = Assembly(IRIS, "filter.wheel", Duration.seconds(5))
+        val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
 
         // Submit command to assembly return negative response. (error by default) onGlobalError handler is called.
         // Sequence is terminated with failure.
@@ -156,7 +158,7 @@ script {
 
     // #retry
     onSetup("submit-error-handling") { command ->
-        val assembly1 = Assembly(IRIS, "filter.wheel", Duration.seconds(5))
+        val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
 
         // Submit command to assembly return negative response. - error by default
         assembly1.submit(command)
@@ -167,11 +169,11 @@ script {
 
     // #retry-with-interval
     onSetup("submit-error-handling") { command ->
-        val assembly1 = Assembly(IRIS, "filter.wheel", Duration.seconds(5))
+        val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
 
         // Submit command to assembly return negative response. - error by default
         assembly1.submit(command)
-    }.retry(2, Duration.seconds(10))
+    }.retry(2, 10.seconds)
     // #retry-with-interval
 
 }

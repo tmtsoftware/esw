@@ -11,10 +11,10 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class CommandFlagTest : CommandServiceDsl {
-    private val timeout = Duration.milliseconds(100)
+    private val timeout = 100.milliseconds
 
     @Test
     fun `set should update commandFlag value | ESW-252`() = runBlocking {
