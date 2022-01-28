@@ -2,13 +2,14 @@ package esw.ocs.dsl.highlevel
 
 import kotlinx.coroutines.*
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Provide DSLs for writing condition based custom synchronous and asynchronous loops
  */
 interface LoopDsl {
     companion object {
-        private val loopInterval: Duration = Duration.milliseconds(50)
+        private val loopInterval: Duration = 50.milliseconds
     }
 
     val coroutineScope: CoroutineScope

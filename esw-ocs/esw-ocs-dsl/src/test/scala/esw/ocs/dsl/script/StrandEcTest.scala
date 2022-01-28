@@ -14,7 +14,7 @@ class StrandEcTest extends AnyWordSpec with Matchers {
   }
   "apply" must {
     "create ScriptEcIntegration for script thread | ESW-290" in {
-      //assert ScriptEcIntegration not added to BlockHound
+      // assert ScriptEcIntegration not added to BlockHound
       val previousIntegrations = BlockHoundWiring.integrations.count(_.isInstanceOf[ScriptEcIntegration])
       val strandEc             = StrandEc()
       // assert that creation of strandEc adds ScriptEcIntegration

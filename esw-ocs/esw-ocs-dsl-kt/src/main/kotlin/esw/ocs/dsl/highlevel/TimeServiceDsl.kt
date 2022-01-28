@@ -10,6 +10,7 @@ import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.toJavaDuration
 
 /**
@@ -29,7 +30,7 @@ interface TimeServiceDsl : SuspendToJavaConverter {
      * @return a handle to cancel the execution of the task if it hasn't been executed already
      */
     fun scheduleOnce(startTime: TMTTime, task: SuspendableCallback): Cancellable =
-        timeService.scheduleOnce(startTime, Runnable { task.toJava() })
+            timeService.scheduleOnce(startTime, Runnable { task.toJava() })
 
     /**
      * Schedules task once at duration after current utc time. Callbacks like task are thread safe as they are executed on single threaded coroutine scope dispatcher.
@@ -39,7 +40,7 @@ interface TimeServiceDsl : SuspendToJavaConverter {
      * @return a handle to cancel the execution of the task if it hasn't been executed already
      */
     fun scheduleOnceFromNow(delayFromNow: Duration, task: SuspendableCallback): Cancellable =
-        scheduleOnce(utcTimeAfter(delayFromNow), task)
+            scheduleOnce(utcTimeAfter(delayFromNow), task)
 
     /**
      * Schedules a task to execute periodically at the given interval. The task is executed once at the given start time followed by execution of task at each interval.
@@ -51,10 +52,10 @@ interface TimeServiceDsl : SuspendToJavaConverter {
      * @return a handle to cancel the execution of further tasks
      */
     fun schedulePeriodically(startTime: TMTTime, interval: Duration, task: SuspendableCallback): Cancellable =
-        timeService.schedulePeriodically(
-            startTime,
-            interval.toJavaDuration(),
-            Runnable { task.toJava() })
+            timeService.schedulePeriodically(
+                    startTime,
+                    interval.toJavaDuration(),
+                    Runnable { task.toJava() })
 
     /**
      * Schedules a task to execute periodically at the given interval. The task is executed immediately and then after every provided duration.
@@ -65,9 +66,9 @@ interface TimeServiceDsl : SuspendToJavaConverter {
      * @return a handle to cancel the execution of further tasks
      */
     fun schedulePeriodically(interval: Duration, task: SuspendableCallback): Cancellable =
-        timeService.schedulePeriodically(
-            interval.toJavaDuration(),
-            Runnable { task.toJava() })
+            timeService.schedulePeriodically(
+                    interval.toJavaDuration(),
+                    Runnable { task.toJava() })
 
     /**
      * Schedules a task to execute periodically at the given interval. The task is executed once at duration after current utc time
@@ -79,11 +80,11 @@ interface TimeServiceDsl : SuspendToJavaConverter {
      * @return a handle to cancel the execution of further tasks
      */
     fun schedulePeriodicallyFromNow(
-        delayFromNow: Duration,
-        interval: Duration,
-        task: SuspendableCallback
+            delayFromNow: Duration,
+            interval: Duration,
+            task: SuspendableCallback
     ): Cancellable =
-        schedulePeriodically(utcTimeAfter(delayFromNow), interval, task)
+            schedulePeriodically(utcTimeAfter(delayFromNow), interval, task)
 
     /**
      * Utility to calculate current utc time
@@ -107,7 +108,7 @@ interface TimeServiceDsl : SuspendToJavaConverter {
      *
      */
     fun utcTimeAfter(duration: Duration): UTCTime =
-        UTCTime.after(FiniteDuration(duration.inWholeNanoseconds, TimeUnit.NANOSECONDS))
+            UTCTime.after(FiniteDuration(duration.inWholeNanoseconds, TimeUnit.NANOSECONDS))
 
     /**
      * Utility to calculate tai time after specified duration
@@ -117,13 +118,13 @@ interface TimeServiceDsl : SuspendToJavaConverter {
      *
      */
     fun taiTimeAfter(duration: Duration): TAITime =
-        TAITime.after(FiniteDuration(duration.inWholeNanoseconds, TimeUnit.NANOSECONDS))
+            TAITime.after(FiniteDuration(duration.inWholeNanoseconds, TimeUnit.NANOSECONDS))
 
     /**
      * Extension method on TMT time to calculate offset from it
      *
      * @return offset from utc/tai time
      */
-    fun TMTTime.offsetFromNow(): Duration = Duration.nanoseconds(durationFromNow().toNanos())
+    fun TMTTime.offsetFromNow(): Duration = durationFromNow().toNanos().nanoseconds
 
 }

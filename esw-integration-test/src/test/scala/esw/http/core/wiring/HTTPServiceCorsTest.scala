@@ -30,7 +30,7 @@ class HTTPServiceCorsTest extends EswTestKit {
   override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "http-core-server-system")
 
-  //todo ask about overriding the actor system
+  // todo ask about overriding the actor system
 //  lazy val wiring: ServerWiring = ServerWiring.make(Some(gatewayPort))
 //  import wiring._
 

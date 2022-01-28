@@ -31,7 +31,7 @@ class SequencerSimulationTest extends EswTestKit(EventServer) {
   }
 
   "submit sequence from a top level sequencer to sequencer in simulation | ESW-149" in {
-    //creating client for TCS.moonnight(Top level) sequencer
+    // creating client for TCS.moonnight(Top level) sequencer
     val tcsSequencer = sequencerClient(TCS, obsMode)
 
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -39,13 +39,13 @@ class SequencerSimulationTest extends EswTestKit(EventServer) {
     val sequence = Sequence(command1, command2)
 
     val eventKey = EventKey("ESW." + obsMode.name + ".submitAndWait")
-    //create testprobe subscription for submitResponse(res of submitAndWait command to the simulation sequencer in testscript3) event
+    // create testprobe subscription for submitResponse(res of submitAndWait command to the simulation sequencer in testscript3) event
     val testProbeForSimulation = createTestProbe(Set(eventKey))
 
-    //submitting sequence to the top level sequencer(TCS.moonnight)
+    // submitting sequence to the top level sequencer(TCS.moonnight)
     tcsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
-    //actual event published from the testscript3 command-1 handler
+    // actual event published from the testscript3 command-1 handler
     val event = testProbeForSimulation.expectMessageType[SystemEvent]
 
     val expectedSubmitResponseParam = StringKey.make("response").set("Completed")

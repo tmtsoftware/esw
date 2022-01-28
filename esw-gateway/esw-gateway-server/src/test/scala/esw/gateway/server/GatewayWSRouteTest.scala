@@ -131,7 +131,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentState2                               = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
       val currentStateSubscription = mock[Subscription]
-      val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
+      val currentStateStream = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
       when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)

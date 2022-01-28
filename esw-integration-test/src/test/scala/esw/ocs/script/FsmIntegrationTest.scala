@@ -125,7 +125,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, ObsMode("commandFlagFsm"))
       val command1                   = Observe(Prefix("esw.test"), CommandName("observe-command-1"), None)
-      val command2                   = Observe(Prefix("esw.test"), CommandName("observe-command-2"), None).madd(observeFsmKey.set(100))
+      val command2 = Observe(Prefix("esw.test"), CommandName("observe-command-2"), None).madd(observeFsmKey.set(100))
 
       Await.result(fsmSequencer.submitAndWait(Sequence(command1, command2)), 10.seconds)
 

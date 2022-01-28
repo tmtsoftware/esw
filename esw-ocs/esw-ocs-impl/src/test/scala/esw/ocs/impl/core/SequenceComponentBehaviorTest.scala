@@ -60,10 +60,10 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(sequencerServerFactory.make(prefix, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
 
-      //LoadScript
+      // LoadScript
       sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
 
-      //Assert if script loaded and returns AkkaLocation of sequencer
+      // Assert if script loaded and returns AkkaLocation of sequencer
       val scriptResponseOrUnhandled = loadScriptResponseProbe.receiveMessage()
       scriptResponseOrUnhandled shouldBe a[SequencerLocation]
       val loadScriptLocationResponse: AkkaLocation = scriptResponseOrUnhandled.asInstanceOf[SequencerLocation].location
@@ -73,10 +73,10 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       verify(sequencerServerFactory).make(prefix, sequenceComponentPrefix)
       verify(sequencerServer).start()
 
-      //GetStatus
+      // GetStatus
       sequenceComponentRef ! GetStatus(getStatusProbe.ref)
 
-      //Assert if get status returns AkkaLocation of sequencer currently running
+      // Assert if get status returns AkkaLocation of sequencer currently running
       val getStatusResponseOrUnhandled = getStatusProbe.receiveMessage(5.seconds)
       getStatusResponseOrUnhandled shouldBe a[GetStatusResponse]
       val getStatusLocationResponse: Location = getStatusResponseOrUnhandled.response.get
@@ -84,13 +84,13 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
         ComponentId(prefix, ComponentType.Sequencer)
       )
 
-      //UnloadScript
+      // UnloadScript
       val unloadScriptProbe = TestProbe[OkOrUnhandled]()
       sequenceComponentRef ! UnloadScript(unloadScriptProbe.ref)
 
       unloadScriptProbe.expectMessageType[Ok.type]
 
-      //assert if GetStatus returns None after unloading sequencer script
+      // assert if GetStatus returns None after unloading sequencer script
       sequenceComponentRef ! GetStatus(getStatusProbe.ref)
       getStatusProbe.expectMessage(GetStatusResponse(None))
     }
@@ -107,10 +107,10 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(sequencerServerFactory.make(prefix, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
 
-      //LoadScript
+      // LoadScript
       sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
 
-      //Assert if script loaded and returns AkkaLocation of sequencer
+      // Assert if script loaded and returns AkkaLocation of sequencer
       val response = loadScriptResponseProbe.receiveMessage()
       response shouldBe a[SequencerLocation]
       val loadScriptLocationResponse: AkkaLocation = response.asInstanceOf[SequencerLocation].location
@@ -137,7 +137,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(sequencerServerFactory.make(prefix, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(Left(loadingScriptFailed))
 
-      //LoadScript
+      // LoadScript
       sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, None)
 
       val response = loadScriptResponseProbe.receiveMessage()
@@ -152,14 +152,14 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val unloadScriptResponseProbe = TestProbe[OkOrUnhandled]()
       val getStatusProbe            = TestProbe[GetStatusResponse]()
 
-      //assert if GetStatus returns None after unloading sequencer script
+      // assert if GetStatus returns None after unloading sequencer script
       sequenceComponentRef ! GetStatus(getStatusProbe.ref)
       getStatusProbe.expectMessage(GetStatusResponse(None))
 
-      //UnloadScript
+      // UnloadScript
       sequenceComponentRef ! UnloadScript(unloadScriptResponseProbe.ref)
 
-      //Assert if UnloadScript returns Ok
+      // Assert if UnloadScript returns Ok
       unloadScriptResponseProbe.expectMessage(Ok)
     }
 
@@ -180,7 +180,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
         Right(AkkaLocation(akkaConnection, URI.create("after_restart_uri"), Metadata.empty))
       )
 
-      //Assert if script loaded and returns AkkaLocation of sequencer
+      // Assert if script loaded and returns AkkaLocation of sequencer
       sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
       val message = loadScriptResponseProbe.receiveMessage()
       message shouldBe a[SequencerLocation]
@@ -188,7 +188,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
       when(sequencerServer.shutDown()).thenReturn(Done)
 
-      //Restart sequencer and assert if it returns new AkkaLocation of sequencer
+      // Restart sequencer and assert if it returns new AkkaLocation of sequencer
       sequenceComponentRef ! RestartScript(restartResponseProbe.ref)
 
       val message1 = restartResponseProbe.receiveMessage()
