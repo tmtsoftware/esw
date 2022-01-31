@@ -54,11 +54,8 @@ jobs:
           sbtn scalafmtCheck
           sbt -DenableFatalWarnings=true makeSite
 
-      - name: Integration Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
-
-      - name: Unit Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
+      - name: Tests
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true "set ThisBuild / version:=\"0.1.0-SNAPSHOT\"; test:test"
 
       - name: Coverage Report
         run: |
