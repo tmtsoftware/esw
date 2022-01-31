@@ -176,18 +176,20 @@ this looks like this:
 
 ```scala
 "SequenceManagerClient" must {
- "return ShutdownSequencersResponse for shutdownSequencer request" in {
-      val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
-      val shutdownSequencerMsg       = ShutdownSequencer(ESW, obsMode, None)
-      when(
-        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
-          any[Decoder[ShutdownSequencersResponse]](),
-          any[Encoder[ShutdownSequencersResponse]]()
-        )
-      ).thenReturn(Future.successful(shutdownSequencersResponse))
+  "return ShutdownSequencersResponse for shutdownSequencer request" in {
+    val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
+    val shutdownSequencerMsg = ShutdownSequencer(ESW, obsMode, None)
+    when(
+      postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
+        any[Decoder[ShutdownSequencersResponse]](),
+        any[Encoder[ShutdownSequencersResponse]]()
+      )
+    ).thenReturn(Future.successful(shutdownSequencersResponse))
 
-      client.shutdownSequencer(ESW, obsMode, None).futureValue shouldBe shutdownSequencersResponse
-    }
+    client.shutdownSequencer(ESW, obsMode, None).futureValue shouldBe shutdownSequencersResponse
+  }
+}
+
 ```
 
 One thing to note is that we are also mocking the response. This insures that the response we get
@@ -244,11 +246,14 @@ class SequenceManagerRequestHandlerTest
     with ClientHttpCodecs {
   private val sequenceManagerApi = mock[SequenceManagerApi]
   private val securityDirectives = mock[SecurityDirectives]
-  private val postHandler        = new SequenceManagerRequestHandler(sequenceManagerApi, securityDirectives)
+  private val postHandler = new SequenceManagerRequestHandler(sequenceManagerApi, securityDirectives)
 
   import LabelExtractor.Implicits.default
+
   private val route = new PostRouteFactory[SequenceManagerRequest]("post-endpoint", postHandler).make()
-```
+
+}
+ ```
 
 The test creates a `post-endpoint` route via msocket, just like we using in our msocket-based HTTP
 server. Now, our test uses Akka-HTTP to POST a request to this route, using the Akka-HTTP testkit to
@@ -360,6 +365,8 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
+} 
+
 ```
 
 The code for our method simply creates an Akka message the actor can handle (in this case,
@@ -461,13 +468,13 @@ As seen below, this is what our test does.  As we seen before the lower layer
 ```scala
 class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenPropertyChecks {
 
-  private val locationServiceUtil: LocationServiceUtil = 
+  private val locationServiceUtil: LocationServiceUtil =
     mock[LocationServiceUtil]
 
-  private val agentUtil: AgentUtil                                   = mock[AgentUtil]
-  private val sequencerUtil: SequencerUtil                           = mock[SequencerUtil]
+  private val agentUtil: AgentUtil = mock[AgentUtil]
+  private val sequencerUtil: SequencerUtil = mock[SequencerUtil]
 
-  private val sequenceComponentUtil: SequenceComponentUtil           = mock[SequenceComponentUtil]
+  private val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
 
   private val sequenceComponentAllocator: SequenceComponentAllocator = mock[SequenceComponentAllocator]
 
@@ -478,11 +485,11 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     sequencerUtil,
     sequenceComponentUtil
   )
-  
-"ShutdownSequencer" must {
+
+  "ShutdownSequencer" must {
     val responseProbe = TestProbe[ShutdownSequencersResponse]()
-    val prefix        = Prefix(ESW, darkNight.name)
-    val shutdownMsg   = ShutdownSequencer(ESW, darkNight, None, responseProbe.ref)
+    val prefix = Prefix(ESW, darkNight.name)
+    val shutdownMsg = ShutdownSequencer(ESW, darkNight, None, responseProbe.ref)
     s"transition sm from Idle -> Processing -> Idle state and stop| ESW-326, ESW-345, ESW-166, ESW-324, ESW-342, ESW-351, ESW-561" in {
       when(sequencerUtil.shutdownSequencer(prefix)).thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
 
@@ -495,7 +502,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       responseProbe.expectMessage(ShutdownSequencersResponse.Success)
       verify(sequencerUtil).shutdownSequencer(prefix)
     }
+  }
 }
+
 ```
 
 ### SequencerUtil

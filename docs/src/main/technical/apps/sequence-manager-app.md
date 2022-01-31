@@ -76,7 +76,7 @@ Sequence Manager uses the obsMode and the subsystem to find the correct script t
 are located in the `sequencer-scripts` repository.
 
 The obsMode configuration file is written in JSON. An example follows with three obsModes: IRIS_MCAO, IRIS_Calib, and WFOS_Calib.
-By convention obsModes start with the instrument's subsystem name followed by an underscore and some other description. The Sequencers can also have a variation now(eg. `IRIS.red`, `IRIS.blue`) to run multiple sequencers concurrently for a subsystem.
+By convention obsModes start with the instrument's subsystem name followed by an underscore and some other description. The Sequencers can also have a variation now(eg. `IRIS_IMAGER`, `IRIS_IFS`) to run multiple sequencers concurrently for a subsystem.
 ```
 esw-sm {
   obsModes: {
@@ -86,7 +86,7 @@ esw-sm {
     },
     IRIS_ImagerAndIFS: {
       resources: [IRIS, TCS]
-      sequencers: [IRIS.red, IRIS.blue, ESW]
+      sequencers: [IRIS.IRIS_Imager, IRIS.IRIS_Ifs, ESW]
     },
     WFOS_Calib: {
       resources: [WFOS]

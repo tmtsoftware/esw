@@ -128,14 +128,14 @@ cd /tmt/apps
 
 ```
 
-Example 3: Start the IRIS-darknight Sequencer on an IRIS Sequence Component with a variation of red
+Example 3: Start the IRIS-darknight Sequencer on an IRIS Sequence Component with a variation of IRIS_IFS
 
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
-//Example below will spawn a Sequence Component `IRIS-primary` and a Sequencer `IRIS-ImagerAndIFS` in it with variation as red
-./esw-ocs-app sequencer -s iris -a IRIS.agent1 -n primary -i iris -m IRIS_ImagerAndIFS -v red
+//Example below will spawn a Sequence Component `IRIS-primary` and a Sequencer `IRIS-ImagerAndIFS` in it with variation as IRIS_IFS
+./esw-ocs-app sequencer -s iris -a IRIS.agent1 -n primary -i iris -m IRIS_ImagerAndIFS -v IRIS_IFS
 
 ```
 
