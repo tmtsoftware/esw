@@ -50,15 +50,15 @@ jobs:
 
       - name: Build
         run: |
-          sbtn scalafmtCheck
           sbtn clean
-          sbtn makeSite
-          sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
+          sbtn scalafmtCheck
+          sbt -DenableFatalWarnings=true makeSite
 
-      - name: Unit Tests & Integration Tests
-        run: |
-          sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
-          sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
+      - name: Unit Tests
+          run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
+
+      - name: Integration Tests
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
 
       - name: Coverage Report
         run: |
