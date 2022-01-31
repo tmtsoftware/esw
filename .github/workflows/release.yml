@@ -54,11 +54,11 @@ jobs:
           sbtn scalafmtCheck
           sbt -DenableFatalWarnings=true makeSite
 
-      - name: Unit Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
-
       - name: Integration Tests
         run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
+
+      - name: Unit Tests
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
 
       - name: Coverage Report
         run: |
