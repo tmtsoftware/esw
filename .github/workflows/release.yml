@@ -55,8 +55,11 @@ jobs:
           sbtn makeSite
           sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
-      - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
+      - name: Unit Tests
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
+
+      - name: Integration Tests
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
 
       - name: Coverage Report
         run: |
