@@ -44,10 +44,6 @@ jobs:
           #strip `v` prefix
           strip_v: true
 
-      # This env variable is used when we do Docs Publish
-      - name: Set JITPACK_VERSION environment variable
-        run: echo "JITPACK_VERSION=${{steps.tag.outputs.tag}}" >> $GITHUB_ENV
-
       - name: Build
         run: |
           sbtn clean
@@ -55,7 +51,7 @@ jobs:
           sbt -DenableFatalWarnings=true makeSite
 
       - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true "set ThisBuild / version:=\"0.1.0-SNAPSHOT\"; test:test"
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
@@ -88,6 +84,11 @@ jobs:
         with:
           name: RTM
           path: target/RTM
+
+      # This env variable is used when we do Docs Publish and this step should be after
+      # running integration tests as they require 0.1.0-SNAPSHOT version to do publishLocal
+      - name: Set JITPACK_VERSION environment variable
+        run: echo "JITPACK_VERSION=${{steps.tag.outputs.tag}}" >> $GITHUB_ENV
 
       - name: Github Release
         run: sbt githubRelease
