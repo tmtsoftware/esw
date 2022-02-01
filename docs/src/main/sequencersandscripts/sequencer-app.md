@@ -103,7 +103,7 @@ Options accepted by this command are described below:
 * `-a`, `--agent-prefix` : optional argument: agentPrefix on which sequence component will be spawned, for eg: `ESW.agent1`, `IRIS.agent2` etc
 * `-i` : optional subsystem of sequencer script, for e.g. `tcs`, `iris` etc. Default value: subsystem provided by `-s` option.
 * `-m`, `--obs-mode` : observing mode, for e.g. `darknight`
-* `-v`, `--variation` : optional variation part of the sequencer prefix for eg: Sequencer Prefix(IRIS.IRIS_ImagerAndIFS.IRIS_Ifs), `IRIS_Ifs` needs to be provided as variation
+* `-v`, `--variation` : optional variation part of the sequencer prefix for eg: Sequencer Prefix(IRIS.IRIS_ImagerAndIFS.ifs), `ifs` needs to be provided as variation
 
 The following command examples start both a Sequence Component and Sequencer:
 
@@ -128,14 +128,14 @@ cd /tmt/apps
 
 ```
 
-Example 3: Start the IRIS-darknight Sequencer on an IRIS Sequence Component with a variation of IRIS_Ifs
+Example 3: Start the IRIS-darknight Sequencer on an IRIS Sequence Component with a variation of `ifs`
 
 ```bash
 //cd to installation directory
 cd /tmt/apps
 
-//Example below will spawn a Sequence Component `IRIS-primary` and a Sequencer `IRIS-ImagerAndIFS` in it with variation as IRIS_Ifs
-./esw-ocs-app sequencer -s iris -a IRIS.agent1 -n primary -i iris -m IRIS_ImagerAndIFS -v IRIS_Ifs
+//Example below will spawn a Sequence Component `IRIS-primary` and a Sequencer `IRIS-ImagerAndIFS` in it with variation as `ifs`
+./esw-ocs-app sequencer -s iris -a IRIS.agent1 -n primary -i iris -m IRIS_ImagerAndIFS -v ifs
 
 ```
 

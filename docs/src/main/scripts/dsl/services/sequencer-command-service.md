@@ -4,13 +4,13 @@ A Sequencer can send commands to Assemblies and HCDs and Sequences to other Sequ
 In order to interact or send commands from one Sequencer to the other, one needs to create a `Sequencer` instance first.
 The API provided by a Sequencer Command Service is tailored to Sequencer functionality.
 
-##Sequencer
+## Sequencer
 
 First a Sequencer instance is needed. To create a Sequencer instance, the following parameters need to be passed to the Sequencer method:
 
-* `prefix`: Prefix of the Sequencer to be resolved and sent commands (for eg. TCS.wfos_imaging, IRIS.IRIS_ImagerAndIFS.IRIS_IMAGER)
+* `prefix`: Prefix of the Sequencer to be resolved and sent commands (for eg. TCS.wfos_imaging, IRIS.IRIS_ImagerAndIFS.imager)
 * `defaultTimeout`: optional max timeout to wait for completion of Sequences sent with `sumbitAndWait` or `queryFinal`.  The default
-value for this option is set to 10 hours since it will be common that the handling of Sequences can take a long time, and 
+value for this option is set to 10 hours since it will be common that the handling of Sequences can take a long time, and
 we don't want unexpected timeouts to occur in production.  For development, it might make sense to set this to some smaller value.
 This can always be overridden in the specific `submitAndWait` and `queryFinal` calls, when appropriate (see below).
 
@@ -24,26 +24,26 @@ Here is one showing the setting of the default timeout:
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer-timeout }
 
-
 @@@ note { title="Resolving a Component with Location Service" }
 Since all the components in the TMT architecture are dynamic in nature, which implies they can be shutdown and spawned dynamically
 on some other location, the Sequencer is resolved each time the Command Service DSL is used. It is possible to create a Sequencer
-entity for a non-existent component, but a command to the component will fail because the component is resolved when the 
-command is sent. 
+entity for a non-existent component, but a command to the component will fail because the component is resolved when the
+command is sent.
 @@@
 
 ## Submitting Sequences to a Sequencer & Querying the Response
 
 ### Creating a Sequence
-Unlike Assemblies and HCDs, Sequencers send Sequences to other Sequencers.  A `Sequence` is a 
-list of `SequenceCommand` type instances, each of which can be one of the `Setup`, `Observe` or `Wait` types. 
+
+Unlike Assemblies and HCDs, Sequencers send Sequences to other Sequencers.  A `Sequence` is a
+list of `SequenceCommand` type instances, each of which can be one of the `Setup`, `Observe` or `Wait` types.
 To create a Sequence, create individual `SequenceCommand` objects and then create a `Sequence` with the `sequenceOf` DSL method as shown below.
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequence }  
 
 This example `Sequence` consists of two steps. The Sequencer sends the two step `Sequence` to the destination Sequencer and waits for it to complete, which means
-both of the two commands/steps are executed and completed.  All `Sequence` steps must complete successfully for the `Sequence` to complete successfully. 
+both of the two commands/steps are executed and completed.  All `Sequence` steps must complete successfully for the `Sequence` to complete successfully.
   
 The API for Sequence is @extref[here](csw_javadoc:csw/params/commands/Sequence.html). The API for SequenceCommand is @extref[here](csw_scaladoc:csw/params/commands/SequenceCommand.html)
 
@@ -56,13 +56,13 @@ The `query` and `queryFinal` DSL is provided to check the response of a submitte
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndQuery }  
 
-The `query` DSL method allows checking on the state of the `Sequence`. `query` returns the current response immediately, which could be either a final 
+The `query` DSL method allows checking on the state of the `Sequence`. `query` returns the current response immediately, which could be either a final
 response (eg. `Completed`) or the `Started` response. The `runId` of the submitted `Sequence` can be obtained from the `SubmitResponse` returned by `submit`.
-`query` is useful in the case where polling of the command is needed, or the script needs to take 
-other actions and periodically check for the completion of the `Sequence`.    
+`query` is useful in the case where polling of the command is needed, or the script needs to take
+other actions and periodically check for the completion of the `Sequence`.
 
-Note that if the `runId` is not present in the Sequencer or has been removed from the CRM, the response returned 
-is an `Invalid` response with an `IdNotAvailableIssue`. 
+Note that if the `runId` is not present in the Sequencer or has been removed from the CRM, the response returned
+is an `Invalid` response with an `IdNotAvailableIssue`.
 
 Please refer to @ref:[SubmitResponse extension utilities](submit-response-extensions.md) for using helper methods on `SubmitResponse`.
 
@@ -147,8 +147,8 @@ Kotlin
 
 ### Operations Mode
 
-The `operationsMode` command returns a Sequencer in a diagnostic data mode to normal operation. `operationsMode` is accepted by Sequencers in all states 
-and an `OperationsModeResponse` is returned to the sender. If the Sequencer has defined its @ref:[operations mode handlers](../constructs/handlers.md#operations-mode-handler), 
+The `operationsMode` command returns a Sequencer in a diagnostic data mode to normal operation. `operationsMode` is accepted by Sequencers in all states
+and an `OperationsModeResponse` is returned to the sender. If the Sequencer has defined its @ref:[operations mode handlers](../constructs/handlers.md#operations-mode-handler),
 they will be called. If the handlers execute successfully, an `Ok` response is sent; otherwise, the `OperationsHookFailed` response is sent.
 
 Kotlin

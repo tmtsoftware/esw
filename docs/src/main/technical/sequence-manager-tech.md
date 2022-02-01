@@ -70,8 +70,8 @@ Sequence Manager also support running multiple sequencers of a subsystem in same
 
 * To support multiple sequencers with same subsystem in an observation, we can add variation while doing LoadScript.
   As an example we need to create 3 IRIS sequencers + 1 top level ESW sequencer for IRIS_ImagerAndIFS Obsmode
-  * IRIS.IRIS_ImagerAndIFS.IRIS_Ifs //Subsystem . obsmode . variation
-  * IRIS.IRIS_ImagerAndIFS.IRIS_Imager //Subsystem . obsmode . variation
+  * IRIS.IRIS_ImagerAndIFS.ifs //Subsystem . obsmode . variation
+  * IRIS.IRIS_ImagerAndIFS.imager //Subsystem . obsmode . variation
   * IRIS.IRIS_ImagerAndIFS //Subsystem . obsmode
   *ESW.IRIS_ImagerAndIFS //Subsystem . Obsmode
 

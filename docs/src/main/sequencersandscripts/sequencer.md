@@ -118,8 +118,8 @@ There are no restrictions on this name, but shorter is better. Any name can be u
 This is argument to allow the system to run multiple sequencers for a subsystem.
 As an example we need to create 3 IRIS sequencers + 1 top level ESW sequencer for IRIS_ImagerAndIFS Obsmode
 
-* IRIS.IRIS_ImagerAndIFS.IRIS_Ifs //Subsystem . obsmode . variation
-* IRIS.IRIS_ImagerAndIFS.IRIS_Imager //Subsystem . obsmode . variation
+* IRIS.IRIS_ImagerAndIFS.ifs //Subsystem . obsmode . variation
+* IRIS.IRIS_ImagerAndIFS.imager //Subsystem . obsmode . variation
 * IRIS.IRIS_ImagerAndIFS //Subsystem . obsmode
 * ESW.IRIS_ImagerAndIFS //Subsystem . Obsmode
 
@@ -137,8 +137,8 @@ Use of @ sign makes it appear like an email, hence validateSite fails without sp
 
 | Sequence<br>Component Name | Sequencer Subsystem | Observing Mode| Variation | Registered Location | Description|
 |:------------------:|:-------:|:---------:|:-----------:|:---------------:|:------------------|
-| ESW.IRIS_1 | IRIS | IRIS_ImagerAndIFS| IRIS_Imager |IRIS.IRIS_ImagerAndIFS.IRIS_Imager | An IRIS instrument Sequencer running the IRIS script for the IRIS_ImagerAndIFS observing mode using the ESW.IRIS_1 Sequence Component with a variation as IRIS_Imager. |
-| ESW.IRIS_2 | IRIS | IRIS_ImagerAndIFS | IRIS_Ifs |IRIS.IRIS_ImagerAndIFS.IRIS_Ifs | An IRIS instrument Sequencer running the IRIS script for the IRIS_ImagerAndIFS observing mode using the ESW.IRIS_2 Sequence Component with a variation as IRIS_Ifs. |
+| IRIS.IRIS_1 | IRIS | IRIS_ImagerAndIFS| imager |IRIS.IRIS_ImagerAndIFS.imager | An IRIS instrument Sequencer running the IRIS script for the IRIS_ImagerAndIFS observing mode using the IRIS.IRIS_1 Sequence Component with a variation as imager. |
+| IRIS.IRIS_2 | IRIS | IRIS_ImagerAndIFS | ifs |IRIS.IRIS_ImagerAndIFS.ifs | An IRIS instrument Sequencer running the IRIS script for the IRIS_ImagerAndIFS observing mode using the IRIS.IRIS_2 Sequence Component with a variation as ifs. |
 | ESW.primary | ESW |  IRIS_ImagerAndIFS | | ESW.IRIS_ImagerAndIFS | An ESW Sequencer running the ESW script for the IRIS_ImagerAndIFS observing mode using the ESW.primary Sequence Component. |
 
 As shown above, the observing mode is the instrument name, and an instrument-specific label related to observing mode features.  Variation is used to differentiate between any two sequencers of one subsystem(eg. IRIS).  Each instrument
@@ -147,7 +147,9 @@ Once the Sequencer script is loaded in a Sequence Component, the Sequencer API e
 Location of the Sequence Component allowing the Sequence Manager or other client to determine which Sequence Component is executing
 the observing mode script for a specific packageId.
 
-The figure below shows the Sequence Component IRIS1, IRIS2 loading the IRIS instrument script for the IRIS_ImagerAndIFS observing mode.
+The figure below shows two IRIS Sequence Components, IRIS1 and IRIS2, loading script variations imager and ifs as part of the IRIS_ImagerAndIFS observing mode. In this case there is a Sequencer for the imager detector and a Sequencer for the ifs detector.
+
+The green boxes show how the Sequencer and Sequence Component are registered in the Location Service
 
 ![SequenceCompNaming](../images/ocs/OCS-SeqCompSeqNaming1.png)
 
