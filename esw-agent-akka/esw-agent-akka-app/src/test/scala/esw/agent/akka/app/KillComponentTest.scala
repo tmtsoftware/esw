@@ -25,7 +25,7 @@ class KillComponentTest extends AgentSetup {
           agentActorRef ! KillComponent(killResponseProbe.ref, location)
           killResponseProbe.expectMessage(Killed)
 
-          //ensure component was unregistered
+          // ensure component was unregistered
           Thread.sleep(500)
           verify(locationService).unregister(location.connection)
         }
@@ -36,11 +36,11 @@ class KillComponentTest extends AgentSetup {
           agentActorRef ! KillComponent(killResponseProbe.ref, location)
           agentActorRef ! KillComponent(killResponseProbe.ref, location)
 
-          //ensure it is stopped gracefully
+          // ensure it is stopped gracefully
           killResponseProbe.expectMessage(Killed)
           killResponseProbe.expectMessage(Killed)
 
-          //ensure component was unregistered
+          // ensure component was unregistered
           Thread.sleep(500)
           verify(locationService).unregister(location.connection)
         }
@@ -55,7 +55,7 @@ class KillComponentTest extends AgentSetup {
         mockSuccessfulProcess(dieAfter = 500.millis)
 
         agentActorRef ! spawnComponent(spawnResponseProbe.ref)
-        //wait till it is registered
+        // wait till it is registered
         spawnResponseProbe.expectMessage(Spawned)
         testCode(agentActorRef, killResponseProbe)
       }

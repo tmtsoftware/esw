@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.system.measureTimeMillis
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class LoopDslTest : LoopDsl {
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
@@ -37,7 +37,7 @@ class LoopDslTest : LoopDsl {
         val counter = AtomicInteger(0)
 
         val loopTime = measureTimeMillis {
-            loop(Duration.milliseconds(300)) {
+            loop(300.milliseconds) {
                 counter.getAndUpdate { it + 1 }
                 stopWhen(counter.get() == 3)
             }
@@ -95,7 +95,7 @@ class LoopDslTest : LoopDsl {
             val counter = AtomicInteger(0)
 
             val loopTime = measureTimeMillis {
-                val loopResult = loopAsync(Duration.milliseconds(300)) {
+                val loopResult = loopAsync(300.milliseconds) {
                     counter.getAndUpdate { it + 1 }
                     stopWhen(counter.get() == 3)
                 }

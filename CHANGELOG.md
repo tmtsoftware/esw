@@ -9,12 +9,17 @@ Here is the repository for ESW: [ESW](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
-## Changes in Upcoming releases
+## [ESW v0.4.0] - 2022-01-28
 
-- Contract Change in SequenceManager API to incorporate another optional parameter `variation` other than `subsystem` and `obsmode` in startSequencer, restartSequencer and shutdownSequencer.
-- Contract change for Sequence Component API in loadScript to incorporate another optional parameter `variation` other than `subsystem` and `obs-mode`.
-- esw-ocs-app now takes additional optional parameter `variation` for starting the single sequencer.
-- Contract change for getObsModeDetail API which now returns list that has subsystem with/without variation.
+This release contains minor fixes.
+
+### Documentation
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.4.0-RC1/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.4.0-RC1/api/scala/index.html
+
+### Supporting Releases
+
+<a name="0-4-0-1"></a>1: [ESW v0.4.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.4.0-RC1) - 2022-01-28<br>
 
 ## [ESW v0.3.0] - 2021-09-23
 

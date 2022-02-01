@@ -6,10 +6,10 @@ import csw.params.commands.CommandResponse.*
 import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.IRIS
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 script {
-    val assembly = Assembly(IRIS, "filter.wheel", Duration.seconds(5))
+    val assembly = Assembly(IRIS, "filter.wheel", 5.seconds)
 
     onSetup("submit-error-handling") { command ->
         // #extensions

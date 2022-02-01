@@ -42,7 +42,7 @@ class SequencerPostHandlerAuthTest
 
   private val sequencer: SequencerApi                = mock[SequencerApi]
   private val securityDirectives: SecurityDirectives = mock[SecurityDirectives]
-  private val postHandler                            = new SequencerPostHandler(sequencer, securityDirectives, Some(prefix)) // started with auth
+  private val postHandler = new SequencerPostHandler(sequencer, securityDirectives, Some(prefix)) // started with auth
 
   import LabelExtractor.Implicits.default
   private val route: Route = new PostRouteFactory[SequencerRequest]("post-endpoint", postHandler).make()

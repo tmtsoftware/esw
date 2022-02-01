@@ -105,7 +105,7 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
       val irisNewSeqComp      = Prefix(IRIS, "IRIS_1")
       val tcsNewSeqComp       = Prefix(TCS, "TCS_1")
 
-      //verify seq comps are started as per the config
+      // verify seq comps are started as per the config
       val sequenceCompLocations = locationService.list(SequenceComponent).futureValue
       sequenceCompLocations.map(_.prefix) should not contain eswRunningSeqComp
       sequenceCompLocations.size shouldBe 3
@@ -155,7 +155,7 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
       sequenceCompLocationNew.map(_.prefix) should not contain eswNewSeqCompPrefix
       sequenceCompLocationNew.size shouldBe 2
 
-      //clean up the provisioned sequence components
+      // clean up the provisioned sequence components
       sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
     }
   }

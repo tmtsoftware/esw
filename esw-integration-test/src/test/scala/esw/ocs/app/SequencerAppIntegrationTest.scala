@@ -52,7 +52,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
       sequenceCompLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
-      //As SequencerApp is used directly, no new process is spawned. test Pid should be equal to seqComp pid
+      // As SequencerApp is used directly, no new process is spawned. test Pid should be equal to seqComp pid
       sequenceCompLocation.metadata.getPid.get shouldBe ProcessHandle.current().pid()
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
@@ -63,10 +63,10 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val response          = probe.expectMessageType[SequencerLocation]
       val sequencerLocation = response.location
 
-      //verify sequencer is registered on inside network
+      // verify sequencer is registered on inside network
       sequencerLocation.uri.getHost should ===(insideHostname)
 
-      //verify sequencerName has SequenceComponentName
+      // verify sequencerName has SequenceComponentName
       val actualSequencerPrefix: Prefix = sequencerLocation.prefix
       actualSequencerPrefix shouldEqual expectedSequencerPrefix
 
@@ -98,7 +98,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
-      //assert that componentName and prefix contain subsystem provided
+      // assert that componentName and prefix contain subsystem provided
       sequenceComponentLocation.prefix.toString.contains("ESW.ESW_") shouldEqual true
       sequenceComponentLocation.metadata.value.contains("PID") shouldEqual true
     }
@@ -106,20 +106,20 @@ class SequencerAppIntegrationTest extends EswTestKit {
     "start sequence component concurrently and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144, ESW-279" in {
       val subsystem = "ESW"
 
-      //register sequence component with same subsystem concurrently
+      // register sequence component with same subsystem concurrently
       Future { SequencerApp.main(Array("seqcomp", "-s", subsystem)) }
       Future { SequencerApp.main(Array("seqcomp", "-s", subsystem)) }
       Future { SequencerApp.main(Array("seqcomp", "-s", subsystem)) }
 
-      //Wait till futures registering sequence component complete
+      // Wait till futures registering sequence component complete
       Thread.sleep(5000)
 
       val sequenceComponentLocations = locationService.list(ComponentType.SequenceComponent).futureValue
 
-      //assert if all 3 sequence components are registered
+      // assert if all 3 sequence components are registered
       locationService.list(ComponentType.SequenceComponent).futureValue.length shouldEqual 3
       sequenceComponentLocations.foreach { location =>
-        //assert that componentName and prefix contain subsystem provided
+        // assert that componentName and prefix contain subsystem provided
         location.prefix.toString.contains("ESW.ESW_") shouldEqual true
       }
     }
@@ -208,7 +208,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
-      //assert that componentName and prefix contain subsystem provided
+      // assert that componentName and prefix contain subsystem provided
       sequenceComponentLocation.prefix.toString.contains("ESW.ESW_") shouldEqual true
 
       // verify that sequencer is started and able to process sequence command
@@ -233,8 +233,8 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val name      = "primary"
       val obsMode   = "random"
 
-      //there is no script for esw.random mode but sequencer should start with esw.random as a simulation script
-      //starting sequencer in simulation mode
+      // there is no script for esw.random mode but sequencer should start with esw.random as a simulation script
+      // starting sequencer in simulation mode
       SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-m", obsMode, "--simulation"))
 
       // assert sequencer has started

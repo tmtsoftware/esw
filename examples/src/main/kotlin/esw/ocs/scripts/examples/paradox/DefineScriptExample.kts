@@ -19,7 +19,7 @@ import esw.ocs.dsl.highlevel.models.Major
 import esw.ocs.dsl.highlevel.models.NFIRAOS
 import esw.ocs.dsl.highlevel.models.Okay
 import esw.ocs.dsl.params.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 fun moveMotor(angle: Int): Unit = TODO()
 fun openPrimaryShutter(): Unit = TODO()
@@ -48,7 +48,7 @@ script {
     val tromboneTemperatureAlarm =
             Key.AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneMotorTemperatureAlarm")
 
-    loopAsync(Duration.seconds(1)) {
+    loopAsync(10.seconds) {
         if (tromboneTemperature > 10.0) {
             setSeverity(tromboneTemperatureAlarm, Major)
         } else  {

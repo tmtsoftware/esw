@@ -146,7 +146,7 @@ class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with Ga
       val runId                        = Id("runId")
       val componentId                  = ComponentId(destination, Sequencer)
       val queryRequest: GatewayRequest = SequencerCommand(componentId, SequencerRequest.Query(runId))
-      val queryResponse                = Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
+      val queryResponse = Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
 
       when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.query(runId)).thenReturn(Future.successful(queryResponse))

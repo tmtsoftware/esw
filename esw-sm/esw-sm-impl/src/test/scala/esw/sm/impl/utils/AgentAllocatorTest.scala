@@ -28,14 +28,14 @@ class AgentAllocatorTest extends BaseTestSuite {
       val mapping = allocator.allocate(config, machines).rightValue
 
       mapping should contain theSameElementsAs List(
-        //-------- on ESW primary machine ----------
+        // -------- on ESW primary machine ----------
         eswPrimaryM -> Prefix(ESW, "ESW_1"),
         eswPrimaryM -> Prefix(ESW, "ESW_2"),
         eswPrimaryM -> Prefix(ESW, "ESW_3"),
-        //-------- on ESW secondary machine --------
+        // -------- on ESW secondary machine --------
         eswSecondaryM -> Prefix(ESW, "ESW_4"),
         eswSecondaryM -> Prefix(ESW, "ESW_5"),
-        //-------- on IRIS primary machine ---------
+        // -------- on IRIS primary machine ---------
         irisPrimaryM -> Prefix(IRIS, "IRIS_1"),
         irisPrimaryM -> Prefix(IRIS, "IRIS_2")
       )

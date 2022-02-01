@@ -85,7 +85,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
         EswLocationError.OtherLocationIsRegistered(errorMsg)
       )
 
-      //assert that No retry attempt in case of subsystem and name are provided
+      // assert that No retry attempt in case of subsystem and name are provided
       verify(locationService, times(1)).register(akkaRegistration)
       coordinatedShutdown.run(UnknownReason).futureValue
     }
@@ -136,7 +136,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
 
       val regResult = sequenceComponentRegistration.registerSequenceComponent(retryCount)
 
-      //Assert that sequenceComponentActor ref receives Stop message once when OtherLocationIsRegistered is received
+      // Assert that sequenceComponentActor ref receives Stop message once when OtherLocationIsRegistered is received
       sequenceComponentProbe.expectMessage(Stop)
       regResult.rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue

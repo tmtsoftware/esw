@@ -11,7 +11,7 @@ import esw.ocs.dsl.epics.EventVariable
 import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.highlevel.models.ObsId
 import esw.ocs.dsl.params.intKey
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 script {
 
@@ -46,7 +46,7 @@ script {
         //#subscribe
 
         //#subscribe-async
-        onEvent(tempEventKey, stateEventKey, duration = Duration.seconds(2)) { event ->
+        onEvent(tempEventKey, stateEventKey, duration = 2.seconds) { event ->
             // logic to execute on every event
             println(event.eventKey())
         }
@@ -55,7 +55,7 @@ script {
         fun getTemperature(): Int = TODO()
 
         //#publish-async
-        publishEvent(Duration.seconds(10)) {
+        publishEvent(10.seconds) {
             val temperatureKey = intKey("temperature").set(getTemperature())
             SystemEvent("ESW.IRIS_darkNight", "temperature", temperatureKey)
         }

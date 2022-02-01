@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class RichSequencerTest {
 
@@ -44,11 +45,11 @@ class RichSequencerTest {
     //ESW-561
     private val sequencerApiFactory: (Subsystem, ObsMode, Variation?) -> CompletableFuture<SequencerApi> = { _, _, _ -> CompletableFuture.completedFuture(sequencerApi) }
 
-    private val timeoutDuration: Duration = Duration.seconds(10)
-    private val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+    private val timeoutDuration: Duration = 10.seconds
+    private val timeout = Timeout(timeoutDuration.inWholeNanoseconds, TimeUnit.NANOSECONDS)
 
-    private val defaultTimeoutDuration: Duration = Duration.seconds(5)
-    private val defaultTimeout = Timeout(defaultTimeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+    private val defaultTimeoutDuration: Duration = 5.seconds
+    private val defaultTimeout = Timeout(defaultTimeoutDuration.inWholeNanoseconds, TimeUnit.NANOSECONDS)
 
     //ESW-561
     private val tcsSequencer = RichSequencer(subsystem, obsMode, variation, sequencerApiFactory, defaultTimeoutDuration, coroutineScope)

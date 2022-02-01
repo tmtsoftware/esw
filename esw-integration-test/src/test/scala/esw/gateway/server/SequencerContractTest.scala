@@ -33,11 +33,11 @@ class SequencerContractTest extends EswTestKit(Gateway, EventServer) with Gatewa
 
       val sequencer = clientFactory.sequencer(componentId)
 
-      //submit sequence
+      // submit sequence
       val submitResponse = sequencer.submit(sequence).futureValue
       submitResponse shouldBe a[Started]
 
-      //queryFinal
+      // queryFinal
       sequencer.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
     }
 
@@ -50,11 +50,11 @@ class SequencerContractTest extends EswTestKit(Gateway, EventServer) with Gatewa
 
       val sequencer = clientFactory.sequencer(componentId)
 
-      //submit sequence
+      // submit sequence
       val submitResponse = sequencer.submit(sequence).futureValue
       submitResponse shouldBe a[Started]
 
-      //queryFinal
+      // queryFinal
       val response = sequencer.queryFinal(submitResponse.runId).futureValue.asInstanceOf[Error]
       response.runId should ===(submitResponse.runId)
       response.message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: fail-command"

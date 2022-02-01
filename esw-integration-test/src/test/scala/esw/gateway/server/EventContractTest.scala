@@ -16,7 +16,7 @@ import esw.ocs.testkit.Service.Gateway
 
 class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
-  //Event
+  // Event
   private val a1: Array[Int] = Array(1, 2, 3, 4, 5)
   private val a2: Array[Int] = Array(10, 20, 30, 40, 50)
 
@@ -47,21 +47,21 @@ class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCod
       val pEventsF = eventClient.pSubscribe(Subsystem.TCS, None).take(2).runWith(Sink.seq)
       Thread.sleep(500)
 
-      //publish event successfully
+      // publish event successfully
       eventClient.publish(event1).futureValue should ===(Done)
       eventClient.publish(event2).futureValue should ===(Done)
 
-      //get set of events
+      // get set of events
       eventClient.get(Set(EventKey(prefix, name1))).futureValue shouldBe Set(event1)
 
       // get returns invalid event for event that hasn't been published
       val name4 = EventName("event4")
       eventClient.get(Set(EventKey(prefix, name4))).futureValue shouldBe Set(Event.invalidEvent(EventKey(prefix, name4)))
 
-      //subscribe events returns a set of events successfully
+      // subscribe events returns a set of events successfully
       eventsF.futureValue.toSet shouldBe Set(invalidEvent1, invalidEvent2, event1, event2)
 
-      //pSubscribe events returns a set of events successfully
+      // pSubscribe events returns a set of events successfully
       pEventsF.futureValue.toSet shouldBe Set(event1, event2)
 
     }

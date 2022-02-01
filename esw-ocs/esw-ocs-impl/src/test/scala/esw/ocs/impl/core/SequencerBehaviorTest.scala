@@ -67,7 +67,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Processing) // step Pending with Processing
       assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running)    // step Pending with Running
 
-      startPullNext()                                                                // after pull next first pending step will be set InFlight
+      startPullNext() // after pull next first pending step will be set InFlight
       assertSequencerState(subscriberProbe.receiveMessage(), SequencerState.Running) // step Inflight with Running
 
       finishStepWithSuccess() // InFlight step will be set to success
@@ -536,7 +536,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       assertCurrentSequence(beforePauseStepList)
 
-      //Engine can execute next step as 1st step is completed
+      // Engine can execute next step as 1st step is completed
       assertEngineCanExecuteNext(isReadyToExecuteNext = true)
 
       pauseAndAssertResponse(Ok)
@@ -547,7 +547,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
         )
       )
 
-      //Engine can NOT execute next step as 1st step is completed but 2nd one is paused
+      // Engine can NOT execute next step as 1st step is completed but 2nd one is paused
       assertEngineCanExecuteNext(isReadyToExecuteNext = false)
       assertCurrentSequence(afterPauseStepList)
     }
@@ -571,11 +571,11 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val expectedResumedSequence = Some(StepList(expectedResumedSteps))
 
       pauseAndAssertResponse(Ok)
-      //Sequence is paused so engine can NOT execute next step
+      // Sequence is paused so engine can NOT execute next step
       assertEngineCanExecuteNext(isReadyToExecuteNext = false)
       assertCurrentSequence(expectedPausedSequence)
       resumeAndAssertResponse(Ok)
-      //Sequence is resumed so engine can execute next step
+      // Sequence is resumed so engine can execute next step
       assertEngineCanExecuteNext(isReadyToExecuteNext = true)
       assertCurrentSequence(expectedResumedSequence)
     }
@@ -1153,10 +1153,10 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
     assertUnhandled(
       Idle,
-      StartSequence, //ESW-154
-      AbortSequence, //ESW-155
+      StartSequence, // ESW-154
+      AbortSequence, // ESW-155
       AbortSequenceComplete,
-      Stop, //ESW-156
+      Stop, // ESW-156
       StopComplete,
       GoOnlineSuccess,
       GoOnlineFailed,
@@ -1164,16 +1164,16 @@ class SequencerBehaviorTest extends BaseTestSuite {
       GoIdle,
       GoOfflineSuccess,
       GoOfflineFailed,
-      Add(cmds, _),               //ESW-114
+      Add(cmds, _),               // ESW-114
       Prepend(cmds, _),           // ESW-113 : should not allow to prepend in a finished Sequence
-      Replace(Id(), cmds, _),     //ESW-108
+      Replace(Id(), cmds, _),     // ESW-108
       InsertAfter(Id(), cmds, _), // ESW-111 : Error should be thrown when inserting in a finished sequence
-      Delete(Id(), _),            //ESW-112
-      AddBreakpoint(Id(), _),     //ESW-106
-      RemoveBreakpoint(Id(), _),  //ESW-107
-      Pause,                      //ESW-104
-      Resume,                     //ESW-105
-      Reset                       //ESW-110
+      Delete(Id(), _),            // ESW-112
+      AddBreakpoint(Id(), _),     // ESW-106
+      RemoveBreakpoint(Id(), _),  // ESW-107
+      Pause,                      // ESW-104
+      Resume,                     // ESW-105
+      Reset                       // ESW-110
     )
   }
 
@@ -1183,9 +1183,9 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
     assertUnhandled(
       Loaded,
-      AbortSequence, //ESW-155
+      AbortSequence, // ESW-155
       AbortSequenceComplete,
-      Stop, //ESW-156
+      Stop, // ESW-156
       StopComplete,
       StepSuccess,
       GoOnlineSuccess,
@@ -1202,7 +1202,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
     assertUnhandled(
       Running,
       LoadSequence(sequence, _),
-      StartSequence, //ESW-154
+      StartSequence, // ESW-154
       SubmitSequenceInternal(sequence, _),
       GoOnline,
       GoOnlineSuccess,
@@ -1220,24 +1220,24 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
     assertUnhandled(
       Offline,
-      //Should not accept these commands in offline state
+      // Should not accept these commands in offline state
       SubmitSequenceInternal(sequence, _),
       LoadSequence(sequence, _),
-      StartSequence, //ESW-154
-      AbortSequence, //ESW-155
+      StartSequence, // ESW-154
+      AbortSequence, // ESW-155
       AbortSequenceComplete,
-      Stop, //ESW-156
+      Stop, // ESW-156
       StopComplete,
-      Add(cmds, _),               //ESW-114
-      Prepend(cmds, _),           //ESW-113
-      Replace(Id(), cmds, _),     //ESW-108
-      InsertAfter(Id(), cmds, _), //ESW-111
-      Delete(Id(), _),            //ESW-112
-      AddBreakpoint(Id(), _),     //ESW-106
-      RemoveBreakpoint(Id(), _),  //ESW-107
-      Pause,                      //ESW-104
-      Resume,                     //ESW-105
-      Reset,                      //ESW-110
+      Add(cmds, _),               // ESW-114
+      Prepend(cmds, _),           // ESW-113
+      Replace(Id(), cmds, _),     // ESW-108
+      InsertAfter(Id(), cmds, _), // ESW-111
+      Delete(Id(), _),            // ESW-112
+      AddBreakpoint(Id(), _),     // ESW-106
+      RemoveBreakpoint(Id(), _),  // ESW-107
+      Pause,                      // ESW-104
+      Resume,                     // ESW-105
+      Reset,                      // ESW-110
       GoOnlineSuccess,
       GoOnlineFailed,
       GoOfflineSuccess,
@@ -1278,7 +1278,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      //start executing sequence
+      // start executing sequence
       when { script.executeNewSequenceHandler() }.thenReturn { Future.successful(Done) }
       val replyTo = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(replyTo.ref)

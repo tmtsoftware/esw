@@ -8,26 +8,26 @@ import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.intKey
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 script {
 
     // #assembly
     val galilAssembly = Assembly(WFOS, "FilterWheel")
 
-    val galilAssembly2 = Assembly(WFOS, "FilterWheel", defaultTimeout = Duration.seconds(20))
+    val galilAssembly2 = Assembly(WFOS, "FilterWheel", defaultTimeout = 20.seconds)
     // #assembly
 
     // #hcd
     val filterWheelHcd = Hcd(WFOS, "GalilHcd1")
 
-    val filterWheelHcd2 = Hcd(WFOS, "GalilHcd1", defaultTimeout = Duration.seconds(20))
+    val filterWheelHcd2 = Hcd(WFOS, "GalilHcd1", defaultTimeout = 20.seconds)
     // #hcd
 
     onSetup("setup-filter-assembly") { command ->
         // #lock-component
         galilAssembly.lock(
-                leaseDuration = Duration.seconds(20),
+                leaseDuration = 20.seconds,
                 onLockAboutToExpire = {
                     // do something when lock is about to expire
                     publishEvent(SystemEvent("ESW.test", "TCS.lock.about.to.expire"))
@@ -48,7 +48,7 @@ script {
         val parameters = intKey("target").set(100)
         val galilCommand = Setup("ESW.IRIS_darkNight", "moveWheel", command.obsId).add(parameters)
         // #submit-component
-        galilAssembly.submitAndWait(galilCommand, timeout = Duration.seconds(20))
+        galilAssembly.submitAndWait(galilCommand, timeout = 20.seconds)
         // #submit-and-wait-component
 
         // #query-component

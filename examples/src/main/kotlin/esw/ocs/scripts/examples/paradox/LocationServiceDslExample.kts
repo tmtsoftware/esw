@@ -9,7 +9,8 @@ import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.minutes
 
 script {
 
@@ -61,7 +62,7 @@ script {
         val prefix: Prefix = cmd.source()
         val assemblyConnection = AkkaConnection(ComponentId(prefix, Assembly))
 
-        val location: AkkaLocation? = resolveLocation(assemblyConnection, Duration.seconds(10))
+        val location: AkkaLocation? = resolveLocation(assemblyConnection, 10.seconds)
 
         // send a successful event to UI if assembly location is found
         location?.let { sendUIEvent("Resolved assembly location: $it") }
@@ -83,15 +84,15 @@ script {
         val assemblyLocations: List<Location> = listLocationsBy(Assembly)
 
         // create Assemblies from locations and send offline command to each one of them
-        val assemblies = assemblyLocations.map { Assembly(it.prefix, Duration.minutes(10)) }
+        val assemblies = assemblyLocations.map { Assembly(it.prefix, 10.minutes) }
         assemblies.forEach { it.goOffline() }
     }
     //#list-locations-by-comp-type
 
     //#list-locations-by-connection-type
     onSetup("lock-all-components") {
-        val timeout = Duration.minutes(10)
-        val leaseDuration = Duration.minutes(20)
+        val timeout = 10.minutes
+        val leaseDuration = 20.minutes
 
         // list all akka components
         val akkaLocations: List<Location> = listLocationsBy(AkkaType)

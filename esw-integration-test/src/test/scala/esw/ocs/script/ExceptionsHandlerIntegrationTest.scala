@@ -156,7 +156,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       event.isInvalid shouldBe false
       event.eventName.name should fullyMatch regex """Error\(Id\(.*\),command-failed\)"""
 
-      //ESW-294
+      // ESW-294
       val error = responseF.futureValue.asInstanceOf[CommandResponse.Error]
       error.message should fullyMatch regex s"""StepId: .*, CommandName: ${failCmdName.name}, reason: Error\\(Id\\(.*\\),command-failed\\)"""
     }

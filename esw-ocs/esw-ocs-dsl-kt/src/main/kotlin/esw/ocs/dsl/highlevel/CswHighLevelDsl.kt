@@ -23,6 +23,8 @@ import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
 import scala.Option
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
 
 /**
@@ -221,8 +223,8 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      *
      * @return a [[esw.ocs.dsl.highlevel.RichComponent]] instance
      */
-    fun Assembly(prefix: Prefix, defaultTimeout: Duration = Duration.seconds(10)): RichComponent
-    fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration = Duration.seconds(10)): RichComponent =
+    fun Assembly(prefix: Prefix, defaultTimeout: Duration = 10.seconds): RichComponent
+    fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =
             Assembly(Prefix(subsystem, compName), defaultTimeout)
 
     /**
@@ -233,9 +235,9 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      *
      * @return a [[esw.ocs.dsl.highlevel.RichComponent]] instance
      */
-    fun Hcd(prefix: Prefix, defaultTimeout: Duration = Duration.seconds(10)): RichComponent
+    fun Hcd(prefix: Prefix, defaultTimeout: Duration = 10.seconds): RichComponent
 
-    fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration = Duration.seconds(10)): RichComponent =
+    fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =
             Hcd(Prefix(subsystem, compName), defaultTimeout)
 
     /**
@@ -346,15 +348,15 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
     override fun Assembly(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, Assembly, defaultTimeout)
     override fun Hcd(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, HCD, defaultTimeout)
 
-    //Duration.hours(10) is intentional, as this defaultTimeout is used in submitAndWait and queryFinal APIs and there can be very long-running commands which needs this much timeout.
-    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode): RichSequencer = richSequencer(subsystem, obsMode, null, Duration.hours(10))
+    //10.hours is intentional, as this defaultTimeout is used in submitAndWait and queryFinal APIs and there can be very long-running commands which needs this much timeout.
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode): RichSequencer = richSequencer(subsystem, obsMode, null, 10.hours)
 
-    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode,  defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, obsMode, null, defaultTimeout)
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, obsMode, null, defaultTimeout)
 
-    //Duration.hours(10) is intentional, as this defaultTimeout is used in submitAndWait and queryFinal APIs and there can be very long-running commands which needs this much timeout.
-    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation): RichSequencer = richSequencer(subsystem, obsMode, variation, Duration.hours(10))
+    //10.hours is intentional, as this defaultTimeout is used in submitAndWait and queryFinal APIs and there can be very long-running commands which needs this much timeout.
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation): RichSequencer = richSequencer(subsystem, obsMode, variation, 10.hours)
 
-    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation , defaultTimeout: Duration): RichSequencer =
+    override fun Sequencer(subsystem: Subsystem, obsMode: ObsMode, variation: Variation, defaultTimeout: Duration): RichSequencer =
             richSequencer(subsystem, obsMode, variation, defaultTimeout)
 
     /************* Fsm helpers **********/
