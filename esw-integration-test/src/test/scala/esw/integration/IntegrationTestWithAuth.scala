@@ -278,7 +278,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       )
 
       // Verify registration in location service
-      val containerConnection             = AkkaConnection(ComponentId(Prefix(Container, "TestContainer"), ComponentType.Container))
+      val containerConnection = AkkaConnection(ComponentId(Prefix(Container, "TestContainer"), ComponentType.Container))
       val containerLocation: AkkaLocation = locationService.resolve(containerConnection, 5.seconds).futureValue.value
 
       // kill the spawned container CSW-131
@@ -298,13 +298,13 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       // spawn seq comp
       agentService.spawnSequenceComponent(agentPrefix, seqCompName, eswVersion).futureValue shouldBe Spawned
 
-      //verify component is started
+      // verify component is started
       resolveSequenceComponent(seqCompPrefix)
 
       // stop spawned component
       agentService.killComponent(ComponentId(seqCompPrefix, SequenceComponent)).futureValue shouldBe Killed
 
-      //verify that component is killed
+      // verify that component is killed
       intercept[RuntimeException](resolveSequenceComponent(seqCompPrefix))
     }
 
@@ -317,13 +317,13 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
         .spawnSequenceManager(agentPrefix, obsModeConfigPath, isConfigLocal = true, eswVersion)
         .futureValue shouldBe Spawned
 
-      //verify sequence manager is started
+      // verify sequence manager is started
       resolveAkkaLocation(smPrefix, Service)
 
       // stop sequence manager
       agentService.killComponent(ComponentId(smPrefix, Service)).futureValue shouldBe Killed
 
-      //verify that component is killed
+      // verify that component is killed
       intercept[RuntimeException](resolveAkkaLocation(smPrefix, Service))
     }
 
@@ -593,7 +593,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       // is not available
       seqCompRunningSequencer.prefix.subsystem shouldBe ESW
 
-      //test cleanup
+      // test cleanup
       sequenceManagerClient.shutdownObsModeSequencers(IRIS_CAL).futureValue
       TestSetup.cleanup()
     }
@@ -717,7 +717,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
       resolveAkkaLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
 
-      //ESW-351 - shutdown all ESW sequencers that are running
+      // ESW-351 - shutdown all ESW sequencers that are running
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
       sequenceManagerClient.shutdownSubsystemSequencers(ESW).futureValue should ===(ShutdownSequencersResponse.Success)
 
@@ -742,7 +742,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
       resolveAkkaLocation(irisCalPrefix, Sequencer) should ===(calSequencerL)
 
-      //ESW-351 - shutdown all the sequencers that are running
+      // ESW-351 - shutdown all the sequencers that are running
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
       sequenceManagerClient.shutdownAllSequencers().futureValue should ===(ShutdownSequencersResponse.Success)
 
@@ -809,14 +809,14 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val seqCompName   = "seq_comp"
       val seqCompPrefix = Prefix(ESW, seqCompName)
 
-      //spawn ESW agent
+      // spawn ESW agent
       val agentPrefix = getRandomAgentPrefix(ESW)
       spawnAgent(AgentSettings(agentPrefix, channel, versionConfPath))
 
-      //verify that agent is available
+      // verify that agent is available
       resolveAkkaLocation(agentPrefix, Machine)
 
-      //ESW-337 verify that sequence component is not running
+      // ESW-337 verify that sequence component is not running
       intercept[Exception](resolveSequenceComponentLocation(seqCompPrefix))
 
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
@@ -824,15 +824,15 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val response = Await.result(agentService.spawnSequenceComponent(agentPrefix, seqCompName, ocsVersionOpt), 1.minute)
       response should ===(Spawned)
 
-      //ESW-337 verify that sequence component is now spawned
+      // ESW-337 verify that sequence component is now spawned
       resolveSequenceComponentLocation(seqCompPrefix)
 
-      //ESW-351, ESW-338 shutdown sequence component
+      // ESW-351, ESW-338 shutdown sequence component
       sequenceManagerClient.shutdownSequenceComponent(seqCompPrefix).futureValue should ===(
         ShutdownSequenceComponentResponse.Success
       )
 
-      //ESW-351, ESW-338 verify that sequence component is shutdown
+      // ESW-351, ESW-338 verify that sequence component is shutdown
       intercept[Exception](resolveSequenceComponentLocation(seqCompPrefix))
       TestSetup.cleanup()
     }
@@ -899,13 +899,13 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
       val eswNewSeqCompPrefix = Prefix(ESW, "ESW_1")
       val irisNewSeqComp      = Prefix(IRIS, "IRIS_1")
-      //verify seq comps are started as per the config
+      // verify seq comps are started as per the config
       val sequenceCompLocations = locationService.list(SequenceComponent).futureValue
       sequenceCompLocations.map(_.prefix) should not contain eswRunningSeqComp // ESW-358 verify the old seqComps are removed
       sequenceCompLocations.size shouldBe 2
       sequenceCompLocations.map(_.prefix) should contain allElementsOf List(eswNewSeqCompPrefix, irisNewSeqComp)
 
-      //clean up the provisioned sequence components
+      // clean up the provisioned sequence components
       sequenceManager.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)
       configTestKit.deleteServerFiles()
       configTestKit.terminateServer()

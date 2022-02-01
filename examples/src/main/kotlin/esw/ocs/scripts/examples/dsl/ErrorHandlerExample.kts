@@ -5,13 +5,14 @@ import csw.params.commands.Result
 import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.ESW
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.seconds
 
 fun takeExposure(): Unit = println("Taking exposure")
 fun processResult(result: Result): Unit = println("Processing $result")
 
 script {
-    val assembly = Assembly(ESW, "filter.wheel", Duration.seconds(10))
+    val assembly = Assembly(ESW, "filter.wheel", 10.seconds)
 
     onSetup("submitAndWait-error-handling") { command ->
 
@@ -20,7 +21,7 @@ script {
          * then current execution flow breaks and onError command handler gets invoked
          * submitAndWait always returns final successful response in this case otherwise fails and invokes onError handler
          */
-        val submitResult: Result = assembly.submitAndWait(command, Duration.hours(2)).result
+        val submitResult: Result = assembly.submitAndWait(command, 2.hours).result
         processResult(submitResult)
 
         /* =========== Scenario-2 (resumeOnError = true)============
@@ -28,7 +29,7 @@ script {
          * then current execution flow will continue because resumeOnError = true
          * In this case, submitAndWait can return final response but not necessarily successful response
          */
-        val submitResponse: SubmitResponse = assembly.submitAndWait(command, Duration.hours(2), resumeOnError = true)
+        val submitResponse: SubmitResponse = assembly.submitAndWait(command, 2.hours, resumeOnError = true)
         submitResponse
                 .onFailed {
                     error("Negative SubmitResponse $it")

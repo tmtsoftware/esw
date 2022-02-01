@@ -54,7 +54,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   when(locationService.unregister(AkkaConnection(componentId))).thenReturn(Future.successful(Done))
   when(script.executeShutdown()).thenReturn(Future.successful(Done))
 
-  //for getSequenceComponent message
+  // for getSequenceComponent message
   when(locationService.find(seqCompAkkaConnection)).thenReturn(Future.successful(Some(sequenceComponentLocation)))
 
   val sequencerName = s"SequencerActor${Random.between(0, Int.MaxValue)}"
@@ -173,7 +173,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     }
     else {
       intercept[AssertionError] {
-        //ReadyToExecuteNext won't respond and timeout will be captured by AssertionError
+        // ReadyToExecuteNext won't respond and timeout will be captured by AssertionError
         probe.receiveMessage()
       }
     }
@@ -189,15 +189,15 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     when(script.executeAbort()).thenReturn(Future.successful(Done))
     sequencerActor ! AbortSequence(probe.ref)
 
-    //GetSequence msg while aborting sequence
+    // GetSequence msg while aborting sequence
     sequencerActor ! GetSequence(p.ref)
 
     probe.expectMessage(response)
 
-    //GetSequence should be handled and return response while aborting sequence
+    // GetSequence should be handled and return response while aborting sequence
     p.expectMessageType[Option[StepList]]
 
-    //After abort sequence
+    // After abort sequence
     sequencerActor ! GetSequence(p.ref)
     val stepList = p.expectMessageType[Option[StepList]]
     expectedState match {
@@ -219,15 +219,15 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     when(script.executeStop()).thenReturn(Future.successful(Done))
     sequencerActor ! Stop(probe.ref)
 
-    //GetSequence msg while aborting sequence
+    // GetSequence msg while aborting sequence
     sequencerActor ! GetSequence(p.ref)
 
     probe.expectMessage(response)
 
-    //GetSequence should be handled and return response while aborting sequence
+    // GetSequence should be handled and return response while aborting sequence
     p.expectMessageType[Option[StepList]]
 
-    //After stop sequence
+    // After stop sequence
     sequencerActor ! GetSequence(p.ref)
     val stepList = p.expectMessageType[Option[StepList]]
     expectedState match {

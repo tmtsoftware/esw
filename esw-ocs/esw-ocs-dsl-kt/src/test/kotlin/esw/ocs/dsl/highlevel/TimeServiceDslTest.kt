@@ -17,6 +17,8 @@ import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 class TimeServiceDslTest : TimeServiceDsl {
@@ -24,7 +26,7 @@ class TimeServiceDslTest : TimeServiceDsl {
     private val cancellable = mockk<Cancellable>()
 
     private val startTime: UTCTime = utcTimeNow()
-    private val duration: Duration = Duration.seconds(10)
+    private val duration: Duration = 10.seconds
     private val jDuration = duration.toJavaDuration()
 
     override val timeService: TimeServiceScheduler = scheduler
@@ -37,21 +39,21 @@ class TimeServiceDslTest : TimeServiceDsl {
     }
 
     @Test
-    fun `TimeServiceDsl should scheduleOnce should delegate to timeServiceScheduler#scheduleOnce | ESW-122`() = runBlocking{
+    fun `TimeServiceDsl should scheduleOnce should delegate to timeServiceScheduler#scheduleOnce | ESW-122`() = runBlocking {
         every { scheduler.scheduleOnce(startTime, any<Runnable>()) }.answers { cancellable }
         scheduleOnce(startTime, mockk()) shouldBe cancellable
         verify { scheduler.scheduleOnce(startTime, any<Runnable>()) }
     }
 
     @Test
-    fun `TimeServiceDsl should scheduleOnceFromNow should delegate to timeServiceScheduler#scheduleOnce | ESW-122`() = runBlocking{
+    fun `TimeServiceDsl should scheduleOnceFromNow should delegate to timeServiceScheduler#scheduleOnce | ESW-122`() = runBlocking {
         every { scheduler.scheduleOnce(any(), any<Runnable>()) }.answers { cancellable }
-        scheduleOnceFromNow(Duration.seconds(1), mockk()) shouldBe cancellable
+        scheduleOnceFromNow(1.seconds, mockk()) shouldBe cancellable
         verify { scheduler.scheduleOnce(any(), any<Runnable>()) }
     }
 
     @Test
-    fun `schedulePeriodically should delegate to timeServiceScheduler#schedulePeriodically | ESW-122`()= runBlocking{
+    fun `schedulePeriodically should delegate to timeServiceScheduler#schedulePeriodically | ESW-122`() = runBlocking {
         every {
             scheduler.schedulePeriodically(startTime, jDuration, any<Runnable>())
         }.answers { cancellable }
@@ -61,30 +63,30 @@ class TimeServiceDslTest : TimeServiceDsl {
     }
 
     @Test
-    fun `schedulePeriodicallyFromNow should delegate to timeServiceScheduler#schedulePeriodically | ESW-122`()= runBlocking{
+    fun `schedulePeriodicallyFromNow should delegate to timeServiceScheduler#schedulePeriodically | ESW-122`() = runBlocking {
         every {
             scheduler.schedulePeriodically(any(), jDuration, any<Runnable>())
         }.answers { cancellable }
 
-        schedulePeriodicallyFromNow(Duration.seconds(1), duration, mockk()) shouldBe cancellable
+        schedulePeriodicallyFromNow(1.seconds, duration, mockk()) shouldBe cancellable
         verify { scheduler.schedulePeriodically(any(), jDuration, any<Runnable>()) }
     }
 
     @Test
     fun `offsetFromNow should give offset between current time and provided instance of the time | ESW-122`() {
         val offset: Duration = UTCTime.after(FiniteDuration(1, TimeUnit.SECONDS)).offsetFromNow()
-        assertWithin(expected = Duration.seconds(1), result = offset, tolerance = Duration.milliseconds(2))
+        assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
     }
 
     @Test
     fun `utcTimeAfter should give UTC time of after given duration from now | ESW-122`() {
-        val offset: Duration = utcTimeAfter(Duration.seconds(1)).offsetFromNow()
-        assertWithin(expected = Duration.seconds(1), result = offset, tolerance = Duration.milliseconds(2))
+        val offset: Duration = utcTimeAfter(1.seconds).offsetFromNow()
+        assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
     }
 
     @Test
     fun `taiTimeAfter should give time TAI of after given duration from now | ESW-122`() {
-        val offset: Duration = taiTimeAfter(Duration.seconds(1)).offsetFromNow()
-        assertWithin(expected = Duration.seconds(1), result = offset, tolerance = Duration.milliseconds(2))
+        val offset: Duration = taiTimeAfter(1.seconds).offsetFromNow()
+        assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
     }
 }

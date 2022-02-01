@@ -10,6 +10,8 @@ import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.*
 import kotlin.math.sqrt
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 object aosq {
     val prefix = "AOESW.aosq"
@@ -84,7 +86,7 @@ script {
     }
 
     suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) {
-        val tcsSequencer = Sequencer(TCS, ObsMode("darknight"), Duration.seconds(10))
+        val tcsSequencer = Sequencer(TCS, ObsMode("darknight"), 10.seconds)
         tcsSequencer.submitAndWait(
                 sequenceOf(
                         Setup(aosq.prefix, "offset", obsId)
@@ -93,7 +95,7 @@ script {
                                 .add(tcsOffsetYKey.set(yoffset))
                                 .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
                 ),
-                Duration.seconds(10))
+                10.seconds)
     }
 
     onSetup("enableOiwfsTtf") { command ->
@@ -126,8 +128,8 @@ script {
         val startExposureCommand = Setup(aosq.prefix, "exposure", command.obsId)
                 .add(oiwfsExposureModeKey.setAll(probeExpModes))
 
-        val assembly = Assembly(WFOS, oiwfsDetectorAssembly.name, Duration.seconds(10))
-        val response = assembly.submitAndWait(startExposureCommand, Duration.seconds(10))
+        val assembly = Assembly(WFOS, oiwfsDetectorAssembly.name, 10.seconds)
+        val response = assembly.submitAndWait(startExposureCommand, 10.seconds)
 
         when (response) {
             is Completed -> {
@@ -136,7 +138,7 @@ script {
                 val maxAttempts = 20 // maximum number of loops on this guide star before rejecting
                 var attempts = 0
 
-                loop(Duration.milliseconds(500)) {
+                loop(500.milliseconds) {
                     when {
                         ttfFluxLow -> increaseExposureTime() // period tbd
                         isOffsetRequired(xoffset, yoffset) -> {

@@ -5,11 +5,11 @@ import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.params.*
 import kotlinx.coroutines.delay
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 FsmScript("INIT") {
 
-    val testAssembly = Assembly(ESW, "test", Duration.seconds(10))
+    val testAssembly = Assembly(ESW, "test", 10.seconds)
     val paramVariable = ParamVariable(true, "TCS.trigger", booleanKey("flag"))
     val flag = commandFlag()
 

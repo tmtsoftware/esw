@@ -9,7 +9,8 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.*
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 script {
 
@@ -22,7 +23,7 @@ script {
 
         // #creating-sequencer-timeout
         // create a sequencer entity with a timeout
-        val wfos2 = Sequencer(WFOS, ObsMode("wfos_darknight"), Duration.minutes(5))
+        val wfos2 = Sequencer(WFOS, ObsMode("wfos_darknight"), 5.minutes)
         // #creating-sequencer-timeout
 
 
@@ -46,7 +47,7 @@ script {
         // #queryFinal
 
         // #queryFinalWithTimeout
-        val finalRes: SubmitResponse = wfos.queryFinal(submitResponse.runId(), Duration.seconds(5))
+        val finalRes: SubmitResponse = wfos.queryFinal(submitResponse.runId(), 5.seconds)
         // #queryFinalWithTimeout
 
         // #submitAndWait
@@ -54,7 +55,7 @@ script {
         // #submitAndWait
 
         // #submitAndWaitWithTimeout
-        val sequenceRes: SubmitResponse = wfos.submitAndWait(sequence, Duration.seconds(5))
+        val sequenceRes: SubmitResponse = wfos.submitAndWait(sequence, 5.seconds)
         // #submitAndWaitWithTimeout
 
         // #goOnline

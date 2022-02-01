@@ -3,11 +3,11 @@ package esw.ocs.scripts.examples.testData
 import esw.ocs.api.models.ObsMode
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 script {
-    val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), Duration.seconds(10))
-    val testAssembly = Assembly(ESW, "test", Duration.seconds(10))
+    val lgsfSequencer = Sequencer(LGSF, ObsMode("darknight"), 10.seconds)
+    val testAssembly = Assembly(ESW, "test", 10.seconds)
     val datafileName = "darknightData.txt"
     onSetup("command-2") {
         val dataWriteStart = dataWriteStart(ExposureId("2021A-011-153-TCS-DET-SCI0-0001"), datafileName)

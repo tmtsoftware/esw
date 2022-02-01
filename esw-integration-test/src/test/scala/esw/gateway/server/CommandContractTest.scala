@@ -50,30 +50,30 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
       val currentStatesF: Future[Seq[CurrentState]] = commandService.subscribeCurrentState(stateNames).take(2).runWith(Sink.seq)
       Thread.sleep(1000)
 
-      //validate
+      // validate
       commandService.validate(command).futureValue shouldBe an[Accepted]
-      //oneway
+      // oneway
       commandService.oneway(command).futureValue shouldBe an[Accepted]
 
-      //submit-setup-command-subscription
+      // submit-setup-command-subscription
       val testProbe    = TestProbe[Event]()
       val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
-      //submit the setup command
+      // submit the setup command
       val submitResponse = commandService.submit(longRunningCommand).futureValue
       submitResponse shouldBe a[Started]
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
 
-      //assert the event which is publish in onSubmit handler of component
+      // assert the event which is publish in onSubmit handler of component
       actualSetupEvent.eventKey should ===(eventKey)
 
-      //subscribe current state returns set of states successfully
+      // subscribe current state returns set of states successfully
       currentStatesF.futureValue.toSet should ===(Set(currentState1, currentState2))
 
-      //queryFinal
+      // queryFinal
       commandService.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
     }
 
@@ -86,13 +86,13 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
 
       val commandService = clientFactory.component(componentId)
 
-      //submit-setup-command-subscription
+      // submit-setup-command-subscription
       val testProbe    = TestProbe[Event]()
       val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent]
 
-      //submit the setup command
+      // submit the setup command
       val submitResponseF = commandService.submitAndWait(longRunningCommand)
       extractResponse(testProbe.expectMessageType[SystemEvent]) should ===("Started")
       submitResponseF.futureValue shouldBe a[Completed]
@@ -113,10 +113,10 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
       val currentStatesF: Future[Seq[CurrentState]] = commandService.subscribeCurrentState(stateNames).take(2).runWith(Sink.seq)
       Thread.sleep(500)
 
-      //oneway
+      // oneway
       commandService.oneway(command).futureValue shouldBe an[Accepted]
 
-      //subscribe current state returns set of states successfully
+      // subscribe current state returns set of states successfully
       currentStatesF.futureValue.toSet should ===(Set(currentState1, currentState2))
     }
   }

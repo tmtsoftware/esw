@@ -21,11 +21,11 @@ class NewSequenceHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   private var sequencer: SequencerApi = _
 
-  //create testprobe for the event publishing in command-1 handler in the script
+  // create testprobe for the event publishing in command-1 handler in the script
   private val commandHandlerEventKeys                    = Set(EventKey("LGSF.darknight.command1"))
   private var commandHandlerEventProbe: TestProbe[Event] = _
 
-  //create testprobe for the event publishing in onNewSequence handler in the script
+  // create testprobe for the event publishing in onNewSequence handler in the script
   private val newSequenceHandlerEventKeys                             = Set(EventKey("LGSF.darknight.NewSequenceHandler"))
   private var newSequenceHandlerInitializationProbe: TestProbe[Event] = _
 
@@ -46,21 +46,21 @@ class NewSequenceHandlerIntegrationTest extends EswTestKit(EventServer) {
     "run the new Sequencer handler before starting the new Sequence | ESW-303" in {
       val submitResponseF = sequencer.submit(sequence)
 
-      //assert sequence has not initialized
+      // assert sequence has not initialized
       commandHandlerEventProbe.expectNoMessage()
 
       val sequenceHandlerEventParam          = StringKey.make("onNewSequence").set("Started")
       val sequenceHandlerInitializationEvent = newSequenceHandlerInitializationProbe.expectMessageType[SystemEvent]
 
-      //assert onNewSequence handler has started
+      // assert onNewSequence handler has started
       sequenceHandlerInitializationEvent.paramSet.head shouldBe sequenceHandlerEventParam
 
       Thread.sleep(500)
-      //onNewSequence handler completed
+      // onNewSequence handler completed
 
       val newSequenceEventParam       = StringKey.make("sequence-command-1").set("Started")
       val sequenceInitializationEvent = commandHandlerEventProbe.expectMessageType[SystemEvent]
-      //assert sequence has started
+      // assert sequence has started
       sequenceInitializationEvent.paramSet.head shouldBe newSequenceEventParam
 
       val submitRes = submitResponseF.futureValue
@@ -72,10 +72,10 @@ class NewSequenceHandlerIntegrationTest extends EswTestKit(EventServer) {
       val loadSeqResF = sequencer.loadSequence(sequence)
       loadSeqResF.futureValue shouldBe Ok
 
-      //assert sequence has not initialized
+      // assert sequence has not initialized
       commandHandlerEventProbe.expectNoMessage()
 
-      //assert onNewSequence handler has not initialized since sequence is only loaded
+      // assert onNewSequence handler has not initialized since sequence is only loaded
       newSequenceHandlerInitializationProbe.expectNoMessage()
 
       // starting the sequence
@@ -85,17 +85,17 @@ class NewSequenceHandlerIntegrationTest extends EswTestKit(EventServer) {
       val sequenceHandlerEventParam          = StringKey.make("onNewSequence").set("Started")
       val sequenceHandlerInitializationEvent = newSequenceHandlerInitializationProbe.expectMessageType[SystemEvent]
 
-      //assert onNewSequence handler has started
+      // assert onNewSequence handler has started
       sequenceHandlerInitializationEvent.paramSet.head shouldBe sequenceHandlerEventParam
 
       Thread.sleep(500)
-      //onNewSequence handler completed
+      // onNewSequence handler completed
 
-      //now sequence commands execution should start
+      // now sequence commands execution should start
       val newSequenceEventParam       = StringKey.make("sequence-command-1").set("Started")
       val sequenceInitializationEvent = commandHandlerEventProbe.expectMessageType[SystemEvent]
 
-      //assert sequence has started
+      // assert sequence has started
       sequenceInitializationEvent.paramSet.head shouldBe newSequenceEventParam
 
       val submitRes = submitResponseF.futureValue

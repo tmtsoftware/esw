@@ -23,7 +23,7 @@ trait AgentSetup extends LocationServiceCodecs {
   val agentPrefix: Prefix                   = Prefix(ESW, "machine_A1")
   val eswVersion: Some[String]              = Some(appVersion)
 
-  //ESW-325: spawns sequence component via agent using coursier with provided sha
+  // ESW-325: spawns sequence component via agent using coursier with provided sha
   def spawnSequenceComponent(agentClient: AgentClient, componentName: String): Future[SpawnResponse] =
     agentClient.spawnSequenceComponent(componentName, eswVersion)
 }

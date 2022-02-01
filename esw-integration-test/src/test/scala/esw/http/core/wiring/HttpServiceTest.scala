@@ -64,7 +64,7 @@ class HttpServiceTest extends EswTestKit {
       location.uri.getHost should ===(hostname)
       location.connection should ===(settings.httpConnection)
       location.metadata should ===(metadata)
-      //should not bind to all but specific hostname IP
+      // should not bind to all but specific hostname IP
       SocketUtils.isAddressInUse(hostname, _servicePort) should ===(true)
       SocketUtils.isAddressInUse("localhost", _servicePort) should ===(false)
     }
@@ -138,7 +138,7 @@ class HttpServiceTest extends EswTestKit {
       location.uri.getHost should ===(insideHostname)
       location.connection should ===(settings.httpConnection)
       location.metadata should ===(metadata)
-      //should not bind to all but specific hostname IP
+      // should not bind to all but specific hostname IP
       SocketUtils.isAddressInUse(insideHostname, _servicePort) should ===(true)
       SocketUtils.isAddressInUse("localhost", _servicePort) should ===(false)
     }

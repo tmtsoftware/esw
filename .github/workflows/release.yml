@@ -9,8 +9,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      CSW_VERSION: "4.0.0"
-      ESW_OCS_ENG_UI_VERSION: "0.1.0"
+      CSW_VERSION: "4.0.1-RC1"
+      ESW_OCS_ENG_UI_VERSION: "0.2.0-RC1"
     steps:
       - uses: actions/checkout@v2
       - uses: laughedelic/coursier-setup@v1
@@ -38,21 +38,17 @@ jobs:
       - run: npm install -g junit-viewer
 
       - name: Get tag
+        id: tag
         uses: dawidd6/action-get-tag@v1
         with:
           #strip `v` prefix
           strip_v: true
 
-      # This env variable is used when we do Docs Publish
-      - name: Set JITPACK_VERSION environment variable
-        run: echo "JITPACK_VERSION=${{steps.tag.outputs.tag}}" >> $GITHUB_ENV
-
       - name: Build
         run: |
-          sbtn scalafmtCheck
           sbtn clean
-          sbtn makeSite
-          sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
+          sbtn scalafmtCheck
+          sbt -DenableFatalWarnings=true makeSite
 
       - name: Tests
         run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
@@ -88,6 +84,11 @@ jobs:
         with:
           name: RTM
           path: target/RTM
+
+      # This env variable is used when we do Docs Publish and this step should be after
+      # running integration tests as they require 0.1.0-SNAPSHOT version to do publishLocal
+      - name: Set JITPACK_VERSION environment variable
+        run: echo "JITPACK_VERSION=${{steps.tag.outputs.tag}}" >> $GITHUB_ENV
 
       - name: Github Release
         run: sbt githubRelease

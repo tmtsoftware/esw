@@ -21,20 +21,20 @@ import scala.concurrent.duration.FiniteDuration
 
 class CswTestMocks(implicit ec: ExecutionContext) {
 
-  //val actorRuntime: ActorRuntime = new ActorRuntime(system)
+  // val actorRuntime: ActorRuntime = new ActorRuntime(system)
   val logger: Logger           = mock[Logger]
   val loggerCache: LoggerCache = mock[LoggerCache]
   when(loggerCache.get(any[Prefix])).thenReturn(logger)
 
-  //command service mocks
+  // command service mocks
   val resolver: Resolver             = mock[Resolver]
   val commandService: CommandService = mock[CommandService]
   val sequencer: SequencerApi        = mock[SequencerApi]
   val adminApi: AdminApi             = mock[AdminApi]
-  //alarm service mocks
+  // alarm service mocks
   val alarmService: AlarmAdminService = mock[AlarmAdminService]
 
-  //event service mocks
+  // event service mocks
   val eventService: EventService               = mock[EventService]
   val eventSubscriberUtil: EventSubscriberUtil = mock[EventSubscriberUtil]
   val eventPublisher: EventPublisher           = mock[EventPublisher]

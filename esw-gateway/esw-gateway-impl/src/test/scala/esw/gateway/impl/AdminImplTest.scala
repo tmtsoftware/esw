@@ -33,7 +33,7 @@ class AdminImplTest extends BaseTestSuite {
     actorTestKit.shutdownTestKit()
   }
 
-  //Story number not added in test names as its only code movement from csw to esw
+  // Story number not added in test names as its only code movement from csw to esw
   "getLogMetadata" must {
     "get log metadata when component is discovered and it responds with metadata" in {
       val locationService: LocationService = mock[LocationService]
@@ -71,7 +71,7 @@ class AdminImplTest extends BaseTestSuite {
     "fail with InvalidComponent when componentId is not not resolved" in {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      val componentId                      = models.ComponentId(Prefix(Subsystem.AOESW, "test_sequencer"), ComponentType.Sequencer)
+      val componentId = models.ComponentId(Prefix(Subsystem.AOESW, "test_sequencer"), ComponentType.Sequencer)
       when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.getLogMetadata(componentId), 100.millis)
@@ -101,7 +101,7 @@ class AdminImplTest extends BaseTestSuite {
       val locationService: LocationService = mock[LocationService]
       val probe                            = actorTestKit.createTestProbe[SetComponentLogLevel]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      val componentId                      = models.ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Sequencer)
+      val componentId = models.ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Sequencer)
       when(locationService.find(AkkaConnection(componentId))).thenReturn(
         Future.successful(
           Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
@@ -114,7 +114,7 @@ class AdminImplTest extends BaseTestSuite {
     "fail with InvalidComponent when componentId is not not resolved" in {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      val componentId                      = models.ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Sequencer)
+      val componentId = models.ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Sequencer)
       when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.setLogLevel(componentId, Level.FATAL), 100.millis)

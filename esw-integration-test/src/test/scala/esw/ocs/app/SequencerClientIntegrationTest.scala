@@ -40,7 +40,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   private var tcsSequencer: SequencerApi = _
 
   override protected def beforeEach(): Unit = {
-    //ocs sequencer, starts with TestScript2
+    // ocs sequencer, starts with TestScript2
     spawnSequencer(subsystem, obsMode)
 
     ocsSequencer = sequencerClient(subsystem, obsMode)
@@ -166,12 +166,12 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   "Go online and offline | ESW-194, ESW-222, ESW-101, ESW-134, ESW-236" in {
 
-    //****************** Go offline ******************************
+    // ****************** Go offline ******************************
 
-    //sending sequence to ocs sequencer(TestScript2)
+    // sending sequence to ocs sequencer(TestScript2)
     val sequence = Sequence(command1, command2)
     ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed] // asserting the response
-    //#################
+    // #################
 
     // creating subscriber for offline event
     val testProbe                = TestProbe[Event]()
@@ -179,7 +179,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val offlineEventSubscription = eventSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
     offlineEventSubscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard invalid event
-    //##############
+    // ##############
 
     // assert ocs sequencer is in offline state on sending goOffline message
     ocsSequencer.goOffline().futureValue should ===(Ok)
@@ -190,14 +190,14 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     Thread.sleep(1000) // wait till goOffline msg from sequencer1 reaches to sequencer2
 
-    //tcs sequencer should go in offline mode
+    // tcs sequencer should go in offline mode
     tcsSequencer.isOnline.futureValue should ===(false)
 
     // assert tcs sequencer's offline handlers are called
     val offlineEvent = testProbe.expectMessageType[SystemEvent]
     offlineEvent.paramSet.head.values.head shouldBe "offline"
 
-    //****************** go online ******************************
+    // ****************** go online ******************************
     // assert both the sequencers goes online and online handlers are called
 
     // creating subscriber for online event
@@ -211,7 +211,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     Thread.sleep(1000) // wait till goOnline msg from sequencer1 reaches to sequencer2
 
-    //tcs sequencer should go in online mode
+    // tcs sequencer should go in online mode
     tcsSequencer.isOnline.futureValue should ===(true)
 
     // assert tcs sequencer's online handlers are called
@@ -224,13 +224,13 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     ocsSequencer.loadSequence(sequence).futureValue should ===(Ok)
 
-    //assert that it does not accept AbortSequence in loaded state
+    // assert that it does not accept AbortSequence in loaded state
     ocsSequencer.abortSequence().futureValue should ===(Unhandled(Loaded.name, "AbortSequence"))
 
     val startedResponse = ocsSequencer.startSequence().futureValue
     startedResponse shouldBe a[Started]
 
-    //assert that AbortSequence is accepted in Running state
+    // assert that AbortSequence is accepted in Running state
     ocsSequencer.abortSequence().futureValue should ===(Ok)
 
     val expectedSteps = List(
@@ -247,13 +247,13 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     ocsSequencer.loadSequence(sequence).futureValue should ===(Ok)
 
-    //assert that it does not accept Stop in loaded state
+    // assert that it does not accept Stop in loaded state
     ocsSequencer.stop().futureValue should ===(Unhandled(Loaded.name, "Stop"))
 
     val startedResponse = ocsSequencer.startSequence().futureValue
     startedResponse shouldBe a[Started]
 
-    //assert that Stop is accepted in Running state
+    // assert that Stop is accepted in Running state
     ocsSequencer.stop().futureValue should ===(Ok)
 
     val expectedSteps = List(
@@ -279,14 +279,14 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     diagnosticEventSubscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard invalid event
 
-    //Diagnostic Mode
+    // Diagnostic Mode
     ocsSequencer.diagnosticMode(startTime, hint).futureValue should ===(Ok)
 
     val expectedDiagnosticEvent = testProbe.expectMessageType[SystemEvent]
 
     expectedDiagnosticEvent.paramSet.head shouldBe diagnosticModeParam
 
-    //Operations Mode
+    // Operations Mode
     val operationsModeParam = StringKey.make("mode").set("operations")
 
     ocsSequencer.operationsMode().futureValue should ===(Ok)
@@ -297,21 +297,21 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   }
 
   "GetSequenceComponent | ESW-255" in {
-    //start sequence component
+    // start sequence component
     val sequenceComponentLocation = spawnSequenceComponent(ESW, Some("primary"))
     val sequenceComponentImpl     = new SequenceComponentImpl(sequenceComponentLocation)
 
-    //start sequencer
+    // start sequencer
     val obsMode  = ObsMode("darknight")
     val response = sequenceComponentImpl.loadScript(ESW, obsMode).futureValue
     response shouldBe a[SequencerLocation]
 
     val sequencer: SequencerApi = sequencerClient(ESW, obsMode)
 
-    //assert that getSequenceComponent returns sequenceComponentLocation where sequencer is running
+    // assert that getSequenceComponent returns sequenceComponentLocation where sequencer is running
     sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
 
-    //clean-up
+    // clean-up
     sequenceComponentImpl.unloadScript()
   }
 

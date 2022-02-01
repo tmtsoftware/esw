@@ -55,7 +55,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   }
 
   override def beforeEach(): Unit = {
-    //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
+    // start LGSF sequencer as OCS send commands to LGSF downstream sequencer
     ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)
     tcsSequencer = spawnSequencerProxy(tcsSubsystem, tcsObsMode)
     lgsfSequencer = spawnSequencerProxy(lgsfSubsystem, lgsfObsMode)
@@ -100,7 +100,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val testProbe = createTestProbe(Set(eventKey))
 
-      //diagnosticMode
+      // diagnosticMode
       val diagnosticModeParam: Parameter[_] = StringKey.make("mode").set("diagnostic")
 
       ocsSequencer.diagnosticMode(UTCTime.now(), "engineering").futureValue should ===(Ok)
@@ -108,7 +108,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val actualDiagEvent = testProbe.expectMessageType[SystemEvent]
       actualDiagEvent.paramSet.head shouldBe diagnosticModeParam
 
-      //operationsMode
+      // operationsMode
       val operationsModeParam = StringKey.make("mode").set("operations")
 
       ocsSequencer.operationsMode().futureValue should ===(Ok)
@@ -123,13 +123,13 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val testProbe = createTestProbe(Set(onlineKey, offlineKey))
 
-      //goOffline
+      // goOffline
       ocsSequencer.goOffline().futureValue should ===(Ok)
 
       val actualOfflineEvent = testProbe.expectMessageType[SystemEvent]
       actualOfflineEvent.eventKey should ===(offlineKey)
 
-      //goOnline
+      // goOnline
       ocsSequencer.goOnline().futureValue should ===(Ok)
 
       val actualOnlineEvent = testProbe.expectMessageType[SystemEvent]
@@ -264,23 +264,23 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
-      //assert probe for submit response of testAssembly(in testScript)
+      // assert probe for submit response of testAssembly(in testScript)
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
       actualSetupEvent.eventKey should ===(eventKey)
 
-      //assert probe for query response of testAssembly(in testScript)
+      // assert probe for query response of testAssembly(in testScript)
       val startedEvent = testProbe.expectMessageType[SystemEvent]
       startedEvent.eventKey should ===(startedEventKey)
 
-      //assert probe for queryFinal response of testAssembly(in testScript)
+      // assert probe for queryFinal response of testAssembly(in testScript)
       val completedEvent = testProbe.expectMessageType[SystemEvent]
       completedEvent.eventKey should ===(completedEventKey)
 
-      //assert probe for subscribeCurrentState response for stateName1 of testAssembly(in testScript)
+      // assert probe for subscribeCurrentState response for stateName1 of testAssembly(in testScript)
       val currentState1Event = testProbe.expectMessageType[SystemEvent]
       currentState1Event.eventKey should ===(currentState1EventKey)
 
-      //assert probe for subscribeCurrentState response for stateName2 of testAssembly(in testScript)
+      // assert probe for subscribeCurrentState response for stateName2 of testAssembly(in testScript)
       val currentState2Event = testProbe.expectMessageType[SystemEvent]
       currentState2Event.eventKey should ===(currentState2EventKey)
     }
