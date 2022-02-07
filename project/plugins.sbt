@@ -11,7 +11,7 @@ addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % 
 
 resolvers += "jitpack" at "https://jitpack.io"
 libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "3.0.3"
-libraryDependencies += "com.github.tmtsoftware" % "sbt-docs"      % "0.5.0"
+libraryDependencies += "com.github.tmtsoftware" % "sbt-docs"      % "62893b8"
 
 resolvers += Resolver.jcenterRepo
 addSbtPlugin("net.aichler" % "sbt-jupiter-interface" % "0.9.1")
