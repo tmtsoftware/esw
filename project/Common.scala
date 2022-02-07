@@ -64,6 +64,7 @@ object Common {
       // and the maven repo match
       version     := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
       fork        := true,
+      javaOptions += "-Xmx2G",
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),
       cancelable in Global    := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
