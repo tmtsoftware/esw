@@ -9,15 +9,15 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      CSW_VERSION: "4.0.1-RC1"
-      ESW_OCS_ENG_UI_VERSION: "0.2.0-RC1"
+      CSW_VERSION: "4.0.1"
+      ESW_OCS_ENG_UI_VERSION: "0.2.0"
     steps:
       - uses: actions/checkout@v2
       - uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: 11
           apps: sbt sbtn
-      - uses: coursier/cache-action@v5
+      - uses: coursier/cache-action@v6
 
       - uses: actions/setup-node@v1
         with:

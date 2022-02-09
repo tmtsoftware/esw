@@ -9,13 +9,13 @@ Here is the repository for ESW: [ESW](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
-## [ESW v0.4.0] - 2022-01-28
+## [ESW v0.4.0] - 2022-02-09
 
 This release contains minor fixes.
 
 ### Documentation
-- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.4.0-RC1/
-- Scaladoc: https://tmtsoftware.github.io/esw/0.4.0-RC1/api/scala/index.html
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.4.0/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.4.0/api/scala/index.html
 
 ### Supporting Releases
 

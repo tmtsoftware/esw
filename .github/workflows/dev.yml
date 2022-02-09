@@ -22,7 +22,7 @@ jobs:
         with:
           jvm: 11
           apps: sbt sbtn
-      - uses: coursier/cache-action@v5
+      - uses: coursier/cache-action@v6
 
       - name: Install Redis
         run: sudo apt-get install redis-server
