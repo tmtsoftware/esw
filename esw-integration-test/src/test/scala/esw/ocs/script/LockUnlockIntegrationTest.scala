@@ -7,7 +7,7 @@ import csw.params.events.EventKey
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
-import esw.gateway.server.testdata.AssemblyBehaviourFactory
+import esw.gateway.server.testdata.SampleAssemblyHandlers
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
@@ -17,7 +17,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory())
+    spawnAssembly(Prefix("ESW.test"), (ctx, cswCtx) => new SampleAssemblyHandlers(ctx, cswCtx))
   }
 
   override def beforeEach(): Unit = {

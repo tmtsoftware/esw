@@ -19,7 +19,7 @@ import esw.gateway.impl.AdminImpl
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.ocs.testkit.EswTestKit
-import esw.shell.component.SimulatedComponentBehaviourFactory
+import esw.shell.component.SimulatedComponentHandlers
 import esw.shell.service.{Container, SequenceManager}
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.ProvisionConfig
@@ -52,7 +52,7 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
   }
 
   def spawnSimulatedHCD(prefix: String): ActorRef[ComponentMessage] =
-    eswTestKit.spawnHCD(Prefix(prefix), new SimulatedComponentBehaviourFactory())
+    eswTestKit.spawnHCD(Prefix(prefix), (ctx, cswCtx) => new SimulatedComponentHandlers(ctx, cswCtx))
 
   def spawnSimulatedAssembly(assemblyPrefix: String, agentPrefix: String): SpawnContainersResponse = {
     val client = agentClient(agentPrefix)
@@ -60,7 +60,7 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
   }
 
   def spawnSimulatedAssembly(prefix: String): ActorRef[ComponentMessage] =
-    eswTestKit.spawnAssembly(Prefix(prefix), new SimulatedComponentBehaviourFactory())
+    eswTestKit.spawnAssembly(Prefix(prefix), (ctx, cswCtx) => new SimulatedComponentHandlers(ctx, cswCtx))
 
   def spawnAssemblyWithHandler(prefix: String, behaviorFactory: ComponentBehaviorFactory): ActorRef[ComponentMessage] =
     eswTestKit.spawnAssembly(Prefix(prefix), behaviorFactory)

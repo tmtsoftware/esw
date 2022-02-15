@@ -27,7 +27,7 @@ object Container {
       s"""
          |prefix = $prefix
          |componentType = $componentType
-         |behaviorFactoryClassName = "esw.shell.component.SimulatedComponentBehaviourFactory"
+         |componentHandlerClassName = "esw.shell.component.SimulatedComponentHandlers"
          |locationServiceUsage = RegisterOnly
          |""".stripMargin
     val standaloneConfPath = FileUtils.createTempConfFile("standalone", standaloneConf).toString
