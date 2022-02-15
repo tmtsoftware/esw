@@ -100,7 +100,8 @@ lazy val `esw-ocs-impl` = project
   .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value,
-    Test / fork := true
+    Test / fork := true,
+    javaOptions += "-XX:+AllowRedefinitionToAddDeleteMethods"
   )
   .dependsOn(
     `esw-ocs-api`.jvm,
