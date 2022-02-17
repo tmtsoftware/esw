@@ -1,11 +1,13 @@
 package esw.shell
 
+import akka.actor.typed.scaladsl.ActorContext
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
-import csw.command.client.messages.ComponentMessage
-import csw.framework.scaladsl.ComponentBehaviorFactory
+import csw.command.client.messages.{ComponentMessage, TopLevelActorMessage}
+import csw.framework.models.CswContext
+import csw.framework.scaladsl.ComponentHandlers
 import csw.location.api.models.ComponentType.{Assembly, HCD, Machine, SequenceComponent}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentClient
@@ -32,7 +34,7 @@ import scala.concurrent.duration.*
  * This class contains factory methods to create clients for SM, Sequencer, HCD/Assembly etc
  */
 class Factories(val locationUtils: LocationServiceUtil, configServiceExt: ConfigServiceExt)(implicit
-    val actorSystem: ActorSystem[_]
+    val actorSystem: ActorSystem[?]
 ) {
   implicit lazy val ec: ExecutionContext = actorSystem.executionContext
   private val eswTestKit: EswTestKit     = new EswTestKit() {}
@@ -62,10 +64,16 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
   def spawnSimulatedAssembly(prefix: String): ActorRef[ComponentMessage] =
     eswTestKit.spawnAssembly(Prefix(prefix), (ctx, cswCtx) => new SimulatedComponentHandlers(ctx, cswCtx))
 
-  def spawnAssemblyWithHandler(prefix: String, behaviorFactory: ComponentBehaviorFactory): ActorRef[ComponentMessage] =
+  def spawnAssemblyWithHandler(
+      prefix: String,
+      behaviorFactory: (ActorContext[TopLevelActorMessage], CswContext) => ComponentHandlers
+  ): ActorRef[ComponentMessage] =
     eswTestKit.spawnAssembly(Prefix(prefix), behaviorFactory)
 
-  def spawnHCDWithHandler(prefix: String, behaviorFactory: ComponentBehaviorFactory): ActorRef[ComponentMessage] =
+  def spawnHCDWithHandler(
+      prefix: String,
+      behaviorFactory: (ActorContext[TopLevelActorMessage], CswContext) => ComponentHandlers
+  ): ActorRef[ComponentMessage] =
     eswTestKit.spawnHCD(Prefix(prefix), behaviorFactory)
 
   // ============= ESW ============
