@@ -66,15 +66,15 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
 
   def spawnAssemblyWithHandler(
       prefix: String,
-      behaviorFactory: (ActorContext[TopLevelActorMessage], CswContext) => ComponentHandlers
+      handlersFactory: (ActorContext[TopLevelActorMessage], CswContext) => ComponentHandlers
   ): ActorRef[ComponentMessage] =
-    eswTestKit.spawnAssembly(Prefix(prefix), behaviorFactory)
+    eswTestKit.spawnAssembly(Prefix(prefix), handlersFactory)
 
   def spawnHCDWithHandler(
       prefix: String,
-      behaviorFactory: (ActorContext[TopLevelActorMessage], CswContext) => ComponentHandlers
+      handlersFactory: (ActorContext[TopLevelActorMessage], CswContext) => ComponentHandlers
   ): ActorRef[ComponentMessage] =
-    eswTestKit.spawnHCD(Prefix(prefix), behaviorFactory)
+    eswTestKit.spawnHCD(Prefix(prefix), handlersFactory)
 
   // ============= ESW ============
   def sequencerCommandService(prefix: Prefix): SequencerApi = {
