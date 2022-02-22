@@ -12,7 +12,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.akka.app.process.{ProcessExecutor, ProcessManager}
 import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig, ContainerMode}
+import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig}
 import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
@@ -66,7 +66,6 @@ class AgentSetup extends BaseTestSuite {
       "csw-sampledeploy",
       "SampleContainerCmdApp",
       "0.0.1",
-      ContainerMode.Standalone,
       Path.of("container.conf"),
       ConfigFileLocation.Local
     )

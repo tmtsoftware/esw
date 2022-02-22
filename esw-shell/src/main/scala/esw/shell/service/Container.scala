@@ -39,7 +39,6 @@ object Container {
          |    deployModule: "esw-shell"
          |    appName: "esw.shell.component.SimulatedContainerCmdApp"
          |    version: "0.1.0-SNAPSHOT"
-         |    mode: "Standalone"
          |    configFilePath: "$standaloneConfPath"
          |    configFileLocation: "Local"
          |  }

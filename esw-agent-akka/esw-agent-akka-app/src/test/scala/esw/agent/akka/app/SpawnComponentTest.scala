@@ -246,11 +246,11 @@ class SpawnComponentTest extends AgentSetup {
           s"$confPath"
         )
 
-      "reply 'SpawnContainersResponse' and spawn containers on agent spawn | ESW-379" in {
+      "reply 'SpawnContainersResponse' and spawn containers on agent spawn | ESW-379, ESW-584" in {
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
           .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
         when(configUtils.getConfig(Paths.get("confPath1.conf"), isLocal = true))
-          .thenReturn(Future.successful(ConfigFactory.parseString("name = \"testContainer1\"")))
+          .thenReturn(Future.successful(ConfigFactory.parseString("name = \"testContainer1\"\ncomponents = []")))
         when(configUtils.getConfig(Paths.get("confPath2.conf"), isLocal = true))
           .thenReturn(Future.successful(ConfigFactory.parseString("prefix = \"ESW.testHCD\"\ncomponentType = hcd")))
         mockLocationService()
@@ -283,7 +283,6 @@ class SpawnComponentTest extends AgentSetup {
               "csw.sample2deploy.Sample2ContainerCmdApp",
               "--",
               "--local",
-              "--standalone",
               "confPath2.conf"
             ),
             componentPrefixTwo
@@ -291,7 +290,7 @@ class SpawnComponentTest extends AgentSetup {
         }
       }
 
-      "reply 'Completed' and spawn containers on receiving message | ESW-379" in {
+      "reply 'Completed' and spawn containers on receiving message | ESW-379, ESW-584" in {
         val agentActorRef = spawnAgentActor(name = "test-actor-random-11")
         val probe         = TestProbe[SpawnContainersResponse]()
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
@@ -332,14 +331,13 @@ class SpawnComponentTest extends AgentSetup {
             "csw.sample2deploy.Sample2ContainerCmdApp",
             "--",
             "--local",
-            "--standalone",
             "confPath2.conf"
           ),
           componentPrefixTwo
         )
       }
 
-      "reply 'Completed' with Failed response if some container fail to spawn | ESW-379" in {
+      "reply 'Completed' with Failed response if some container fail to spawn | ESW-379, ESW-584" in {
         val agentActorRef = spawnAgentActor(name = "test-actor-random-12")
         val probe         = TestProbe[SpawnContainersResponse]()
         val secondContainerCommand =
@@ -353,13 +351,12 @@ class SpawnComponentTest extends AgentSetup {
             "csw.sample2deploy.Sample2ContainerCmdApp",
             "--",
             "--local",
-            "--standalone",
             "confPath2.conf"
           )
         when(configUtils.getConfig(hostConfigPath, isHostConfigLocal))
           .thenReturn(Future.successful(ConfigFactory.parseFile(hostConfigPath.toFile)))
         when(configUtils.getConfig(Paths.get("confPath1.conf"), isLocal = true))
-          .thenReturn(Future.successful(ConfigFactory.parseString("name = \"testContainer1\"")))
+          .thenReturn(Future.successful(ConfigFactory.parseString("name = \"testContainer1\"\ncomponents = []")))
         when(configUtils.getConfig(Paths.get("confPath2.conf"), isLocal = true))
           .thenReturn(Future.successful(ConfigFactory.parseString("prefix = \"ESW.testHCD\"\ncomponentType = hcd")))
         mockLocationService()
