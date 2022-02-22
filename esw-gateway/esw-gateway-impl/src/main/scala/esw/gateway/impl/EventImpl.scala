@@ -9,7 +9,7 @@ import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
-import esw.gateway.api.protocol._
+import esw.gateway.api.protocol.*
 import msocket.api.Subscription
 import msocket.jvm.SourceExtension.RichSource
 
@@ -54,15 +54,21 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
       maxFrequency: Option[Int],
       pattern: String
   ): Source[Event, Subscription] = {
-
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
+    limitFrequency(events, maxFrequency)
+  }
+
+  override def subscribeObserveEvents(maxFrequency: Option[Int]): Source[Event, Subscription] = {
+    val events = subscriber.subscribeObserveEvents()
+    limitFrequency(events, maxFrequency)
+  }
+
+  private def limitFrequency(events: Source[Event, EventSubscription], maxFrequency: Option[Int]): Source[Event, Subscription] = {
     val stream = maxFrequency match {
       case Some(x) if x <= 0 => Source.failed(InvalidMaxFrequency())
       case Some(f) => events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
       case None    => events
     }
-
     stream.withSubscription()
   }
-
 }

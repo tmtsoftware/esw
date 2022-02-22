@@ -4,9 +4,9 @@ import csw.command.api.messages.CommandServiceStreamRequest
 import csw.command.client.handlers.CommandServiceStreamRequestHandler
 import csw.location.api.models.ComponentId
 import esw.gateway.api.EventApi
-import esw.gateway.api.codecs.GatewayCodecs._
+import esw.gateway.api.codecs.GatewayCodecs.*
 import esw.gateway.api.protocol.GatewayStreamRequest
-import esw.gateway.api.protocol.GatewayStreamRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol.GatewayStreamRequest.*
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerStreamRequest
 import esw.ocs.handler.SequencerWebsocketHandler
@@ -29,6 +29,7 @@ class GatewayWebsocketHandler(resolver: Resolver, eventApi: EventApi)(implicit e
       case SequencerCommand(componentId, command)                 => onSequencerCommand(componentId, command)
       case Subscribe(eventKeys, maxFrequency)                     => stream(eventApi.subscribe(eventKeys, maxFrequency))
       case SubscribeWithPattern(subsystem, maxFrequency, pattern) => stream(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
+      case SubscribeObserveEvents(maxFrequency)                   => stream(eventApi.subscribeObserveEvents(maxFrequency))
     }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceStreamRequest): Future[StreamResponse] = {

@@ -2,10 +2,10 @@ package esw.gateway.server
 
 import akka.Done
 import akka.stream.scaladsl.Sink
-import csw.params.core.generics.KeyType.{ByteKey}
+import csw.params.core.generics.KeyType.ByteKey
 import csw.params.core.generics.{KeyType, Parameter}
-import csw.params.core.models._
-import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.params.core.models.*
+import csw.params.events.*
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.EventClient
@@ -33,6 +33,7 @@ class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCod
   private val name3         = EventName("event3")
   private val event1        = SystemEvent(prefix, name1, Set(arrayDataParam))
   private val event2        = SystemEvent(prefix, name2, Set(arrayDataParam))
+  private val obsEvent1     = IRDetectorEvent.observeStart(prefix)
   private val largeEvent    = SystemEvent(prefix, name3, paramSet)
   private val invalidEvent1 = Event.invalidEvent(EventKey(prefix, name1))
   private val invalidEvent2 = Event.invalidEvent(EventKey(prefix, name2))
@@ -40,16 +41,18 @@ class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCod
   private val eventKeys     = Set(EventKey(prefix, name1), EventKey(prefix, name2))
 
   "EventApi" must {
-    "publish, get, subscribe and pattern subscribe events | ESW-94, ESW-93, ESW-92, ESW-216, ESW-86" in {
+    "publish, get, subscribe and pattern subscribe events | ESW-94, ESW-93, ESW-92, ESW-216, ESW-86, ESW-581" in {
       val eventClient: EventClient = new EventClient(gatewayPostClient, gatewayWsClient)
 
-      val eventsF  = eventClient.subscribe(eventKeys, None).take(4).runWith(Sink.seq)
-      val pEventsF = eventClient.pSubscribe(Subsystem.TCS, None).take(2).runWith(Sink.seq)
+      val eventsF        = eventClient.subscribe(eventKeys, None).take(4).runWith(Sink.seq)
+      val pEventsF       = eventClient.pSubscribe(Subsystem.TCS, None).take(2).runWith(Sink.seq)
+      val observeEventsF = eventClient.subscribeObserveEvents().take(1).runWith(Sink.seq)
       Thread.sleep(500)
 
       // publish event successfully
       eventClient.publish(event1).futureValue should ===(Done)
       eventClient.publish(event2).futureValue should ===(Done)
+      eventClient.publish(obsEvent1).futureValue should ===(Done)
 
       // get set of events
       eventClient.get(Set(EventKey(prefix, name1))).futureValue shouldBe Set(event1)
@@ -64,6 +67,8 @@ class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCod
       // pSubscribe events returns a set of events successfully
       pEventsF.futureValue.toSet shouldBe Set(event1, event2)
 
+      // subscribeObserveEvents returns all the observe events
+      observeEventsF.futureValue.toSet shouldBe Set(obsEvent1)
     }
 
     "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-93, ESW-216, ESW-86" in {

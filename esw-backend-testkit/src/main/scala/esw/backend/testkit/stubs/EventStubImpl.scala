@@ -3,7 +3,7 @@ package esw.backend.testkit.stubs
 import akka.Done
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.stream.scaladsl.Source
-import csw.params.events.{Event, EventKey}
+import csw.params.events.{Event, EventKey, ObserveEvent}
 import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
 import esw.ocs.testkit.utils.BaseTestSuite
@@ -43,4 +43,11 @@ class EventStubImpl(_actorSystem: ActorSystem[SpawnProtocol.Command]) extends Ev
       .withSubscription()
   }
 
+  override def subscribeObserveEvents(maxFrequency: Option[Int]): Source[Event, Subscription] = {
+    val futureStream = future(2.seconds, Source(events.filter(e => e.isInstanceOf[ObserveEvent])))
+    Source
+      .futureSource(futureStream)
+      .mapMaterializedValue(_ => () => ())
+      .withSubscription()
+  }
 }
