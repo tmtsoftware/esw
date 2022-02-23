@@ -15,8 +15,8 @@ import csw.prefix.models.Prefix
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.server.testdata.AssemblyBehaviourFactory
-import esw.gateway.server.testdata.SampleAssemblyHandlers._
+import esw.gateway.server.testdata.SampleAssemblyHandlers
+import esw.gateway.server.testdata.SampleAssemblyHandlers.*
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
@@ -26,7 +26,7 @@ class CommandContractTest extends EswTestKit(EventServer, Gateway) with GatewayC
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory())
+    spawnAssembly(Prefix("ESW.test"), (ctx, cswCtx) => new SampleAssemblyHandlers(ctx, cswCtx))
   }
 
   "CommandApi" must {

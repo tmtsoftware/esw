@@ -5,10 +5,10 @@ import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
-import csw.framework.scaladsl.{ComponentBehaviorFactory, ComponentHandlers}
+import csw.framework.scaladsl.ComponentHandlers
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, TrackingEvent}
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
@@ -19,7 +19,7 @@ import scala.concurrent.duration.DurationInt
 
 class SimpleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
 
-  import cswCtx._
+  import cswCtx.*
   private val log = loggerFactory.getLogger
 
   private val connection: AkkaConnection = AkkaConnection(ComponentId(Prefix("CSW.sampleHcd"), ComponentType.HCD))
@@ -51,12 +51,5 @@ class SimpleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   override def onDiagnosticMode(startTime: UTCTime, hint: String): Unit = {}
 
   override def onOperationsMode(): Unit = {}
-
-}
-
-class SimpleAssemblyBehaviorFactory extends ComponentBehaviorFactory {
-
-  override def handlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext): ComponentHandlers =
-    new SimpleAssemblyHandlers(ctx, cswCtx)
 
 }

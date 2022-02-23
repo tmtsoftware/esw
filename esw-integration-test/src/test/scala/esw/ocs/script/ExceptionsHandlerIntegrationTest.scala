@@ -10,7 +10,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
-import esw.gateway.server.testdata.HcdBehaviourFactory
+import esw.gateway.server.testdata.SampleHcdHandlers
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.models.ObsMode
@@ -29,7 +29,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnHCD(Prefix("esw.testHcd"), new HcdBehaviourFactory())
+    spawnHCD(Prefix("esw.testHcd"), (ctx, cswCtx) => new SampleHcdHandlers(ctx, cswCtx))
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()

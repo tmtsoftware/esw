@@ -5,7 +5,7 @@ import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.internal.wiring.{FrameworkWiring, Standalone}
 import csw.framework.models.CswContext
-import csw.framework.scaladsl.{ComponentBehaviorFactory, ComponentHandlers}
+import csw.framework.scaladsl.ComponentHandlers
 import csw.location.api.models.TrackingEvent
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
@@ -17,7 +17,7 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.jdk.DurationConverters.ScalaDurationOps
 
 /**
@@ -55,13 +55,8 @@ object Main extends App {
   Await.result(Standalone.spawn(ConfigFactory.parseResources("demoHcd.conf"), wiring), 20.seconds)
 }
 
-class HcdBehaviourFactory extends ComponentBehaviorFactory {
-  override protected def handlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext): ComponentHandlers =
-    new SampleHcdHandlers(ctx, cswCtx)
-}
-
 class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
-  import cswCtx._
+  import cswCtx.*
   private val prefix    = Prefix("IRIS.filter.wheel")
   private val tempState = CurrentState(prefix, StateName("temp"))
   private val tempKey   = IntKey.make("tempKey")

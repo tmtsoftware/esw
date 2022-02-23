@@ -20,7 +20,7 @@ import csw.prefix.models.Subsystem.{ESW, LGSF, NFIRAOS, TCS}
 import csw.testkit.ConfigTestKit
 import csw.testkit.scaladsl.CSWService.{AlarmServer, ConfigServer, EventServer}
 import csw.time.core.models.UTCTime
-import esw.gateway.server.testdata.AssemblyBehaviourFactory
+import esw.gateway.server.testdata.SampleAssemblyHandlers
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{ObsMode, Step, StepList}
@@ -51,7 +51,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnAssembly(Prefix("ESW.test"), new AssemblyBehaviourFactory())
+    spawnAssembly(Prefix("ESW.test"), (ctx, cswCtx) => new SampleAssemblyHandlers(ctx, cswCtx))
   }
 
   override def beforeEach(): Unit = {
