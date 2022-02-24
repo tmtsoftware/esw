@@ -18,17 +18,18 @@ pipeline {
 
         stage('Build') {
             steps {
+                sh "cs java --jvm openjdk:1.17.0"
                 sh "sbt scalafmtCheck"
-                sh "sbt clean makeSite"
-                sh "sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
-                sh "sbt publishLocal"
+                sh "eval $(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt clean makeSite"
+                sh "eval $(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
+                sh "eval $(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt publishLocal"
             }
         }
 
         stage('Test') {
 
             steps {
-                sh "source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
+                sh "eval $(cs java --jvm openjdk:1.17.0 --env -m offline) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
             }
 
             post {
@@ -61,7 +62,7 @@ pipeline {
 
         stage('Multi-Jvm Test') {
             steps {
-              sh "sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
+              sh "eval $(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
             }
         }
     }
