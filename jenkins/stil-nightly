@@ -18,7 +18,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh "cs java --jvm openjdk:1.17.0"
+                sh "cs java --jvm openjdk:1.17.0 -version"
                 sh "sbt scalafmtCheck"
                 sh "eval \$(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt clean makeSite"
                 sh "eval \$(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
