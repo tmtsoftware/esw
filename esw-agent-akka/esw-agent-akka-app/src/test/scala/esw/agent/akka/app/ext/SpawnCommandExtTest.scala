@@ -6,7 +6,7 @@ import csw.prefix.models.Prefix
 import esw.agent.akka.app.BuildInfo
 import esw.agent.akka.app.ext.SpawnCommandExt.SpawnCommandOps
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig, ContainerMode}
+import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig}
 import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.config.VersionManager
 import esw.testcommons.BaseTestSuite
@@ -36,15 +36,8 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val versionManager: VersionManager  = mock[VersionManager]
   private val sequencerScriptsVersion: String = randomString(10)
   private val eswVersion: String              = randomString(10)
-  private val containerConfig: ContainerConfig = ContainerConfig(
-    "org",
-    "module",
-    "SampleContainerCmdApp",
-    "0.0.1",
-    ContainerMode.Standalone,
-    Path.of("standalone.conf"),
-    ConfigFileLocation.Local
-  )
+  private val containerConfig: ContainerConfig =
+    ContainerConfig("org", "module", "SampleContainerCmdApp", "0.0.1", Path.of("standalone.conf"), ConfigFileLocation.Local)
 
   when(versionManager.getScriptVersion).thenReturn(Future.successful(sequencerScriptsVersion))
   when(versionManager.eswVersion).thenReturn(Future.successful(eswVersion))
@@ -69,7 +62,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
     val spawnSeqMgrSimulationCmd =
       s"cs launch --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
     val spawnContainerCmd =
-      s"cs launch ${containerConfig.orgName}:${containerConfig.deployModule}_${BuildInfo.scalaBinaryVersion}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local --standalone ${containerConfig.configFilePath}"
+      s"cs launch ${containerConfig.orgName}:${containerConfig.deployModule}_${BuildInfo.scalaBinaryVersion}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local ${containerConfig.configFilePath}"
 
     "SpawnCommand.executableCommandStr" must {
       Table(
@@ -80,7 +73,7 @@ class SpawnCommandExtTest extends BaseTestSuite {
         ("SpawnSequenceManager", spawnSeqMgr, spawnSeqMgrCmd),
         ("SpawnSequenceManager(version)", spawnSeqMgrWithVersion, spawnSeqMgrWithVersionCmd),
         ("SpawnSequenceManagerSimulation", spawnSeqMgrSimulation, spawnSeqMgrSimulationCmd),
-        ("SpawnContainer", spawnContainer, spawnContainerCmd)
+        ("SpawnContainer | ESW-584", spawnContainer, spawnContainerCmd)
       ).foreach { case (name, spawnCommand, expectedCommandStr) =>
         name in {
           spawnCommand.executableCommandStr(channel, agentPrefix, versionManager).futureValue should ===(

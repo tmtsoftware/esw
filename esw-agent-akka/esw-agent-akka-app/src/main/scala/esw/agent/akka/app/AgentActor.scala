@@ -89,13 +89,14 @@ class AgentActor(
     val isContainerConfigLocal = containerConfig.configFileLocation == ConfigFileLocation.Local
     val containerInfoConfigF   = configUtils.getConfig(containerConfig.configFilePath, isContainerConfigLocal)
     containerInfoConfigF.map(containerInfoConfig => {
-      if (containerConfig.mode == ContainerMode.Standalone) {
-        val componentInfo = ComponentInfo(containerInfoConfig)
-        ComponentId(componentInfo.prefix, componentInfo.componentType)
-      }
-      else {
+      val isContainerConf = containerInfoConfig.hasPath("components")
+      if (isContainerConf) {
         val containerInfo = ContainerInfo(containerInfoConfig)
         ComponentId(Prefix(Container, containerInfo.name), ComponentType.Container)
+      }
+      else {
+        val componentInfo = ComponentInfo(containerInfoConfig)
+        ComponentId(componentInfo.prefix, componentInfo.componentType)
       }
     })
   }

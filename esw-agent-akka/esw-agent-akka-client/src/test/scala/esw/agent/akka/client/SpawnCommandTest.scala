@@ -4,7 +4,7 @@ import akka.actor.typed.ActorRef
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import esw.agent.akka.client.AgentCommand.SpawnCommand.{SpawnContainer, SpawnSequenceComponent, SpawnSequenceManager}
-import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig, ContainerMode}
+import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig}
 import esw.agent.service.api.models.SpawnResponse
 import esw.testcommons.BaseTestSuite
 
@@ -73,9 +73,9 @@ class SpawnCommandTest extends BaseTestSuite {
   "SpawnContainer's commandArg method" must {
     val actorRef = mock[ActorRef[SpawnResponse]]
 
-    "append given extra argument | ESW-379" in {
+    "append given extra argument | ESW-379, ESW-584" in {
       val containerConfig =
-        ContainerConfig("org", "dep", "app", "ver", ContainerMode.Container, Path.of("container.conf"), ConfigFileLocation.Remote)
+        ContainerConfig("org", "dep", "app", "ver", Path.of("container.conf"), ConfigFileLocation.Remote)
       val command =
         SpawnContainer(actorRef, ComponentId(Prefix("Container.testContainer"), ComponentType.Container), containerConfig)
 
@@ -86,30 +86,9 @@ class SpawnCommandTest extends BaseTestSuite {
       command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
     }
 
-    "append --standalone if mode is Standalone | ESW-379" in {
+    "append --local if config path is Local | ESW-379, ESW-584" in {
       val containerConfig =
-        ContainerConfig(
-          "org",
-          "dep",
-          "app",
-          "ver",
-          ContainerMode.Standalone,
-          Path.of("container.conf"),
-          ConfigFileLocation.Remote
-        )
-      val command =
-        SpawnContainer(actorRef, ComponentId(Prefix("Container.testContainer"), ComponentType.Container), containerConfig)
-
-      val expectedDefaultArgs = List("--standalone", containerConfig.configFilePath.toString)
-      val randomArgs          = List(randomString(10), randomString(10))
-
-      command.commandArgs() should ===(expectedDefaultArgs)
-      command.commandArgs(randomArgs) should ===(expectedDefaultArgs ++ randomArgs)
-    }
-
-    "append --local if config path is Local | ESW-379" in {
-      val containerConfig =
-        ContainerConfig("org", "dep", "app", "ver", ContainerMode.Container, Path.of("container.conf"), ConfigFileLocation.Local)
+        ContainerConfig("org", "dep", "app", "ver", Path.of("container.conf"), ConfigFileLocation.Local)
       val command =
         SpawnContainer(actorRef, ComponentId(Prefix("Container.testContainer"), ComponentType.Container), containerConfig)
 
