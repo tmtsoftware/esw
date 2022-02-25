@@ -9,6 +9,10 @@ Here is the repository for ESW: [ESW](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
+## Upcoming Changes
+
+- Added `subscribeObserveEvents` in EventApi via Gateway.
+
 ## [ESW v0.4.0] - 2022-02-09
 
 This release contains minor fixes.

@@ -8,9 +8,9 @@ import csw.params.core.models.ObsId
 import csw.params.events.{EventKey, EventName, IRDetectorEvent, ObserveEvent, OpticalDetectorEvent, SystemEvent, WFSDetectorEvent}
 import csw.prefix.models.Subsystem
 import esw.contract.data.sequencer.SequencerData
-import esw.gateway.api.protocol.GatewayRequest._
-import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPattern}
-import esw.gateway.api.protocol._
+import esw.gateway.api.protocol.GatewayRequest.*
+import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeObserveEvents, SubscribeWithPattern}
+import esw.gateway.api.protocol.*
 
 /**
  * This object contains all the Gateway data models which will be sent on wire.
@@ -51,6 +51,7 @@ trait GatewayData extends SequencerData {
     GatewayStreamRequest.SequencerCommand(componentId, sequencerQueryFinal)
   val subscribe: Subscribe                       = Subscribe(Set(eventKey), Some(10))
   val subscribeWithPattern: SubscribeWithPattern = SubscribeWithPattern(Subsystem.CSW, Some(10), "[a-b]*")
+  val subscribeObserveEvents: SubscribeObserveEvents = SubscribeObserveEvents(Some(10))
 
   val invalidComponent: InvalidComponent               = InvalidComponent("invalid component")
   val emptyEventKeys: EmptyEventKeys                   = EmptyEventKeys()

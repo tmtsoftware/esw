@@ -22,4 +22,4 @@ Make sure to replace the `host` and `port` of the running location service on lo
 
 ## Change
 
-This is version 2 of ESW contracts
+This is version 3 of ESW contracts

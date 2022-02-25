@@ -89,5 +89,18 @@ class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCod
       eventClient.publish(largeEvent).futureValue should ===(Done)
       eventsF.futureValue.toSet shouldBe Set(invalidEvent3, largeEvent)
     }
+
+    "subscribe observe events | ESW-581" in {
+      val prefix      = Prefix("tcs.test.gateway")
+      val e1          = IRDetectorEvent.observeStart(prefix)
+      val e2          = IRDetectorEvent.observeStart(prefix)
+      val eventClient = new EventClient(gatewayPostClient, gatewayWsClient)
+      val obsEventsF  = eventClient.subscribeObserveEvents().take(2).runWith(Sink.seq)
+      Thread.sleep(500)
+      eventClient.publish(e1).futureValue should ===(Done)
+      eventClient.publish(e2).futureValue should ===(Done)
+
+      obsEventsF.futureValue.toSet shouldBe Set(e1, e2)
+    }
   }
 }

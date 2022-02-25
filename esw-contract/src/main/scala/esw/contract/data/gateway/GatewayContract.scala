@@ -4,13 +4,14 @@ import akka.Done
 import csw.alarm.models.AlarmSeverity
 import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.contract.ResourceFetcher
-import csw.contract.generator.ClassNameHelpers._
-import csw.contract.generator._
+import csw.contract.generator.*
+import csw.contract.generator.ClassNameHelpers.*
 import csw.logging.models.{Level, LogMetadata}
 import csw.params.commands.CommandResponse.{SubmitResponse, ValidateResponse}
 import csw.params.events.Event
 import csw.prefix.models.Subsystem
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.*
 import esw.gateway.api.protocol.GatewayRequest.{
   ComponentCommand,
   GetComponentLifecycleState,
@@ -27,8 +28,7 @@ import esw.gateway.api.protocol.GatewayRequest.{
   SetLogLevel,
   Shutdown
 }
-import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPattern}
-import esw.gateway.api.protocol._
+import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeObserveEvents, SubscribeWithPattern}
 import esw.ocs.api.protocol.OkOrUnhandledResponse
 
 // ESW-278 Contract samples for gateway service. These samples are also used in `RoundTripTest`
@@ -77,6 +77,7 @@ object GatewayContract extends GatewayCodecs with GatewayData {
     requestType(websocketSequencerCommand)
     requestType(subscribe)
     requestType(subscribeWithPattern)
+    requestType(subscribeObserveEvents)
   }
 
   private val httpEndpoints: List[Endpoint] = List(
@@ -126,7 +127,8 @@ object GatewayContract extends GatewayCodecs with GatewayData {
       )
     ),
     Endpoint(name[Subscribe], name[Event], List(name[EmptyEventKeys], name[InvalidMaxFrequency])),
-    Endpoint(name[SubscribeWithPattern], name[Event], List(name[InvalidMaxFrequency]))
+    Endpoint(name[SubscribeWithPattern], name[Event], List(name[InvalidMaxFrequency])),
+    Endpoint(name[SubscribeObserveEvents], name[Event], List(name[InvalidMaxFrequency]))
   )
 
   private val readme: Readme = Readme(ResourceFetcher.getResourceAsString("gateway-service/README.md"))
