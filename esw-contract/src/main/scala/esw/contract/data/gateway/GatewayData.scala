@@ -49,9 +49,9 @@ trait GatewayData extends SequencerData {
     GatewayStreamRequest.ComponentCommand(componentId, queryFinal)
   val websocketSequencerCommand: GatewayStreamRequest.SequencerCommand =
     GatewayStreamRequest.SequencerCommand(componentId, sequencerQueryFinal)
-  val subscribe: Subscribe                       = Subscribe(Set(eventKey), Some(10))
-  val subscribeWithPattern: SubscribeWithPattern = SubscribeWithPattern(Subsystem.CSW, Some(10), "[a-b]*")
-  val subscribeObserveEvents: SubscribeObserveEvents = SubscribeObserveEvents(Some(10))
+  val subscribe: Subscribe                           = Subscribe(Set(eventKey), Some(10))
+  val subscribeWithPattern: SubscribeWithPattern     = SubscribeWithPattern(Subsystem.CSW, Some(10), "[a-b]*")
+  val subscribeObserveEvents: SubscribeObserveEvents = SubscribeObserveEvents(Some(0))
 
   val invalidComponent: InvalidComponent               = InvalidComponent("invalid component")
   val emptyEventKeys: EmptyEventKeys                   = EmptyEventKeys()
