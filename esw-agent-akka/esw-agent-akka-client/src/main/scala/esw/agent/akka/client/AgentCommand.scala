@@ -6,7 +6,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig, ContainerMode}
+import esw.agent.akka.client.models.{ConfigFileLocation, ContainerConfig}
 import esw.agent.service.api._
 import esw.agent.service.api.models.{KillResponse, SpawnContainersResponse, SpawnResponse}
 
@@ -97,7 +97,6 @@ object AgentCommand {
 
       override def commandArgs(extraArgs: List[String]): List[String] = {
         var args = command
-        if (containerConfig.mode == ContainerMode.Standalone) args = "--standalone" :: args
         if (containerConfig.configFileLocation == ConfigFileLocation.Local) args = "--local" :: args
         args ++ extraArgs
       }

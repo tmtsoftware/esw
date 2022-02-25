@@ -16,7 +16,6 @@ import java.nio.file.Path
  *    deployModule: "csw-sampledeploy"
  *    appName: "csw.sampledeploy.SampleContainerCmdApp"
  *    version: "0.0.1"
- *    mode: "Container"
  *    configFilePath: "confPath1.conf"
  *    configFileLocation: "Local"
  *  }
@@ -24,7 +23,6 @@ import java.nio.file.Path
  * @param deployModule - name of the module which needs to be started.
  * @param appName - complete reference name of the Application.
  * @param version -
- * @param mode [[ContainerMode]] - mode in which Application needs to be started.
  * @param configFilePath [[java.lang.String]] - Path of the config file for the application.
  * @param configFileLocation [[ConfigFileLocation]] - Type of the config file location.
  */
@@ -33,7 +31,6 @@ case class ContainerConfig(
     deployModule: String,
     appName: String,
     version: String,
-    mode: ContainerMode,
     configFilePath: Path,
     configFileLocation: ConfigFileLocation
 )
