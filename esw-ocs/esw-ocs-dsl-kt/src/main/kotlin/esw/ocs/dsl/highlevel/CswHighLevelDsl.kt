@@ -216,6 +216,36 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
     fun downtimeStart(obsId: ObsId, reasonForDowntime: String): ObserveEvent = sequencerObserveEvent.downtimeStart(obsId, reasonForDowntime)
 
     /**
+     * This event indicates the start of a telescope offset or dither
+     * @param obsId [[csw.params.core.models.ObsId]] Optional Parameter representing a unique observation id
+     * @param p [[java.lang.Double]] Represents telescope's xCoordinate offset
+     * @param q [[java.lang.Double]] Represents telescope's yCoordinate offset
+     * @return [[csw.params.events.ObserveEvent]]
+     */
+    fun offsetStart(p: Double, q: Double, obsId: ObsId?): ObserveEvent = sequencerObserveEvent.offsetStart(p, q, obsId?.asOption())
+
+    /**
+     * This event indicates the end of a telescope offset or dither
+     * @param obsId [[csw.params.core.models.ObsId]] Optional Parameter representing a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
+    fun offsetEnd(obsId: ObsId?): ObserveEvent = sequencerObserveEvent.offsetEnd(obsId?.asOption())
+
+    /**
+     * This event indicates the start of a request to the user for input
+     * @param obsId [[csw.params.core.models.ObsId]] Representing a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
+    fun inputRequestStart(obsId: ObsId): ObserveEvent = sequencerObserveEvent.inputRequestStart(obsId)
+
+    /**
+     * This event indicates the end of a request to the user for input
+     * @param obsId [[csw.params.core.models.ObsId]] Representing a unique observation id
+     * @return [[csw.params.events.ObserveEvent]]
+     */
+    fun inputRequestEnd(obsId: ObsId): ObserveEvent = sequencerObserveEvent.inputRequestEnd(obsId)
+
+    /**
      * Creates an instance of RichComponent for Assembly of given prefix
      *
      * @param prefix - prefix of Assembly
