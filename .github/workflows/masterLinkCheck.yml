@@ -14,7 +14,6 @@ jobs:
       - uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: temurin:1.17
-          jvm: 11
       - uses: coursier/cache-action@v6
 
       - name: Paradox Validate Links
