@@ -1,4 +1,8 @@
 # Changes
+
+## [v3]
+- Added `subscribeObserveEvents` API in EventApi via Gateway.
+
 ## [v2]
 - Added Shutdown, Restart, GoOnline, GoOffline, GetContainerLifecycleState and GetComponentLifecycleState Admin API routes in Gateway.
 - Added GetResources, GetObsModesDetails API in the Sequence Manager

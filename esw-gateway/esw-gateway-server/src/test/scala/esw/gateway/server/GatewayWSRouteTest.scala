@@ -13,15 +13,15 @@ import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Assembly, Sequencer}
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
-import csw.params.core.models.Id
+import csw.params.core.models.{ExposureId, Id}
 import csw.params.core.states.{CurrentState, StateName}
-import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.params.events.*
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.GatewayStreamRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol.*
+import esw.gateway.api.protocol.GatewayStreamRequest.*
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.handlers.GatewayWebsocketHandler
 import esw.ocs.api.protocol.SequencerStreamRequest
@@ -45,7 +45,7 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   implicit val typedSystem: ActorSystem[_] = system.toTyped
   private val cswCtxMocks                  = new CswTestMocks()
-  import cswCtxMocks._
+  import cswCtxMocks.*
 
   private var wsClient: WSProbe                        = _
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
@@ -293,6 +293,65 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         decodeMessage[GatewayException](wsClient) shouldEqual InvalidMaxFrequency()
       }
     }
+  }
+
+  "Subscribe Observe Events" must {
+    val event1: ObserveEvent =
+      OpticalDetectorEvent.prepareStart(Prefix("tcs.test"), ExposureId("2020A-001-123-WFOS-IMG1-SCI0-0001"))
+
+    val eventSubscription: EventSubscription = new EventSubscription {
+      override def unsubscribe(): Future[Done] = Future.successful(Done)
+
+      override def ready(): Future[Done] = Future.successful(Done)
+    }
+
+    "return set of events of observe events subscribe events | ESW-581" in {
+      val eventSubscriptionRequest: GatewayStreamRequest = SubscribeObserveEvents(None)
+
+      val eventStream = Source(List(event1)).mapMaterializedValue(_ => eventSubscription)
+
+      when(eventSubscriber.subscribeObserveEvents()).thenReturn(eventStream)
+
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
+        isWebSocketUpgrade shouldBe true
+
+        val response = decodeMessage[Event](wsClient)
+
+        response shouldEqual event1
+
+      }
+    }
+
+    "return set of events when maxFrequency = 5 | ESW-581" in {
+      val eventSubscriptionRequest: GatewayStreamRequest = SubscribeObserveEvents(Some(5))
+
+      val eventStream = Source(List(event1)).mapMaterializedValue(_ => eventSubscription)
+
+      when(eventSubscriber.subscribeObserveEvents()).thenReturn(eventStream)
+      when(eventSubscriberUtil.subscriptionModeStage(200.millis, RateLimiterMode))
+        .thenReturn(new RateLimiterStub[Event](200.millis))
+
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
+        isWebSocketUpgrade shouldBe true
+
+        val response = decodeMessage[Event](wsClient)
+
+        response shouldEqual event1
+
+      }
+    }
+
+    "return InvalidMaxFrequency when maxFrequency <= 0 | ESW-581" in {
+      val eventSubscriptionRequest: GatewayStreamRequest = SubscribeObserveEvents(Some(-1))
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
+        isWebSocketUpgrade shouldBe true
+        decodeMessage[GatewayException](wsClient) shouldEqual InvalidMaxFrequency()
+      }
+    }
+
   }
 
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {

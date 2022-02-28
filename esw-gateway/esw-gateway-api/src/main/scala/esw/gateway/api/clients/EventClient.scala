@@ -6,9 +6,9 @@ import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.*
 import esw.gateway.api.protocol.GatewayRequest.{GetEvent, PublishEvent}
-import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeWithPattern}
-import esw.gateway.api.protocol._
+import esw.gateway.api.protocol.GatewayStreamRequest.{Subscribe, SubscribeObserveEvents, SubscribeWithPattern}
 import msocket.api.{Subscription, Transport}
 
 import scala.concurrent.Future
@@ -29,4 +29,7 @@ class EventClient(postClient: Transport[GatewayRequest], websocketClient: Transp
 
   override def pSubscribe(subsystem: Subsystem, maxFrequency: Option[Int], pattern: String): Source[Event, Subscription] =
     websocketClient.requestStream[Event](SubscribeWithPattern(subsystem, maxFrequency, pattern))
+
+  override def subscribeObserveEvents(maxFrequency: Option[Int]): Source[Event, Subscription] =
+    websocketClient.requestStream[Event](SubscribeObserveEvents(maxFrequency))
 }

@@ -15,6 +15,7 @@ object GatewayStreamRequest {
   case class ComponentCommand(componentId: ComponentId, command: CommandServiceStreamRequest) extends GatewayStreamRequest
   case class SequencerCommand(componentId: ComponentId, command: SequencerStreamRequest)      extends GatewayStreamRequest
   case class Subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int] = None)            extends GatewayStreamRequest
+  case class SubscribeObserveEvents(maxFrequency: Option[Int] = None)                         extends GatewayStreamRequest
   case class SubscribeWithPattern(subsystem: Subsystem, maxFrequency: Option[Int] = None, pattern: String = "*")
       extends GatewayStreamRequest
 }
