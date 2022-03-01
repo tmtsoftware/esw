@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 ## Upcoming Changes
 
 - Added `subscribeObserveEvents` in EventApi via Gateway.
+- Added `OffsetStart`, `OffsetEnd`, `InputRequestStart` & `InputRequestEnd` sequencer observe events in Kotlin Scripts DSL.
 
 ## [ESW v0.4.0] - 2022-02-09
 

@@ -217,19 +217,19 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
 
     /**
      * This event indicates the start of a telescope offset or dither
-     * @param obsId [[csw.params.core.models.ObsId]] Optional Parameter representing a unique observation id
+     * @param obsId [[csw.params.core.models.ObsId]] representing a unique observation id
      * @param p [[java.lang.Double]] Represents telescope's xCoordinate offset
      * @param q [[java.lang.Double]] Represents telescope's yCoordinate offset
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun offsetStart(p: Double, q: Double, obsId: ObsId?): ObserveEvent = sequencerObserveEvent.offsetStart(p, q, obsId?.asOption())
+    fun offsetStart(obsId: ObsId,p: Double, q: Double): ObserveEvent = sequencerObserveEvent.offsetStart(obsId, p, q)
 
     /**
      * This event indicates the end of a telescope offset or dither
-     * @param obsId [[csw.params.core.models.ObsId]] Optional Parameter representing a unique observation id
+     * @param obsId [[csw.params.core.models.ObsId]] representing a unique observation id
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun offsetEnd(obsId: ObsId?): ObserveEvent = sequencerObserveEvent.offsetEnd(obsId?.asOption())
+    fun offsetEnd(obsId: ObsId): ObserveEvent = sequencerObserveEvent.offsetEnd(obsId)
 
     /**
      * This event indicates the start of a request to the user for input
