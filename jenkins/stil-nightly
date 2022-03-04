@@ -29,7 +29,7 @@ pipeline {
         stage('Test') {
 
             steps {
-                sh "eval \$(cs java --jvm openjdk:1.17.0 --env -m offline) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
+                sh "eval \$(cs java --jvm temurin:1.17.0 --env) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
             }
 
             post {
