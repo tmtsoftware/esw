@@ -18,11 +18,11 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh "cs java --jvm openjdk:1.17.0 -version"
+                sh "cs java --jvm temurin:1.17.0 -version"
                 sh "sbt scalafmtCheck"
-                sh "eval \$(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt clean makeSite"
-                sh "eval \$(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
-                sh "eval \$(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt publishLocal"
+                sh "eval \$(cs java --jvm temurin:1.17.0 --env) && sbt clean makeSite"
+                sh "eval \$(cs java --jvm temurin:1.17.0 --env) && sbt -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
+                sh "eval \$(cs java --jvm temurin:1.17.0 --env) && sbt publishLocal"
             }
         }
 
@@ -62,7 +62,7 @@ pipeline {
 
         stage('Multi-Jvm Test') {
             steps {
-              sh "eval \$(cs java --jvm openjdk:1.17.0 --env -m offline) && sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
+              sh "eval \$(cs java --jvm temurin:1.17.0 --env) && sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
             }
         }
     }
