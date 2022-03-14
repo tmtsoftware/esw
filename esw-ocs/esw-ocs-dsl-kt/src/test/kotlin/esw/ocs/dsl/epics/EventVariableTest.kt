@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.milliseconds
 
+@Suppress("DANGEROUS_CHARACTERS")
 class EventVariableTest {
 
     @Test

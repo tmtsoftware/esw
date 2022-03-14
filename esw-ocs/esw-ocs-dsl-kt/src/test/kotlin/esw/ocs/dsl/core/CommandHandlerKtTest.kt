@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
+@Suppress("DANGEROUS_CHARACTERS")
 internal class CommandHandlerKtTest {
     private val exceptionHandler = CoroutineExceptionHandler { _, _ -> } // to swallow all the test exceptions
     private fun scope() = CoroutineScope(EmptyCoroutineContext + exceptionHandler)

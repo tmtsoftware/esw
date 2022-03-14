@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.milliseconds
 
+@Suppress("DANGEROUS_CHARACTERS")
 class CommandFlagTest : CommandServiceDsl {
     private val timeout = 100.milliseconds
 

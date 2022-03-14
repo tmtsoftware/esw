@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.system.measureTimeMillis
 
+@Suppress("DANGEROUS_CHARACTERS")
 class UtilsTest {
 
     @Test

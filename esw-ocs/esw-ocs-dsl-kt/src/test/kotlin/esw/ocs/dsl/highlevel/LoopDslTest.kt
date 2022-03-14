@@ -13,6 +13,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
 
+@Suppress("DANGEROUS_CHARACTERS")
 class LoopDslTest : LoopDsl {
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 

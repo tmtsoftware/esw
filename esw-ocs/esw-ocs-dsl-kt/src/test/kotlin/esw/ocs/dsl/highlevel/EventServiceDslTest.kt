@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.milliseconds
 
+@Suppress("DANGEROUS_CHARACTERS")
 class EventServiceDslTest : EventServiceDsl {
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
     override val eventPublisher: IEventPublisher = mockk()

@@ -10,6 +10,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
+@Suppress("DANGEROUS_CHARACTERS")
 class ExtensionsKtTest {
     val id = Id("testId")
     private val msg = "msg"

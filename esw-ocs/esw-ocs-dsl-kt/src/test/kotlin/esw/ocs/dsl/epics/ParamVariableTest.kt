@@ -15,6 +15,7 @@ import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
+@Suppress("DANGEROUS_CHARACTERS")
 class ParamVariableTest {
     @Test
     fun `make should create ParamVariable and publish a initial event | ESW-291`() = runBlocking {

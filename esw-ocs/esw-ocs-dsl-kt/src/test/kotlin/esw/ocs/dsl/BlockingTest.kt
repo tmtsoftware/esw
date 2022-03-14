@@ -5,6 +5,7 @@ import io.kotest.matchers.string.shouldNotBeEqualIgnoringCase
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
+@Suppress("DANGEROUS_CHARACTERS")
 class BlockingTest {
 
     @Test

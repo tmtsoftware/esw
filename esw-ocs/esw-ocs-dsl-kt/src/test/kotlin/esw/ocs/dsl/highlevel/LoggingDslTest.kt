@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 
+@Suppress("DANGEROUS_CHARACTERS")
 class LoggingDslTest : LoggingDsl {
     override val logger: ILogger = mockk()
 

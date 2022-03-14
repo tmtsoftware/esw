@@ -11,6 +11,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.*
 
+@Suppress("DANGEROUS_CHARACTERS")
 class CommandServiceDslTest : CommandServiceDsl {
 
     @Test

@@ -28,6 +28,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+@Suppress("DANGEROUS_CHARACTERS")
 class RichSequencerTest {
 
     private val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)

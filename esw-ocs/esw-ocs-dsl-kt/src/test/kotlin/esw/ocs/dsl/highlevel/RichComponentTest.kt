@@ -46,6 +46,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
+@Suppress("DANGEROUS_CHARACTERS")
 class RichComponentTest {
     private val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 

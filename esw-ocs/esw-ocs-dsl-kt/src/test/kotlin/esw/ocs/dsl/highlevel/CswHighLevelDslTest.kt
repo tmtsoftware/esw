@@ -26,6 +26,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
+@Suppress("DANGEROUS_CHARACTERS")
 class CswHighLevelDslTest {
 
     private val system: ActorSystem<SpawnProtocol.Command> = ActorSystem.create(SpawnProtocol.create(), "csw-high-level")

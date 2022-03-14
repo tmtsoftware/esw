@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 
 class KeysTest {
 
+    @Suppress("DANGEROUS_CHARACTERS")
     @Test
     fun `verify kotlin to scala key mappings`() {
         choiceKey("choiceKey", choicesOf("A", "B")) shouldBe ChoiceKey().make("choiceKey", choicesOf("A", "B"))

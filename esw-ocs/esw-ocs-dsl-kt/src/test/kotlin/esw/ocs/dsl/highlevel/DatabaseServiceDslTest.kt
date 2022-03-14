@@ -10,6 +10,7 @@ import org.jooq.DSLContext
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture
 
+@Suppress("DANGEROUS_CHARACTERS")
 class DatabaseServiceDslTest : DatabaseServiceDsl {
     override val databaseServiceFactory: DatabaseServiceFactory = mockk()
     override val locationService: ILocationService = mockk()

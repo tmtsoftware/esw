@@ -27,6 +27,7 @@ class AlarmServiceDslTest : LoopDsl, AlarmServiceDsl {
     override val _alarmRefreshDuration: Duration = 1.seconds
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
+    @Suppress("DANGEROUS_CHARACTERS")
     @Test
     fun `AlarmServiceDsl should set severity of alarms and refresh it | ESW-125`() = runBlocking {
         val alarmKey1 = AlarmKey(Prefix(TCS, "filter_assembly1"), "temperature1")

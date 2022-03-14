@@ -22,6 +22,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
+@Suppress("DANGEROUS_CHARACTERS")
 class LocationServiceDslTest : LocationServiceDsl {
     override val locationService: ILocationService = mockk()
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)

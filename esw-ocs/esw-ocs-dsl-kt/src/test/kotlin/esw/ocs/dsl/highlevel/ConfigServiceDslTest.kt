@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
+@Suppress("DANGEROUS_CHARACTERS")
 class ConfigServiceDslTest : ConfigServiceDsl {
 
     override val actorSystem: ActorSystem<SpawnProtocol.Command> = ActorSystem.create(Behaviors.empty(), "config-dsl")

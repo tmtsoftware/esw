@@ -21,6 +21,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
+@Suppress("DANGEROUS_CHARACTERS")
 class TimeServiceDslTest : TimeServiceDsl {
     private val scheduler = mockk<TimeServiceScheduler>()
     private val cancellable = mockk<Cancellable>()
