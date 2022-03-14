@@ -23,7 +23,6 @@ object Common {
 
   val jsTestArg              = Test / testOptions := Seq(Tests.Argument("-oDF"))
   val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
-
   lazy val CommonSettings: Seq[Setting[_]] =
     Seq(
       organization     := "com.github.tmtsoftware.esw",

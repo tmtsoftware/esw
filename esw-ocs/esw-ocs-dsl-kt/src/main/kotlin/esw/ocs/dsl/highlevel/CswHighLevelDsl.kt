@@ -4,6 +4,7 @@ import csw.location.api.models.ComponentType
 import csw.params.core.generics.Key
 import csw.params.core.models.ExposureId
 import csw.params.core.models.ObsId
+import csw.params.events.CoordinateSystem
 import csw.params.events.EventKey
 import csw.params.events.ObserveEvent
 import csw.params.events.SequencerObserveEvent
@@ -222,7 +223,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
      * @param q [[java.lang.Double]] Represents telescope's yCoordinate offset
      * @return [[csw.params.events.ObserveEvent]]
      */
-    fun offsetStart(obsId: ObsId,p: Double, q: Double): ObserveEvent = sequencerObserveEvent.offsetStart(obsId, p, q)
+    fun offsetStart(obsId: ObsId, coordinateSystem: CoordinateSystem, p: Double, q: Double): ObserveEvent = sequencerObserveEvent.offsetStart(obsId, coordinateSystem, p, q)
 
     /**
      * This event indicates the end of a telescope offset or dither
