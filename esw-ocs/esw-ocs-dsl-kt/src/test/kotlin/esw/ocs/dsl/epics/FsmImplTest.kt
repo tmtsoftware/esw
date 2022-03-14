@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
+@Suppress("DANGEROUS_CHARACTERS")
 class FsmImplTest {
 
     // These are needed to simulate script like single threaded environment
@@ -33,7 +34,6 @@ class FsmImplTest {
         println("Exception thrown in script with a message: ${exception.message}, invoking exception handler " + exception)
     }
     private val coroutineScope = CoroutineScope(job + exceptionHandler + dispatcher)
-    private val logger = mockk<ILogger>()
     private val cswHighLevelDslApi: CswHighLevelDslApi = mockk()
 
     private
@@ -97,7 +97,7 @@ class FsmImplTest {
 
     @Test
     fun `become should treat stateNames case insensitively | ESW-142`() = runBlocking {
-        fsm.become(init.toLowerCase())
+        fsm.become(init.lowercase())
         checkInitFlag()
     }
 
