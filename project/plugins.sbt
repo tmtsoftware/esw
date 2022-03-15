@@ -8,6 +8,7 @@ addSbtPlugin("org.scala-js"                      % "sbt-scalajs"              % 
 addSbtPlugin("com.typesafe.sbt"                  % "sbt-multi-jvm"            % "0.4.0")
 addSbtPlugin("com.timushev.sbt"                  % "sbt-rewarn"               % "0.1.3")
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % "3.0.0")
+addSbtPlugin("de.heikoseeberger"                 % "sbt-header"               % "5.6.5")
 
 resolvers += "jitpack" at "https://jitpack.io"
 libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "24d598a"
