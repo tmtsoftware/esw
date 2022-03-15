@@ -26,7 +26,7 @@ object Common {
   lazy val CommonSettings: Seq[Setting[_]] =
     Seq(
       organization     := "com.github.tmtsoftware.esw",
-      organizationName := "TMT Org",
+      organizationName := "Thirty Meter Telescope International Observatory",
       dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
       dependencyOverrides += Libs.`slf4j-api`,
       scalaVersion := EswKeys.scalaVersion,
@@ -61,8 +61,8 @@ object Common {
       // jitpack provides the env variable VERSION=<version being built> # A tag or commit. We have aliased VERSION to JITPACK_VERSION
       // we make use of it so that the version in class metadata (e.g. classOf[HttpService].getPackage.getSpecificationVersion)
       // and the maven repo match
-      version     := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
-      fork        := true,
+      version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
+      fork    := true,
       javaOptions += "-Xmx2G",
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),
