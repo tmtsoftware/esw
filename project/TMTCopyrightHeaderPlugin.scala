@@ -1,3 +1,4 @@
+import com.typesafe.sbt.MultiJvmPlugin.MultiJvmKeys.MultiJvm
 import de.heikoseeberger.sbtheader.{AutomateHeaderPlugin, CommentCreator, CommentStyle, HeaderPlugin}
 import sbt.Keys._
 import sbt.{HiddenFileFilter, _}
@@ -8,14 +9,16 @@ object TMTCopyrightHeaderPlugin extends AutoPlugin {
   import HeaderPlugin.autoImport._
   val currentYear = "2022"
 
-  override def requires: Plugins = HeaderPlugin
+  override def requires: Plugins = HeaderPlugin && AutoMultiJvm
 
   override def trigger: PluginTrigger = allRequirements
 
   override def projectSettings: Seq[Setting[_]] = {
-    AutomateHeaderPlugin.projectSettings ++
+    AutomateHeaderPlugin.projectSettings ++ HeaderPlugin.autoImport.headerSettings(MultiJvm) ++
+    AutomateHeaderPlugin.autoImport.automateHeaderSettings(MultiJvm) ++
     Seq(
       headerSources / includeFilter := "*.scala" || "*.java" || "*.kt" || "*.kts",
+      headerSources / excludeFilter := HiddenFileFilter || "empty.scala",
       headerLicense := Some(
         HeaderLicense.Custom(
           s"""|Copyright (c) $currentYear ${organizationName.value}
@@ -28,8 +31,7 @@ object TMTCopyrightHeaderPlugin extends AutoPlugin {
         HeaderFileType.java   -> cStyleComment,
         HeaderFileType("kt")  -> cStyleComment,
         HeaderFileType("kts") -> cStyleComment
-      ),
-      headerSources / excludeFilter := HiddenFileFilter || "empty.scala"
+      )
     )
   }
 

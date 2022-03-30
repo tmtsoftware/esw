@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 Thirty Meter Telescope International Observatory
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 @file:Suppress("UNUSED_VARIABLE", "DIVISION_BY_ZERO", "UNUSED_ANONYMOUS_PARAMETER")
 
 package esw.ocs.scripts.examples.paradox
