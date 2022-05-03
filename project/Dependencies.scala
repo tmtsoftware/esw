@@ -192,6 +192,14 @@ object Dependencies {
     )
   )
 
+  val OcsScriptKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Kotlin.`kotlin-scripting-common`,
+      Kotlin.`kotlin-scripting-jvm`,
+      Kotlin.`kotlin-scripting-jvm-host`
+    )
+  )
+
   val EswGatewayApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-api`.value,

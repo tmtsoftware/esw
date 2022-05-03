@@ -6,7 +6,7 @@ inThisBuild(
   CommonSettings
 )
 
-val KotlincOptions = Seq("-Xopt-in=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+val KotlincOptions = Seq("-opt-in=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
 
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-ocs`,
@@ -63,6 +63,7 @@ lazy val `esw-ocs` = project
     `esw-ocs-api`.jvm,
     `esw-ocs-dsl`,
     `esw-ocs-dsl-kt`,
+    `esw-ocs-script-kt`,
     `esw-ocs-impl`,
     `esw-ocs-app`
   )
@@ -106,6 +107,7 @@ lazy val `esw-ocs-impl` = project
   .dependsOn(
     `esw-ocs-api`.jvm,
     `esw-commons`,
+    `esw-ocs-script-kt`,
     `esw-test-commons` % Test
   )
 
@@ -119,6 +121,7 @@ lazy val `esw-ocs-dsl` = project
     `esw-test-commons` % Test
   )
 
+// Scripts depend on this
 lazy val `esw-ocs-dsl-kt` = project
   .in(file("esw-ocs/esw-ocs-dsl-kt"))
   .enablePlugins(KotlinPlugin, MaybeCoverage)
@@ -129,6 +132,16 @@ lazy val `esw-ocs-dsl-kt` = project
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
   .dependsOn(`esw-ocs-dsl`)
+
+// kotlin scripting
+lazy val `esw-ocs-script-kt` = project
+  .in(file("esw-ocs/esw-ocs-script-kt"))
+  .enablePlugins(KotlinPlugin, MaybeCoverage)
+  .settings(
+    kotlinVersion := EswKeys.kotlinVersion,
+    kotlincOptions ++= KotlincOptions
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsScriptKt.value)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
