@@ -41,11 +41,11 @@ fun scalaEval(scriptFile: File): Either<String, Any> {
     println("XXX res.reports len = ${res.reports.size}")
     val errors = res.reports.map {
         if (it.severity > ScriptDiagnostic.Severity.DEBUG) {
-//            println("XXX1 msgX: ${it.message}")
+            println("XXX1 msgX: ${it.message}")
             if (it.exception != null)
                 it.exception!!.printStackTrace()
             val s = it.message + if (it.exception == null) "" else ": ${it.exception.toString()}"
-//            println("XXX1 msg: $s")
+            println("XXX1 msg: $s")
             s
         } else "XXX"
     }
