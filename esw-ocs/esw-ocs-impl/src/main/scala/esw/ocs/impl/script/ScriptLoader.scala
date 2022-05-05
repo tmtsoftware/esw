@@ -19,7 +19,7 @@ private[esw] object ScriptLoader {
         val result = res.asInstanceOf[Result]
         result.invoke(scriptContext)
       case Left(err) =>
-        throw new RuntimeException(s"XXX error returned from scalaEval: $err")
+        throw new RuntimeException(s"Error loading sequencer script: $scriptFile: $err")
     }
   }
 }
