@@ -1,7 +1,7 @@
 package esw.ocs.impl.script
 
 import scala.language.reflectiveCalls
-import esw.ocs.script.SequenceScriptingHostKt.scalaEval
+import esw.ocs.script.host.SequenceScriptingHostKt.scalaEval
 
 import java.io.File
 

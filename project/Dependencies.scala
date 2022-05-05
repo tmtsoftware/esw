@@ -194,6 +194,12 @@ object Dependencies {
 
   val OcsScriptKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Kotlin.`kotlin-scripting-jvm`,
+    )
+  )
+
+  val OcsScriptHostKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
       Kotlin.`kotlin-scripting-common`,
       Kotlin.`kotlin-scripting-jvm`,
       Kotlin.`kotlin-scripting-jvm-host`

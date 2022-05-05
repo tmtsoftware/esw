@@ -64,6 +64,7 @@ lazy val `esw-ocs` = project
     `esw-ocs-dsl`,
     `esw-ocs-dsl-kt`,
     `esw-ocs-script-kt`,
+    `esw-ocs-script-host-kt`,
     `esw-ocs-impl`,
     `esw-ocs-app`
   )
@@ -107,7 +108,7 @@ lazy val `esw-ocs-impl` = project
   .dependsOn(
     `esw-ocs-api`.jvm,
     `esw-commons`,
-    `esw-ocs-script-kt`,
+    `esw-ocs-script-host-kt`,
     `esw-test-commons` % Test
   )
 
@@ -142,6 +143,16 @@ lazy val `esw-ocs-script-kt` = project
     kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsScriptKt.value)
+
+lazy val `esw-ocs-script-host-kt` = project
+  .in(file("esw-ocs/esw-ocs-script-host-kt"))
+  .enablePlugins(KotlinPlugin, MaybeCoverage)
+  .settings(
+    kotlinVersion := EswKeys.kotlinVersion,
+    kotlincOptions ++= KotlincOptions
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsScriptHostKt.value)
+  .dependsOn(`esw-ocs-script-kt`)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))

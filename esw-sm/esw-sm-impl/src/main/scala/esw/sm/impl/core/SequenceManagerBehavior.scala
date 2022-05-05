@@ -229,14 +229,22 @@ class SequenceManagerBehavior(
 
   private def receive[T <: SequenceManagerMsg: ClassTag](state: SequenceManagerState)(handler: T => SMBehavior): SMBehavior =
     Behaviors.receiveMessage { msg =>
-      logger.debug(s"Sequence Manager in State: $state, received Message: $msg")
-      msg match {
-        case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
-        case msg: T             => handler(msg)
-        case msg: UnhandleableSequenceManagerMsg =>
-          msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName)
-          Behaviors.same
-        case x => throw new MatchError(x)
+      logger.info(s"Sequence Manager in State: $state, received Message: $msg")
+      try {
+        msg match {
+          case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
+          case msg: T             => handler(msg)
+          case msg: UnhandleableSequenceManagerMsg =>
+            msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName)
+            Behaviors.same
+          case x => throw new MatchError(x)
+        }
+      }
+      catch {
+        // XXX TODO FIXME
+        case ex: Exception =>
+          ex.printStackTrace()
+          throw ex
       }
     }
 
