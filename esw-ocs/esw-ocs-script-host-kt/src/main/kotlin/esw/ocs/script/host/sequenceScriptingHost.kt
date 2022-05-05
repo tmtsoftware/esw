@@ -12,39 +12,32 @@ import kotlin.script.experimental.jvm.jvm
 import kotlin.script.experimental.jvmhost.BasicJvmScriptingHost
 import kotlin.script.experimental.jvmhost.createJvmCompilationConfigurationFromTemplate
 
-import kotlin.script.experimental.annotations.KotlinScript
-
 fun evalFile(scriptFile: File): ResultWithDiagnostics<EvaluationResult> {
     val compilationConfiguration = createJvmCompilationConfigurationFromTemplate<SequencerScript> {
         jvm {
             dependenciesFromCurrentContext(wholeClasspath = true)
         }
     }
-
     return BasicJvmScriptingHost().eval(scriptFile.toScriptSource(), compilationConfiguration, null)
 }
 
-fun scalaEval(scriptFile: File): Either<String, Any> {
-    println("XXX1 Executing script $scriptFile")
-    val res = evalFile(scriptFile)
-    println("XXX res.reports len = ${res.reports.size}")
-    val errors = res.reports.map {
-        if (it.severity > ScriptDiagnostic.Severity.DEBUG) {
-            println("XXX1 msgX: ${it.message}")
-            if (it.exception != null)
-                it.exception!!.printStackTrace()
-            val s = it.message + if (it.exception == null) "" else ": ${it.exception.toString()}"
-            println("XXX1 msg: $s")
-            s
-        } else "XXX"
+// Loads the given Kotlin script and returns a Scala result with either the error
+// message (String) or the result (Any).
+// In order to avoid a recursive dependency, the type Any instead of ScriptResult.
+// The result can be cast in order to access the invoke() function to execure the script.
+fun loadScript(scriptFile: File): Either<String, Any> {
+    try {
+        val res = evalFile(scriptFile)
+        val errors = res.reports.map { it.message }
+        val x = res.valueOrNull()?.returnValue
+        return if (x is ResultValue.Value) {
+            Right(x.value)
+        } else {
+            Left(errors.joinToString())
+        }
+    } catch(ex: Exception) {
+        ex.printStackTrace()
+        return Left(ex.message)
     }
-    println("XXX1 scalaEval: res = $res")
-    val x = res.valueOrNull()?.returnValue
-    println("XXX1 scalaEval: x = $x")
-    return if (x is ResultValue.Value) {
-        println("XXX scalaEval: x.value = ${x.value}")
-        Right(x.value)
-    } else
-        Left(errors.joinToString())
 }
 
