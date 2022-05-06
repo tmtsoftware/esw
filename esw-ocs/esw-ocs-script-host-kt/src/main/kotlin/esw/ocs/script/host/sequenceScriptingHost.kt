@@ -18,6 +18,7 @@ fun evalFile(scriptFile: File): ResultWithDiagnostics<EvaluationResult> {
             dependenciesFromCurrentContext(wholeClasspath = true)
         }
     }
+
     return BasicJvmScriptingHost().eval(scriptFile.toScriptSource(), compilationConfiguration, null)
 }
 
@@ -27,7 +28,12 @@ fun evalFile(scriptFile: File): ResultWithDiagnostics<EvaluationResult> {
 // The result can be cast in order to access the invoke() function to execure the script.
 fun loadScript(scriptFile: File): Either<String, Any> {
     try {
+        val t0 = System.nanoTime()
         val res = evalFile(scriptFile)
+        val t1 = System.nanoTime()
+        val d = t1 - t0
+        val ms = d / 1000000
+        println("XXXXXXXXXXXXX Time to load $scriptFile: $d ns ($ms ms)")
         val errors = res.reports.map { it.message }
         val x = res.valueOrNull()?.returnValue
         return if (x is ResultValue.Value) {
@@ -35,7 +41,7 @@ fun loadScript(scriptFile: File): Either<String, Any> {
         } else {
             Left(errors.joinToString())
         }
-    } catch(ex: Exception) {
+    } catch (ex: Exception) {
         ex.printStackTrace()
         return Left(ex.message)
     }

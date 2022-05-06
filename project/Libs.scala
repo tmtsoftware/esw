@@ -112,6 +112,7 @@ object Kotlin {
   val `kotlin-scripting-common` = "org.jetbrains.kotlin" % "kotlin-scripting-common" % EswKeys.kotlinVersion
   val `kotlin-scripting-jvm` = "org.jetbrains.kotlin" % "kotlin-scripting-jvm" % EswKeys.kotlinVersion
   val `kotlin-scripting-jvm-host` = "org.jetbrains.kotlin" % "kotlin-scripting-jvm-host" % EswKeys.kotlinVersion
+  val `kotlin-scripting-dependencies` = "org.jetbrains.kotlin" % "kotlin-scripting-dependencies" % EswKeys.kotlinVersion
 
   val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.1.0"
   val mockk      = "io.mockk"  % "mockk"                      % "1.12.2"

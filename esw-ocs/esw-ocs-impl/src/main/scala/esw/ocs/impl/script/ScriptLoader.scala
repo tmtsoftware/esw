@@ -7,8 +7,14 @@ import java.io.File
 
 private[esw] object ScriptLoader {
 
-  // XXX temp TODO FIXME: configure this somewhere
-  val scriptDir = "/shared/work/tmt/csw/sequencer-scripts/scripts"
+  // We need to know where the sequencer-scripts repo is in order to load the scripts at runtime.
+  // For now, require that the environment variable is set.
+  private val maybeSequencerScriptsDir = sys.env.get("SEQUENCER_SCRIPTS_HOME")
+  if (maybeSequencerScriptsDir.isEmpty)
+    throw new RuntimeException(
+      "Please set the SEQUENCER_SCRIPTS_HOME environment variable to the root of the checked out sequencer-scripts repo"
+    )
+  private val scriptDir = s"${maybeSequencerScriptsDir.get}/scripts"
 
   // this loads .kts script
   def loadKotlinScript(scriptClass: String, scriptContext: ScriptContext): ScriptApi = {
