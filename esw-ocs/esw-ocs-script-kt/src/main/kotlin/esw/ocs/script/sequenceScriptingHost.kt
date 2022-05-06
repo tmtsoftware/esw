@@ -1,6 +1,5 @@
-package esw.ocs.script.host
+package esw.ocs.script
 
-import esw.ocs.script.SequencerScript
 import scala.util.Either
 import scala.util.Left
 import scala.util.Right
