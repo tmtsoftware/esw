@@ -197,7 +197,9 @@ object Dependencies {
       Kotlin.`kotlin-scripting-common`,
       Kotlin.`kotlin-scripting-jvm`,
       Kotlin.`kotlin-scripting-jvm-host`,
-      Kotlin.`kotlin-scripting-dependencies`
+      Kotlin.`kotlin-scripting-dependencies`,
+      Kotlin.`coroutines-core`,
+      Libs.`ivy`
     )
   )
 

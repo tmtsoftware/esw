@@ -32,6 +32,7 @@ object Libs {
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.33"
 
+  val `ivy` = "org.apache.ivy" % "ivy" % "2.5.0"
 }
 
 object Csw {

@@ -1,7 +1,7 @@
 package esw.ocs.impl.script
 
 import scala.language.reflectiveCalls
-import esw.ocs.script.SequenceScriptingHostKt.loadScript
+import esw.ocs.script.ScriptDefKt.loadScript
 
 import java.io.File
 
@@ -19,12 +19,23 @@ private[esw] object ScriptLoader {
   // this loads .kts script
   def loadKotlinScript(scriptClass: String, scriptContext: ScriptContext): ScriptApi = {
     val scriptFile = new File(scriptDir, scriptClass.replace(".", "/") + ".seq.kts")
+    // noinspection ScalaUnusedSymbol
     loadScript(scriptFile) match {
       case Right(res) =>
+        println(s"XXX loadKotlinScript Right($res)")
         type Result = { def invoke(context: ScriptContext): ScriptApi }
-        val result = res.asInstanceOf[Result]
-        result.invoke(scriptContext)
+        try {
+          val result = res.asInstanceOf[Result]
+          result.invoke(scriptContext)
+        }
+        catch {
+          case ex: Exception =>
+            println(s"XXX loadScript failed: $ex")
+            ex.printStackTrace()
+            throw ex
+        }
       case Left(err) =>
+        println(s"Error loading sequencer script: $scriptFile: $err")
         throw new RuntimeException(s"Error loading sequencer script: $scriptFile: $err")
     }
   }

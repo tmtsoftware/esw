@@ -102,6 +102,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
         )
         location
       case error: ScriptError =>
+        error.printStackTrace()
         logAndThrowError(log, error.msg, new RuntimeException(s"Failed to start with error: ${error.msg}"))
     }
   }
