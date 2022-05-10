@@ -43,7 +43,7 @@ trait EventApi {
    * To avoid that, user should provide a resuming materializer while running the stream.
    *
    * @param eventKeys     a set of [[csw.params.events.EventKey]] to subscribe to
-   * @param maxFrequency  the frequency with which the events are received
+   * @param maxFrequency  the frequency with which the events are received (in Hz)
    * @return              a [[akka.stream.scaladsl.Source]] of [[csw.params.events.Event]]. The materialized value of the source provides
    *                      an [[msocket.api.Subscription]] which can be used to unsubscribe from all the Event Keys which were subscribed to
    */
@@ -58,7 +58,7 @@ trait EventApi {
    * state. In all other cases of exception, the subscription resumes to receive remaining elements.
    *
    * @param subsystem     a valid `Subsystem` which represents the source of the events
-   * @param maxFrequency  the frequency with which the events are received
+   * @param maxFrequency  the frequency with which the events are received (in Hz)
    * @param pattern       Subscribes the client to the given patterns. Supported glob-style patterns:
    *                      - h?llo subscribes to hello, hallo and hxllo
    *                      - h*llo subscribes to hllo and heeeello
