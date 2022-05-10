@@ -199,6 +199,8 @@ object Dependencies {
       Kotlin.`kotlin-scripting-jvm-host`,
       Kotlin.`kotlin-scripting-dependencies`,
       Kotlin.`coroutines-core`,
+//      Kotlin.`kotlin-stdlib`,
+//      Kotlin.`kotlin-reflect`,
       Libs.`ivy`
     )
   )

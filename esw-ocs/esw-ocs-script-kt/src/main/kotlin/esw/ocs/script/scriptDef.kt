@@ -216,12 +216,16 @@ private fun <T> withEswKtsCacheDir(value: String?, body: () -> T): T {
 
 private fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<EvaluationResult> {
     return withEswKtsCacheDir(cacheDir?.absolutePath ?: "") {
-        val scriptDefinition = createJvmCompilationConfigurationFromTemplate<SequencerScript>()
+        val scriptDefinition = createJvmCompilationConfigurationFromTemplate<SequencerScript>() {
+            jvm {
+                dependenciesFromCurrentContext(wholeClasspath = true)
+            }
+        }
 
         val evaluationEnv = EswKtsEvaluationConfiguration.with {
-            jvm {
-                baseClassLoader(null)
-            }
+//            jvm {
+//                baseClassLoader(null)
+//            }
             constructorArgs(emptyArray<String>())
             enableScriptsInstancesSharing()
         }
@@ -244,7 +248,7 @@ fun loadScript(scriptFile: File): Either<String, Any> {
         println("XXXXXXXXXXXXX Time to load $scriptFile: $d ns ($ms ms)")
         val errors = res.reports.map { it.message }
         val x = res.valueOrNull()?.returnValue
-        println("XXX loadScript: returnValue = $x")
+        println("XXX loadScript: res.reports = ${res.reports}, returnValue = $x")
         return if (x is ResultValue.Value) {
             Right(x.value)
         } else {

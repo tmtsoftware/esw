@@ -110,10 +110,14 @@ object Kotlin {
   // JDK8 - CompletionStage.await, Guava ListenableFuture.await, and Google Play Services Task.await;
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
+  //"kotlin-stdlib", "kotlin-reflect",
+
   val `kotlin-scripting-common` = "org.jetbrains.kotlin" % "kotlin-scripting-common" % EswKeys.kotlinVersion
   val `kotlin-scripting-jvm` = "org.jetbrains.kotlin" % "kotlin-scripting-jvm" % EswKeys.kotlinVersion
   val `kotlin-scripting-jvm-host` = "org.jetbrains.kotlin" % "kotlin-scripting-jvm-host" % EswKeys.kotlinVersion
   val `kotlin-scripting-dependencies` = "org.jetbrains.kotlin" % "kotlin-scripting-dependencies" % EswKeys.kotlinVersion
+  val `kotlin-stdlib` = "org.jetbrains.kotlin" % "kotlin-stdlib" % EswKeys.kotlinVersion
+  val `kotlin-reflect` = "org.jetbrains.kotlin" % "kotlin-reflect" % EswKeys.kotlinVersion % "runtime"
 
   val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.1.0"
   val mockk      = "io.mockk"  % "mockk"                      % "1.12.2"
