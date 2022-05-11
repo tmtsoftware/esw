@@ -65,7 +65,6 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
             } else {
                 dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
             }
-//            dependenciesFromCurrentContext(wholeClasspath = true)
         }
 
         refineConfiguration {
