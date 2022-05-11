@@ -6,7 +6,6 @@
 package esw.ocs.script
 
 import esw.ocs.script.impl.IvyResolver
-import esw.ocs.script.impl.resolveFromAnnotations
 import kotlinx.coroutines.runBlocking
 import scala.util.Either
 import scala.util.Left
@@ -15,10 +14,6 @@ import java.io.File
 import java.security.MessageDigest
 import kotlin.script.experimental.annotations.KotlinScript
 import kotlin.script.experimental.api.*
-import kotlin.script.experimental.dependencies.CompoundDependenciesResolver
-import kotlin.script.experimental.dependencies.DependsOn
-import kotlin.script.experimental.dependencies.FileSystemDependenciesResolver
-import kotlin.script.experimental.dependencies.Repository
 import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.FileScriptSource
 import kotlin.script.experimental.host.ScriptingHostConfiguration
@@ -27,6 +22,9 @@ import kotlin.script.experimental.jvm.*
 import kotlin.script.experimental.jvmhost.BasicJvmScriptingHost
 import kotlin.script.experimental.jvmhost.CompiledScriptJarsCache
 import kotlin.script.experimental.jvmhost.createJvmCompilationConfigurationFromTemplate
+import java.net.JarURLConnection
+import java.net.URL
+import kotlin.script.experimental.dependencies.*
 
 // Based on simple-main-kts from the kotlin-script-examples repo
 
@@ -56,18 +54,18 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
         defaultImports(DependsOn::class, Repository::class, Import::class, CompilerOptions::class)
         implicitReceivers(String::class)
         jvm {
-//            val keyResource = EswSequenceKtsScriptDefinition::class.java.name.replace('.', '/') + ".class"
-//            val thisJarFile =
-//                EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
-//            if (thisJarFile != null) {
-//                dependenciesFromClassContext(
-//                        EswSequenceKtsScriptDefinition::class,
-//                        thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies"
-//                )
-//            } else {
-//            dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
-//            }
-            dependenciesFromCurrentContext(wholeClasspath = true)
+            val keyResource = EswSequenceKtsScriptDefinition::class.java.name.replace('.', '/') + ".class"
+            val thisJarFile =
+                EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
+            if (thisJarFile != null) {
+                dependenciesFromClassContext(
+                    EswSequenceKtsScriptDefinition::class,
+                    thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies"
+                )
+            } else {
+                dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
+            }
+//            dependenciesFromCurrentContext(wholeClasspath = true)
         }
 
         refineConfiguration {
@@ -131,6 +129,36 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
     override operator fun invoke(context: ScriptConfigurationRefinementContext): ResultWithDiagnostics<ScriptCompilationConfiguration> =
         processAnnotations(context)
 
+    private suspend fun resolveFromAnnotations(
+        resolver: ExternalDependenciesResolver,
+        annotations: Iterable<Annotation>
+    ): ResultWithDiagnostics<List<File>> {
+        val reports = mutableListOf<ScriptDiagnostic>()
+        annotations.forEach { annotation ->
+            when (annotation) {
+                is Repository -> {
+                    for (coordinates in annotation.repositoriesCoordinates) {
+                        val added = resolver.addRepository(coordinates)
+                            .also { reports.addAll(it.reports) }
+                            .valueOr { return it }
+
+                        if (!added)
+                            return reports + makeFailureResult(
+                                "Unrecognized repository coordinates: $coordinates"
+                            )
+                    }
+                }
+                is DependsOn -> {}
+                else -> return makeFailureResult("Unknown annotation ${annotation.javaClass}")
+            }
+        }
+        return annotations.filterIsInstance(DependsOn::class.java).flatMapSuccess { annotation ->
+            annotation.artifactsCoordinates.asIterable().flatMapSuccess { artifactCoordinates ->
+                resolver.resolve(artifactCoordinates)
+            }
+        }
+    }
+
     private fun processAnnotations(context: ScriptConfigurationRefinementContext): ResultWithDiagnostics<ScriptCompilationConfiguration> {
         val diagnostics = arrayListOf<ScriptDiagnostic>()
 
@@ -140,6 +168,7 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
         val scriptBaseDir = (context.script as? FileBasedScriptSource)?.file?.parentFile
         val importedSources = annotations.flatMap {
             (it as? Import)?.paths?.map { sourceName ->
+                println("XXX import ${FileScriptSource(scriptBaseDir?.resolve(sourceName) ?: File(sourceName))}")
                 FileScriptSource(scriptBaseDir?.resolve(sourceName) ?: File(sourceName))
             } ?: emptyList()
         }
@@ -159,6 +188,7 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
         }
 
         return resolveResult.onSuccess { resolvedClassPath ->
+            println("XXX updateClasspath(${resolvedClassPath}), importedSources = ${importedSources}, compileOptions = ${compileOptions}")
             ScriptCompilationConfiguration(context.compilationConfiguration) {
                 updateClasspath(resolvedClassPath)
                 if (importedSources.isNotEmpty()) importScripts.append(importedSources)
@@ -185,22 +215,22 @@ private fun compiledScriptUniqueName(
 
 private fun ByteArray.toHexString(): String = joinToString("", transform = { "%02x".format(it) })
 
-//internal fun URL.toContainingJarOrNull(): File? =
-//    if (protocol == "jar") {
-//        (openConnection() as? JarURLConnection)?.jarFileURL?.toFileOrNull()
-//    } else null
+internal fun URL.toContainingJarOrNull(): File? =
+    if (protocol == "jar") {
+        (openConnection() as? JarURLConnection)?.jarFileURL?.toFileOrNull()
+    } else null
 
-//internal fun URL.toFileOrNull() =
-//    try {
-//        File(toURI())
-//    } catch (e: IllegalArgumentException) {
-//        null
-//    } catch (e: java.net.URISyntaxException) {
-//        null
-//    } ?: run {
-//        if (protocol != "file") null
-//        else File(file)
-//    }
+internal fun URL.toFileOrNull() =
+    try {
+        File(toURI())
+    } catch (e: IllegalArgumentException) {
+        null
+    } catch (e: java.net.URISyntaxException) {
+        null
+    } ?: run {
+        if (protocol != "file") null
+        else File(file)
+    }
 
 private fun <T> withEswKtsCacheDir(value: String?, body: () -> T): T {
     val prevCacheDir = System.getProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY)
@@ -214,7 +244,7 @@ private fun <T> withEswKtsCacheDir(value: String?, body: () -> T): T {
     }
 }
 
-private fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<EvaluationResult> {
+fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<EvaluationResult> {
     return withEswKtsCacheDir(cacheDir?.absolutePath ?: "") {
         val scriptDefinition = createJvmCompilationConfigurationFromTemplate<SequencerScript>() {
             jvm {
@@ -223,9 +253,10 @@ private fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagno
         }
 
         val evaluationEnv = EswKtsEvaluationConfiguration.with {
-//            jvm {
+            jvm {
 //                baseClassLoader(null)
-//            }
+                baseClassLoader(Thread.currentThread().contextClassLoader)
+            }
             constructorArgs(emptyArray<String>())
             enableScriptsInstancesSharing()
         }
@@ -248,7 +279,6 @@ fun loadScript(scriptFile: File): Either<String, Any> {
         println("XXXXXXXXXXXXX Time to load $scriptFile: $d ns ($ms ms)")
         val errors = res.reports.map { it.message }
         val x = res.valueOrNull()?.returnValue
-        println("XXX loadScript: res.reports = ${res.reports}, returnValue = $x")
         return if (x is ResultValue.Value) {
             Right(x.value)
         } else {

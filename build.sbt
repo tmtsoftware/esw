@@ -52,7 +52,7 @@ lazy val esw = (project in file("."))
     generateContract := ContractPlugin.generate(`esw-contract`).value
   )
   .settings(
-    ghreleaseRepoOrg := "tmtsoftware",
+    ghreleaseRepoOrg  := "tmtsoftware",
     ghreleaseRepoName := EswKeys.projectName
   )
 
@@ -126,7 +126,7 @@ lazy val `esw-ocs-dsl-kt` = project
   .in(file("esw-ocs/esw-ocs-dsl-kt"))
   .enablePlugins(KotlinPlugin, MaybeCoverage)
   .settings(
-    Test / fork := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
+    Test / fork   := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := EswKeys.kotlinVersion,
     kotlincOptions ++= KotlincOptions
   )

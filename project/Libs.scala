@@ -32,7 +32,7 @@ object Libs {
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.33"
 
-  val `ivy` = "org.apache.ivy" % "ivy" % "2.5.0"
+  val `ivy` = "org.apache.ivy" % "ivy"   % "2.5.0"
 }
 
 object Csw {
@@ -97,7 +97,7 @@ object Borer {
 }
 
 object Kotlin {
-  val CoroutinesVersion = "1.6.0"
+  val CoroutinesVersion = "1.6.1"
 
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % EswKeys.kotlinVersion
   val `coroutines-core` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core" % CoroutinesVersion
@@ -110,14 +110,10 @@ object Kotlin {
   // JDK8 - CompletionStage.await, Guava ListenableFuture.await, and Google Play Services Task.await;
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
-  //"kotlin-stdlib", "kotlin-reflect",
-
-  val `kotlin-scripting-common` = "org.jetbrains.kotlin" % "kotlin-scripting-common" % EswKeys.kotlinVersion
-  val `kotlin-scripting-jvm` = "org.jetbrains.kotlin" % "kotlin-scripting-jvm" % EswKeys.kotlinVersion
-  val `kotlin-scripting-jvm-host` = "org.jetbrains.kotlin" % "kotlin-scripting-jvm-host" % EswKeys.kotlinVersion
+  val `kotlin-scripting-common`       = "org.jetbrains.kotlin" % "kotlin-scripting-common"       % EswKeys.kotlinVersion
+  val `kotlin-scripting-jvm`          = "org.jetbrains.kotlin" % "kotlin-scripting-jvm"          % EswKeys.kotlinVersion
+  val `kotlin-scripting-jvm-host`     = "org.jetbrains.kotlin" % "kotlin-scripting-jvm-host"     % EswKeys.kotlinVersion
   val `kotlin-scripting-dependencies` = "org.jetbrains.kotlin" % "kotlin-scripting-dependencies" % EswKeys.kotlinVersion
-  val `kotlin-stdlib` = "org.jetbrains.kotlin" % "kotlin-stdlib" % EswKeys.kotlinVersion
-  val `kotlin-reflect` = "org.jetbrains.kotlin" % "kotlin-reflect" % EswKeys.kotlinVersion % "runtime"
 
   val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.1.0"
   val mockk      = "io.mockk"  % "mockk"                      % "1.12.2"
