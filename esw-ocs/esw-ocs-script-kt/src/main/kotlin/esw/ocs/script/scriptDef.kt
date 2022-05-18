@@ -57,35 +57,19 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
         implicitReceivers(String::class)
         jvm {
             // XXX
-//            val keyResource = EswSequenceKtsScriptDefinition::class.java.name.replace('.', '/') + ".class"
-//            val thisJarFile =
-//                EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
-//
-//            if (thisJarFile != null) {
-//                dependenciesFromClassContext(
-//                    EswSequenceKtsScriptDefinition::class,
-//                    thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies",
-//                    wholeClasspath = true
-//                )
-//            } else {
+            val keyResource = EswSequenceKtsScriptDefinition::class.java.name.replace('.', '/') + ".class"
+            val thisJarFile =
+                EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
+
+            if (thisJarFile != null) {
+                dependenciesFromClassContext(
+                    EswSequenceKtsScriptDefinition::class,
+                    thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies",
+                    wholeClasspath = true
+                )
+            } else {
                 dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
-//            }
-//            dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
-
-
-//            dependenciesFromCurrentContext(wholeClasspath = true)
-
-//            // If a file exists in sequencer-scripts with the classpath, use it, otherwise use the current thread's classpath
-//            val dir = System.getenv("SEQUENCER_SCRIPTS_HOME")
-//            println("XXX Check for file ${File(dir, "seq.kts.classpath")}")
-//            if (dir != null && File(dir, "seq.kts.classpath").exists()) {
-//                val classpath = File(dir, "seq.kts.classpath").readText().split(',').map { File(it) }
-//                println("XXX using saved classpath from sequencer-scripts")
-//                updateClasspath(classpath)
-//            } else {
-//                println("XXX Using current thread classpath")
-//                dependenciesFromCurrentContext(wholeClasspath = true)
-//            }
+            }
 //            dependenciesFromCurrentContext(wholeClasspath = true)
         }
 
