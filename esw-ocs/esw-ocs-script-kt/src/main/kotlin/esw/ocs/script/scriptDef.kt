@@ -70,10 +70,10 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
 //            } else {
 //                dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
 //            }
-            dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
+//            dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
 
 
-//            dependenciesFromCurrentContext(wholeClasspath = true)
+            dependenciesFromCurrentContext(wholeClasspath = true)
 
 //            // If a file exists in sequencer-scripts with the classpath, use it, otherwise use the current thread's classpath
 //            val dir = System.getenv("SEQUENCER_SCRIPTS_HOME")
