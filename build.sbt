@@ -305,11 +305,11 @@ lazy val docs = project
 lazy val examples = project
   .in(file("examples"))
   .enablePlugins(KotlinPlugin)
+  .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-script-kt`, `esw-ocs-app`)
   .settings(
     kotlinVersion := EswKeys.kotlinVersion,
     kotlincOptions ++= KotlincOptions
   )
-  .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
 
 lazy val `esw-sm` = project
   .aggregate(

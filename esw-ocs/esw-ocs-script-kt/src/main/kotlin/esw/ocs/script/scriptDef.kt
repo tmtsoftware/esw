@@ -25,6 +25,8 @@ import kotlin.script.experimental.jvmhost.createJvmCompilationConfigurationFromT
 import java.net.JarURLConnection
 import java.net.URL
 import kotlin.script.experimental.dependencies.*
+import kotlin.script.experimental.jvm.baseClassLoader
+
 
 // Based on simple-main-kts from the kotlin-script-examples repo
 
@@ -54,17 +56,37 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
         defaultImports(DependsOn::class, Repository::class, Import::class, CompilerOptions::class)
         implicitReceivers(String::class)
         jvm {
-            val keyResource = EswSequenceKtsScriptDefinition::class.java.name.replace('.', '/') + ".class"
-            val thisJarFile =
-                EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
-            if (thisJarFile != null) {
-                dependenciesFromClassContext(
-                    EswSequenceKtsScriptDefinition::class,
-                    thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies"
-                )
-            } else {
-                dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
-            }
+            // XXX
+//            val keyResource = EswSequenceKtsScriptDefinition::class.java.name.replace('.', '/') + ".class"
+//            val thisJarFile =
+//                EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
+//
+//            if (thisJarFile != null) {
+//                dependenciesFromClassContext(
+//                    EswSequenceKtsScriptDefinition::class,
+//                    thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies",
+//                    wholeClasspath = true
+//                )
+//            } else {
+//                dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
+//            }
+            dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
+
+
+//            dependenciesFromCurrentContext(wholeClasspath = true)
+
+//            // If a file exists in sequencer-scripts with the classpath, use it, otherwise use the current thread's classpath
+//            val dir = System.getenv("SEQUENCER_SCRIPTS_HOME")
+//            println("XXX Check for file ${File(dir, "seq.kts.classpath")}")
+//            if (dir != null && File(dir, "seq.kts.classpath").exists()) {
+//                val classpath = File(dir, "seq.kts.classpath").readText().split(',').map { File(it) }
+//                println("XXX using saved classpath from sequencer-scripts")
+//                updateClasspath(classpath)
+//            } else {
+//                println("XXX Using current thread classpath")
+//                dependenciesFromCurrentContext(wholeClasspath = true)
+//            }
+//            dependenciesFromCurrentContext(wholeClasspath = true)
         }
 
         refineConfiguration {
@@ -167,7 +189,7 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
         val scriptBaseDir = (context.script as? FileBasedScriptSource)?.file?.parentFile
         val importedSources = annotations.flatMap {
             (it as? Import)?.paths?.map { sourceName ->
-                println("XXX import ${FileScriptSource(scriptBaseDir?.resolve(sourceName) ?: File(sourceName))}")
+                println("XXX import ${scriptBaseDir?.resolve(sourceName) ?: File(sourceName)}")
                 FileScriptSource(scriptBaseDir?.resolve(sourceName) ?: File(sourceName))
             } ?: emptyList()
         }
@@ -187,7 +209,8 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
         }
 
         return resolveResult.onSuccess { resolvedClassPath ->
-            println("XXX updateClasspath(${resolvedClassPath}), importedSources = ${importedSources}, compileOptions = ${compileOptions}")
+            val xxx = importedSources.map { it.file.toString() }.joinToString(", ")
+            println("XXX updateClasspath(${resolvedClassPath}), importedSources = ${xxx}, compileOptions = ${compileOptions}")
             ScriptCompilationConfiguration(context.compilationConfiguration) {
                 updateClasspath(resolvedClassPath)
                 if (importedSources.isNotEmpty()) importScripts.append(importedSources)
@@ -243,18 +266,14 @@ private fun <T> withEswKtsCacheDir(value: String?, body: () -> T): T {
     }
 }
 
-fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<EvaluationResult> {
-    return withEswKtsCacheDir(cacheDir?.absolutePath ?: "") {
-        val scriptDefinition = createJvmCompilationConfigurationFromTemplate<SequencerScript>() {
-            jvm {
-                dependenciesFromCurrentContext(wholeClasspath = true)
-            }
-        }
+fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<EvaluationResult> =
+    withEswKtsCacheDir(cacheDir?.absolutePath ?: "") {
+        val scriptDefinition = createJvmCompilationConfigurationFromTemplate<SequencerScript>()
 
         val evaluationEnv = EswKtsEvaluationConfiguration.with {
             jvm {
-//                baseClassLoader(null)
-                baseClassLoader(Thread.currentThread().contextClassLoader)
+                baseClassLoader(null)
+//                baseClassLoader(Thread.currentThread().contextClassLoader)
             }
             constructorArgs(emptyArray<String>())
             enableScriptsInstancesSharing()
@@ -262,7 +281,6 @@ fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<Ev
 
         BasicJvmScriptingHost().eval(scriptFile.toScriptSource(), scriptDefinition, evaluationEnv)
     }
-}
 
 // Loads the given Kotlin script and returns a Scala result with either the error
 // message (String) or the result (Any).
