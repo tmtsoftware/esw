@@ -61,16 +61,16 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
             val thisJarFile =
                 EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
 
-            if (thisJarFile != null) {
-                dependenciesFromClassContext(
-                    EswSequenceKtsScriptDefinition::class,
-                    thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies",
-                    wholeClasspath = true
-                )
-            } else {
-                dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
-            }
-//            dependenciesFromCurrentContext(wholeClasspath = true)
+//            if (thisJarFile != null) {
+//                dependenciesFromClassContext(
+//                    EswSequenceKtsScriptDefinition::class,
+//                    thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies",
+//                    wholeClasspath = true
+//                )
+//            } else {
+//                dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
+//            }
+            dependenciesFromCurrentContext(wholeClasspath = true)
         }
 
         refineConfiguration {
@@ -256,8 +256,8 @@ fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<Ev
 
         val evaluationEnv = EswKtsEvaluationConfiguration.with {
             jvm {
-                baseClassLoader(null)
-//                baseClassLoader(Thread.currentThread().contextClassLoader)
+//                baseClassLoader(null)
+                baseClassLoader(Thread.currentThread().contextClassLoader)
             }
             constructorArgs(emptyArray<String>())
             enableScriptsInstancesSharing()

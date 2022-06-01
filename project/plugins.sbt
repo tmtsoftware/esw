@@ -10,7 +10,8 @@ addSbtPlugin("com.timushev.sbt"                  % "sbt-rewarn"               % 
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % "3.0.0")
 
 resolvers += "jitpack" at "https://jitpack.io"
-libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "24d598a"
+//libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "24d598a"
+libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "d5a150fce20323defada80bb3ce07080e4054117"
 libraryDependencies += "com.github.tmtsoftware" % "sbt-docs"      % "115000a"
 
 resolvers += Resolver.jcenterRepo
