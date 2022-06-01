@@ -6,14 +6,18 @@
 package esw.ocs.script
 
 import esw.ocs.script.impl.IvyResolver
+import esw.ocs.script.impl.resolveFromAnnotations
 import kotlinx.coroutines.runBlocking
-import scala.util.Either
-import scala.util.Left
-import scala.util.Right
 import java.io.File
+import java.net.JarURLConnection
+import java.net.URL
 import java.security.MessageDigest
 import kotlin.script.experimental.annotations.KotlinScript
 import kotlin.script.experimental.api.*
+import kotlin.script.experimental.dependencies.CompoundDependenciesResolver
+import kotlin.script.experimental.dependencies.DependsOn
+import kotlin.script.experimental.dependencies.FileSystemDependenciesResolver
+import kotlin.script.experimental.dependencies.Repository
 import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.FileScriptSource
 import kotlin.script.experimental.host.ScriptingHostConfiguration
@@ -22,14 +26,12 @@ import kotlin.script.experimental.jvm.*
 import kotlin.script.experimental.jvmhost.BasicJvmScriptingHost
 import kotlin.script.experimental.jvmhost.CompiledScriptJarsCache
 import kotlin.script.experimental.jvmhost.createJvmCompilationConfigurationFromTemplate
-import java.net.JarURLConnection
-import java.net.URL
-import kotlin.script.experimental.dependencies.*
-import kotlin.script.experimental.jvm.baseClassLoader
 
+import scala.util.Either
+import scala.util.Left
+import scala.util.Right
 
-// Based on simple-main-kts from the kotlin-script-examples repo
-
+@Suppress("unused")
 // The KotlinScript annotation marks a class that can serve as a reference to the script definition for
 // `createJvmCompilationConfigurationFromTemplate` call as well as for the discovery mechanism
 // The marked class also become the base class for defined script type (unless redefined in the configuration)
@@ -56,31 +58,20 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
         defaultImports(DependsOn::class, Repository::class, Import::class, CompilerOptions::class)
         implicitReceivers(String::class)
         jvm {
-            // XXX
             val keyResource = EswSequenceKtsScriptDefinition::class.java.name.replace('.', '/') + ".class"
-            val thisJarFile =
-                EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
-
-//            if (thisJarFile != null) {
-//                dependenciesFromClassContext(
-//                    EswSequenceKtsScriptDefinition::class,
-//                    thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies",
-//                    wholeClasspath = true
-//                )
-//            } else {
-//                dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
-//            }
-            dependenciesFromCurrentContext(wholeClasspath = true)
+            val thisJarFile = EswSequenceKtsScriptDefinition::class.java.classLoader.getResource(keyResource)?.toContainingJarOrNull()
+            if (thisJarFile != null) {
+                dependenciesFromClassContext(
+                        EswSequenceKtsScriptDefinition::class,
+                        thisJarFile.name, "kotlin-stdlib", "kotlin-reflect", "kotlin-scripting-dependencies"
+                )
+            } else {
+                dependenciesFromClassContext(EswSequenceKtsScriptDefinition::class, wholeClasspath = true)
+            }
         }
 
         refineConfiguration {
-            onAnnotations(
-                DependsOn::class,
-                Repository::class,
-                Import::class,
-                CompilerOptions::class,
-                handler = MainKtsConfigurator()
-            )
+            onAnnotations(DependsOn::class, Repository::class, Import::class, CompilerOptions::class, handler = MainKtsConfigurator())
         }
         ide {
             acceptedLocations(ScriptAcceptedLocation.Everywhere)
@@ -99,10 +90,7 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
                 if (cacheBaseDir != null)
                     compilationCache(
                         CompiledScriptJarsCache { script, scriptCompilationConfiguration ->
-                            File(
-                                cacheBaseDir,
-                                compiledScriptUniqueName(script, scriptCompilationConfiguration) + ".jar"
-                            )
+                            File(cacheBaseDir, compiledScriptUniqueName(script, scriptCompilationConfiguration) + ".jar")
                         }
                     )
             }
@@ -119,12 +107,11 @@ object EswKtsEvaluationConfiguration : ScriptEvaluationConfiguration(
 
 fun configureConstructorArgsFromMainArgs(context: ScriptEvaluationConfigurationRefinementContext): ResultWithDiagnostics<ScriptEvaluationConfiguration> {
     val mainArgs = context.evaluationConfiguration[ScriptEvaluationConfiguration.jvm.mainArguments]
-    val res =
-        if (context.evaluationConfiguration[ScriptEvaluationConfiguration.constructorArgs] == null && mainArgs != null) {
-            context.evaluationConfiguration.with {
-                constructorArgs(mainArgs)
-            }
-        } else context.evaluationConfiguration
+    val res = if (context.evaluationConfiguration[ScriptEvaluationConfiguration.constructorArgs] == null && mainArgs != null) {
+        context.evaluationConfiguration.with {
+            constructorArgs(mainArgs)
+        }
+    } else context.evaluationConfiguration
     return res.asSuccess()
 }
 
@@ -133,36 +120,6 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
 
     override operator fun invoke(context: ScriptConfigurationRefinementContext): ResultWithDiagnostics<ScriptCompilationConfiguration> =
         processAnnotations(context)
-
-    private suspend fun resolveFromAnnotations(
-        resolver: ExternalDependenciesResolver,
-        annotations: Iterable<Annotation>
-    ): ResultWithDiagnostics<List<File>> {
-        val reports = mutableListOf<ScriptDiagnostic>()
-        annotations.forEach { annotation ->
-            when (annotation) {
-                is Repository -> {
-                    for (coordinates in annotation.repositoriesCoordinates) {
-                        val added = resolver.addRepository(coordinates)
-                            .also { reports.addAll(it.reports) }
-                            .valueOr { return it }
-
-                        if (!added)
-                            return reports + makeFailureResult(
-                                "Unrecognized repository coordinates: $coordinates"
-                            )
-                    }
-                }
-                is DependsOn -> {}
-                else -> return makeFailureResult("Unknown annotation ${annotation.javaClass}")
-            }
-        }
-        return annotations.filterIsInstance(DependsOn::class.java).flatMapSuccess { annotation ->
-            annotation.artifactsCoordinates.asIterable().flatMapSuccess { artifactCoordinates ->
-                resolver.resolve(artifactCoordinates)
-            }
-        }
-    }
 
     private fun processAnnotations(context: ScriptConfigurationRefinementContext): ResultWithDiagnostics<ScriptCompilationConfiguration> {
         val diagnostics = arrayListOf<ScriptDiagnostic>()
@@ -173,7 +130,6 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
         val scriptBaseDir = (context.script as? FileBasedScriptSource)?.file?.parentFile
         val importedSources = annotations.flatMap {
             (it as? Import)?.paths?.map { sourceName ->
-                println("XXX import ${scriptBaseDir?.resolve(sourceName) ?: File(sourceName)}")
                 FileScriptSource(scriptBaseDir?.resolve(sourceName) ?: File(sourceName))
             } ?: emptyList()
         }
@@ -186,15 +142,10 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
                 resolveFromAnnotations(resolver, annotations.filter { it is DependsOn || it is Repository })
             }
         } catch (e: Throwable) {
-            ResultWithDiagnostics.Failure(
-                *diagnostics.toTypedArray(),
-                e.asDiagnostics(path = context.script.locationId)
-            )
+            ResultWithDiagnostics.Failure(*diagnostics.toTypedArray(), e.asDiagnostics(path = context.script.locationId))
         }
 
         return resolveResult.onSuccess { resolvedClassPath ->
-            val xxx = importedSources.map { it.file.toString() }.joinToString(", ")
-            println("XXX updateClasspath(${resolvedClassPath}), importedSources = ${xxx}, compileOptions = ${compileOptions}")
             ScriptCompilationConfiguration(context.compilationConfiguration) {
                 updateClasspath(resolvedClassPath)
                 if (importedSources.isNotEmpty()) importScripts.append(importedSources)
@@ -204,10 +155,7 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
     }
 }
 
-private fun compiledScriptUniqueName(
-    script: SourceCode,
-    scriptCompilationConfiguration: ScriptCompilationConfiguration
-): String {
+private fun compiledScriptUniqueName(script: SourceCode, scriptCompilationConfiguration: ScriptCompilationConfiguration): String {
     val digestWrapper = MessageDigest.getInstance("MD5")
     digestWrapper.update(script.text.toByteArray())
     scriptCompilationConfiguration.notTransientData.entries
@@ -256,8 +204,7 @@ fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<Ev
 
         val evaluationEnv = EswKtsEvaluationConfiguration.with {
             jvm {
-//                baseClassLoader(null)
-                baseClassLoader(Thread.currentThread().contextClassLoader)
+                baseClassLoader(null)
             }
             constructorArgs(emptyArray<String>())
             enableScriptsInstancesSharing()
@@ -269,7 +216,7 @@ fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<Ev
 // Loads the given Kotlin script and returns a Scala result with either the error
 // message (String) or the result (Any).
 // In order to avoid a recursive dependency, the type Any instead of ScriptResult.
-// The result can be cast in order to access the invoke() function to execure the script.
+// The result can be cast in order to access the invoke() function to execute the script.
 fun loadScript(scriptFile: File): Either<String, Any> {
     try {
         val t0 = System.nanoTime()

@@ -16,7 +16,6 @@ import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.plugins.parser.xml.XmlModuleDescriptorWriter
 import org.apache.ivy.plugins.resolver.ChainResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
-import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.apache.ivy.plugins.resolver.URLResolver
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
@@ -44,9 +43,7 @@ class IvyResolver : ExternalDependenciesResolver {
     ): ResultWithDiagnostics<List<File>> {
 
         val artifactType = artifactCoordinates.substringAfterLast('@', "").trim()
-        val stringCoordinates =
-            if (artifactType.isNotEmpty()) artifactCoordinates.removeSuffix("@$artifactType") else artifactCoordinates
-        println("XXX artifactCoordinates = ${artifactCoordinates}, artifactType = ${artifactType}, stringCoordinates = ${stringCoordinates}")
+        val stringCoordinates = if (artifactType.isNotEmpty()) artifactCoordinates.removeSuffix("@$artifactType") else artifactCoordinates
         return if (acceptsArtifact(stringCoordinates)) {
             val artifactId = stringCoordinates.split(':')
             try {
@@ -63,27 +60,21 @@ class IvyResolver : ExternalDependenciesResolver {
         }
     }
 
-    private val ivyResolvers = arrayListOf<RepositoryResolver>()
+    private val ivyResolvers = arrayListOf<URLResolver>()
 
     private fun resolveArtifact(
         groupId: String, artifactName: String, revision: String, conf: String? = null, type: String? = null
     ): ResultWithDiagnostics<List<File>> {
 
-        ivyResolvers.add(
-            URLResolver().apply {
-                isM2compatible = true
-                addArtifactPattern("https://jitpack.io/" + "[organisation]/[module]/[revision]/[artifact](-[revision]).[ext]")
-                name = "jitpack"
-            }
-        )
-        ivyResolvers.add(
-
-            IBiblioResolver().apply {
-                isM2compatible = true
-                isUsepoms = true
-                name = "central"
-            }
-        )
+        if (ivyResolvers.isEmpty() || ivyResolvers.none { it.name == "central" }) {
+            ivyResolvers.add(
+                IBiblioResolver().apply {
+                    isM2compatible = true
+                    isUsepoms = true
+                    name = "central"
+                }
+            )
+        }
         val ivySettings = IvySettings().apply {
             val resolver =
                 if (ivyResolvers.size == 1) ivyResolvers.first()
@@ -95,7 +86,6 @@ class IvyResolver : ExternalDependenciesResolver {
                 }
             addResolver(resolver)
             setDefaultResolver(resolver.name)
-            println("XXX setDefaultResolver ${resolver.name}")
         }
 
         val ivy = Ivy.newInstance(ivySettings)
@@ -113,26 +103,29 @@ class IvyResolver : ExternalDependenciesResolver {
             val depArtifact = DefaultDependencyArtifactDescriptor(depsDescriptor, artifactName, type, type, null, null)
             depsDescriptor.addDependencyArtifact(conf, depArtifact)
         }
-//        depsDescriptor.addDependencyConfiguration("default", "master,compile")
+        depsDescriptor.addDependencyConfiguration("default", "master,compile")
         moduleDescriptor.addDependency(depsDescriptor)
 
         val resolveOptions = ResolveOptions().apply {
             confs = arrayOf("default")
-//            log = LogOptions.LOG_QUIET
-//            isOutputReport = false
+            log = LogOptions.LOG_QUIET
+            isOutputReport = false
         }
 
         //init resolve report
+
+        // TODO: find out why direct resolving doesn't work
+        // val report = ivy.resolve(moduleDescriptor, resolveOptions)
+
+        //creates an ivy configuration file
         val ivyFile = createTempFile("ivy", ".xml").apply { deleteOnExit() }
         XmlModuleDescriptorWriter.write(moduleDescriptor, ivyFile)
         val report = ivy.resolve(ivyFile.toURI().toURL(), resolveOptions)
 
         val diagnostics = report.allProblemMessages.map { it.asErrorDiagnostics() }
-        diagnostics.forEach { d ->
-            println("XXX: " + d.render())
-        }
-        return /*if (report.hasError()) makeFailureResult(diagnostics)
-        else*/ report.allArtifactsReports.map { it.localFile }.asSuccess(diagnostics)
+
+        return if (report.hasError()) makeFailureResult(diagnostics)
+        else report.allArtifactsReports.map { it.localFile }.asSuccess(diagnostics)
     }
 
     override fun addRepository(
@@ -142,13 +135,13 @@ class IvyResolver : ExternalDependenciesResolver {
     ): ResultWithDiagnostics<Boolean> {
         val url = repositoryCoordinates.toRepositoryUrlOrNull()
         if (url != null) {
-            val resolver = URLResolver()
-            resolver.isM2compatible = true
-            resolver.name = url.host
-            resolver.addArtifactPattern(
-                url.toExternalForm() + "[organisation]/[module]/[revision]/[artifact](-[revision]).[ext]"
+            ivyResolvers.add(
+                IBiblioResolver().apply {
+                    isM2compatible = true
+                    name = url.host
+                    root = url.toExternalForm()
+                }
             )
-
             return true.asSuccess()
         } else {
             return false.asSuccess()
