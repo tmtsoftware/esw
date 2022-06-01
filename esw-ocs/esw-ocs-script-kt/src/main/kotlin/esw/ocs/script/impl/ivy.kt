@@ -75,6 +75,13 @@ class IvyResolver : ExternalDependenciesResolver {
                 }
             )
         }
+//        ivyResolvers.add(
+//            URLResolver().apply {
+//                isM2compatible = true
+//                addArtifactPattern("https://jitpack.io/" + "[organisation]/[module]/[revision]/[artifact](-[revision]).[ext]")
+//                name = "jitpack"
+//            }
+//        )
         val ivySettings = IvySettings().apply {
             val resolver =
                 if (ivyResolvers.size == 1) ivyResolvers.first()
@@ -84,6 +91,7 @@ class IvyResolver : ExternalDependenciesResolver {
                         it.add(resolver)
                     }
                 }
+            println("XXX addResolver(${resolver.name})")
             addResolver(resolver)
             setDefaultResolver(resolver.name)
         }
