@@ -32,6 +32,7 @@ object Libs {
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.33"
 
+  val `graal-sdk` = "org.graalvm.sdk" % "graal-sdk" % "22.1.0.1"
 }
 
 object Csw {

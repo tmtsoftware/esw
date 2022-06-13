@@ -45,6 +45,7 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
+      Libs.`graal-sdk`,
       Libs.enumeratum.value,
       Libs.`msocket-http`,
       Libs.blockhound,
