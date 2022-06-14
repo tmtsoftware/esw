@@ -42,17 +42,17 @@ private[esw] object ScriptLoader {
       case Right(res) =>
         println(s"XXX loadKotlinScript Right($res)")
         //    operator fun invoke(scriptContext: ScriptContext): ScriptDsl = scriptFactory(scriptContext)
-//        type Result = { def invoke(context: ScriptContext): ScriptApi }
-//        try {
-//          val result = res.asInstanceOf[Result]
-//          result.invoke(scriptContext)
-//        }
+        type Result = { def invoke(context: ScriptContext): ScriptApi }
         try {
-          val methods = res.getClass.getMethods
-          val method  = methods.filter(_.getName == "invoke").head
-          method.setAccessible(true)
-          method.invoke(res, scriptContext).asInstanceOf[ScriptApi]
+          val result = res.asInstanceOf[Result]
+          result.invoke(scriptContext)
         }
+//        try {
+//          val methods = res.getClass.getMethods
+//          val method  = methods.filter(_.getName == "invoke").head
+//          method.setAccessible(true)
+//          method.invoke(res, scriptContext).asInstanceOf[ScriptApi]
+//        }
         catch {
           case ex: Exception =>
             println(s"XXX loadScript failed: $ex")
