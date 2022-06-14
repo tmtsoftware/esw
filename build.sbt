@@ -220,6 +220,7 @@ lazy val `esw-integration-test` = project
     `esw-gateway-server`,
     `esw-http-core`,
     `esw-ocs-impl`,
+    `esw-ocs-dsl-kt`,
     examples,
     `esw-ocs-app`,
     `esw-agent-akka-app`,

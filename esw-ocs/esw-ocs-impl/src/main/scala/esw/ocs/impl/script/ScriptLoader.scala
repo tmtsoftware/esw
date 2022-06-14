@@ -3,7 +3,7 @@ package esw.ocs.impl.script
 import scala.language.reflectiveCalls
 import esw.ocs.script.ScriptDefKt.loadScript
 
-import java.io.File
+import java.io.{File, FileNotFoundException}
 
 private[esw] object ScriptLoader {
 
@@ -16,17 +16,42 @@ private[esw] object ScriptLoader {
     )
   private val scriptDir = s"${maybeSequencerScriptsDir.get}/scripts"
 
+  private def getScriptFile(scriptClass: String): File = {
+    val scriptFile =
+      if (scriptClass.startsWith("esw.ocs.scripts.examples.testData"))
+        new File(
+          if (new File("examples").isDirectory) "examples" else "../examples",
+          scriptClass
+            .replace("esw.ocs.scripts.examples.testData", "testData")
+            .replace(".", "/") + ".seq.kts"
+        )
+      else
+        new File(scriptDir, scriptClass.replace(".", "/") + ".seq.kts")
+    if (!scriptFile.exists()) {
+      println(s"XXX File not found: $scriptFile")
+      throw new FileNotFoundException(s"File not found: $scriptFile")
+    }
+    scriptFile
+  }
+
   // this loads .kts script
   def loadKotlinScript(scriptClass: String, scriptContext: ScriptContext): ScriptApi = {
-    val scriptFile = new File(scriptDir, scriptClass.replace(".", "/") + ".seq.kts")
+    val scriptFile = getScriptFile(scriptClass)
     // noinspection ScalaUnusedSymbol
     loadScript(scriptFile) match {
       case Right(res) =>
         println(s"XXX loadKotlinScript Right($res)")
-        type Result = { def invoke(context: ScriptContext): ScriptApi }
+        //    operator fun invoke(scriptContext: ScriptContext): ScriptDsl = scriptFactory(scriptContext)
+//        type Result = { def invoke(context: ScriptContext): ScriptApi }
+//        try {
+//          val result = res.asInstanceOf[Result]
+//          result.invoke(scriptContext)
+//        }
         try {
-          val result = res.asInstanceOf[Result]
-          result.invoke(scriptContext)
+          val methods = res.getClass.getMethods
+          val method  = methods.filter(_.getName == "invoke").head
+          method.setAccessible(true)
+          method.invoke(res, scriptContext).asInstanceOf[ScriptApi]
         }
         catch {
           case ex: Exception =>
