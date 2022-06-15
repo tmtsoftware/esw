@@ -91,7 +91,6 @@ class IvyResolver : ExternalDependenciesResolver {
                         it.add(resolver)
                     }
                 }
-            println("XXX addResolver(${resolver.name})")
             addResolver(resolver)
             setDefaultResolver(resolver.name)
         }

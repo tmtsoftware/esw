@@ -79,8 +79,10 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
         }
         hostConfiguration(ScriptingHostConfiguration {
             jvm {
-                val cacheExtSetting = System.getProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY)
-                    ?: System.getenv(COMPILED_SCRIPTS_CACHE_DIR_ENV_VAR)
+//                val cacheExtSetting = System.getProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY)
+//                    ?: System.getenv(COMPILED_SCRIPTS_CACHE_DIR_ENV_VAR)
+                val cacheExtSetting = "/tmp/xxx"
+                println("XXX cacheExtSetting = $cacheExtSetting")
                 val cacheBaseDir = when {
                     cacheExtSetting == null -> System.getProperty("java.io.tmpdir")
                         ?.let(::File)?.takeIf { it.exists() && it.isDirectory }
@@ -88,12 +90,17 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
                     cacheExtSetting.isBlank() -> null
                     else -> File(cacheExtSetting)
                 }?.takeIf { it.exists() && it.isDirectory }
-                if (cacheBaseDir != null)
+                if (cacheBaseDir != null) {
+                    println("XXX cacheBaseDir = $cacheBaseDir")
                     compilationCache(
                         CompiledScriptJarsCache { script, scriptCompilationConfiguration ->
-                            File(cacheBaseDir, compiledScriptUniqueName(script, scriptCompilationConfiguration) + ".jar")
+                            File(
+                                cacheBaseDir,
+                                compiledScriptUniqueName(script, scriptCompilationConfiguration) + ".jar"
+                            )
                         }
                     )
+                }
             }
         })
     })
