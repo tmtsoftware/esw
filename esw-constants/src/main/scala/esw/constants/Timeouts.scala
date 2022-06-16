@@ -19,7 +19,7 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 object CommonTimeouts {
   val Wiring: FiniteDuration =
-    10.seconds // Generic timeout to be used in apps and wiring for starting/stopping actor systems, http servers etc.
+    100.seconds // Generic timeout to be used in apps and wiring for starting/stopping actor systems, http servers etc.
   val ResolveLocation: FiniteDuration = 3.seconds // Generic timeout for resolving a location using location service.
   val FetchConfig: FiniteDuration     = 2.seconds // Generic timeout for fetching a config file from config service
 }

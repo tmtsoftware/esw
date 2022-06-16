@@ -14,7 +14,6 @@ object EswServicesApp extends EswCommandApp[Command] {
   override def appName: String    = getClass.getSimpleName.dropRight(1)
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
-  println(s"starting $progName-$appVersion (XXX 1)")
 
   val hostname: String = Networks().hostname
 
