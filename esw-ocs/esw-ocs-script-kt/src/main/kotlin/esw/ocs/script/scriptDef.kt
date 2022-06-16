@@ -9,8 +9,6 @@ import esw.ocs.script.impl.IvyResolver
 import esw.ocs.script.impl.resolveFromAnnotations
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.net.JarURLConnection
-import java.net.URL
 import java.security.MessageDigest
 import kotlin.script.experimental.annotations.KotlinScript
 import kotlin.script.experimental.api.*
@@ -50,11 +48,11 @@ import scala.util.Right
 // passed to the constructor, and `args` could be used in the script as a defined variable.
 abstract class SequencerScript(val args: Array<String>)
 
-const val COMPILED_SCRIPTS_CACHE_DIR_ENV_VAR = "KOTLIN_ESW_KTS_COMPILED_SCRIPTS_CACHE_DIR"
-const val COMPILED_SCRIPTS_CACHE_DIR_PROPERTY = "esw.sequence.kts.compiled.scripts.cache.dir"
-
 class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
     {
+        val cacheDir = File("${System.getProperty("user.home")}/.esw-script-cache")
+        if (!cacheDir.isDirectory) cacheDir.mkdirs()
+
         defaultImports(DependsOn::class, Repository::class, Import::class, CompilerOptions::class)
         implicitReceivers(String::class)
         jvm {
@@ -72,35 +70,27 @@ class EswSequenceKtsScriptDefinition : ScriptCompilationConfiguration(
         }
 
         refineConfiguration {
-            onAnnotations(DependsOn::class, Repository::class, Import::class, CompilerOptions::class, handler = MainKtsConfigurator())
+            onAnnotations(
+                DependsOn::class,
+                Repository::class,
+                Import::class,
+                CompilerOptions::class,
+                handler = MainKtsConfigurator()
+            )
         }
         ide {
             acceptedLocations(ScriptAcceptedLocation.Everywhere)
         }
         hostConfiguration(ScriptingHostConfiguration {
             jvm {
-//                val cacheExtSetting = System.getProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY)
-//                    ?: System.getenv(COMPILED_SCRIPTS_CACHE_DIR_ENV_VAR)
-                val cacheExtSetting = "/tmp/xxx"
-                println("XXX cacheExtSetting = $cacheExtSetting")
-                val cacheBaseDir = when {
-                    cacheExtSetting == null -> System.getProperty("java.io.tmpdir")
-                        ?.let(::File)?.takeIf { it.exists() && it.isDirectory }
-                        ?.let { File(it, "main.kts.compiled.cache").apply { mkdir() } }
-                    cacheExtSetting.isBlank() -> null
-                    else -> File(cacheExtSetting)
-                }?.takeIf { it.exists() && it.isDirectory }
-                if (cacheBaseDir != null) {
-                    println("XXX cacheBaseDir = $cacheBaseDir")
-                    compilationCache(
-                        CompiledScriptJarsCache { script, scriptCompilationConfiguration ->
-                            File(
-                                cacheBaseDir,
-                                compiledScriptUniqueName(script, scriptCompilationConfiguration) + ".jar"
-                            )
-                        }
-                    )
-                }
+                compilationCache(
+                    CompiledScriptJarsCache { script, scriptCompilationConfiguration ->
+                        File(
+                            cacheDir,
+                            compiledScriptUniqueName(script, scriptCompilationConfiguration) + ".jar"
+                        )
+                    }
+                )
             }
         })
     })
@@ -115,11 +105,12 @@ object EswKtsEvaluationConfiguration : ScriptEvaluationConfiguration(
 
 fun configureConstructorArgsFromMainArgs(context: ScriptEvaluationConfigurationRefinementContext): ResultWithDiagnostics<ScriptEvaluationConfiguration> {
     val mainArgs = context.evaluationConfiguration[ScriptEvaluationConfiguration.jvm.mainArguments]
-    val res = if (context.evaluationConfiguration[ScriptEvaluationConfiguration.constructorArgs] == null && mainArgs != null) {
-        context.evaluationConfiguration.with {
-            constructorArgs(mainArgs)
-        }
-    } else context.evaluationConfiguration
+    val res =
+        if (context.evaluationConfiguration[ScriptEvaluationConfiguration.constructorArgs] == null && mainArgs != null) {
+            context.evaluationConfiguration.with {
+                constructorArgs(mainArgs)
+            }
+        } else context.evaluationConfiguration
     return res.asSuccess()
 }
 
@@ -150,7 +141,10 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
                 resolveFromAnnotations(resolver, annotations.filter { it is DependsOn || it is Repository })
             }
         } catch (e: Throwable) {
-            ResultWithDiagnostics.Failure(*diagnostics.toTypedArray(), e.asDiagnostics(path = context.script.locationId))
+            ResultWithDiagnostics.Failure(
+                *diagnostics.toTypedArray(),
+                e.asDiagnostics(path = context.script.locationId)
+            )
         }
 
         return resolveResult.onSuccess { resolvedClassPath ->
@@ -163,7 +157,10 @@ class MainKtsConfigurator : RefineScriptCompilationConfigurationHandler {
     }
 }
 
-private fun compiledScriptUniqueName(script: SourceCode, scriptCompilationConfiguration: ScriptCompilationConfiguration): String {
+private fun compiledScriptUniqueName(
+    script: SourceCode,
+    scriptCompilationConfiguration: ScriptCompilationConfiguration
+): String {
     val digestWrapper = MessageDigest.getInstance("MD5")
     digestWrapper.update(script.text.toByteArray())
     scriptCompilationConfiguration.notTransientData.entries
@@ -177,50 +174,20 @@ private fun compiledScriptUniqueName(script: SourceCode, scriptCompilationConfig
 
 private fun ByteArray.toHexString(): String = joinToString("", transform = { "%02x".format(it) })
 
-internal fun URL.toContainingJarOrNull(): File? =
-    if (protocol == "jar") {
-        (openConnection() as? JarURLConnection)?.jarFileURL?.toFileOrNull()
-    } else null
+fun evalFile(scriptFile: File): ResultWithDiagnostics<EvaluationResult> {
+    val scriptDefinition = createJvmCompilationConfigurationFromTemplate<SequencerScript>()
 
-internal fun URL.toFileOrNull() =
-    try {
-        File(toURI())
-    } catch (e: IllegalArgumentException) {
-        null
-    } catch (e: java.net.URISyntaxException) {
-        null
-    } ?: run {
-        if (protocol != "file") null
-        else File(file)
-    }
-
-private fun <T> withEswKtsCacheDir(value: String?, body: () -> T): T {
-    val prevCacheDir = System.getProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY)
-    if (value == null) System.clearProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY)
-    else System.setProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY, value)
-    try {
-        return body()
-    } finally {
-        if (prevCacheDir == null) System.clearProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY)
-        else System.setProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY, prevCacheDir)
-    }
-}
-
-fun evalFile(scriptFile: File, cacheDir: File? = null): ResultWithDiagnostics<EvaluationResult> =
-    withEswKtsCacheDir(cacheDir?.absolutePath ?: "") {
-        val scriptDefinition = createJvmCompilationConfigurationFromTemplate<SequencerScript>()
-
-        val evaluationEnv = EswKtsEvaluationConfiguration.with {
-            jvm {
+    val evaluationEnv = EswKtsEvaluationConfiguration.with {
+        jvm {
 //                baseClassLoader(null)
-                baseClassLoader(Thread.currentThread().contextClassLoader)
-            }
-            constructorArgs(emptyArray<String>())
-            enableScriptsInstancesSharing()
+            baseClassLoader(Thread.currentThread().contextClassLoader)
         }
-
-        BasicJvmScriptingHost().eval(scriptFile.toScriptSource(), scriptDefinition, evaluationEnv)
+        constructorArgs(emptyArray<String>())
+        enableScriptsInstancesSharing()
     }
+
+    return BasicJvmScriptingHost().eval(scriptFile.toScriptSource(), scriptDefinition, evaluationEnv)
+}
 
 // Loads the given Kotlin script and returns a Scala result with either the error
 // message (String) or the result (Any).
