@@ -18,6 +18,7 @@ import org.mockito.Mockito.when
 
 import java.time.Duration
 import java.util.concurrent.CompletionStage
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.concurrent.duration.DurationInt
 import scala.jdk.DurationConverters.ScalaDurationOps
 
@@ -49,17 +50,19 @@ class ScriptLoaderTest extends BaseTestSuite {
     config
   )
 
+  implicit val ec: ExecutionContext = actorSystem.executionContext
+
   "load" must {
 
     "load script class if subsystem and obsMode is provided | ESW-102, ESW-136" in {
       val loader: ScriptApi =
-        ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", scriptContext)
+        ScriptLoader.loadPythonScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", scriptContext)
       loader shouldBe a[ScriptDsl]
     }
 
     "throw InvalidScriptException if provided class is not a script | ESW-102, ESW-136" in {
       val exception = intercept[InvalidScriptException] {
-        ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.InvalidTestScript", scriptContext)
+        ScriptLoader.loadPythonScript("esw.ocs.scripts.examples.testData.scriptLoader.InvalidTestScript", scriptContext)
       }
 
       exception.getMessage shouldBe s"esw.ocs.scripts.examples.testData.scriptLoader.InvalidTestScript should be subclass of Script"
@@ -69,7 +72,7 @@ class ScriptLoaderTest extends BaseTestSuite {
       val invalidScriptClass = "invalid.path.TestScriptDoesNotExist"
 
       val exception = intercept[ScriptNotFound] {
-        ScriptLoader.loadKotlinScript(invalidScriptClass, scriptContext)
+        ScriptLoader.loadPythonScript(invalidScriptClass, scriptContext)
       }
 
       exception.getMessage shouldBe "invalid.path.TestScriptDoesNotExist not found at configured path"
@@ -77,7 +80,7 @@ class ScriptLoaderTest extends BaseTestSuite {
 
     "throw ScriptInitialisationFailedException if script initialisation fails | ESW-102, ESW-136, ESW-243" in {
       val exception = intercept[ScriptInitialisationFailedException] {
-        ScriptLoader.loadKotlinScript(
+        ScriptLoader.loadPythonScript(
           "esw.ocs.scripts.examples.testData.scriptLoader.InitialisationExceptionTestScript",
           scriptContext
         )

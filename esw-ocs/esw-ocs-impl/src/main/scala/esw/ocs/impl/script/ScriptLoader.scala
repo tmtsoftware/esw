@@ -1,32 +1,58 @@
 package esw.ocs.impl.script
 
-import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import esw.ocs.impl.pyscript.{PyScriptApi, PyScriptApiWrapper}
 
 import scala.language.reflectiveCalls
+import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import org.graalvm.polyglot.{Context, Source}
+
+import java.io.{File, FileNotFoundException}
+import scala.concurrent.ExecutionContext
 
 private[esw] object ScriptLoader {
 
-  // this loads .kts script
-  def loadKotlinScript(scriptClass: String, scriptContext: ScriptContext): ScriptApi =
-    withScript(scriptClass) { clazz =>
-      val script = clazz.getConstructor(classOf[Array[String]]).newInstance(Array(""))
+  // We need to know where the sequencer-scripts repo is in order to load the scripts at runtime.
+  // For now, require that the environment variable is set.
+  private val maybeSequencerScriptsDir = sys.env.get("SEQUENCER_SCRIPTS_HOME")
+  if (maybeSequencerScriptsDir.isEmpty)
+    throw new RuntimeException(
+      "Please set the SEQUENCER_SCRIPTS_HOME environment variable to the root of the checked out sequencer-scripts repo"
+    )
+  private val scriptDir = s"${maybeSequencerScriptsDir.get}/pyScripts"
 
-      // script written in kotlin script file [.kts] when compiled, assigns script result to $$result variable
-      val $$resultField = clazz.getDeclaredField("$$result")
-      $$resultField.setAccessible(true)
+  private def getScriptFile(scriptClass: String): File = {
+    val scriptFile =
+      if (scriptClass.startsWith("esw.ocs.scripts.examples.testData"))
+        new File(
+          if (new File("examples").isDirectory) "examples" else "../examples",
+          scriptClass
+            .replace("esw.ocs.scripts.examples.testData", "testData")
+            .replace(".", "/") + ".py"
+        )
+      else
+        new File(scriptDir, scriptClass.replace(".", "/") + ".py")
+    if (!scriptFile.exists()) {
+      println(s"XXX File not found: $scriptFile")
+      throw new FileNotFoundException(s"File not found: $scriptFile")
+    }
+    scriptFile
+  }
 
-      type Result = { def invoke(context: ScriptContext): ScriptApi }
-      val result = $$resultField.get(script).asInstanceOf[Result]
-      result.invoke(scriptContext)
-    }
-
-  def withScript[T](scriptClass: String)(block: Class[_] => T): T =
-    try {
-      val clazz = Class.forName(scriptClass)
-      block(clazz)
-    }
-    catch {
-      case _: ClassNotFoundException => throw new ScriptNotFound(scriptClass)
-      case _: NoSuchFieldException   => throw new InvalidScriptException(scriptClass)
-    }
+  // this loads the python script for the class name (XXX TODO: Change API to use file)
+  def loadPythonScript(scriptClass: String, scriptContext: ScriptContext)(implicit ec: ExecutionContext): ScriptApi = {
+    val scriptFile = getScriptFile(scriptClass)
+    val context = Context
+      .newBuilder("python")
+      .allowAllAccess(true)
+      .option("python.ForceImportSite", "true")
+      .option("python.Executable", s"$scriptDir/venv/bin/graalpython")
+      .build()
+    val source = Source.newBuilder("python", scriptFile).build()
+    val x      = context.eval(source)
+    println(s"XXX x = $x")
+    val clazz    = context.getPolyglotBindings.getMember("script")
+    val instance = clazz.newInstance()
+    val res      = instance.as(classOf[PyScriptApi])
+    new PyScriptApiWrapper(res)
+  }
 }
