@@ -1,106 +1,106 @@
 # Sequencer Technical Documentation
 
-Sequencer is OMOA component which has responsibility of executing Sequence of Steps. In an observation, Sequencers will form
-a hierarchy where with a top-level ESW Sequencer sending Sequences to downstream Sequencers and downstream Sequencers sending commands to Assemblies/HCDs.
+Sequencer is OMOA component which has the responsibility of executing a sequence of Steps. In an observation, Sequencers will form
+a hierarchy with a top level ESW Sequencer sending Sequences to downstream Sequencers and downstream Sequencers sending commands to Assemblies/HCDs.
 
 The Sequencer implementation has two main parts:
 
 1. Sequencer Framework
 2. Scripting Support
 
-Sequencer Framework uses an Akka Actor at a core and is responsible for executing the received Sequence and calling handlers in the Script.
-Sequencer Scripting Support defines behaviour of Sequencer while executing Sequence. Scripts are written using Domain Specific Language
+The Sequencer Framework uses an Akka Actor at its core and is responsible for executing the received Sequence and calling handlers in the Script.
+Sequencer Scripting Support defines the behaviour of the Sequencer while executing a Sequence. Scripts are written using a Domain Specific Language
 provided as a part of Framework.
 
 ## Modules
 
 * esw-ocs-api -
-This is cross-compiled module, which is compiled into JVM as well as JavaScript code. This module includes `SequencerApi`
+This is a cross-compiled module, which is compiled into JVM as well as JavaScript code (Note: The generated JavaScript code is currently not used anywhere). This module includes `SequencerApi`
 which defines an interface for Sequencer. This module also consists of core models, actor client, JVM and JavaScript client for
 Sequencer.
 
 * esw-ocs-impl -
-This module consists of the core implementation of Sequencer the actor which is `SequencerBehaviour` (Sequencer Actor),
+This module consists of the core implementation of a Sequencer, the actor, which is `SequencerBehaviour` (Sequencer Actor),
 Engine and SequencerData.
 
 * esw-ocs-app -
-This module consists of wiring as well as cli application to start Sequencer. The wiring integrates Sequencer into
+This module consists of wiring as well as the command line application to start Sequencer. The wiring integrates a Sequencer into
 the rest of the ESW/CSW environment.
 
 * esw-ocs-dsl -
-This module consists of Scala implementation supporting the Script DSL.
+This module consists of the Scala implementation supporting the Script DSL.
 
 * esw-ocs-dsl-kt -
-This module consists of Kotlin counterpart of the Script DSL.
+This module consists of the Kotlin counterpart of the Script DSL.
 
 * esw-ocs-handler -
-This handler module is responsible for providing HTTP routes for Sequencer HTTP server. Sequencer provides
+This handler module is responsible for providing HTTP routes for the Sequencer HTTP server. Sequencer provides
 an HTTP and Akka interface. The HTTP routes are defined and implemented here.
 
 ## Sequence execution process
 
 #### Starting a Sequencer
-When we do load script from a sequence component, it creates a [Sequencer Wiring]($github.base_url$/esw-ocs/esw-ocs-app/src/main/scala/esw/ocs/app/wiring/SequencerWiring.scala). 
-Sequencer Wiring passes the Kotlin script class name as string parameter to [Script Loader]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/script/ScriptLoader.scala), 
-which uses Java reflection APIs to dynamically load script class with given name and create its instance. This loaded script is then passed to
-an execution [Engine]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/core/Engine.scala) which is responsible for processing each step.
-After initialization, Sequencer's Akka and HTTP connection is registered to Location Service.
+When we load a script from a sequence component, it creates a [Sequencer Wiring]($github.base_url$/esw-ocs/esw-ocs-app/src/main/scala/esw/ocs/app/wiring/SequencerWiring.scala). 
+Sequencer Wiring passes the Kotlin script's class name as string parameter to [Script Loader]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/script/ScriptLoader.scala), 
+which uses Java reflection APIs to dynamically load the script class with the given name and create its instance. The loaded script is then passed to
+an execution [Engine]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/core/Engine.scala), which is responsible for processing each step.
+After initialization, Sequencer's Akka and HTTP connection is registered with the Location Service.
 
 #### Loading and Running a sequence in Sequencer
 
-* During initialization of Sequencer, it is set to IDLE state and initialized with empty data in Sequence Data like empty Step List,etc.
-* Once initialized, user can either **Load and start a sequence** or **Submit a sequence**, in both cases list of commands will be converted to richer model of list of Steps.
+* During initialization of a Sequencer, it is set to the IDLE state and initialized with empty data in Sequence Data, with an empty Step List,etc.
+* Once initialized, a user can either **Load and start a sequence** or **Submit a sequence**. In both cases list of commands will be converted to the richer model of list of Steps.
     * **Load and Start a Sequence**: Using `loadSequence` api, `SequencerData`(described below) will be initialized with Sequence Steps.
-      User can then use `startSequence` api to start the execution of steps.
+      A user can then use the `startSequence` api to start the execution of steps.
     * **Submit a Sequence**: Using `submit` / `submitAndWait` api, `SequencerData` will be initialized with Sequence Steps, and start the sequence execution.
 
-    After any of above flow, Sequencer will go into RUNNING state.
+    After any of the above flows, Sequencer will go into the RUNNING state.
 
 `SequencerData` has different fields as follows:
 
 * `stepList` - This will store steps of the Sequence
-* `runId` - This is runId of Sequence
-* `sequenceResponseSubscribers` - This is a list of Subscribers who is interested in response either by **submitting a sequence** or **querying response**.
-    * When subscriber has submitted the sequence using `submitAndWait` API, it will get response once Sequence is completed with Success/Failure
-    * For other Subscribers(who has not submitted the sequence), they can also get same response using `queryFinal` API, for this they need to provide runId of Sequence
+* `runId` - This is runId of the Sequence
+* `sequenceResponseSubscribers` - This is a list of Subscribers who are interested in a response, either by **submitting a sequence** or by **querying a response**.
+    * When a subscriber has submitted a sequence using the `submitAndWait` API, it will get a response once the Sequence is completed with Success or Failure
+    * Other subscribers (who have not submitted the sequence), can also get the same response using the `queryFinal` API. For this they need to provide the runId of the Sequence.
 
 ##### Mapping between steps and script handlers
 
-A Kotlin script file contains multiple command names and associated handler blocks with them.
+A Kotlin script file contains multiple command names and associated handler blocks.
 ```
 onSetup("commandName") { 
   ...handler block of command
 }
 ```
-When a Script is loaded, [ScriptDsl]($github.base_url$/esw-ocs/esw-ocs-dsl/src/main/scala/esw/ocs/dsl/script/ScriptDsl.scala) stores all command names with respective handler code blocks, 
-you can think of it like a map with command name as key and handler code block as its value.
+When a Script is loaded, [ScriptDsl]($github.base_url$/esw-ocs/esw-ocs-dsl/src/main/scala/esw/ocs/dsl/script/ScriptDsl.scala) stores all command names with respective handler code blocks. 
+You can think of it as a map with command name as key and handler code block as its value.
 
-The sequence submitted by a client to sequencer contains list of commands that need to be executed. These commands are stored as richer model of steps.
-When a step is picked for execution by Engine, its corresponding code block is picked from mapping in ScriptDsl and that block is executed.
+The sequence submitted by a client to a sequencer contains a list of commands that need to be executed. These commands are stored as a richer model of steps.
+When a step is picked for execution by Engine, its corresponding code block is picked from a mapping in ScriptDsl and that block is executed.
 
 @@@note
-Engine is a continuous running loop, it pulls next step once current step is finished.
+Engine is a continuous running loop: It pulls the next step once the current step is finished.
 @@@
 
 #### Completion of a Sequence
 Once every step is executed, it is marked as Finished with Success or Failure.
-If any of step is Failed, Sequence is terminated and Error response is sent to all Subscribers.
-If all steps are completed with Success, then Success response is sent to all Subscribers.
+If any of step is Failed, the Sequence is terminated and an Error response is sent to all Subscribers.
+If all steps are completed with Success, then a Success response is sent to all Subscribers.
 
 
 ## Implementation Details
 
-Sequencer framework uses Akka Actor as core implementation (Sequencer Actor).
-The following figure explains the architecture of the Sequencer framework. Sequencer is registered with Location Service. The future
+The Sequencer framework uses Akka Actor as the core implementation (Sequencer Actor).
+The following figure explains the architecture of the Sequencer framework. A Sequencer is registered with Location Service. The future
 SOSS Planning Tool or ESW.HCMS Script Monitoring Tool will use the Location of the top-level Sequencer returned by Sequence Manager
-to resolve the top-level Sequencer, and will send the Observation's Sequence to top-level Sequencer.
+to resolve the top-level Sequencer and will send the Observation's Sequence to the top-level Sequencer.
 
 Engine and Sequencer Actor are core parts of Framework. The framework part is the same for every Sequencer,
 but the Script can vary. The Script defines the behaviour of the Sequencer for each step within a Sequence.
 
 ![Sequencer Architecture](../images/ocs/sequencer.png)
 
-The following sections explain the core components of Sequencer:
+The following sections explain the core components of a Sequencer:
 
 1. Sequencer Lifecycle
 2. Scripting Support
