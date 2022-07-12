@@ -64,6 +64,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   }
 
   def sequenceComponentWiring(command: SequencerAppCommand): SequenceComponentWiring = {
+    // Note: the expression below is a SAM (single abstract methods) implementation of SequencerServerFactory
     val sequencerServer: SequencerServerFactory =
       if (command.simulation) new SimulationSequencerWiring(_, _).sequencerServer
       else new SequencerWiring(_, _).sequencerServer

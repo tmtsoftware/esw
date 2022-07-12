@@ -14,5 +14,6 @@ trait SequencerServer {
 }
 
 trait SequencerServerFactory {
+  // Note: See SequencerApp.sequenceComponentWiring() for SAM (Single Abstract Method) implementation
   def make(sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix): SequencerServer
 }
