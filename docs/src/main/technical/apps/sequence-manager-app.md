@@ -122,8 +122,8 @@ cd /tmt/apps
 ## Starting Sequence Manager in Simulation Mode
 
 The Sequence Manager supports a simulation mode, which is primarily useful for standalone testing of the Sequence
-Manager. When started in simulation mode, the Sequence Manager starts bypasses the Agents, and starts Sequence Components
-internally. The register themselves with the Location Service and load Scripts and Sequencers as normal, but simulated
+Manager. When started in simulation mode, the Sequence Manager bypasses the Agents and starts Sequence Components
+internally. They register themselves with the Location Service and load Scripts and Sequencers as normal, but the simulated
 Sequence Manager can start on its own.
 
 ### 1. Install `coursier` and add the TMT Apps channel

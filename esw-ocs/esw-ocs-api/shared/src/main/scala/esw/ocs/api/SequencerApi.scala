@@ -41,7 +41,7 @@ trait SequencerApi extends SequencerCommandService {
 
   /**
    * Get the sequence in sequencer - current or last.
-   * If there is a sequence
+   * If there is no sequence
    * then None response is returned
    * otherwise [[esw.ocs.api.models.StepList]] is returned as Some value
    *

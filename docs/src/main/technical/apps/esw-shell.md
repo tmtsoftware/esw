@@ -119,7 +119,7 @@ For Assemblies:
 
 This can also be done for a Sequencer in order to send a Sequence to a Sequencer. (See also: @ref:[Sequencers](../sequencer-tech.md))
 
-- `val sequencer = sequencerCommandService(IRIS, "darknight")`
+- `val sequencer = sequencerCommandService("IRIS.darknight")`
 
 **IRIS.hcd_name** and **IRIS.assembly_name** are the Prefix by which the HCD and Assembly respectively, are registered with Location Service.
 

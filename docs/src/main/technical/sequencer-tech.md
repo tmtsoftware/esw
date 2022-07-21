@@ -1,6 +1,6 @@
 # Sequencer Technical Documentation
 
-Sequencer is OMOA component which has the responsibility of executing a sequence of Steps. In an observation, Sequencers will form
+The Sequencer is OMOA component which has the responsibility of executing a sequence of Steps. In an observation, Sequencers will form
 a hierarchy with a top level ESW Sequencer sending Sequences to downstream Sequencers and downstream Sequencers sending commands to Assemblies/HCDs.
 
 The Sequencer implementation has two main parts:
@@ -44,7 +44,7 @@ When we load a script from a sequence component, it creates a [Sequencer Wiring]
 Sequencer Wiring passes the Kotlin script's class name as string parameter to [Script Loader]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/script/ScriptLoader.scala), 
 which uses Java reflection APIs to dynamically load the script class with the given name and create its instance. The loaded script is then passed to
 an execution [Engine]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/core/Engine.scala), which is responsible for processing each step.
-After initialization, Sequencer's Akka and HTTP connection is registered with the Location Service.
+After initialization, the Sequencer's Akka and HTTP connection is registered with the Location Service.
 
 #### Loading and Running a sequence in Sequencer
 

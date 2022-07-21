@@ -60,20 +60,20 @@ This module contains a CLI which starts Sequence Manager component as well as th
 
 ## Implementation Details
 
-Boot-up time for TMT ecosystem is expected to start an Agent on every machine that will host Sequence Components and Sequencers,
+At boot time the TMT ecosystem is expected to start an Agent on every machine that will host Sequence Components and Sequencers,
 Sequence Manager on an ESW machine, and HCD/Assembly components on respective subsystem machines.
 
-Sequence Manager supports multiple APIs that allow it to configure a set of Sequencers based on an observing mode
+The Sequence Manager supports multiple APIs that allow it to configure a set of Sequencers based on an observing mode
 and cleanup/shutdown Sequencers after an observation is completed.
 
-Sequence Manager also support running multiple sequencers of a subsystem in same observing mode with a variation.
+The Sequence Manager also supports running multiple sequencers of a subsystem in the same observing mode with a different variation.
 
-* To support multiple sequencers with same subsystem in an observation, we can add variation while doing LoadScript.
-  As an example we need to create 3 IRIS sequencers + 1 top level ESW sequencer for IRIS_ImagerAndIFS Obsmode
+* To support multiple sequencers with same subsystem in an observation, we can add a variation while doing a LoadScript operation.
+  As an example, we need to create three IRIS sequencers plus one top level ESW sequencer for the IRIS_ImagerAndIFS Obsmode
   * IRIS.IRIS_ImagerAndIFS.IRIS_IFS //Subsystem . obsmode . variation
   * IRIS.IRIS_ImagerAndIFS.IRIS_IMAGER //Subsystem . obsmode . variation
   * IRIS.IRIS_ImagerAndIFS //Subsystem . obsmode
-  *ESW.IRIS_ImagerAndIFS //Subsystem . Obsmode
+  * ESW.IRIS_ImagerAndIFS //Subsystem . Obsmode
 
 An extended use case is used here to explain the use of the Sequence Manager API as it is intended to be used during
 observing. The use case leads to the configuration for an observing mode.
@@ -99,7 +99,7 @@ running on the machines.
 This API allows a future UI to provision Sequence Components per Agent. The provision API call requires a simple
 configuration which specifies the number of Sequence Components needed to be spawned on each particular Agent.
 
-The following diagram depicts status of TMT ecosystem after provisioning as per the configuration argument shown on
+The following diagram depicts the status of the TMT ecosystem after provisioning as per the configuration argument shown on
 the right side of the figure.
 
 ![Provision](../images/sequencemanager/sm2.png)
@@ -120,19 +120,19 @@ all Sequencers needed in the course of a night. The system can be easily re-prov
 
 ### Configuring Sequencers for an Observing Mode
 
-Once the system is provisioned, Sequence Manager can take the configure step.
-Configure is used for starting Sequencers needed for an observing mode. It also checks for any resource conflicts with ongoing observations.
-It is allowed that TMT run more than one concurrent observation as long as they do not conflict. Configure API ensures this is the case.
-If there is a conflict, configure call will fail.
+Once the system is provisioned, the Sequence Manager can take the next step: Configure.
+Configure is used for starting the Sequencers needed for an observing mode. It also checks for any resource conflicts with ongoing observations.
+For TMT, it is allowed to run more than one concurrent observation as long as they do not conflict. The Configure API ensures this is the case.
+If there is a conflict, the configure call will fail.
 
-A configuration file mapping observing mode to required Sequencers  (called obsModeConfig) is provided to Sequence Manager when it starts.
-Configure API, checks for required Sequencers and resources in the obsModeConfig file.
-This config file contains mapping of observing mode to required Sequencers and resources. When configure for a particular observing mode
+A configuration file mapping observing mode to required Sequencers  (called obsModeConfig) is provided to the Sequence Manager when it starts.
+The Configure API, checks for the required Sequencers and resources in the obsModeConfig file.
+This config file contains a mapping of observing mode to required Sequencers and resources. When a configuration for a particular observing mode
 command is received by Sequence Manager, it checks the following:
 
-1. Existence of a mapping for required observing mode exists in configuration file
-2. Availability of adequate Sequence Components for starting Sequencers
-3. No resource conflict should occur with ongoing observations
+1. That the existence of a mapping for a required observing mode exists in the configuration file
+2. The availability of adequate Sequence Components for starting Sequencers
+3. That no resource conflict should occur with ongoing observations
 
 If these checks succeed, the Sequencers are configured, the location of the top-level ESW Sequencer is returned to
 the caller.
@@ -140,7 +140,7 @@ the caller.
 ![Configure](../images/sequencemanager/sm3.png)
 
 @@@note
-Once Sequence Manager configures for an observing mode, a Sequence can be sent to the Top Level Sequencer (ESW sequencer for that observing mode) by SOSS.
+Once the Sequence Manager configures an observing mode, a Sequence can be sent to the Top Level Sequencer (ESW sequencer for that observing mode) by SOSS.
 @@@
 
 The following flow chart shows the algorithm for configure flow.
