@@ -99,7 +99,7 @@ object Borer {
 object Kotlin {
   val CoroutinesVersion = "1.6.2"
 
-  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % EswKeys.kotlinVersion
+  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib"      % EswKeys.kotlinVersion
   val `coroutines-core` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core" % CoroutinesVersion
 
   // core/jvm — additional core features available on Kotlin/JVM:

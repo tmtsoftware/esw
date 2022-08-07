@@ -1,4 +1,4 @@
-package esw.ocs.dsl.script.exceptions
+package esw.ocs.impl.script.exceptions
 
 import csw.params.commands.SequenceCommand
 

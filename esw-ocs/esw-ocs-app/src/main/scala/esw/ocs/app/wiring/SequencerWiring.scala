@@ -50,6 +50,7 @@ import msocket.http.post.PostRouteFactory
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.metrics.LabelExtractor
 
+import java.io.{File, FileNotFoundException}
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
@@ -79,7 +80,28 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
-  private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
+
+  // We need to know where the sequencer-scripts repo is in order to load the scripts at runtime.
+  // For now, require that an environment variable or system property is set.
+  private val sequencerScriptsKey      = "SEQUENCER_SCRIPTS_HOME"
+  private val maybeSequencerScriptsDir = Option(sys.env.getOrElse(sequencerScriptsKey, System.getProperty(sequencerScriptsKey)))
+  if (maybeSequencerScriptsDir.isEmpty)
+    throw new RuntimeException(
+      "Please set the SEQUENCER_SCRIPTS_HOME environment variable or system property to the root of the checked out sequencer-scripts repo"
+    )
+  private val scriptDir = s"${maybeSequencerScriptsDir.get}/scripts"
+
+  private def getScriptFile(scriptClass: String): File = {
+    val scriptFile = new File(scriptDir, scriptClass.replace(".", "/") + ".seq.kts")
+    if (!scriptFile.exists()) {
+      throw new FileNotFoundException(s"File not found: $scriptFile")
+    }
+    scriptFile
+  }
+
+  private val scriptFile = getScriptFile(scriptClass)
+
+  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptFile, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)

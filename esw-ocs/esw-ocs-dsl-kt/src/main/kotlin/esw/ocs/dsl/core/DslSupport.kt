@@ -2,7 +2,7 @@ package esw.ocs.dsl.core
 
 import esw.ocs.dsl.internal.ScriptWiring
 import esw.ocs.dsl.script.ScriptDsl
-import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
+import esw.ocs.impl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.runBlocking
 

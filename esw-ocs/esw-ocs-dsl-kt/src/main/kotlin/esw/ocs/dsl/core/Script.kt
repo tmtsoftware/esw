@@ -17,7 +17,7 @@ import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
-import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
+import esw.ocs.impl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.dsl.shutdownCpuBoundDispatcher
 import esw.ocs.dsl.toScriptError
 import kotlinx.coroutines.*

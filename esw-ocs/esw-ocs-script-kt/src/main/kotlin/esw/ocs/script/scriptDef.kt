@@ -194,24 +194,21 @@ fun evalFile(scriptFile: File): ResultWithDiagnostics<EvaluationResult> {
 // In order to avoid a recursive dependency, the type Any instead of ScriptResult.
 // The result can be cast in order to access the invoke() function to execute the script.
 fun loadScript(scriptFile: File): Either<String, Any> {
-    try {
-        val t0 = System.nanoTime()
-        val res = evalFile(scriptFile)
-        val t1 = System.nanoTime()
-        val d = t1 - t0
-        val ms = d / 1000000
-        println("XXXXXXXXXXXXX Time to load $scriptFile: $d ns ($ms ms)")
-        val errors = res.reports.map { it.message }
-        val x = res.valueOrNull()?.returnValue
-        return if (x is ResultValue.Value) {
-            Right(x.value)
-        } else {
-            Left(errors.joinToString())
-        }
-    } catch (ex: Exception) {
-        println("ScriptDef/loadScript() failed: $ex")
-        ex.printStackTrace()
-        return Left(ex.message)
+    val t0 = System.nanoTime()
+    val res = evalFile(scriptFile)
+    val t1 = System.nanoTime()
+    val d = t1 - t0
+    val ms = d / 1000000
+    println("XXXXXXXXXXXXX Time to load $scriptFile: $d ns ($ms ms)")
+    val errors = res.reports.map { it.message }
+    val x = res.valueOrNull()?.returnValue
+    return if (x is ResultValue.Value) {
+        Right(x.value)
+    } else if (x is ResultValue.Error) {
+        x.error.printStackTrace()
+        throw x.error
+    } else {
+        Left(errors.joinToString())
     }
 }
 
