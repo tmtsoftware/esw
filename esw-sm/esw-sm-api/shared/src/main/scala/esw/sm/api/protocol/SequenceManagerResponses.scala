@@ -108,6 +108,7 @@ object CommonFailure {
       with ShutdownSequenceComponentResponse.Failure
       with ProvisionResponse.Failure
       with ObsModesDetailsResponse.Failure {
+    println(s"XXX LocationServiceError: $reason")
     override def msg: String = s"Failed with location service error: $reason"
   }
 }

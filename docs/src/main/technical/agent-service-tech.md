@@ -2,14 +2,14 @@
 
 ## Agent Service Introduction
 
-The `Agent Service` was created to support the creation and configuration `Sequence Components` (and `Sequencers`) at run-time,
-a key feature of the OSW Observing Mode Oriented Architecture. Agent Service was created primarily for use
+The `Agent Service` was created to support the creation and configuration of `Sequence Components` (and `Sequencers`) at run-time,
+a key feature of the OSW Observing Mode Oriented Architecture. The Agent Service was created primarily for use
 by the `Sequence Manager`, but it provides a general service that may become more heavily used in the future.
 
-For instance, `Sequence Manager` provides a `provision` function that takes a configuration and starts one or more
+For instance, the `Sequence Manager` provides a `provision` function that takes a configuration and starts one or more
 `Sequence Components` on a set of machines. These `Sequence Components` can be used to run `Sequencers`.
 
-The functionality of Agent Service is flexible and can be used to provide a more resilient OSW by allowing the
+The functionality of the Agent Service is flexible and can be used to provide a more resilient OSW by allowing the
 operator of the telescope to easily respond to unexpected failures. For instance, the `Sequence Manager` itself can be
 created using the Agent Service. In this use case, a future operation's user interface will allow the operator to start
 a new `Sequence Manager` on a backup machine in the case where the machine running the `Sequence Manager` has failed.

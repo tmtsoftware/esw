@@ -14,6 +14,9 @@ import esw.ocs.testkit.EswTestKit
 import esw.sm.api.protocol.ConfigureResponse.Success
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequencersResponse}
 
+import scala.concurrent.Await
+import scala.concurrent.duration.*
+
 class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 
   override def afterEach(): Unit = {
@@ -34,7 +37,11 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 
       val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix)
 
+      // XXXXXXX
+      implicit def patienceConfig: PatienceConfig = PatienceConfig(100.seconds)
+
       val configureResponse = sequenceManager.configure(obsMode).futureValue
+
       // verify ESW sequencer is considered as top level sequencer
       configureResponse should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)))
 

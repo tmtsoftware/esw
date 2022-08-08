@@ -116,6 +116,7 @@ class SequenceManagerBehavior(
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
+    println(s"XXX configure obsMode=$obsMode, self=$self, replyTo=$replyTo")
     // getRunningObsModes finds the currently running observation modes
     val runningObsModesF = getRunningObsModes.flatMapToAdt(
       configuredObsModes => configureResources(obsMode, configuredObsModes),
@@ -130,8 +131,9 @@ class SequenceManagerBehavior(
 
   // start all the required sequencers associated with obs mode,
   // if requested resources does not conflict with existing running observations
-  private def configureResources(requestedObsMode: ObsMode, runningObsModes: Set[ObsMode]): Future[ConfigureResponse] =
+  private def configureResources(requestedObsMode: ObsMode, runningObsModes: Set[ObsMode]): Future[ConfigureResponse] = {
     async {
+      println(s"XXX configureResources(requestedObsMode=$requestedObsMode, runningObsModes=$runningObsModes)")
       // get obsMode config for requested observation mode from sequence manager config
       sequenceManagerConfig.obsModeConfig(requestedObsMode) match {
         // check for resource conflict between requested obsMode and currently running obsMode
@@ -142,6 +144,7 @@ class SequenceManagerBehavior(
         case None => ConfigurationMissing(requestedObsMode)
       }
     }
+  }
 
   // ignoring failure of getResources as config should never be absent for running obsModes
   private def isConflicting(requiredResources: Resources, runningObsModes: Set[ObsMode]) =

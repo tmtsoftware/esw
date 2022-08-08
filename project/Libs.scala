@@ -97,7 +97,7 @@ object Borer {
 }
 
 object Kotlin {
-  val CoroutinesVersion = "1.6.2"
+  val CoroutinesVersion = "1.6.4"
 
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib"      % EswKeys.kotlinVersion
   val `coroutines-core` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core" % CoroutinesVersion
@@ -115,8 +115,8 @@ object Kotlin {
   val `kotlin-scripting-jvm-host`     = "org.jetbrains.kotlin" % "kotlin-scripting-jvm-host"     % EswKeys.kotlinVersion
   val `kotlin-scripting-dependencies` = "org.jetbrains.kotlin" % "kotlin-scripting-dependencies" % EswKeys.kotlinVersion
 
-  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.1.0"
-  val mockk      = "io.mockk"  % "mockk"                      % "1.12.2"
+  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.4.1"
+  val mockk      = "io.mockk"  % "mockk"                      % "1.12.5"
 }
 
 object BuildProperties {
