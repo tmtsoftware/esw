@@ -11,8 +11,19 @@ All notable changes to this project will be documented in this file.
 
 ## Upcoming Changes
 
+## [ESW v0.5.0] - 2022-09-15
+
+- upgraded to Java 17
 - Added `subscribeObserveEvents` in EventApi via Gateway.
 - Added `OffsetStart`, `OffsetEnd`, `InputRequestStart` & `InputRequestEnd` sequencer observe events in Kotlin Scripts DSL.
+
+### Documentation
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.5.0/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.5.0/api/scala/index.html
+
+### Supporting Releases
+
+<a name="0-4-0-1"></a>1: [ESW v0.5.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.5.0-RC1) - 2022-09-15<br>
 
 ## [ESW v0.4.0] - 2022-02-09
 
