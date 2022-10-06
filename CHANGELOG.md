@@ -10,6 +10,7 @@ Here is the repository for ESW: [ESW](https://github.com/tmtsoftware/esw).
 All notable changes to this project will be documented in this file.
 
 ## Upcoming Changes
+n/a
 
 ## [ESW v0.5.0] - 2022-09-15
 
@@ -23,7 +24,8 @@ All notable changes to this project will be documented in this file.
 
 ### Supporting Releases
 
-<a name="0-4-0-1"></a>1: [ESW v0.5.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.5.0-RC1) - 2022-09-15<br>
+<a name="0-5-0-2"></a>1: [ESW v0.5.0-RC2](https://github.com/tmtsoftware/esw/releases/tag/v0.5.0-RC2) - 2022-10-06<br>
+<a name="0-5-0-1"></a>1: [ESW v0.5.0-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.5.0-RC1) - 2022-09-15<br>
 
 ## [ESW v0.4.0] - 2022-02-09
 
