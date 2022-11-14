@@ -9,8 +9,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      CSW_VERSION: "5.0.0-RC2"
-      ESW_OCS_ENG_UI_VERSION: "0.3.0-RC2"
+      CSW_VERSION: "5.0.0"
+      ESW_OCS_ENG_UI_VERSION: "0.3.0"
     steps:
       - uses: actions/checkout@v2
       - uses: coursier/setup-action@v1.2.0-M2

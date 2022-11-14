@@ -47,7 +47,7 @@ A milestone release is cut from master branch as we expect bug fixes / feedback 
 7. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `CHANGELOG.md`
 8. Add changes mention in `CHANGELOG.md` of `esw-contract` in the change section of `README.md` of `esw-contract`
 9. Exclude projects from `build.sbt` which you do not want to release
-10. Update dependent repo version in `Libs.scala`
+10. Update dependent repo version in `Libs.scala` and CSW version (commit SHA) in `build.properties`
 11. Commit and push the changes to `branch-<major>.<minor>.x` branch and make sure build is green for dev and paradox link pipeline.
 12. Make sure build is green for dev and paradox link check pipeline for this branch.
 13. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
