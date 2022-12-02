@@ -33,7 +33,7 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil
   ): Future[SpawnResponse] =
     agentClient(agentPrefix)
       .flatMapRight(_.spawnSequenceManager(obsModeConfigPath, isConfigLocal, version))
-      .mapToAdt(identity, Failed)
+      .mapToAdt(identity, Failed.apply)
 
   override def spawnSequenceComponent(
       agentPrefix: Prefix,
@@ -42,14 +42,14 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil
   ): Future[SpawnResponse] =
     agentClient(agentPrefix)
       .flatMapRight(_.spawnSequenceComponent(componentName, version))
-      .mapToAdt(identity, Failed)
+      .mapToAdt(identity, Failed.apply)
 
   override def spawnContainers(
       agentPrefix: Prefix,
       hostConfigPath: String,
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] =
-    agentClient(agentPrefix).flatMapRight(_.spawnContainers(hostConfigPath, isConfigLocal)).mapToAdt(identity, Failed)
+    agentClient(agentPrefix).flatMapRight(_.spawnContainers(hostConfigPath, isConfigLocal)).mapToAdt(identity, Failed.apply)
 
   override def killComponent(componentId: ComponentId): Future[KillResponse] = {
     val compLocationE = locationServiceUtil.findAkkaLocation(componentId.prefix.toString(), componentId.componentType)

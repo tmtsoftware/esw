@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem}
 
-import scala.language.reflectiveCalls
+import scala.reflect.Selectable.reflectiveSelectable
 
 abstract class AskProxyTestKit[Msg, Impl](implicit actorSystem: ActorSystem[_]) {
   protected def make(actorRef: ActorRef[Msg]): Impl
@@ -19,7 +19,9 @@ abstract class AskProxyTestKit[Msg, Impl](implicit actorSystem: ActorSystem[_]) 
     }
     val stubActorRef = actorSystem.systemActorOf(behavior, s"ask-test-kit-stub-$uuid")
     val proxy        = make(stubActorRef)
-    assertion => assertion(proxy); assert(requestReceived, s"mocked request was not received")
+    assertion =>
+      assertion(proxy)
+      assert(requestReceived, s"mocked request was not received")
   }
 
   private def senderOf(req: Msg) = req.asInstanceOf[{ def replyTo: ActorRef[Any] }].replyTo

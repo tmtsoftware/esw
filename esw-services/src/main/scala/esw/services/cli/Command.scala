@@ -13,7 +13,7 @@ object Command {
 
   @CommandName("start")
   @HelpMessage("starts all the ESW services by default if no other option is provided")
-  final case class Start(
+  final case class StartOptions(
       @ExtraName("a")
       @HelpMessage("Start agent with default ESW.primary prefix.")
       agent: Boolean = false,
@@ -37,7 +37,7 @@ object Command {
       simulation: Boolean = false
   ) extends Command
 
-  object Start {
+  object StartOptions {
     def apply(
         agent: Boolean = false,
         agentService: Boolean = false,
@@ -48,9 +48,9 @@ object Command {
         sequenceManager: Boolean = false,
         obsModeConfig: Option[Path] = None,
         simulation: Boolean = false
-    ): Start = {
+    ): StartOptions = {
       if (agent || agentService || gateway || sequenceManager)
-        new Start(
+        new StartOptions(
           agent,
           agentService,
           agentPrefix,
@@ -62,7 +62,7 @@ object Command {
           simulation
         )
       else
-        new Start(
+        new StartOptions(
           agent = true,
           agentService = true,
           agentPrefix,
@@ -78,7 +78,7 @@ object Command {
 
   @CommandName("start-eng-ui-services")
   @HelpMessage("starts ESW services needed by ocs eng ui.\n")
-  final case class StartEngUIServices(
+  final case class StartEngUIServicesOptions(
       @HelpMessage("Enable simulation mode for sequence manager")
       smSimulationMode: Boolean = false,
       @HelpMessage("Specify sequencer-scripts version")

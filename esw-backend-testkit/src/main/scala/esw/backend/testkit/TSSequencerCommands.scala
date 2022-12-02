@@ -27,7 +27,7 @@ object TSSequencerCommands {
     }
 
   @CommandName("start")
-  final case class Start(
+  final case class StartOptions(
       @HelpMessage("subsystem of the sequencer")
       @ExtraName("s")
       subSystem: Subsystem,

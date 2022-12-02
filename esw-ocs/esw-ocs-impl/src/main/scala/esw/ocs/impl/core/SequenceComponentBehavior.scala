@@ -67,7 +67,7 @@ class SequenceComponentBehavior(
    */
   private def load(sequencerPrefix: Prefix, replyTo: ActorRef[ScriptResponseOrUnhandled]): Behavior[SequenceComponentMsg] = {
     val sequencerServer    = sequencerServerFactory.make(sequencerPrefix, prefix)
-    val registrationResult = sequencerServer.start().fold(identity, SequencerLocation)
+    val registrationResult = sequencerServer.start().fold(identity, SequencerLocation.apply)
     replyTo ! registrationResult
 
     registrationResult match {

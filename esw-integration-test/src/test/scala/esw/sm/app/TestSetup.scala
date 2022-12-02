@@ -13,7 +13,7 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.client.ActorSystemFactory
 import csw.prefix.models.Prefix
 import esw.ocs.app.SequencerApp
-import esw.ocs.app.SequencerAppCommand.SequenceComponent
+import esw.ocs.app.SequencerAppCommand.SeqcompOptions
 import esw.ocs.app.wiring.SequenceComponentWiring
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
@@ -28,7 +28,9 @@ object TestSetup extends EswTestKit {
   // Setup Sequence components for subsystems
   def startSequenceComponents(prefixes: Prefix*): Unit =
     prefixes.foreach { prefix =>
-      seqCompWirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName), None))
+      seqCompWirings += SequencerApp.SequenceComponent.run(
+        SeqcompOptions(prefix.subsystem, Some(prefix.componentName), None)
+      )
     }
 
   val obsModeConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)

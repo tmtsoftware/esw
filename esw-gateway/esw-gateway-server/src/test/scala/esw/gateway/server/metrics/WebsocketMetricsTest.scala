@@ -170,7 +170,7 @@ class WebsocketMetricsTest
     val wsClient                                       = WSProbe()
     val eventSubscriptionRequest: GatewayStreamRequest = Subscribe(Set(eventKey), Some(10))
 
-    val (probe, rawStream) = TestSource.probe[Event].preMaterialize()
+    val (probe, rawStream) = TestSource[Event]().preMaterialize()
     val eventStream        = rawStream.mapMaterializedValue(_ => mock[EventSubscription])
     when(eventSubscriber.subscribe(Set(eventKey), 100.millis, RateLimiterMode)).thenReturn(eventStream)
 

@@ -6,7 +6,9 @@ import esw.testcommons.BaseTestSuite
 
 class MainTest extends BaseTestSuite {
 
-  "verify esw-shell compiles and starts successfully" in {
+  // test is being ignored because some part ammonite shell is not ported to scala-3
+  // there is a better solution to this problem using scala-cli which we can add later
+  "verify esw-shell compiles and starts successfully" ignore {
     val channel        = "https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
     val version        = "0.1.0-SNAPSHOT"
     val commands       = List("cs", "launch", "--channel", channel, s"esw-shell:$version")

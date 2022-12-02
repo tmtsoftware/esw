@@ -29,7 +29,7 @@ import scala.concurrent.Future
 class AgentServiceWiring(_port: Option[Int] = None) extends AgentServiceCodecs {
 
   lazy val agentActorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
-  lazy val actorRuntime                                         = new ActorRuntime(agentActorSystem)
+  final lazy val actorRuntime                                   = new ActorRuntime(agentActorSystem)
   import actorRuntime._
 
   private lazy val config = agentActorSystem.settings.config

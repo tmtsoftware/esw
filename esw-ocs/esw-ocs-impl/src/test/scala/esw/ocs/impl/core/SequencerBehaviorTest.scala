@@ -1153,17 +1153,17 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
     assertUnhandled(
       Idle,
-      StartSequence, // ESW-154
-      AbortSequence, // ESW-155
-      AbortSequenceComplete,
-      Stop, // ESW-156
-      StopComplete,
-      GoOnlineSuccess,
-      GoOnlineFailed,
-      StepSuccess,
-      GoIdle,
-      GoOfflineSuccess,
-      GoOfflineFailed,
+      StartSequence.apply, // ESW-154
+      AbortSequence.apply, // ESW-155
+      AbortSequenceComplete.apply,
+      Stop.apply, // ESW-156
+      StopComplete.apply,
+      GoOnlineSuccess.apply,
+      GoOnlineFailed.apply,
+      StepSuccess.apply,
+      GoIdle.apply,
+      GoOfflineSuccess.apply,
+      GoOfflineFailed.apply,
       Add(cmds, _),               // ESW-114
       Prepend(cmds, _),           // ESW-113 : should not allow to prepend in a finished Sequence
       Replace(Id(), cmds, _),     // ESW-108
@@ -1171,9 +1171,9 @@ class SequencerBehaviorTest extends BaseTestSuite {
       Delete(Id(), _),            // ESW-112
       AddBreakpoint(Id(), _),     // ESW-106
       RemoveBreakpoint(Id(), _),  // ESW-107
-      Pause,                      // ESW-104
-      Resume,                     // ESW-105
-      Reset                       // ESW-110
+      Pause.apply,                // ESW-104
+      Resume.apply,               // ESW-105
+      Reset.apply                 // ESW-110
     )
   }
 
@@ -1183,15 +1183,15 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
     assertUnhandled(
       Loaded,
-      AbortSequence, // ESW-155
-      AbortSequenceComplete,
-      Stop, // ESW-156
-      StopComplete,
-      StepSuccess,
-      GoOnlineSuccess,
-      GoOnlineFailed,
-      PullNext,
-      GoIdle
+      AbortSequence.apply, // ESW-155
+      AbortSequenceComplete.apply,
+      Stop.apply, // ESW-156
+      StopComplete.apply,
+      StepSuccess.apply,
+      GoOnlineSuccess.apply,
+      GoOnlineFailed.apply,
+      PullNext.apply,
+      GoIdle.apply
     )
   }
 
@@ -1202,14 +1202,14 @@ class SequencerBehaviorTest extends BaseTestSuite {
     assertUnhandled(
       Running,
       LoadSequence(sequence, _),
-      StartSequence, // ESW-154
+      StartSequence.apply, // ESW-154
       SubmitSequenceInternal(sequence, _),
-      GoOnline,
-      GoOnlineSuccess,
-      GoOnlineFailed,
-      GoOffline,
-      GoOfflineSuccess,
-      GoOfflineFailed
+      GoOnline.apply,
+      GoOnlineSuccess.apply,
+      GoOnlineFailed.apply,
+      GoOffline.apply,
+      GoOfflineSuccess.apply,
+      GoOfflineFailed.apply
     )
   }
 
@@ -1223,11 +1223,11 @@ class SequencerBehaviorTest extends BaseTestSuite {
       // Should not accept these commands in offline state
       SubmitSequenceInternal(sequence, _),
       LoadSequence(sequence, _),
-      StartSequence, // ESW-154
-      AbortSequence, // ESW-155
-      AbortSequenceComplete,
-      Stop, // ESW-156
-      StopComplete,
+      StartSequence.apply, // ESW-154
+      AbortSequence.apply, // ESW-155
+      AbortSequenceComplete.apply,
+      Stop.apply, // ESW-156
+      StopComplete.apply,
       Add(cmds, _),               // ESW-114
       Prepend(cmds, _),           // ESW-113
       Replace(Id(), cmds, _),     // ESW-108
@@ -1235,16 +1235,16 @@ class SequencerBehaviorTest extends BaseTestSuite {
       Delete(Id(), _),            // ESW-112
       AddBreakpoint(Id(), _),     // ESW-106
       RemoveBreakpoint(Id(), _),  // ESW-107
-      Pause,                      // ESW-104
-      Resume,                     // ESW-105
-      Reset,                      // ESW-110
-      GoOnlineSuccess,
-      GoOnlineFailed,
-      GoOfflineSuccess,
-      GoOfflineFailed,
-      GoIdle,
-      PullNext,
-      StepSuccess
+      Pause.apply,                // ESW-104
+      Resume.apply,               // ESW-105
+      Reset.apply,                // ESW-110
+      GoOnlineSuccess.apply,
+      GoOnlineFailed.apply,
+      GoOfflineSuccess.apply,
+      GoOfflineFailed.apply,
+      GoIdle.apply,
+      PullNext.apply,
+      StepSuccess.apply
     )
   }
 

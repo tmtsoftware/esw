@@ -12,7 +12,7 @@ import esw.agent.service.api.models.*
 import esw.commons.utils.config.FetchingScriptVersionFailed
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.Mockito.{verify, when}
-import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
+import org.scalatest.matchers.must.Matchers.*
 
 import java.nio.file.{Path, Paths}
 import scala.concurrent.Future
@@ -236,7 +236,7 @@ class SpawnComponentTest extends AgentSetup {
         List(
           "cs",
           "launch",
-          s"$org:${module}_2.13:0.0.1",
+          s"$org:${module}_3:0.0.1",
           "-r",
           "jitpack",
           "-M",
@@ -276,7 +276,7 @@ class SpawnComponentTest extends AgentSetup {
             List(
               "cs",
               "launch",
-              "com.github.tmtsoftware.sample2:csw-sample2deploy_2.13:0.0.1",
+              "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
               "-r",
               "jitpack",
               "-M",
@@ -324,7 +324,7 @@ class SpawnComponentTest extends AgentSetup {
           List(
             "cs",
             "launch",
-            "com.github.tmtsoftware.sample2:csw-sample2deploy_2.13:0.0.1",
+            "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
             "-r",
             "jitpack",
             "-M",
@@ -344,7 +344,7 @@ class SpawnComponentTest extends AgentSetup {
           List(
             "cs",
             "launch",
-            "com.github.tmtsoftware.sample2:csw-sample2deploy_2.13:0.0.1",
+            "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
             "-r",
             "jitpack",
             "-M",

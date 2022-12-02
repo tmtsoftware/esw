@@ -24,14 +24,14 @@ private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(im
    *
    * @return a [[esw.ocs.api.protocol.PullNextResponse]] as Future value
    */
-  def pullNext: Future[PullNextResponse] = sequencer ? PullNext
+  def pullNext: Future[PullNextResponse] = sequencer ? PullNext.apply
 
   /**
    * This method returns the next step Pending step if sequencer is in Running state otherwise returns None
    *
    * @return an Option of [[esw.ocs.api.models.Step]] as Future value
    */
-  def maybeNext: Future[Option[Step]] = sequencer ? MaybeNext
+  def maybeNext: Future[Option[Step]] = sequencer ? MaybeNext.apply
 
   /**
    * This method is to determine whether next step is ready to execute or not. It returns Ok if the next step is ready for execution
@@ -40,7 +40,7 @@ private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(im
    *
    * @return a [[esw.ocs.api.protocol.OkOrUnhandledResponse]] as Future value
    */
-  def readyToExecuteNext: Future[OkOrUnhandledResponse] = sequencer ? ReadyToExecuteNext
+  def readyToExecuteNext: Future[OkOrUnhandledResponse] = sequencer ? ReadyToExecuteNext.apply
 
   /**
    * This method changes the status from InFlight to [[esw.ocs.api.models.StepStatus.Finished.Success]](Finished) for current running step

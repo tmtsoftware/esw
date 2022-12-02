@@ -21,7 +21,10 @@ import scala.annotation.nowarn
 object GatewayCodecs extends GatewayCodecs
 trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with LoggingCodecs with SequencerServiceCodecs {
 
-  implicit lazy val gatewayExceptionCodecValue: Codec[GatewayException] = deriveAllCodecs
+  implicit lazy val gatewayExceptionCodecValue: Codec[GatewayException] = {
+    import io.bullet.borer.derivation.DerivationConfig
+    deriveAllCodecs
+  }
 
   implicit lazy val postRequestValue: Codec[GatewayRequest] = {
     @nowarn implicit lazy val metadataEnc: Encoder[Map[String, Any]] = Encoder[MapElem].contramap(ElementConverter.fromMap)

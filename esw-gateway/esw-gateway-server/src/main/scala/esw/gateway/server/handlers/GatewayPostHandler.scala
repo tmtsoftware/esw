@@ -1,21 +1,23 @@
 package esw.gateway.server.handlers
 
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.*
 import akka.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import csw.command.api.messages.CommandServiceRequest
 import csw.command.client.auth.CommandRoles
 import csw.command.client.handlers.CommandServiceRequestHandler
+import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.location.api.models.ComponentId
 import csw.logging.models.Level
 import esw.commons.auth.AuthPolicies
-import esw.gateway.api.codecs.GatewayCodecs._
+import esw.gateway.api.codecs.GatewayCodecs.*
 import esw.gateway.api.protocol.GatewayRequest
-import esw.gateway.api.protocol.GatewayRequest._
+import esw.gateway.api.protocol.GatewayRequest.*
 import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerRequest
 import esw.ocs.handler.SequencerPostHandler
+import io.bullet.borer.Codec
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
 /**
@@ -38,6 +40,10 @@ class GatewayPostHandler(
     commandRoles: CommandRoles
 ) extends HttpPostHandler[GatewayRequest]
     with ServerHttpCodecs {
+
+  // for some reason scala3 is not able to infer this
+  implicit lazy val codec1: Codec[ContainerLifecycleState]  = enumCodec[ContainerLifecycleState]
+  implicit lazy val codec2: Codec[SupervisorLifecycleState] = enumCodec[SupervisorLifecycleState]
 
   override def handle(request: GatewayRequest): Route =
     request match {

@@ -8,12 +8,12 @@ import csw.prefix.models.Prefix
 import esw.commons.extensions.FutureExt.FutureOps
 
 class CswWiring {
-  lazy val wiring = new FrameworkWiring
+  final lazy val wiring = new FrameworkWiring
   import wiring._
 
   private implicit lazy val cswFrameworkSystem: CswFrameworkSystem = new CswFrameworkSystem(actorSystem)
 
-  lazy val cswContext: CswContext =
+  final lazy val cswContext: CswContext =
     CswContext
       .make(
         locationService,

@@ -45,7 +45,7 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   private[server] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "gateway-system")
 
-  lazy val actorRuntime = new ActorRuntime(actorSystem)
+  final lazy val actorRuntime = new ActorRuntime(actorSystem)
   import actorRuntime.{ec, typedSystem}
 
   private lazy val config = actorSystem.settings.config

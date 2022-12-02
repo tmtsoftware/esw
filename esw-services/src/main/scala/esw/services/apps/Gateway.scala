@@ -34,7 +34,7 @@ object Gateway {
 
   // This method is for starting the Gateway and being called in the start hook for the Gateway
   private def startGateway(commandRoleConfigPath: Path): GatewayWiring =
-    GatewayMain.start(
+    GatewayMain.StartCommand.start(
       Some(SocketUtils.getFreePort),
       local = true,
       commandRoleConfigPath,

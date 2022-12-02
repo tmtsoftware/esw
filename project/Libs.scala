@@ -7,30 +7,32 @@ import java.util.Properties
 import scala.util.Using
 
 object Libs {
-  private val MSocketVersion = "0.6.0"
+  private val MSocketVersion = "238eaf6"
 
-  val `case-app`    = "com.github.alexarchambault" %% "case-app"    % "2.0.6"
-  val enumeratum    = dep("com.beachape" %%% "enumeratum" % "1.7.0") // MIT License
-  val `mockito`     = "org.scalatestplus"          %% "mockito-3-4" % "3.2.10.0"
-  val `scala-async` = "org.scala-lang.modules"     %% "scala-async" % "1.0.1" // BSD 3-clause "New" or "Revised" License
-  val scalatest     = dep("org.scalatest" %%% "scalatest" % "3.2.11") // Apache License 2.0
+  val `case-app`    = "com.github.alexarchambault" %% "case-app"                         % "2.1.0-M20"
+  val enumeratum    = dep("com.github.mushtaq.enumeratum" %%% "enumeratum" % "3d87c50") // MIT License
+  val `mockito`     = "org.scalatestplus"          %% "mockito-3-4"                      % "3.2.10.0"
+  val `scala-async` = "com.github.rssh"            %% "shim-scala-async-dotty-cps-async" % "0.9.11"
+  val scalatest     = dep("org.scalatest" %%% "scalatest" % "3.2.14") // Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2" // BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-http`      = "com.github.tmtsoftware.msocket" %% "msocket-http"      % MSocketVersion
-  val caffeine            = "com.github.ben-manes.caffeine"   % "caffeine"          % "3.0.5"
-  val `jupiter-interface` = "net.aichler"                     % "jupiter-interface" % "0.9.1"
-  val `tmt-test-reporter` = "com.github.tmtsoftware"         %% "rtm"               % "0.3.0"
+  val caffeine            = "com.github.ben-manes.caffeine"   % "caffeine"          % "3.1.2"
+  val `jupiter-interface` = "net.aichler"                     % "jupiter-interface" % "0.11.1"
+  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"     %% "rtm"               % "c6a49ee"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.6.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.6.0"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "87cfa0b"
 
-  val `ammonite` = ("com.lihaoyi" % "ammonite" % "2.5.1" cross CrossVersion.full)
-    .exclude("com.lihaoyi", "sourcecode_3")
-    .exclude("com.lihaoyi", "fansi_3")
-    .exclude("com.lihaoyi", "pprint_3")
+  val `ammonite` = ("com.lihaoyi" % "ammonite" % "2.5.5-17-df243e14" cross CrossVersion.full)
+    .exclude("com.lihaoyi", "upickle_2.13")
+    .exclude("com.lihaoyi", "requests_2.13")
+    .exclude("com.lihaoyi", "os-lib_2.13")
+    .exclude("com.lihaoyi", "geny_2.13")
+    .exclude("org.scala-lang.modules", "scala-xml_2.13")
 
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
-  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.33"
+  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "2.0.5"
 
 }
 
@@ -65,7 +67,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.18"
+  private val Version     = "2.7.0"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
@@ -77,17 +79,18 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.2.7" // all akka is Apache License 2.0
+  private val Version = "10.5.0-M1" // all akka is Apache License 2.0
 
   val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
   val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
   val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
 
-  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.2"
+  val `akka-http-cors` = ("ch.megard" %% "akka-http-cors" % "1.1.3")
+    .exclude("com.typesafe.akka", "akka-http_2.13")
 }
 
 object Borer {
-  private val Version = "1.7.2"
+  private val Version = "1.10.1"
   private val Org     = "io.bullet"
 
   val `borer-core`        = dep(Org %%% "borer-core" % Version)

@@ -9,13 +9,12 @@ sealed trait AgentServiceAppCommand
 
 object AgentServiceAppCommand {
 
-  @CommandName("start")
-  final case class StartCommand(
+  final case class StartOptions(
       @ExtraName("p")
       @HelpMessage(
         "optional argument: port on which HTTP server will be bound. " +
           "If a value is not provided, it will be randomly picked."
       )
-      port: Option[Int]
+      port: Option[Int] = None
   ) extends AgentServiceAppCommand
 }

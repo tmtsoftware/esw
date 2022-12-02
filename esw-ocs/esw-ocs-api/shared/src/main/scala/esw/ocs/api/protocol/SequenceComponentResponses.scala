@@ -17,7 +17,7 @@ object SequenceComponentResponse {
 
   sealed trait ScriptErrorOrSequencerLocation extends ScriptResponseOrUnhandled
 
-  final case object Ok extends OkOrUnhandled
+  case object Ok extends OkOrUnhandled
 
   final case class Unhandled(state: SequenceComponentState, messageType: String, msg: String)
       extends ScriptResponseOrUnhandled

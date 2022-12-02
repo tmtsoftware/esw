@@ -53,7 +53,7 @@ class SequenceManagerWiring(
 ) {
   private[sm] lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
-  lazy val actorRuntime = new ActorRuntime(smActorSystem)
+  final lazy val actorRuntime = new ActorRuntime(smActorSystem)
   import actorRuntime.*
   private implicit val timeout: Timeout = CommonTimeouts.Wiring
   private val prefix                    = Prefix(ESW, "sequence_manager")

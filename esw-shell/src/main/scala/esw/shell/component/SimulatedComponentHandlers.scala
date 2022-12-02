@@ -37,7 +37,6 @@ class SimulatedComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx
             timeServiceScheduler.scheduleOnce(when) {
               commandResponseManager.updateCommand(CommandResponse.Completed(sleep.runId))
             }
-          case _ => log.error("Unsupported message type")
         }
         Behaviors.same
       }),

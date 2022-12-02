@@ -115,7 +115,7 @@ class AgentSetup extends BaseTestSuite {
   }
 
   def mockSuccessfulProcess(dieAfter: FiniteDuration = 2.seconds, exitCode: Int = 0): Unit = {
-    when(process.pid()).thenReturn(Random.nextInt(1000).abs)
+    when(process.pid()).thenReturn(Random.nextLong(1000).abs)
     when(process.toHandle).thenReturn(mockedProcessHandle)
     when(process.exitValue()).thenReturn(exitCode)
     when(process.isAlive).thenReturn(true)

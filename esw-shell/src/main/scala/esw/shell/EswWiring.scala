@@ -16,7 +16,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
 
 class EswWiring {
-  lazy val cswWiring = new CswWiring
+  final lazy val cswWiring = new CswWiring
 
   private implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = cswWiring.wiring.actorSystem
 
@@ -25,7 +25,7 @@ class EswWiring {
   private lazy val configService: ConfigService       = ConfigClientFactory.adminApi(typedSystem, locationService, tokenFactory)
   private lazy val configServiceExt: ConfigServiceExt = new ConfigServiceExt(configService)
 
-  lazy val factories = new Factories(locationUtils, configServiceExt)
+  final lazy val factories = new Factories(locationUtils, configServiceExt)
 
   private lazy val config                      = ConfigFactory.load().getConfig("csw")
   private lazy val configAdminUsername: String = config.getString("configAdminUsername")

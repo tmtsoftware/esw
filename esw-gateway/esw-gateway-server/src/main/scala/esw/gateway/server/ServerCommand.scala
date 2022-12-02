@@ -10,8 +10,7 @@ import caseapp._
 sealed trait ServerCommand
 
 object ServerCommand {
-  @CommandName("start")
-  final case class StartCommand(
+  final case class StartOptions(
       @ExtraName("p")
       @HelpMessage(
         "HTTP server will be bound to this port. " +

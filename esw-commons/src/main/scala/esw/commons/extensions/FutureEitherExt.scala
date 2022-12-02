@@ -42,7 +42,7 @@ object FutureEitherExt {
   }
 
   implicit class FutureEitherJavaOps[+L <: Throwable, R](private val futureEither: Future[Either[L, R]]) extends AnyVal {
-    def toJava(implicit executor: ExecutionContext): CompletionStage[R] = toJava(onSuccess = identity)
+    def toJava(implicit executor: ExecutionContext): CompletionStage[R] = toJava(onSuccess = identity[R])
     def toJava[S](onSuccess: R => S)(implicit executor: ExecutionContext): CompletionStage[S] =
       futureEither.mapToAdt(onSuccess, throw _).toJava
   }

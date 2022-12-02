@@ -33,7 +33,7 @@ class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Option[String], 
   private[agent] val agentConnection: AkkaConnection = AkkaConnection(ComponentId(prefix, ComponentType.Machine))
 
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
-  lazy val actorRuntime: ActorRuntime                      = new ActorRuntime(actorSystem)
+  final lazy val actorRuntime: ActorRuntime                = new ActorRuntime(actorSystem)
 
   import actorRuntime.typedSystem
   implicit lazy val ec: ExecutionContext    = actorRuntime.typedSystem.executionContext

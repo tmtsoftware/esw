@@ -48,7 +48,7 @@ class SequenceManagerBehavior(
     agentUtil: AgentUtil,
     sequencerUtil: SequencerUtil,
     sequenceComponentUtil: SequenceComponentUtil
-)(implicit val actorSystem: ActorSystem[_], implicit val logger: Logger) {
+)(implicit val actorSystem: ActorSystem[_], val logger: Logger) {
 
   import SequenceManagerBehavior.*
   import actorSystem.executionContext

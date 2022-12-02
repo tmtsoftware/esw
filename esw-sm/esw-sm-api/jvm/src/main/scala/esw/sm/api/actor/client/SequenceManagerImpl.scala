@@ -26,20 +26,20 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
-    (smRef ? (Configure(obsMode, _)))(SequenceManagerTimeouts.Configure, actorSystem.scheduler)
+    (smRef ? (Configure(obsMode, _: ActorRef[ConfigureResponse])))(SequenceManagerTimeouts.Configure, actorSystem.scheduler)
 
   override def provision(config: ProvisionConfig): Future[ProvisionResponse] =
-    (smRef ? (Provision(config, _)))(SequenceManagerTimeouts.Provision, actorSystem.scheduler)
+    (smRef ? (Provision(config, _: ActorRef[ProvisionResponse])))(SequenceManagerTimeouts.Provision, actorSystem.scheduler)
 
   override def getObsModesDetails: Future[ObsModesDetailsResponse] =
-    (smRef ? GetObsModesDetails)(SequenceManagerTimeouts.GetObsModesDetails, actorSystem.scheduler)
+    (smRef ? GetObsModesDetails.apply)(SequenceManagerTimeouts.GetObsModesDetails, actorSystem.scheduler)
 
   override def startSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
       variation: Option[Variation]
   ): Future[StartSequencerResponse] =
-    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, obsMode, variation, x) })(
+    (smRef ? { (x: ActorRef[StartSequencerResponse]) => StartSequencer(subsystem, obsMode, variation, x) })(
       SequenceManagerTimeouts.StartSequencer,
       actorSystem.scheduler
     )
@@ -49,7 +49,7 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
       obsMode: ObsMode,
       variation: Option[Variation]
   ): Future[RestartSequencerResponse] =
-    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, obsMode, variation, x) })(
+    (smRef ? { (x: ActorRef[RestartSequencerResponse]) => RestartSequencer(subsystem, obsMode, variation, x) })(
       SequenceManagerTimeouts.RestartSequencer,
       actorSystem.scheduler
     )
@@ -59,26 +59,35 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
       obsMode: ObsMode,
       variation: Option[Variation]
   ): Future[ShutdownSequencersResponse] =
-    (smRef ? (ShutdownSequencer(subsystem, obsMode, variation, _)))(
+    (smRef ? (ShutdownSequencer(subsystem, obsMode, variation, _: ActorRef[ShutdownSequencersResponse])))(
       SequenceManagerTimeouts.ShutdownSequencer,
       actorSystem.scheduler
     )
 
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
-    (smRef ? (ShutdownSubsystemSequencers(subsystem, _)))(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)
+    (smRef ? (ShutdownSubsystemSequencers(subsystem, _: ActorRef[ShutdownSequencersResponse])))(
+      SequenceManagerTimeouts.ShutdownSequencer,
+      actorSystem.scheduler
+    )
 
   override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
-    (smRef ? (ShutdownObsModeSequencers(obsMode, _)))(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)
+    (smRef ? (ShutdownObsModeSequencers(obsMode, _: ActorRef[ShutdownSequencersResponse])))(
+      SequenceManagerTimeouts.ShutdownSequencer,
+      actorSystem.scheduler
+    )
 
   override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
-    (smRef ? ShutdownAllSequencers)(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)
+    (smRef ? ShutdownAllSequencers.apply)(SequenceManagerTimeouts.ShutdownSequencer, actorSystem.scheduler)
 
   override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
-    (smRef ? (ShutdownSequenceComponent(prefix, _)))(SequenceManagerTimeouts.ShutdownSequenceComponent, actorSystem.scheduler)
+    (smRef ? (ShutdownSequenceComponent(prefix, _: ActorRef[ShutdownSequenceComponentResponse])))(
+      SequenceManagerTimeouts.ShutdownSequenceComponent,
+      actorSystem.scheduler
+    )
 
   override def shutdownAllSequenceComponents(): Future[ShutdownSequenceComponentResponse] =
-    (smRef ? ShutdownAllSequenceComponents)(SequenceManagerTimeouts.ShutdownSequenceComponent, actorSystem.scheduler)
+    (smRef ? ShutdownAllSequenceComponents.apply)(SequenceManagerTimeouts.ShutdownSequenceComponent, actorSystem.scheduler)
 
   override def getResources: Future[ResourcesStatusResponse] =
-    (smRef ? GetResources)(SequenceManagerTimeouts.GetResources, actorSystem.scheduler)
+    (smRef ? GetResources.apply)(SequenceManagerTimeouts.GetResources, actorSystem.scheduler)
 }

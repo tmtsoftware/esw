@@ -23,7 +23,7 @@ trait AgentUtils {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
     }
     agentWiring = Some(wiring)
-    AgentApp.start(
+    AgentApp.StartCommand.start(
       wiring,
       startLogging = false
     )

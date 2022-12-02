@@ -107,8 +107,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
 
   private[sm] def idleSequenceComponent(seqCompLocation: SeqCompLocation): Future[Option[AkkaLocation]] =
     async {
-      val isIdle = await(sequenceComponentApi(seqCompLocation).status).response.isEmpty
-      if (isIdle) Some(seqCompLocation) else None
+      val response = await(sequenceComponentApi(seqCompLocation).status)
+      if (response.response.isEmpty) Some(seqCompLocation) else None
     }
 
   private[sm] def sequenceComponentApi(seqCompLocation: SeqCompLocation): SequenceComponentApi =

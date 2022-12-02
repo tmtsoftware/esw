@@ -28,7 +28,7 @@ object Common {
       organization     := "com.github.tmtsoftware.esw",
       organizationName := "TMT Org",
       dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
-      dependencyOverrides += Libs.`slf4j-api`,
+//      dependencyOverrides += Libs.`slf4j-api`,
       scalaVersion := EswKeys.scalaVersion,
       scmInfo      := Some(ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")),
       // ======== sbt-docs Settings =========
@@ -46,14 +46,11 @@ object Common {
         "-unchecked",
         "-deprecation",
         // -W Options
-        "-Wdead-code",
-        if (enableFatalWarnings) "-Wconf:any:error" else "-Wconf:any:warning-verbose",
+//        "-Wdead-code",
+//        if (enableFatalWarnings) "-Wconf:any:error" else "-Wconf:any:warning-verbose",
         // -X Options
-        "-Xlint:_,-missing-interpolator",
-        "-Xsource:3",
-        "-Xcheckinit",
-        "-Xasync"
-        // -Y options are rarely needed, please look for -W equivalents
+//        "-Xlint:_,-missing-interpolator",
+//        "-Xcheckinit",
       ),
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
       Test / testOptions ++= reporterOptions,

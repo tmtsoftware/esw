@@ -50,7 +50,6 @@ import scala.jdk.DurationConverters.ScalaDurationOps
 object Main extends App {
 
   private val wiring = new FrameworkWiring()
-  LoggingSystemFactory.forTestingOnly()(wiring.actorSystem)
 
   Await.result(Standalone.spawn(ConfigFactory.parseResources("demoHcd.conf"), wiring), 20.seconds)
 }

@@ -6,8 +6,8 @@ package esw.gateway.api.protocol
  */
 sealed abstract class GatewayException(msg: String) extends RuntimeException(msg)
 
-case class InvalidComponent(msg: String)        extends GatewayException(msg)
-case class EmptyEventKeys()                     extends GatewayException("Request is missing event key")
-case class EventServerUnavailable()             extends GatewayException("Event server is unavailable")
-case class InvalidMaxFrequency()                extends GatewayException("Max frequency should be greater than zero")
-case class SetAlarmSeverityFailure(msg: String) extends GatewayException(msg)
+case class InvalidComponent(msg: String)                                                  extends GatewayException(msg)
+case class EmptyEventKeys(msg: String = "Request is missing event key")                   extends GatewayException(msg)
+case class EventServerUnavailable(msg: String = "Event server is unavailable")            extends GatewayException(msg)
+case class InvalidMaxFrequency(msg: String = "Max frequency should be greater than zero") extends GatewayException(msg)
+case class SetAlarmSeverityFailure(msg: String)                                           extends GatewayException(msg)

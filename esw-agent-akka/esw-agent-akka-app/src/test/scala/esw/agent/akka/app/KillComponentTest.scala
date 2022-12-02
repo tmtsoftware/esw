@@ -6,7 +6,7 @@ import esw.agent.akka.client.AgentCommand
 import esw.agent.akka.client.AgentCommand.KillComponent
 import esw.agent.service.api.models.*
 import org.mockito.Mockito.verify
-import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
+import org.scalatest.matchers.must.Matchers.*
 import org.scalatest.prop.TableDrivenPropertyChecks.*
 
 import scala.concurrent.duration.DurationLong

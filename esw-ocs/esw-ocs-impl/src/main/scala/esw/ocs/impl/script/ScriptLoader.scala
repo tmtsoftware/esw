@@ -2,7 +2,8 @@ package esw.ocs.impl.script
 
 import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 
-import scala.language.reflectiveCalls
+import java.lang.reflect.InvocationTargetException
+import scala.reflect.Selectable.reflectiveSelectable
 
 private[esw] object ScriptLoader {
 
@@ -17,7 +18,12 @@ private[esw] object ScriptLoader {
 
       type Result = { def invoke(context: ScriptContext): ScriptApi }
       val result = $$resultField.get(script).asInstanceOf[Result]
-      result.invoke(scriptContext)
+      try {
+        result.invoke(scriptContext)
+      }
+      catch {
+        case ex: InvocationTargetException => throw ex.getCause
+      }
     }
 
   def withScript[T](scriptClass: String)(block: Class[_] => T): T =

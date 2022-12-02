@@ -60,16 +60,17 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
 
   private[ocs] lazy val config: Config  = actorSystem.settings.config
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
-  import sequencerConfig.*
+  final lazy val sc                     = sequencerConfig
+  import sc.*
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
-  lazy val actorRuntime              = new ActorRuntime(actorSystem)
+  final lazy val actorRuntime        = new ActorRuntime(actorSystem)
   import actorRuntime.{coordinatedShutdown, ec, typedSystem}
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
-    actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
+    actorSystem ? { (x: ActorRef[ActorRef[SequencerMsg]]) =>
       Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
     },
     CommonTimeouts.Wiring
@@ -191,7 +192,7 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
 
     private def cleanupResources() = {
       redisClient.shutdown()
-      (sequencerRef ? Shutdown).map(_ => Done)
+      (sequencerRef ? Shutdown.apply).map(_ => Done)
     }
   }
 

@@ -37,7 +37,7 @@ class AgentActor(
       hostConfigPath.foreach(p => ctx.self ! SpawnContainers(ctx.system.deadLetters, p, isConfigLocal))
       Behaviors.receiveMessage[AgentCommand] { command =>
         command match {
-          case cmd: SpawnCommand => processManager.spawn(cmd).mapToAdt(_ => Spawned, Failed).map(cmd.replyTo ! _)
+          case cmd: SpawnCommand => processManager.spawn(cmd).mapToAdt(_ => Spawned, Failed.apply).map(cmd.replyTo ! _)
           case SpawnContainers(replyTo, path, isConfigLocal) => spawnContainers(ctx.self, path, isConfigLocal).map(replyTo ! _)
           case KillComponent(replyTo, location)              => processManager.kill(location).map(replyTo ! _)
         }
@@ -73,7 +73,7 @@ class AgentActor(
     val spawnResponsePairs = hostConfig.containers.map { config =>
       val componentIdF = getContainerComponentId(config)
       componentIdF.map(componentId => {
-        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_, componentId, config)))(
+        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_: ActorRef[SpawnResponse], componentId, config))) (
           AgentTimeouts.SpawnComponent,
           system.scheduler
         )
