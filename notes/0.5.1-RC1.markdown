@@ -1,0 +1,9 @@
+## ESW - TMT Executive Software v0.5.1-RC1
+
+This is the v0.5.1-RC1 of the TMT Executive Software.
+
+See [CHANGELOG.md](CHANGELOG.md) for details of all releases.
+
+### Documentation
+
+Paradox documentation can be found here: https://tmtsoftware.github.io/esw/0.5.1-RC1/

@@ -14,6 +14,7 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 
 | esw        | csw        |
 |------------|------------|
+| v0.5.1-RC1 | v5.0.1-RC1 |
 | v0.5.0     | v5.0.0     |
 | v0.5.0-RC2 | v5.0.0-RC2 |
 | v0.5.0-RC1 | v5.0.0-RC1 |
@@ -46,6 +47,7 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 
 | Date       | Tag        | Source                                                              | Docs                                                               | Assets                                                                             |
 |------------|------------|---------------------------------------------------------------------|--------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| 2023-03-28 | v0.5.1-RC1 | [esw-0.5.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.5.1-RC1) | [esw-0.5.0-RC1 docs](https://tmtsoftware.github.io/esw/0.5.1-RC1/) | [esw-0.5.0-RC1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.5.1-RC1) |
 | 2022-10-06 | v0.5.0-RC2 | [esw-0.5.0-RC2](https://github.com/tmtsoftware/esw/tree/v0.5.0-RC2) | [esw-0.5.0-RC2 docs](https://tmtsoftware.github.io/esw/0.5.0-RC2/) | [esw-0.5.0-RC2 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.5.0-RC2) |
 | 2022-09-15 | v0.5.0-RC1 | [esw-0.5.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.5.0-RC1) | [esw-0.5.0-RC1 docs](https://tmtsoftware.github.io/esw/0.5.0-RC1/) | [esw-0.5.0-RC1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.5.0-RC1) |
 | 2022-01-28 | v0.4.0-RC1 | [esw-0.4.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.4.0-RC1) | [esw-0.4.0-RC1 docs](https://tmtsoftware.github.io/esw/0.4.0-RC1/) | [esw-0.4.0-RC1 assets](https://github.com/tmtsoftware/esw/releases/tag/v0.4.0-RC1) |

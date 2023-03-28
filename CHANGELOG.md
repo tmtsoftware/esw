@@ -12,6 +12,18 @@ All notable changes to this project will be documented in this file.
 ## Upcoming Changes
 n/a
 
+## [ESW v0.5.1] - 2023-03-28
+
+- Updated releasing instructions
+
+### Documentation
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.5.1/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.5.1/api/scala/index.html
+
+### Supporting Releases
+
+<a name="0-5-1-1"></a>1: [ESW v0.5.1-RC1](https://github.com/tmtsoftware/esw/releases/tag/v0.5.1-RC1) - 2023-03-28<br>
+
 ## [ESW v0.5.0] - 2022-11-14
 
 - upgraded to Java 17
