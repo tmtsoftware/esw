@@ -42,7 +42,7 @@ A milestone release is cut from master branch as we expect bug fixes / feedback 
     **Note** - The version in `notes` should be of format `1.0.0`
 3. Update top-level `CHANGELOG.md`
 4. Update top-level `README.md`
-5. Update versions in `release.yml'` for other repos like `CSW_VERSION`, `ESW_OCS_ENG_UI_VERSION` etc. which we will be releasing next. (These versions are used to create parameterized links in the documentation)
+5. Update versions in `.github/workflows/release.yml` for other repos like `CSW_VERSION`, `ESW_OCS_ENG_UI_VERSION` etc. which we will be releasing next. (These versions are used to create parameterized links in the documentation)
 6. Update latest RTM version in github and jenkins workflow files(this step to be done only in milestone & RC release).
 7. Add changes mention in `CHANGELOG.md` of `esw-contract` in top-level `CHANGELOG.md`
 8. Add changes mention in `CHANGELOG.md` of `esw-contract` in the change section of `README.md` of `esw-contract`
@@ -50,7 +50,8 @@ A milestone release is cut from master branch as we expect bug fixes / feedback 
 10. Update dependent repo version in `Libs.scala` and CSW version (commit SHA) in `build.properties`
 11. Commit and push the changes to `branch-<major>.<minor>.x` branch and make sure build is green for dev and paradox link pipeline.
 12. Make sure build is green for dev and paradox link check pipeline for this branch.
-13. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
+13. Run `release.sh $VERSION$` script by providing version number argument 
+    For example, for version 0.5.1-RC1, use the command `./release.sh v0.5.1-RC1`. (This triggers release workflow)
 14. Applicable for final release only - Upgrade all the versions of all esw apps in [here](https://github.com/tmtsoftware/osw-apps/blob/master/apps.json)
 
      **Note:** `PROD=true` environment variable needs to be set before running `release.sh`
