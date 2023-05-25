@@ -116,7 +116,7 @@ private[esw] class ScriptDsl(
 
   override final def shutdownScript(): Unit = shutdownTask.run()
 
-  protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] = {
+  final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] = {
     // todo : inline the variable whenever the async nullary warning issue is fixed
     val future: Future[Optional[SequenceCommand]] = async {
       val operator  = sequenceOperatorFactory()
@@ -133,22 +133,22 @@ private[esw] class ScriptDsl(
     future.toJava
   }
 
-  protected final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit =
+  final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit =
     setupCommandHandler.add(CommandName(name), handler.execute)
 
-  protected final def onObserveCommand(name: String)(handler: CommandHandler[Observe]): Unit =
+  final def onObserveCommand(name: String)(handler: CommandHandler[Observe]): Unit =
     observerCommandHandler.add(CommandName(name), handler.execute)
 
-  protected final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit    = onlineHandlers.add(_ => handler.get())
-  protected final def onNewSequence(handler: Supplier[CompletionStage[Void]]): Unit = newSequenceHandlers.add(_ => handler.get())
-  protected final def onAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
-  protected final def onStop(handler: Supplier[CompletionStage[Void]]): Unit          = stopHandlers.add(_ => handler.get())
-  protected final def onShutdown(handler: Supplier[CompletionStage[Void]]): Unit      = shutdownHandlers.add(_ => handler.get())
-  protected final def onGoOffline(handler: Supplier[CompletionStage[Void]]): Unit     = offlineHandlers.add(_ => handler.get())
-  protected final def onDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =
+  final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
+  final def onNewSequence(handler: Supplier[CompletionStage[Void]]): Unit   = newSequenceHandlers.add(_ => handler.get())
+  final def onAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
+  final def onStop(handler: Supplier[CompletionStage[Void]]): Unit          = stopHandlers.add(_ => handler.get())
+  final def onShutdown(handler: Supplier[CompletionStage[Void]]): Unit      = shutdownHandlers.add(_ => handler.get())
+  final def onGoOffline(handler: Supplier[CompletionStage[Void]]): Unit     = offlineHandlers.add(_ => handler.get())
+  final def onDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =
     diagnosticHandlers.add((x: (UTCTime, String)) => handler(x._1, x._2))
-  protected final def onOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
+  final def onOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
     operationsHandlers.add(_ => handler.get())
 
-  protected final def onException(handler: Throwable => CompletionStage[Void]): Unit = exceptionHandlers.add(handler)
+  final def onException(handler: Throwable => CompletionStage[Void]): Unit = exceptionHandlers.add(handler)
 }

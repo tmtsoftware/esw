@@ -192,6 +192,14 @@ object Dependencies {
     )
   )
 
+  val OcsDslScala: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Libs.`mockito`           % Test,
+      Libs.scalatest.value     % Test,
+      Libs.`tmt-test-reporter` % Test
+    )
+  )
+
   val EswGatewayApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-api`.value,

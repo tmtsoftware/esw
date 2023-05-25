@@ -12,7 +12,7 @@ object Libs {
   val `case-app`    = "com.github.alexarchambault" %% "case-app"                         % "2.1.0-M20"
   val enumeratum    = dep("com.github.mushtaq.enumeratum" %%% "enumeratum" % "3d87c50") // MIT License
   val `mockito`     = "org.scalatestplus"          %% "mockito-3-4"                      % "3.2.10.0"
-  val `scala-async` = "com.github.rssh"            %% "shim-scala-async-dotty-cps-async" % "0.9.11"
+  val `scala-async` = "com.github.rssh"            %% "shim-scala-async-dotty-cps-async" % "0.9.16"
   val scalatest     = dep("org.scalatest" %%% "scalatest" % "3.2.14") // Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2" // BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)

@@ -41,3 +41,4 @@ snapshots
 .gradle
 */**/.kotlintest
 out
+.bloop

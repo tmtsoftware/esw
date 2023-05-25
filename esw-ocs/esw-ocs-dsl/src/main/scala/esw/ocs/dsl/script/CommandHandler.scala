@@ -10,6 +10,6 @@ import java.util.concurrent.CompletionStage
  * Having implementation at kotlin side, allows us run onError or retry handlers inside same parent coroutine
  * Hence if exception gets thrown even after all the retries, this gets propagated to top level exception handler
  */
-private[script] trait CommandHandler[T <: SequenceCommand] {
+private[ocs] trait CommandHandler[T <: SequenceCommand] {
   def execute(sequenceCommand: T): CompletionStage[Void]
 }

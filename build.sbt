@@ -16,7 +16,8 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-agent-akka`,
   `esw-agent-service`,
   `esw-contract`,
-  examples,
+//  examples,
+  examples2,
   `esw-constants`,
   `esw-commons`,
   `esw-test-commons`,
@@ -24,10 +25,10 @@ lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-testkit`,
   `esw-backend-testkit`,
   `esw-shell`,
-  `esw-integration-test`,
+//  `esw-integration-test`,
   `esw-http-template-wiring`,
   `esw-services`,
-  `esw-performance-test`
+//  `esw-performance-test`
 )
 
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
@@ -62,7 +63,8 @@ lazy val `esw-ocs` = project
     `esw-ocs-api`.js,
     `esw-ocs-api`.jvm,
     `esw-ocs-dsl`,
-    `esw-ocs-dsl-kt`,
+//    `esw-ocs-dsl-kt`,
+    `esw-ocs-dsl-scala`,
     `esw-ocs-impl`,
     `esw-ocs-app`
   )
@@ -128,6 +130,15 @@ lazy val `esw-ocs-dsl-kt` = project
     kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
+  .dependsOn(`esw-ocs-dsl`)
+
+lazy val `esw-ocs-dsl-scala` = project
+  .in(file("esw-ocs/esw-ocs-dsl-scala"))
+  .enablePlugins(MaybeCoverage)
+  .settings(
+    Test / fork := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsDslScala.value)
   .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-ocs-app` = project
@@ -297,6 +308,10 @@ lazy val examples = project
     kotlincOptions ++= KotlincOptions
   )
   .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
+
+lazy val examples2 = project
+  .in(file("examples2"))
+  .dependsOn(`esw-ocs-dsl-scala`, `esw-ocs-app`)
 
 lazy val `esw-sm` = project
   .aggregate(

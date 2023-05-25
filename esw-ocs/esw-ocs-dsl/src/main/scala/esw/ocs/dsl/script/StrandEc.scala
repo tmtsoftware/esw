@@ -8,7 +8,9 @@ import scala.concurrent.ExecutionContext
 //This class is to create a execution context
 class StrandEc private (private[esw] val executorService: ScheduledExecutorService) {
   val ec: ExecutionContext = ExecutionContext.fromExecutorService(executorService)
-  def shutdown(): Unit     = executorService.shutdownNow()
+  def ecWithReporter(reporter: Throwable => Unit): ExecutionContext =
+    ExecutionContext.fromExecutorService(executorService, reporter)
+  def shutdown(): Unit = executorService.shutdownNow()
 }
 
 object StrandEc {

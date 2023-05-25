@@ -73,7 +73,7 @@ class AgentActor(
     val spawnResponsePairs = hostConfig.containers.map { config =>
       val componentIdF = getContainerComponentId(config)
       componentIdF.map(componentId => {
-        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_: ActorRef[SpawnResponse], componentId, config))) (
+        componentId.prefix.toString() -> (agentRef ? (SpawnContainer(_: ActorRef[SpawnResponse], componentId, config)))(
           AgentTimeouts.SpawnComponent,
           system.scheduler
         )

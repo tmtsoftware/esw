@@ -4,6 +4,7 @@ import org.tmt.sbt.docs.DocKeys._
 import sbt.Keys._
 import sbt._
 import sbt.librarymanagement.ScmInfo
+import sbt.nio.Keys.{watchBeforeCommand, watchTriggeredMessage}
 import sbtunidoc.GenJavadocPlugin.autoImport.unidocGenjavadocVersion
 
 object Common {
@@ -44,7 +45,7 @@ object Common {
         "UTF-8",
         "-feature",
         "-unchecked",
-        "-deprecation",
+        "-deprecation"
         // -W Options
 //        "-Wdead-code",
 //        if (enableFatalWarnings) "-Wconf:any:error" else "-Wconf:any:warning-verbose",
@@ -58,8 +59,8 @@ object Common {
       // jitpack provides the env variable VERSION=<version being built> # A tag or commit. We have aliased VERSION to JITPACK_VERSION
       // we make use of it so that the version in class metadata (e.g. classOf[HttpService].getPackage.getSpecificationVersion)
       // and the maven repo match
-      version     := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
-      fork        := true,
+      version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
+      fork    := true,
       javaOptions += "-Xmx2G",
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),
@@ -76,6 +77,8 @@ object Common {
         SettingKey[Boolean]("ide-skip-project"),
         aggregate,              // verify if this needs to be here or our configuration is wrong
         unidocGenjavadocVersion // verify if this needs to be here or our configuration is wrong
-      )
+      ),
+      watchTriggeredMessage := Watch.clearScreenOnTrigger,
+      watchBeforeCommand    := Watch.clearScreen
     )
 }
