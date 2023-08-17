@@ -1,7 +1,7 @@
 package esw.gateway.server
 
 import caseapp.RemainingArgs
-import esw.commons.cli.EswCommandApp
+import esw.commons.cli.EswCommand
 import esw.gateway.server.ServerCommand.StartCommand
 
 import java.nio.file.Path
@@ -11,7 +11,7 @@ import java.nio.file.Path
 /**
  * Main app to start gateway server
  */
-object GatewayMain extends EswCommandApp[ServerCommand] {
+object GatewayMain extends EswCommand[ServerCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name

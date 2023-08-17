@@ -10,7 +10,7 @@ import csw.network.utils.Networks
 import csw.testkit.scaladsl.CSWService.AlarmServer
 import esw.backend.testkit.TSServicesCommands.*
 import esw.backend.testkit.stubs.{AgentServiceStub, GatewayStub, SequenceManagerStub}
-import esw.commons.cli.EswCommandApp
+import esw.commons.cli.EswCommand
 import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, SequenceManager, WrappedCSWService}
 import esw.ocs.testkit.{EswTestKit, Service}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -18,7 +18,7 @@ import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import java.nio.file.Path
 import scala.util.control.NonFatal
 
-object BackendService extends EswCommandApp[TSServicesCommands] {
+object BackendService extends EswCommand[TSServicesCommands] {
   override def appName: String  = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def progName: String = "backend-testkit"
 

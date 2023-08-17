@@ -4,7 +4,7 @@ import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
 import caseapp.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix
-import esw.commons.cli.EswCommandApp
+import esw.commons.cli.EswCommand
 import esw.commons.utils.files.FileUtils
 import esw.constants.CommonTimeouts
 import esw.sm.app.SequenceManagerAppCommand.*
@@ -17,7 +17,7 @@ import scala.util.control.NonFatal
  * The main app to start Sequence Manager
  */
 // $COVERAGE-OFF$
-object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
+object SequenceManagerApp extends EswCommand[SequenceManagerAppCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
 

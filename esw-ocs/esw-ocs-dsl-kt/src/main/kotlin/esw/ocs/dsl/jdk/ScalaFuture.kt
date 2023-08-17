@@ -1,6 +1,6 @@
 package esw.ocs.dsl.jdk
 
-import scala.compat.java8.FutureConverters
+import scala.jdk.FutureConverters.*
 import scala.concurrent.Future
 import java.util.concurrent.CompletionStage
 

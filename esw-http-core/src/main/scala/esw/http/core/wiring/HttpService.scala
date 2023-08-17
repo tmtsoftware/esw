@@ -2,7 +2,7 @@ package esw.http.core.wiring
 
 import org.apache.pekko.actor.CoordinatedShutdown
 import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.cors.scaladsl.CorsDirectives.cors
+import org.apache.pekko.http.cors.scaladsl.CorsDirectives.*
 import org.apache.pekko.http.scaladsl.Http.ServerBinding
 import org.apache.pekko.http.scaladsl.server.Directives.handleRejections
 import org.apache.pekko.http.scaladsl.server.{RejectionHandler, Route}

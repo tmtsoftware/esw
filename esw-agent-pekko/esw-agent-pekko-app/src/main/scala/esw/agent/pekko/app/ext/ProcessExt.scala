@@ -3,7 +3,7 @@ package esw.agent.pekko.app.ext
 import org.apache.pekko.actor.typed.ActorSystem
 import esw.agent.pekko.app.ext.FutureExt.FutureOps
 
-import scala.compat.java8.StreamConverters.StreamHasToScala
+import scala.jdk.StreamConverters.*
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.FutureConverters.CompletionStageOps

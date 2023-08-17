@@ -5,7 +5,7 @@ import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
 import caseapp.core.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
 import esw.agent.service.app.AgentServiceAppCommand.StartCommand
-import esw.commons.cli.EswCommandApp
+import esw.commons.cli.EswCommand
 import esw.constants.CommonTimeouts
 
 import scala.concurrent.Await
@@ -14,7 +14,7 @@ import scala.util.control.NonFatal
 /*
  * The main app to start Agent Service
  */
-object AgentServiceApp extends EswCommandApp[AgentServiceAppCommand] {
+object AgentServiceApp extends EswCommand[AgentServiceAppCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name

@@ -1,8 +1,9 @@
 package esw.commons.cli
 
-import caseapp.core.commandparser.CommandParser
-import caseapp.core.help.CommandsHelp
-import caseapp.{CommandApp, core}
+import caseapp.core.app.Command
+import caseapp.core.help.Help
+import caseapp.core.parser.Parser
+import caseapp.core
 import csw.location.api.models.PekkoLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.GenericLoggerFactory
@@ -12,19 +13,19 @@ import csw.logging.client.scaladsl.GenericLoggerFactory
 /**
  * This is a base class for all ESW command line applications containing helper utilities.
  */
-abstract class EswCommandApp[T: CommandParser: CommandsHelp] extends CommandApp[T] {
+abstract class EswCommand[T: Parser: Help] extends Command[T] {
 
   lazy val log: Logger = GenericLoggerFactory.getLogger
 
-  override def helpAsked(): Nothing = {
-    help()
-    exit(0)
-  }
+//  override def helpAsked(): Nothing = {
+//    help()
+//    exit(0)
+//  }
 
   override def error(message: core.Error): Nothing = {
     colored(Console.RED, message.message)
     println()
-    help()
+    println(finalHelp.help(helpFormat, showHidden = true))
     exit(255)
   }
 
@@ -34,18 +35,18 @@ abstract class EswCommandApp[T: CommandParser: CommandsHelp] extends CommandApp[
     throw err
   }
 
-  def logInfo(log: Logger, msg: String): Unit = {
+  inline def logInfo(log: Logger, msg: String): Unit = {
     log.info(msg)
     println(msg)
   }
 
   private def colored(color: String, msg: String): Unit = println(s"$color$msg${Console.RESET}")
 
-  private def help(): Unit = {
-    print(beforeCommandMessages.withOptionsDesc(s"[command] [command-options]").help)
-    println(s"Available commands: ${commands.mkString(", ")}\n")
-    println(s"Type  $progName command --help  for help on an individual command")
-  }
+//  private def help(): Unit = {
+//    print(beforeCommandMessages.withOptionsDesc(s"[command] [command-options]").help)
+//    println(s"Available commands: ${commands.mkString(", ")}\n")
+//    println(s"Type  $progName command --help  for help on an individual command")
+//  }
 
   def logResult(appResult: Either[Exception, PekkoLocation]): PekkoLocation =
     appResult match {

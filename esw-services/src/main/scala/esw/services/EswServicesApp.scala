@@ -4,13 +4,13 @@ import org.apache.pekko.actor.CoordinatedShutdown
 import caseapp.RemainingArgs
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
-import esw.commons.cli.EswCommandApp
+import esw.commons.cli.EswCommand
 import esw.services.cli.Command
 import esw.sm.app.SequenceManagerAppCommand.prefixParser
 import scala.util.control.NonFatal
 
 //main app to start esw services - e.g., agent, agent service, gateway, sm etc
-object EswServicesApp extends EswCommandApp[Command] {
+object EswServicesApp extends EswCommand[Command] {
   override def appName: String    = getClass.getSimpleName.dropRight(1)
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name

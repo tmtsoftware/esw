@@ -7,7 +7,7 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.PekkoLocation
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Subsystem
-import esw.commons.cli.EswCommandApp
+import esw.commons.cli.EswCommand
 import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.constants.{CommonTimeouts, SequenceComponentTimeouts}
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
@@ -27,7 +27,7 @@ import scala.util.control.NonFatal
 /*
  * The main app to start sequencer/sequence component
  */
-object SequencerApp extends EswCommandApp[SequencerAppCommand] {
+object SequencerApp extends EswCommand[SequencerAppCommand] {
   // $COVERAGE-OFF$
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
