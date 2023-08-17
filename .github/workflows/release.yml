@@ -51,7 +51,7 @@ jobs:
           sbt -DenableFatalWarnings=true makeSite
 
       - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |

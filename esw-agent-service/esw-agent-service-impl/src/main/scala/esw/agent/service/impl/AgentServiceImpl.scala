@@ -1,9 +1,9 @@
 package esw.agent.service.impl
 
-import akka.actor.typed.ActorSystem
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import org.apache.pekko.actor.typed.ActorSystem
+import csw.location.api.models.{PekkoLocation, ComponentId}
 import csw.prefix.models.Prefix
-import esw.agent.akka.client.AgentClient
+import esw.agent.pekko.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.models.*
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
@@ -13,11 +13,11 @@ import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
- * Akka actor client for the Agent Service
+ * Pekko actor client for the Agent Service
  *
  * @param locationServiceUtil - an instance of locationServiceUtil
  * @param agentStatusUtil - an instance of agentStatusUtil
- * @param actorSystem - an implicit Akka ActorSystem
+ * @param actorSystem - an implicit Pekko ActorSystem
  */
 class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil: AgentStatusUtil)(implicit
     actorSystem: ActorSystem[_]
@@ -52,7 +52,7 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil
     agentClient(agentPrefix).flatMapRight(_.spawnContainers(hostConfigPath, isConfigLocal)).mapToAdt(identity, Failed)
 
   override def killComponent(componentId: ComponentId): Future[KillResponse] = {
-    val compLocationE = locationServiceUtil.findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
+    val compLocationE = locationServiceUtil.findPekkoLocation(componentId.prefix.toString(), componentId.componentType)
     compLocationE
       .flatMapE { compLocation =>
         val agentLocation = locationServiceUtil.findAgentByHostname(compLocation.uri.getHost)
@@ -67,5 +67,5 @@ class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil
   private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
     AgentClient.make(agentPrefix, locationServiceUtil).mapLeft(e => e.msg)
 
-  private[impl] def makeAgentClient(akkaLocation: AkkaLocation): AgentClient = new AgentClient(akkaLocation)
+  private[impl] def makeAgentClient(pekkoLocation: PekkoLocation): AgentClient = new AgentClient(pekkoLocation)
 }

@@ -3,7 +3,7 @@
 package esw.ocs.scripts.examples.paradox
 
 import csw.location.api.models.*
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.Connection.HttpConnection
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
@@ -48,9 +48,9 @@ script {
     onSetup("find") { cmd ->
         //#find-location
         val prefix: Prefix = cmd.source()
-        val assemblyConnection = AkkaConnection(ComponentId(prefix, Assembly))
+        val assemblyConnection = PekkoConnection(ComponentId(prefix, Assembly))
 
-        val location: AkkaLocation? = findLocation(assemblyConnection)
+        val location: PekkoLocation? = findLocation(assemblyConnection)
 
         // send a successful event to UI if assembly location is found
         location?.let { sendUIEvent("Resolved assembly location: $it") }
@@ -60,9 +60,9 @@ script {
     onSetup("resolve") { cmd ->
         //#resolve-location
         val prefix: Prefix = cmd.source()
-        val assemblyConnection = AkkaConnection(ComponentId(prefix, Assembly))
+        val assemblyConnection = PekkoConnection(ComponentId(prefix, Assembly))
 
-        val location: AkkaLocation? = resolveLocation(assemblyConnection, 10.seconds)
+        val location: PekkoLocation? = resolveLocation(assemblyConnection, 10.seconds)
 
         // send a successful event to UI if assembly location is found
         location?.let { sendUIEvent("Resolved assembly location: $it") }
@@ -94,11 +94,11 @@ script {
         val timeout = 10.minutes
         val leaseDuration = 20.minutes
 
-        // list all akka components
-        val akkaLocations: List<Location> = listLocationsBy(AkkaType)
+        // list all pekko components
+        val pekkoLocations: List<Location> = listLocationsBy(PekkoType)
 
         // filter HCD's and Assemblies and send Lock command
-        akkaLocations.forEach { location ->
+        pekkoLocations.forEach { location ->
             val compId: ComponentId = location.connection.componentId
             val compType: ComponentType = compId.componentType
             val prefix = location.prefix
@@ -145,7 +145,7 @@ script {
     onObserve("monitor-iris-sequencer") {
         val irisPrefix = Prefix("IRIS.darknight")
         val irisComponent = ComponentId(irisPrefix, Sequencer)
-        val irisSequencerConnection = AkkaConnection(irisComponent)
+        val irisSequencerConnection = PekkoConnection(irisComponent)
 
         // send UI events on iris sequencers location change
         onLocationTrackingEvent(irisSequencerConnection) {

@@ -1,7 +1,7 @@
 package esw.gateway.api.clients
 
-import akka.Done
-import akka.stream.scaladsl.Source
+import org.apache.pekko.Done
+import org.apache.pekko.stream.scaladsl.Source
 import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi

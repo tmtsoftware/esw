@@ -1,8 +1,8 @@
 package esw.backend.testkit.stubs
 
-import akka.Done
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.scaladsl.Source
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.stream.scaladsl.Source
 import csw.params.events.{Event, EventKey, ObserveEvent}
 import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi

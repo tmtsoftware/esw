@@ -1,7 +1,7 @@
 package esw.sm.handler
 
-import akka.http.scaladsl.server.directives.BasicDirectives
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.apache.pekko.http.scaladsl.server.directives.BasicDirectives
+import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix

@@ -1,4 +1,4 @@
-import sbt.{AutoPlugin, Plugins, _}
+import sbt._
 
 object Coverage extends AutoPlugin {
   import scoverage.ScoverageSbtPlugin

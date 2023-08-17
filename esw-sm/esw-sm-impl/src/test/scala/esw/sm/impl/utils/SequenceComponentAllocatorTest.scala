@@ -1,8 +1,8 @@
 package esw.sm.impl.utils
 
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
@@ -13,10 +13,10 @@ import esw.testcommons.BaseTestSuite
 import java.net.URI
 
 class SequenceComponentAllocatorTest extends BaseTestSuite {
-  val eswPrimarySeqCompLoc: AkkaLocation     = akkaLocation(ComponentId(Prefix(ESW, "primary"), SequenceComponent))
-  val eswSecondarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(ESW, "secondary"), SequenceComponent))
-  val tcsPrimarySeqCompLoc: AkkaLocation     = akkaLocation(ComponentId(Prefix(TCS, "primary"), SequenceComponent))
-  val irisPrimarySeqCompLoc: AkkaLocation    = akkaLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
+  val eswPrimarySeqCompLoc: PekkoLocation    = pekkoLocation(ComponentId(Prefix(ESW, "primary"), SequenceComponent))
+  val eswSecondarySeqCompLoc: PekkoLocation  = pekkoLocation(ComponentId(Prefix(ESW, "secondary"), SequenceComponent))
+  val tcsPrimarySeqCompLoc: PekkoLocation    = pekkoLocation(ComponentId(Prefix(TCS, "primary"), SequenceComponent))
+  val irisPrimarySeqCompLoc: PekkoLocation   = pekkoLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
   val clearSkies: ObsMode                    = ObsMode("clearSkies")
   private val eswVariationId: VariationInfo  = VariationInfo(ESW, Some(Variation("variation")))
   private val irisVariationId: VariationInfo = VariationInfo(IRIS, Some(Variation("variation")))
@@ -76,6 +76,6 @@ class SequenceComponentAllocatorTest extends BaseTestSuite {
     }
   }
 
-  private def akkaLocation(componentId: ComponentId): AkkaLocation =
-    AkkaLocation(AkkaConnection(componentId), URI.create(""), Metadata.empty)
+  private def pekkoLocation(componentId: ComponentId): PekkoLocation =
+    PekkoLocation(PekkoConnection(componentId), URI.create(""), Metadata.empty)
 }

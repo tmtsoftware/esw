@@ -1,10 +1,10 @@
 package esw.ocs.api.actor.client
 
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.actor.messages.SequenceComponentMsg
@@ -21,8 +21,8 @@ class SequenceComponentImplTest extends ActorTestSuit {
   private val askProxyTestKit = new AskProxyTestKit[SequenceComponentMsg, SequenceComponentImpl] {
     override def make(actorRef: ActorRef[SequenceComponentMsg]): SequenceComponentImpl = {
       val location =
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(ESW, "sequence_component"), SequenceComponent)),
+        PekkoLocation(
+          PekkoConnection(ComponentId(Prefix(ESW, "sequence_component"), SequenceComponent)),
           actorRef.toURI,
           Metadata.empty
         )
@@ -55,13 +55,13 @@ class SequenceComponentImplTest extends ActorTestSuit {
   }
 
   "GetStatus | ESW-103, ESW-362" in {
-    val akkaLocation =
-      AkkaLocation(
-        AkkaConnection(ComponentId(Prefix(subsystem, "sequence_component"), SequenceComponent)),
+    val pekkoLocation =
+      PekkoLocation(
+        PekkoConnection(ComponentId(Prefix(subsystem, "sequence_component"), SequenceComponent)),
         new URI("uri"),
         Metadata.empty
       )
-    val getStatusResponse = GetStatusResponse(Some(akkaLocation))
+    val getStatusResponse = GetStatusResponse(Some(pekkoLocation))
     withBehavior { case GetStatus(replyTo) =>
       replyTo ! getStatusResponse
     } check { sc =>

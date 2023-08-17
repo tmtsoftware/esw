@@ -3,7 +3,7 @@ package esw.commons.cli
 import caseapp.core.commandparser.CommandParser
 import caseapp.core.help.CommandsHelp
 import caseapp.{CommandApp, core}
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.GenericLoggerFactory
 
@@ -47,7 +47,7 @@ abstract class EswCommandApp[T: CommandParser: CommandsHelp] extends CommandApp[
     println(s"Type  $progName command --help  for help on an individual command")
   }
 
-  def logResult(appResult: Either[Exception, AkkaLocation]): AkkaLocation =
+  def logResult(appResult: Either[Exception, PekkoLocation]): PekkoLocation =
     appResult match {
       case Left(err) => logAndThrowError(log, s"Failed to start with error: $err", err)
       case Right(location) =>

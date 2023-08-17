@@ -1,8 +1,8 @@
 package esw.ocs.handler
 
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.directives.BasicDirectives
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.apache.pekko.http.scaladsl.server.Route
+import org.apache.pekko.http.scaladsl.server.directives.BasicDirectives
+import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.AuthorizationPolicy.CustomPolicy
 import csw.aas.http.SecurityDirectives
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -13,7 +13,7 @@ import esw.ocs.TestHelper.Narrower
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import esw.ocs.api.protocol.SequencerRequest
-import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerRequest.*
 import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.http.post.{ClientHttpCodecs, PostRouteFactory}

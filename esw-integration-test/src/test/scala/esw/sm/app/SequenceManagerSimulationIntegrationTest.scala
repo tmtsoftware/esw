@@ -5,14 +5,14 @@ import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer, Service}
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.testkit.scaladsl.CSWService.{ConfigServer, EventServer}
-import esw.agent.akka.AgentSetup
-import esw.agent.akka.app.AgentSettings
+import esw.agent.pekko.AgentSetup
+import esw.agent.pekko.app.AgentSettings
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
@@ -62,10 +62,10 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
 
   "Sequence Manager Simulation" must {
 
-    "start and register akka and http locations | ESW-174" in {
+    "start and register pekko and http locations | ESW-174" in {
 
-      // resolving sequence manager fails for Akka and Http
-      intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
+      // resolving sequence manager fails for Pekko and Http
+      intercept[Exception](resolvePekkoLocation(sequenceManagerPrefix, Service))
       intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
 
       TestSetup.startSequenceManager(
@@ -76,12 +76,12 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
         simulation = true
       )
 
-      val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
-      smAkkaLocation.prefix shouldBe sequenceManagerPrefix
+      val smPekkoLocation = resolvePekkoLocation(sequenceManagerPrefix, Service)
+      smPekkoLocation.prefix shouldBe sequenceManagerPrefix
 
-      //  verify agent prefix and pid metadata is present in Sequence manager akka location
-      smAkkaLocation.metadata.getAgentPrefix shouldBe Some(eswAgentPrefix)
-      smAkkaLocation.metadata.getPid.get shouldNot equal(None)
+      //  verify agent prefix and pid metadata is present in Sequence manager pekko location
+      smPekkoLocation.metadata.getAgentPrefix shouldBe Some(eswAgentPrefix)
+      smPekkoLocation.metadata.getPid.get shouldNot equal(None)
 
       val smHttpLocation = resolveHTTPLocation(sequenceManagerPrefix, Service)
       smHttpLocation.prefix shouldBe sequenceManagerPrefix
@@ -130,9 +130,9 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
       val sequencerLocations = locationService.list(Sequencer).futureValue
       sequencerLocations.size shouldBe 6
 
-      resolveSequencerLocation(eswIrisCalPrefix).connection should ===(AkkaConnection(ComponentId(eswIrisCalPrefix, Sequencer)))
-      resolveSequencerLocation(irisCalPrefix).connection should ===(AkkaConnection(ComponentId(irisCalPrefix, Sequencer)))
-      resolveSequencerLocation(tcsIrisCalPrefix).connection should ===(AkkaConnection(ComponentId(tcsIrisCalPrefix, Sequencer)))
+      resolveSequencerLocation(eswIrisCalPrefix).connection should ===(PekkoConnection(ComponentId(eswIrisCalPrefix, Sequencer)))
+      resolveSequencerLocation(irisCalPrefix).connection should ===(PekkoConnection(ComponentId(irisCalPrefix, Sequencer)))
+      resolveSequencerLocation(tcsIrisCalPrefix).connection should ===(PekkoConnection(ComponentId(tcsIrisCalPrefix, Sequencer)))
 
       // verify sending a sequence to master sequencer returns completed
       SequencerApiFactory.make(location).submitAndWait(sequence).futureValue shouldBe a[Completed]
@@ -141,9 +141,9 @@ class SequenceManagerSimulationIntegrationTest extends EswTestKit(EventServer, C
       sequenceManager.shutdownObsModeSequencers(obsMode).futureValue should ===(ShutdownSequencersResponse.Success)
 
       // shutting down obs-mode sequencers should remove their entries from location service.
-      intercept[Exception](resolveAkkaLocation(eswIrisCalPrefix, Sequencer))
-      intercept[Exception](resolveAkkaLocation(irisCalPrefix, Sequencer))
-      intercept[Exception](resolveAkkaLocation(tcsIrisCalPrefix, Sequencer))
+      intercept[Exception](resolvePekkoLocation(eswIrisCalPrefix, Sequencer))
+      intercept[Exception](resolvePekkoLocation(irisCalPrefix, Sequencer))
+      intercept[Exception](resolvePekkoLocation(tcsIrisCalPrefix, Sequencer))
 
       // shutdown provided sequence component
       sequenceManager.shutdownSequenceComponent(eswNewSeqCompPrefix).futureValue should ===(

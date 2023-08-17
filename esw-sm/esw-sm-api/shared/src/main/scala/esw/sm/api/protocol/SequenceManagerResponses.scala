@@ -3,11 +3,11 @@ package esw.sm.api.protocol
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
 import esw.ocs.api.models.ObsMode
-import esw.sm.api.codecs.SmAkkaSerializable
+import esw.sm.api.codecs.SmPekkoSerializable
 import esw.sm.api.models.*
 
 //Response models for the sequence manager(both http and actor)
-sealed trait SmResponse extends SmAkkaSerializable
+sealed trait SmResponse extends SmPekkoSerializable
 
 sealed trait SmFailure extends Exception with SmResponse {
   def msg: String

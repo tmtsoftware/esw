@@ -1,9 +1,9 @@
 package esw.backend.testkit.stubs
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.location.api.models.ComponentId
-import csw.logging.models.Level._
+import csw.logging.models.Level.*
 import csw.logging.models.{Level, LogMetadata}
 import csw.prefix.models.Prefix
 import esw.gateway.api.AdminApi

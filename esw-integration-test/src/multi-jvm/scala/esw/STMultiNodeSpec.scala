@@ -1,6 +1,6 @@
 package esw
 
-import akka.remote.testkit.{MultiNodeSpec, MultiNodeSpecCallbacks}
+import org.apache.pekko.remote.testkit.{MultiNodeSpec, MultiNodeSpecCallbacks}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funsuite.AnyFunSuiteLike

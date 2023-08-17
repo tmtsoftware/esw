@@ -1,8 +1,8 @@
 package esw.agent.service.api.client
 
-import akka.actor.typed.ActorSystem
-import akka.http.scaladsl.model.Uri
-import akka.http.scaladsl.model.Uri.Path
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.http.scaladsl.model.Uri
+import org.apache.pekko.http.scaladsl.model.Uri.Path
 import csw.location.api.models.HttpLocation
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.codecs.AgentServiceCodecs
@@ -18,7 +18,7 @@ object AgentServiceClientFactory {
   def apply(httpLocation: HttpLocation, tokenFactory: () => Option[String])(implicit
       actorSystem: ActorSystem[_]
   ): AgentServiceApi = {
-    import AgentServiceCodecs._
+    import AgentServiceCodecs.*
 
     val baseUri    = httpLocation.uri.toString
     val postUri    = Uri(baseUri).withPath(Path("/post-endpoint")).toString()

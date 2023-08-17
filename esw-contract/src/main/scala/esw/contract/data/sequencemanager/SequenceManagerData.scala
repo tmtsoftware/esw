@@ -1,8 +1,8 @@
 package esw.contract.data.sequencemanager
 
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS, WFOS}
 import esw.ocs.api.models.{ObsMode, Variation, VariationInfo}
@@ -34,8 +34,8 @@ trait SequenceManagerData {
   val sequencerComponentId: ComponentId = ComponentId(eswSequencerPrefix, Sequencer)
   val agentComponentId: ComponentId     = ComponentId(agentPrefix, Machine)
   val seqCompComponentId: ComponentId   = ComponentId(seqCompPrefix, SequenceComponent)
-  val akkaLocation: AkkaLocation =
-    AkkaLocation(AkkaConnection(seqCompComponentId), new URI("uri"), Metadata().add("key1", "value"))
+  val pekkoLocation: PekkoLocation =
+    PekkoLocation(PekkoConnection(seqCompComponentId), new URI("uri"), Metadata().add("key1", "value"))
   val agentProvisionConfig: AgentProvisionConfig = AgentProvisionConfig(agentPrefix, 3)
   val provisionConfig: ProvisionConfig           = ProvisionConfig(List(agentProvisionConfig))
 

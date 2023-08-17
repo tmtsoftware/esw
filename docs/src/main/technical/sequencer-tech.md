@@ -8,7 +8,7 @@ The Sequencer implementation has two main parts:
 1. Sequencer Framework
 2. Scripting Support
 
-The Sequencer Framework uses an Akka Actor at its core and is responsible for executing the received Sequence and calling handlers in the Script.
+The Sequencer Framework uses an Pekko Actor at its core and is responsible for executing the received Sequence and calling handlers in the Script.
 Sequencer Scripting Support defines the behaviour of the Sequencer while executing a Sequence. Scripts are written using a Domain Specific Language
 provided as a part of Framework.
 
@@ -35,7 +35,7 @@ This module consists of the Kotlin counterpart of the Script DSL.
 
 * esw-ocs-handler -
 This handler module is responsible for providing HTTP routes for the Sequencer HTTP server. Sequencer provides
-an HTTP and Akka interface. The HTTP routes are defined and implemented here.
+an HTTP and Pekko interface. The HTTP routes are defined and implemented here.
 
 ## Sequence execution process
 
@@ -44,7 +44,7 @@ When we load a script from a sequence component, it creates a [Sequencer Wiring]
 Sequencer Wiring passes the Kotlin script's class name as string parameter to [Script Loader]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/script/ScriptLoader.scala), 
 which uses Java reflection APIs to dynamically load the script class with the given name and create its instance. The loaded script is then passed to
 an execution [Engine]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/core/Engine.scala), which is responsible for processing each step.
-After initialization, the Sequencer's Akka and HTTP connection is registered with the Location Service.
+After initialization, the Sequencer's Pekko and HTTP connection is registered with the Location Service.
 
 #### Loading and Running a sequence in Sequencer
 
@@ -90,7 +90,7 @@ If all steps are completed with Success, then a Success response is sent to all 
 
 ## Implementation Details
 
-The Sequencer framework uses Akka Actor as the core implementation (Sequencer Actor).
+The Sequencer framework uses Pekko Actor as the core implementation (Sequencer Actor).
 The following figure explains the architecture of the Sequencer framework. A Sequencer is registered with Location Service. The future
 SOSS Planning Tool or ESW.HCMS Script Monitoring Tool will use the Location of the top-level Sequencer returned by Sequence Manager
 to resolve the top-level Sequencer and will send the Observation's Sequence to the top-level Sequencer.
@@ -171,18 +171,18 @@ about scripting please refer @ref:[here](../scripts/scripts-index.md)
 
 Sequencer exposes its interface in three ways:
 
-1. Akka interface - Sequencer is registered as an Akka-based component. One can resolve Sequencer and use the Akka client to interact with Sequencer.
+1. Pekko interface - Sequencer is registered as an Pekko-based component. One can resolve Sequencer and use the Pekko client to interact with Sequencer.
 2. HTTP direct interface - Each Sequencer also exposes an HTTP-based interface as an embedded Sequencer
 Server (direct and unprotected usage). This access provides routes that allow user to directly control the Sequencer without any auth protection.
 UI applications are supposed to use Gateway interface described below to interact with Sequencer as Gateway provided auth protection layer.
 3. HTTP Gateway interface - It is also possible to interact with Sequencer using the UI Application Gateway (as outside network interface).
 Being outside network interface, this access requires user to be authenticated and authorized. The Gateway hosts the Sequencer API,
-which communicates with the Sequencer via the Akka interface. Please refer to the Gateway documentation for @ref[more information](../uisupport/gateway.md).
+which communicates with the Sequencer via the Pekko interface. Please refer to the Gateway documentation for @ref[more information](../uisupport/gateway.md).
 
-Following snippet shows instantiating Akka Interface to interact with Sequencer:
+Following snippet shows instantiating Pekko Interface to interact with Sequencer:
 
 Scala
-: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #instantiate-akka-interface }
+: @@snip [SequencerAPIExample.scala](../../../../examples/src/main/scala/esw/examples/SequencerAPIExample.scala) { #instantiate-pekko-interface }
 
 Following snippet shows instantiating HTTP direct Interface to interact with Sequencer:
 
@@ -197,7 +197,7 @@ Sequencer Http direct interface is not supposed to be used from anywhere as it i
 
 ## Interacting with Sequencer
 
-One can use Akka Interface or HTTP Gateway interface to interact with Sequencer. APIs to interact with Sequencer are
+One can use Pekko Interface or HTTP Gateway interface to interact with Sequencer. APIs to interact with Sequencer are
 broadly categorised as following.
 
 * Sequencer Command Service - Provided as a part of CSW. Provides way to submit sequence and receive response.

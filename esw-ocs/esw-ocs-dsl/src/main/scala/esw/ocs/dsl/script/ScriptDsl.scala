@@ -1,6 +1,6 @@
 package esw.ocs.dsl.script
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.logging.api.javadsl.ILogger
 import csw.params.commands.{CommandName, Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
@@ -13,7 +13,7 @@ import esw.ocs.impl.script.ScriptApi
 import java.util.Optional
 import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
-import scala.async.Async.{async, await}
+import cps.compat.FutureAsync.*
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 

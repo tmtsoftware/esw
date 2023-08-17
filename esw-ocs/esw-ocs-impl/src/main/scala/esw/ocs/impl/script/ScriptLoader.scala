@@ -2,7 +2,7 @@ package esw.ocs.impl.script
 
 import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 
-import scala.language.reflectiveCalls
+import scala.reflect.Selectable.reflectiveSelectable
 
 private[esw] object ScriptLoader {
 

@@ -1,6 +1,6 @@
 package esw.ocs.testkit.utils
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.aas.core.commons.AASConnection
 import csw.location.api.models.HttpRegistration
 import csw.location.api.scaladsl.LocationService

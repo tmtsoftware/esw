@@ -1,6 +1,6 @@
 package esw.services
 
-import akka.actor.CoordinatedShutdown
+import org.apache.pekko.actor.CoordinatedShutdown
 import caseapp.RemainingArgs
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks

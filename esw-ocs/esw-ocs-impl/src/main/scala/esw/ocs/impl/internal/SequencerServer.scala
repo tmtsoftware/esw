@@ -1,7 +1,7 @@
 package esw.ocs.impl.internal
 
-import akka.Done
-import csw.location.api.models.AkkaLocation
+import org.apache.pekko.Done
+import csw.location.api.models.PekkoLocation
 import csw.prefix.models.Prefix
 import esw.ocs.api.protocol.ScriptError
 
@@ -9,7 +9,7 @@ import esw.ocs.api.protocol.ScriptError
 // these operations are not performed very often they could be blocked. Blocking here
 // significantly simplifies the design of SequenceComponentBehavior.
 trait SequencerServer {
-  def start(): Either[ScriptError, AkkaLocation]
+  def start(): Either[ScriptError, PekkoLocation]
   def shutDown(): Done
 }
 

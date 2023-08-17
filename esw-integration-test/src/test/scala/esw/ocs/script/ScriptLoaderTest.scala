@@ -1,6 +1,6 @@
 package esw.ocs.script
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.Config
 import csw.alarm.api.javadsl.IAlarmService
 import csw.event.api.javadsl.IEventService

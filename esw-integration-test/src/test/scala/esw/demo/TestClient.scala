@@ -1,11 +1,11 @@
 package esw.demo
 
-import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
-import akka.stream.Materializer
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.Askable
+import org.apache.pekko.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -18,7 +18,7 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg.UnloadScript
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 object TestClient extends App {
 
@@ -30,12 +30,12 @@ object TestClient extends App {
 
   implicit val sched: Scheduler = system.scheduler
 
-  private val akkaLocation: AkkaLocation = new LocationServiceUtil(_locationService)
+  private val pekkoLocation: PekkoLocation = new LocationServiceUtil(_locationService)
     .findSequencer(Prefix(IRIS, "darknight"))
     .futureValue
     .toOption
     .get
-  private val sequencer = SequencerApiFactory.make(akkaLocation)
+  private val sequencer = SequencerApiFactory.make(pekkoLocation)
 
   private val cmd1 = Setup(Prefix("esw.a.a"), CommandName("command-1"), None)
   private val cmd2 = Setup(Prefix("esw.a.a"), CommandName("command-2"), None)

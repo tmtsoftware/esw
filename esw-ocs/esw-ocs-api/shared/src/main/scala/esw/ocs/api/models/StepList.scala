@@ -2,7 +2,7 @@ package esw.ocs.api.models
 
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsPekkoSerializable
 import esw.ocs.api.protocol.EditorError
 import esw.ocs.api.protocol.EditorError.*
 
@@ -11,7 +11,7 @@ import esw.ocs.api.protocol.EditorError.*
  *
  * @param steps - list of Steps
  */
-final case class StepList private[ocs] (steps: List[Step]) extends OcsAkkaSerializable {
+final case class StepList private[ocs] (steps: List[Step]) extends OcsPekkoSerializable {
   // query
   private[ocs] def isEmpty: Boolean    = steps.isEmpty
   def isFinished: Boolean              = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))

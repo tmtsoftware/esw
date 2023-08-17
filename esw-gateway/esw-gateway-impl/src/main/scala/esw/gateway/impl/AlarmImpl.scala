@@ -1,6 +1,6 @@
 package esw.gateway.impl
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.alarm.api.scaladsl.AlarmService
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 /**
- * Akka actor client for the Admin service
+ * Pekko actor client for the Admin service
  *
  * @param alarmService - an instance of AlarmService
  * @param ec - an implicit execution context

@@ -1,6 +1,6 @@
 package esw.ocs.dsl.script
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.logging.api.javadsl.ILogger
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime

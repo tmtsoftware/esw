@@ -1,7 +1,7 @@
 package esw.ocs.dsl.script.utils
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
 import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse

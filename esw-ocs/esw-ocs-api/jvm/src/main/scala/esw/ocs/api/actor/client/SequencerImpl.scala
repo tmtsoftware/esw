@@ -1,15 +1,15 @@
 package esw.ocs.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.Source
-import akka.stream.typed.scaladsl.ActorSource
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.stream.OverflowStrategy
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.stream.typed.scaladsl.ActorSource
+import org.apache.pekko.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal}
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * This client takes actor ref of the sequencer as a constructor argument
  *
  * @param sequencer - actorRef of the Sequencer Actor
- * @param system - an Akka ActorSystem
+ * @param system - an Pekko ActorSystem
  */
 class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_]) extends SequencerApi {
   private implicit val timeout: Timeout     = SequencerTimeouts.SequencerOperation
@@ -142,5 +142,5 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
     sequencer ? OperationsMode
   }
 
-  override def getSequenceComponent: Future[AkkaLocation] = sequencer ? GetSequenceComponent
+  override def getSequenceComponent: Future[PekkoLocation] = sequencer ? GetSequenceComponent
 }

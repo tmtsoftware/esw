@@ -1,6 +1,6 @@
 package esw.testcommons
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.prefix.models.Subsystem
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.*

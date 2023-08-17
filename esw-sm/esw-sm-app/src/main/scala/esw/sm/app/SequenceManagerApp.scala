@@ -1,6 +1,6 @@
 package esw.sm.app
 
-import akka.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
 import caseapp.RemainingArgs
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix

@@ -1,7 +1,7 @@
 package esw.gateway.server
 
-import akka.Done
-import akka.stream.scaladsl.Sink
+import org.apache.pekko.Done
+import org.apache.pekko.stream.scaladsl.Sink
 import csw.params.core.generics.KeyType.ByteKey
 import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models.*

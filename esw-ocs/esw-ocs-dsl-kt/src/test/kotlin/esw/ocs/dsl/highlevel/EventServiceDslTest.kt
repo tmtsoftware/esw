@@ -1,7 +1,7 @@
 package esw.ocs.dsl.highlevel
 
-import akka.Done.done
-import akka.actor.Cancellable
+import org.apache.pekko.Done.done
+import org.apache.pekko.actor.Cancellable
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription

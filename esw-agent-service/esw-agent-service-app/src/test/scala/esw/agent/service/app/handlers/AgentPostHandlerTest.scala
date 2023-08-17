@@ -1,9 +1,9 @@
 package esw.agent.service.app.handlers
 
 import java.nio.file.Path
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.server.directives.BasicDirectives
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.apache.pekko.http.scaladsl.model.HttpRequest
+import org.apache.pekko.http.scaladsl.server.directives.BasicDirectives
+import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Service

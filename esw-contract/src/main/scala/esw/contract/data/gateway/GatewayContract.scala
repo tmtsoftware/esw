@@ -1,6 +1,6 @@
 package esw.contract.data.gateway
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.alarm.models.AlarmSeverity
 import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.contract.ResourceFetcher

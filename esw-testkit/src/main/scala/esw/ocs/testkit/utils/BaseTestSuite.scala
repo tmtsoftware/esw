@@ -1,7 +1,7 @@
 package esw.ocs.testkit.utils
 
-import akka.actor.typed.ActorSystem
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.util.Timeout
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.*
 import org.scalatest.concurrent.{Eventually, ScalaFutures}

@@ -37,7 +37,7 @@ While the Subsystem for a Sequence Component identifies to which subsystem the S
 Component can load Scripts for any subsystem, and therefore become a Sequencer for any subsystem.  For example, if for
 some reason the IRIS Sequence Component is not reachable, an IRIS Script can be loaded into an ESW Sequence Component, and it can then be used as the IRIS Instrument Sequencer.
 
-Sequence Component will be registered as Akka Connection in Location Service.
+Sequence Component will be registered as Pekko Connection in Location Service.
 The following table describes the registration of a Sequence Component in the Location Service:
 
 | Subsystem | Name | Registered Location |
@@ -73,7 +73,7 @@ useful capabilities.
 
 ## Sequence Component Lifecycle
 
-Sequence Component is implemented as Finite State Machine using Akka Actor as core.
+Sequence Component is implemented as Finite State Machine using Pekko Actor as core.
 The Sequence Component also has a lifecycle, but it is simpler than the Sequencer lifecycle. The following
 figure shows the Sequence Component has two states: `Idle` and `Running`.
 

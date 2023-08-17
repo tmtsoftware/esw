@@ -1,12 +1,12 @@
 package esw.commons.utils.location
 
-import akka.Done
-import akka.actor.CoordinatedShutdown
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.location.api.AkkaRegistrationFactory
+import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import csw.location.api.PekkoRegistrationFactory
 import csw.location.api.exceptions.{
   OtherLocationIsRegistered,
   RegistrationFailed,
@@ -14,8 +14,8 @@ import csw.location.api.exceptions.{
 }
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.*
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
+import csw.location.api.models.Connection.{PekkoConnection, HttpConnection}
+import csw.location.api.models.{PekkoLocation, ComponentId, HttpLocation, Metadata}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.*
 import csw.prefix.models.{Prefix, Subsystem}
@@ -32,16 +32,16 @@ class LocationServiceUtilTest extends BaseTestSuite {
   private val locationService                                     = mock[LocationService]
   implicit val ec: ExecutionContext                               = system.executionContext
 
-  // this only for creating TestProbe as the AkkaRegistration needs remote enabled actor Ref.
+  // this only for creating TestProbe as the PekkoRegistration needs remote enabled actor Ref.
   private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
 
-  private val subsystem      = TCS
-  private val obsMode        = "DarkNight"
-  private val prefix         = Prefix(subsystem, obsMode)
-  private val actorRef       = TestProbe[Any]()(actorSystem).ref
-  private val akkaConnection = AkkaConnection(ComponentId(prefix, Sequencer))
-  private val akkaLocation   = AkkaLocation(akkaConnection, actorRef.toURI, Metadata.empty)
-  private val registration   = AkkaRegistrationFactory.make(akkaConnection, actorRef)
+  private val subsystem       = TCS
+  private val obsMode         = "DarkNight"
+  private val prefix          = Prefix(subsystem, obsMode)
+  private val actorRef        = TestProbe[Any]()(actorSystem).ref
+  private val pekkoConnection = PekkoConnection(ComponentId(prefix, Sequencer))
+  private val pekkoLocation   = PekkoLocation(pekkoConnection, actorRef.toURI, Metadata.empty)
+  private val registration    = PekkoRegistrationFactory.make(pekkoConnection, actorRef)
 
   private val cswRegistrationListingFailed: CswRegistrationListingFailed = CswRegistrationListingFailed()
   private val cswLocationServiceErrorMsg: String                         = cswRegistrationListingFailed.getMessage
@@ -63,13 +63,13 @@ class LocationServiceUtilTest extends BaseTestSuite {
       implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
       val coordinatedShutdown             = CoordinatedShutdown(system)
       val registrationResult              = mock[RegistrationResult]
-      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.location).thenReturn(pekkoLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(registration)).thenReturn(Future(registrationResult))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      locationServiceUtil.register(registration).rightValue should ===(akkaLocation)
+      locationServiceUtil.register(registration).rightValue should ===(pekkoLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
       verify(registrationResult).unregister()
     }
@@ -97,37 +97,38 @@ class LocationServiceUtilTest extends BaseTestSuite {
     }
   }
 
-  "listAkkaLocationsBy componentType" must {
-    "list all akka locations which match given componentType | ESW-324" in {
+  "listPekkoLocationsBy componentType" must {
+    "list all pekko locations which match given componentType | ESW-324" in {
       val testUri = new URI("test-uri")
-      val akkaLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "IRIS_1"), SequenceComponent)), testUri, Metadata.empty)
+      val pekkoLocations = List(
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "IRIS_1"), SequenceComponent)), testUri, Metadata.empty)
       )
 
       val httpLocation =
         HttpLocation(HttpConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty)
-      val sequenceComponentLocations = httpLocation :: akkaLocations
+      val sequenceComponentLocations = httpLocation :: pekkoLocations
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      val actualLocations     = locationServiceUtil.listAkkaLocationsBy(SequenceComponent).rightValue
+      val actualLocations     = locationServiceUtil.listPekkoLocationsBy(SequenceComponent).rightValue
 
-      actualLocations should ===(akkaLocations)
+      actualLocations should ===(pekkoLocations)
     }
 
     "return empty list if no matching component type and filter is found | ESW-324" in {
       val testUri = new URI("test-uri")
       val sequenceComponentLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri, Metadata.empty)
       )
 
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceUtil.listAkkaLocationsBy(SequenceComponent, l => l.prefix.subsystem == WFOS).rightValue
+      val actualLocations =
+        locationServiceUtil.listPekkoLocationsBy(SequenceComponent, l => l.prefix.subsystem == WFOS).rightValue
 
       actualLocations should ===(List.empty)
     }
@@ -136,29 +137,29 @@ class LocationServiceUtilTest extends BaseTestSuite {
       when(locationService.list(SequenceComponent)).thenReturn(Future.failed(cswRegistrationListingFailed))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val error = locationServiceUtil.listAkkaLocationsBy(SequenceComponent).leftValue
+      val error = locationServiceUtil.listPekkoLocationsBy(SequenceComponent).leftValue
 
       error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
 
-  "listAkkaLocationsBy subsystem and componentType" must {
+  "listPekkoLocationsBy subsystem and componentType" must {
     "list all locations which match given componentType and subsystem | ESW-144, ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_3"), SequenceComponent)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_3"), SequenceComponent)), testUri, Metadata.empty)
       )
       val sequenceComponentLocations = tcsLocations ++ List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(Subsystem.OSS, "OSS_1"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(Subsystem.OSS, "OSS_1"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri, Metadata.empty)
       )
 
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent).rightValue
+      val actualLocations = locationServiceUtil.listPekkoLocationsBy(TCS, SequenceComponent).rightValue
 
       actualLocations should ===(tcsLocations)
     }
@@ -166,15 +167,15 @@ class LocationServiceUtilTest extends BaseTestSuite {
     "return empty list if no matching component type and subsystem is found | ESW-144, ESW-215" in {
       val testUri = new URI("test-uri")
       val sequenceComponentLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri, Metadata.empty)
       )
 
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceUtil.listAkkaLocationsBy(NFIRAOS, SequenceComponent).rightValue
+      val actualLocations = locationServiceUtil.listPekkoLocationsBy(NFIRAOS, SequenceComponent).rightValue
 
       actualLocations should ===(List.empty)
     }
@@ -183,24 +184,24 @@ class LocationServiceUtilTest extends BaseTestSuite {
       when(locationService.list(SequenceComponent)).thenReturn(Future.failed(cswRegistrationListingFailed))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val error = locationServiceUtil.listAkkaLocationsBy(subsystem, SequenceComponent).leftValue
+      val error = locationServiceUtil.listPekkoLocationsBy(subsystem, SequenceComponent).leftValue
 
       error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
 
-  "listSequencersAkkaLocationBy obsMode" must {
+  "listSequencersPekkoLocationBy obsMode" must {
     "list all sequencers locations which match given obsMode" in {
       val testUri = new URI("test-uri")
 
       val darkNightSequencerLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "DarkNight"), Sequencer)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "DarkNight.variation1"), Sequencer)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "DarkNight"), Sequencer)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "DarkNight.variation1"), Sequencer)), testUri, Metadata.empty)
       )
 
       val sequencerLocations =
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(IRIS, "ClearSkies.variation2"), Sequencer)),
+        PekkoLocation(
+          PekkoConnection(ComponentId(Prefix(IRIS, "ClearSkies.variation2"), Sequencer)),
           testUri,
           Metadata.empty
         ) :: darkNightSequencerLocations
@@ -208,7 +209,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
       when(locationService.list(Sequencer)).thenReturn(Future.successful(sequencerLocations))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceUtil.listSequencersAkkaLocationsBy("DarkNight").rightValue
+      val actualLocations = locationServiceUtil.listSequencersPekkoLocationsBy("DarkNight").rightValue
 
       actualLocations should ===(darkNightSequencerLocations)
     }
@@ -217,40 +218,40 @@ class LocationServiceUtilTest extends BaseTestSuite {
       val testUri = new URI("test-uri")
 
       val sequencerLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "ClearSkies"), Sequencer)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ClearSkies"), Sequencer)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "ClearSkies"), Sequencer)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "ClearSkies"), Sequencer)), testUri, Metadata.empty)
       )
 
       when(locationService.list(Sequencer)).thenReturn(Future.successful(sequencerLocations))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceUtil.listSequencersAkkaLocationsBy("DarkNight").rightValue
+      val actualLocations = locationServiceUtil.listSequencersPekkoLocationsBy("DarkNight").rightValue
 
-      actualLocations should ===(List.empty[AkkaLocation])
+      actualLocations should ===(List.empty[PekkoLocation])
     }
 
     "return a RegistrationListingFailed when location service call throws exception" in {
       when(locationService.list(Sequencer)).thenReturn(Future.failed(cswRegistrationListingFailed))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val error = locationServiceUtil.listSequencersAkkaLocationsBy("DarkNight").leftValue
+      val error = locationServiceUtil.listSequencersPekkoLocationsBy("DarkNight").leftValue
 
       error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
 
-  "listAkkaLocationsBy componentName and componentType" must {
+  "listPekkoLocationsBy componentName and componentType" must {
     "list all locations which match given componentType and componentName" in {
       val testUri = new URI("test-uri")
 
       val darkNightSequencerLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "DarkNight"), Sequencer)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "DarkNight"), Sequencer)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "DarkNight"), Sequencer)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "DarkNight"), Sequencer)), testUri, Metadata.empty)
       )
 
       val sequencerLocations =
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(IRIS, "ClearSkies"), Sequencer)),
+        PekkoLocation(
+          PekkoConnection(ComponentId(Prefix(IRIS, "ClearSkies"), Sequencer)),
           testUri,
           Metadata.empty
         ) :: darkNightSequencerLocations
@@ -258,7 +259,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
       when(locationService.list(Sequencer)).thenReturn(Future.successful(sequencerLocations))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceUtil.listAkkaLocationsBy("DarkNight", Sequencer).rightValue
+      val actualLocations = locationServiceUtil.listPekkoLocationsBy("DarkNight", Sequencer).rightValue
 
       actualLocations should ===(darkNightSequencerLocations)
     }
@@ -267,23 +268,23 @@ class LocationServiceUtilTest extends BaseTestSuite {
       val testUri = new URI("test-uri")
 
       val sequencerLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "ClearSkies"), Sequencer)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ClearSkies"), Sequencer)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "ClearSkies"), Sequencer)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "ClearSkies"), Sequencer)), testUri, Metadata.empty)
       )
 
       when(locationService.list(Sequencer)).thenReturn(Future.successful(sequencerLocations))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceUtil.listAkkaLocationsBy("DarkNight", Sequencer).rightValue
+      val actualLocations = locationServiceUtil.listPekkoLocationsBy("DarkNight", Sequencer).rightValue
 
-      actualLocations should ===(List.empty[AkkaLocation])
+      actualLocations should ===(List.empty[PekkoLocation])
     }
 
     "return a RegistrationListingFailed when location service call throws exception" in {
       when(locationService.list(Sequencer)).thenReturn(Future.failed(cswRegistrationListingFailed))
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
-      val error = locationServiceUtil.listAkkaLocationsBy("DarkNight", Sequencer).leftValue
+      val error = locationServiceUtil.listPekkoLocationsBy("DarkNight", Sequencer).leftValue
 
       error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
@@ -293,10 +294,10 @@ class LocationServiceUtilTest extends BaseTestSuite {
     "return a location which matches a given component name and type | ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "DarkNight"), Sequencer)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "DarkNight"), Sequencer)), testUri, Metadata.empty)
       val ocsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_1"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "tcs_1"), SequenceComponent)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "ocs_1"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "tcs_1"), SequenceComponent)), testUri, Metadata.empty)
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
       when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
@@ -309,10 +310,10 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
     "return an LocationNotFound when no matching component name and type is found | ESW-215" in {
       val testUri     = new URI("test-uri")
-      val tcsLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "DarkNight"), Sequencer)), testUri, Metadata.empty)
+      val tcsLocation = PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "DarkNight"), Sequencer)), testUri, Metadata.empty)
       val ocsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)), testUri, Metadata.empty),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)), testUri, Metadata.empty),
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri, Metadata.empty)
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
       when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
@@ -340,28 +341,28 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
   "resolve" must {
     "return a location which matches a given connection | ESW-119" in {
-      when(locationService.resolve(akkaConnection, 10.millis))
-        .thenReturn(Future.successful(Some(akkaLocation)))
+      when(locationService.resolve(pekkoConnection, 10.millis))
+        .thenReturn(Future.successful(Some(pekkoLocation)))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
       val actualLocations =
-        locationServiceUtil.resolve(akkaConnection, 10.millis).rightValue
+        locationServiceUtil.resolve(pekkoConnection, 10.millis).rightValue
 
-      actualLocations should ===(akkaLocation)
+      actualLocations should ===(pekkoLocation)
     }
 
     "return a LocationNotFound when no matching connection is found | ESW-119" in {
-      when(locationService.resolve(akkaConnection, 200.millis))
+      when(locationService.resolve(pekkoConnection, 200.millis))
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(prefix, 200.millis).leftValue shouldBe
-      LocationNotFound(s"Could not resolve location matching connection: $akkaConnection")
+      LocationNotFound(s"Could not resolve location matching connection: $pekkoConnection")
     }
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
-      when(locationService.resolve(akkaConnection, 200.millis))
+      when(locationService.resolve(pekkoConnection, 200.millis))
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
@@ -372,59 +373,59 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
   "find" must {
     "return a location which matches a given connection | ESW-176" in {
-      when(locationService.find(akkaConnection))
-        .thenReturn(Future.successful(Some(akkaLocation)))
+      when(locationService.find(pekkoConnection))
+        .thenReturn(Future.successful(Some(pekkoLocation)))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
 
       val actualLocations =
-        locationServiceUtil.find(akkaConnection).rightValue
+        locationServiceUtil.find(pekkoConnection).rightValue
 
-      actualLocations should ===(akkaLocation)
-      verify(locationService).find(akkaConnection)
+      actualLocations should ===(pekkoLocation)
+      verify(locationService).find(pekkoConnection)
     }
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-176" in {
-      when(locationService.find(akkaConnection))
+      when(locationService.find(pekkoConnection))
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.find(akkaConnection).leftValue shouldBe
+      locationServiceUtil.find(pekkoConnection).leftValue shouldBe
       RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
 
     "return a LocationNotFound when location find call returns None | ESW-176" in {
-      when(locationService.find(akkaConnection))
+      when(locationService.find(pekkoConnection))
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.find(akkaConnection).leftValue shouldBe
-      LocationNotFound(s"Could not find location matching connection: $akkaConnection")
+      locationServiceUtil.find(pekkoConnection).leftValue shouldBe
+      LocationNotFound(s"Could not find location matching connection: $pekkoConnection")
     }
   }
 
   "resolveSequencer" must {
     "return a location which matches a given subsystem and observing mode | ESW-119" in {
-      when(locationService.resolve(akkaConnection, within = 10.millis))
-        .thenReturn(Future.successful(Some(akkaLocation)))
+      when(locationService.resolve(pekkoConnection, within = 10.millis))
+        .thenReturn(Future.successful(Some(pekkoLocation)))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.resolveSequencer(prefix, within = 10.millis).rightValue shouldBe akkaLocation
+      locationServiceUtil.resolveSequencer(prefix, within = 10.millis).rightValue shouldBe pekkoLocation
 
-      verify(locationService).resolve(akkaConnection, 10.millis)
+      verify(locationService).resolve(pekkoConnection, 10.millis)
     }
 
     "return a LocationNotFound when no matching subsystem and observing mode is found | ESW-119" in {
-      when(locationService.resolve(akkaConnection, 200.millis))
+      when(locationService.resolve(pekkoConnection, 200.millis))
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(prefix, 200.millis).leftValue shouldBe
-      LocationNotFound(s"Could not resolve location matching connection: $akkaConnection")
+      LocationNotFound(s"Could not resolve location matching connection: $pekkoConnection")
     }
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
-      when(locationService.resolve(akkaConnection, 200.millis))
+      when(locationService.resolve(pekkoConnection, 200.millis))
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
@@ -435,37 +436,37 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
   "findSequencer" must {
     "return a location which matches a given subsystem and observing mode | ESW-119" in {
-      when(locationService.find(akkaConnection))
-        .thenReturn(Future.successful(Some(akkaLocation)))
+      when(locationService.find(pekkoConnection))
+        .thenReturn(Future.successful(Some(pekkoLocation)))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.findSequencer(akkaConnection.prefix).rightValue shouldBe akkaLocation
+      locationServiceUtil.findSequencer(pekkoConnection.prefix).rightValue shouldBe pekkoLocation
 
-      verify(locationService).find(akkaConnection)
+      verify(locationService).find(pekkoConnection)
     }
 
     "return a LocationNotFound when no matching subsystem and observing mode is found | ESW-119" in {
-      when(locationService.find(akkaConnection))
+      when(locationService.find(pekkoConnection))
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.findSequencer(akkaConnection.prefix).leftValue should ===(
-        LocationNotFound(s"Could not find location matching connection: $akkaConnection")
+      locationServiceUtil.findSequencer(pekkoConnection.prefix).leftValue should ===(
+        LocationNotFound(s"Could not find location matching connection: $pekkoConnection")
       )
 
-      verify(locationService).find(akkaConnection)
+      verify(locationService).find(pekkoConnection)
     }
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
-      when(locationService.find(akkaConnection))
+      when(locationService.find(pekkoConnection))
         .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
-      locationServiceUtil.findSequencer(akkaConnection.prefix).leftValue should ===(
+      locationServiceUtil.findSequencer(pekkoConnection.prefix).leftValue should ===(
         RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
       )
 
-      verify(locationService).find(akkaConnection)
+      verify(locationService).find(pekkoConnection)
     }
   }
 
@@ -474,8 +475,8 @@ class LocationServiceUtilTest extends BaseTestSuite {
     val uri      = new URI(s"http://$hostname:76543/iris")
 
     "return a machine location which matches the given hostname | ESW-480" in {
-      val location1 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_1"), Machine)), uri, Metadata.empty)
-      val location2 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_2"), Machine)), uri, Metadata.empty)
+      val location1 = PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "ocs_1"), Machine)), uri, Metadata.empty)
+      val location2 = PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "ocs_2"), Machine)), uri, Metadata.empty)
 
       when(locationService.list(hostname)).thenReturn(Future.successful(List(location1, location2)))
 

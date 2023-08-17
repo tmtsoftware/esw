@@ -1,16 +1,16 @@
 package esw.sm.api.actor.messages
 
-import akka.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.ActorRef
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.{ObsMode, Variation}
-import esw.sm.api.codecs.SmAkkaSerializable
+import esw.sm.api.codecs.SmPekkoSerializable
 import esw.sm.api.models.{ProvisionConfig, SequenceManagerState}
 import esw.sm.api.protocol.*
 
 // Messages for the sequence manager actor
 sealed trait SequenceManagerMsg
 
-sealed trait SequenceManagerRemoteMsg extends SequenceManagerMsg with SmAkkaSerializable
+sealed trait SequenceManagerRemoteMsg extends SequenceManagerMsg with SmPekkoSerializable
 
 sealed trait UnhandleableSequenceManagerMsg extends SequenceManagerRemoteMsg {
   def replyTo: ActorRef[Unhandled]

@@ -1,8 +1,8 @@
 package esw.agent.service.impl
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{PekkoLocation, ComponentId}
 import esw.agent.service.api.models.AgentStatusResponse.LocationServiceError
 import esw.agent.service.api.models.{AgentStatus, AgentStatusResponse, SequenceComponentStatus}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
@@ -38,7 +38,7 @@ class AgentStatusUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSy
       )
 
   // returns map of agent and seq comps running on agent as well as list of seq comps without agent information available
-  private def groupByAgentWithOrphans(seqComps: List[AkkaLocation]) = {
+  private def groupByAgentWithOrphans(seqComps: List[PekkoLocation]) = {
     val (agentMap, orphans) = seqComps.partitionMap { loc =>
       loc.metadata.getAgentPrefix match {
         case Some(agentPrefix) => Left(ComponentId(agentPrefix, Machine) -> loc)
@@ -48,24 +48,24 @@ class AgentStatusUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSy
     (agentMap.groupMap(_._1)(_._2), orphans)
   }
 
-  private def getAndAddAgentsWithoutSeqComp(agents: Map[ComponentId, List[AkkaLocation]]) =
+  private def getAndAddAgentsWithoutSeqComp(agents: Map[ComponentId, List[PekkoLocation]]) =
     getAllAgentIds.mapRight(agents.addKeysIfNotExist(_, List.empty))
-  private def getAllAgents             = locationServiceUtil.listAkkaLocationsBy(Machine)
+  private def getAllAgents             = locationServiceUtil.listPekkoLocationsBy(Machine)
   private def getAllAgentIds           = getAllAgents.mapRight(_.map(_.connection.componentId))
-  private def getAllSequenceComponents = locationServiceUtil.listAkkaLocationsBy(SequenceComponent)
-  private def getAllSequencers         = locationServiceUtil.listAkkaLocationsBy(Sequencer)
+  private def getAllSequenceComponents = locationServiceUtil.listPekkoLocationsBy(SequenceComponent)
+  private def getAllSequencers         = locationServiceUtil.listPekkoLocationsBy(Sequencer)
 
   private def getAgentStatus(
-      agents: Map[ComponentId, List[AkkaLocation]],
-      sequencers: List[AkkaLocation]
+      agents: Map[ComponentId, List[PekkoLocation]],
+      sequencers: List[PekkoLocation]
   ): List[AgentStatus] =
     agents.toList.map { case (agentId, seqCompLocations) =>
       AgentStatus(agentId, getSeqCompsStatus(seqCompLocations, sequencers))
     }
 
   private def getSeqCompsStatus(
-      seqComps: List[AkkaLocation],
-      sequencers: List[AkkaLocation]
+      seqComps: List[PekkoLocation],
+      sequencers: List[PekkoLocation]
   ): List[SequenceComponentStatus] =
     seqComps.map(seqComp =>
       SequenceComponentStatus(

@@ -1,10 +1,10 @@
 package esw.examples
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.scaladsl.Source
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.stream.scaladsl.Source
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
+import csw.location.api.models.Connection.{PekkoConnection, HttpConnection}
+import csw.location.api.models.{PekkoLocation, ComponentId, HttpLocation}
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -24,16 +24,16 @@ import scala.concurrent.duration.DurationInt
 
 object SequencerAPIExample extends App {
 
-  // #instantiate-akka-interface
+  // #instantiate-pekko-interface
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "example")
-  private val sequencerAkkaConnection: AkkaConnection = AkkaConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer))
-  private val locationService: LocationService        = HttpLocationServiceFactory.makeLocalClient(actorSystem)
+  private val sequencerPekkoConnection: PekkoConnection = PekkoConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer))
+  private val locationService: LocationService          = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
-  private val sequencerAkkaLocation: AkkaLocation =
-    Await.result(locationService.resolve(sequencerAkkaConnection, 10.seconds), 10.seconds).get
+  private val sequencerPekkoLocation: PekkoLocation =
+    Await.result(locationService.resolve(sequencerPekkoConnection, 10.seconds), 10.seconds).get
 
-  private val sequencer: SequencerApi = SequencerApiFactory.make(sequencerAkkaLocation)
-  // #instantiate-akka-interface
+  private val sequencer: SequencerApi = SequencerApiFactory.make(sequencerPekkoLocation)
+  // #instantiate-pekko-interface
 
   // #instantiate-http-direct-interface
   private val sequencerHttpConnection: HttpConnection = HttpConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer))

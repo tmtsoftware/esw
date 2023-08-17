@@ -1,6 +1,6 @@
 package esw.ocs.dsl.highlevel
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.IRegistrationResult
 import csw.location.api.models.*

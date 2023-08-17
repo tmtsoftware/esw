@@ -1,7 +1,7 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.SpawnProtocol
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.SpawnProtocol
 import com.typesafe.config.Config
 import csw.config.api.javadsl.IConfigClientService
 import csw.config.models.ConfigId

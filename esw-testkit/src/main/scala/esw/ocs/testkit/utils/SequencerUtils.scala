@@ -1,9 +1,9 @@
 package esw.ocs.testkit.utils
 
-import akka.actor.typed.ActorRef
-import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
+import org.apache.pekko.actor.typed.ActorRef
+import csw.command.client.extensions.PekkoLocationExt.RichPekkoLocation
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.location.api.models.{AkkaLocation, ComponentType}
+import csw.location.api.models.{PekkoLocation, ComponentType}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory, SequencerImpl}
@@ -18,7 +18,7 @@ import scala.collection.mutable
 
 trait SequencerUtils extends LocationUtils {
 
-  private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
+  private val sequenceComponentLocations: mutable.Buffer[PekkoLocation] = mutable.Buffer.empty
 
   def shutdownAllSequencers(): Unit = {
     sequenceComponentLocations.foreach(new SequenceComponentImpl(_).unloadScript())
@@ -36,7 +36,7 @@ trait SequencerUtils extends LocationUtils {
       obsMode: ObsMode,
       variation: Option[Variation] = None,
       agentPrefix: Option[Prefix] = None
-  ): AkkaLocation =
+  ): PekkoLocation =
     loadScript(spawnSequenceComponent(subsystem, None, agentPrefix), subsystem, obsMode, variation)
 
   def spawnSequencerInSimulation(
@@ -44,21 +44,21 @@ trait SequencerUtils extends LocationUtils {
       obsMode: ObsMode,
       variation: Option[Variation] = None,
       agentPrefix: Option[Prefix] = None
-  ): AkkaLocation =
+  ): PekkoLocation =
     loadScript(spawnSequenceComponentInSimulation(subsystem, None, agentPrefix), subsystem, obsMode, variation)
 
   def sequencerClient(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation] = None): SequencerApi = {
     SequencerApiFactory.make(resolveHTTPLocation(Variation.prefix(subsystem, obsMode, variation), ComponentType.Sequencer))
   }
 
-  def spawnSequenceComponent(subsystem: Subsystem, name: Option[String], agentPrefix: Option[Prefix] = None): AkkaLocation =
+  def spawnSequenceComponent(subsystem: Subsystem, name: Option[String], agentPrefix: Option[Prefix] = None): PekkoLocation =
     spawnSequenceComponent(subsystem, name, agentPrefix, new SequencerWiring(_, _).sequencerServer)
 
   def spawnSequenceComponentInSimulation(
       subsystem: Subsystem,
       name: Option[String],
       agentPrefix: Option[Prefix] = None
-  ): AkkaLocation =
+  ): PekkoLocation =
     spawnSequenceComponent(subsystem, name, agentPrefix, new SimulationSequencerWiring(_, _).sequencerServer)
 
   private def spawnSequenceComponent(
@@ -76,11 +76,11 @@ trait SequencerUtils extends LocationUtils {
   }
 
   def loadScript(
-      seqCompLocation: AkkaLocation,
+      seqCompLocation: PekkoLocation,
       subsystem: Subsystem,
       obsMode: ObsMode,
       variation: Option[Variation] = None
-  ): AkkaLocation =
+  ): PekkoLocation =
     new SequenceComponentImpl(seqCompLocation).loadScript(subsystem, obsMode, variation).futureValue match {
       case SequencerLocation(location) => location
       case error: ScriptError          => throw new RuntimeException(s"failed to load script: ${error.msg}")

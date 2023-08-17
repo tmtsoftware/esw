@@ -4,10 +4,10 @@ import java.util
 
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.akka.app.ext.ProcessExt.ProcessOps
+import esw.agent.pekko.app.ext.ProcessExt.ProcessOps
 import esw.ocs.testkit.EswTestKit
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import os.{Path, up}
@@ -42,7 +42,7 @@ class SequencerScriptLauncherTest extends EswTestKit {
     val prefix         = Prefix(ESW, className)
     val resolveTimeout = 20.seconds // this timeout includes time taken by the process to start
     val locationF =
-      locationService.resolve(AkkaConnection(ComponentId(prefix, Sequencer)), resolveTimeout)
+      locationService.resolve(PekkoConnection(ComponentId(prefix, Sequencer)), resolveTimeout)
     locationF.futureValue(Timeout(resolveTimeout)).value.prefix shouldBe prefix
   }
 

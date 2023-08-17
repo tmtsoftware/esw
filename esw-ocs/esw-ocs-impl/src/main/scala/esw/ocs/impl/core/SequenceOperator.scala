@@ -1,8 +1,8 @@
 package esw.ocs.impl.core
 
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.util.Timeout
 import esw.constants.SequencerTimeouts
 import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.models.Step

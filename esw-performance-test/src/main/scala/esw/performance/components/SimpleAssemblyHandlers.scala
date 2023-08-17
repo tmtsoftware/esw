@@ -1,13 +1,13 @@
 package esw.performance.components
 
-import akka.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, TrackingEvent}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, TrackingEvent}
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
@@ -22,12 +22,12 @@ class SimpleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   import cswCtx.*
   private val log = loggerFactory.getLogger
 
-  private val connection: AkkaConnection = AkkaConnection(ComponentId(Prefix("CSW.sampleHcd"), ComponentType.HCD))
-  private var akkaLocation: AkkaLocation = _
+  private val connection: PekkoConnection  = PekkoConnection(ComponentId(Prefix("CSW.sampleHcd"), ComponentType.HCD))
+  private var pekkoLocation: PekkoLocation = _
 
   override def initialize(): Unit = {
     log.info("Initializing sampleAssembly...")
-    akkaLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
+    pekkoLocation = Await.result(locationService.resolve(connection, 10.seconds), 10.seconds).get
   }
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = {}
@@ -35,7 +35,7 @@ class SimpleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   override def validateCommand(runId: Id, controlCommand: ControlCommand): ValidateCommandResponse = Accepted(runId)
 
   override def onSubmit(runId: Id, controlCommand: ControlCommand): SubmitResponse = {
-    val hcdComponent: CommandService = CommandServiceFactory.make(akkaLocation)(ctx.system)
+    val hcdComponent: CommandService = CommandServiceFactory.make(pekkoLocation)(ctx.system)
     val hcdResponse                  = hcdComponent.submitAndWait(controlCommand)(60.seconds)
     Await.result(hcdResponse, 60.seconds)
   }

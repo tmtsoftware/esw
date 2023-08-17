@@ -1,10 +1,10 @@
 package esw.sm.impl.core
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.*
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Metadata}
+import csw.location.api.models.Connection.{PekkoConnection, HttpConnection}
+import csw.location.api.models.{PekkoLocation, ComponentId, HttpLocation, Metadata}
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
@@ -116,7 +116,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "be able to handle next messages if the previous Configure call times-out due to downstream error | ESW-473" in {
       val exceptionReason = "Ask timed out after [7000] ms"
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(darkNight, darkNightVariationIds))
         .thenReturn(failedFuture(exceptionReason, delay = 0.seconds))
 
@@ -128,7 +128,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       assertState(Idle)
 
       configureProbe.expectMessage(FailedResponse(s"Sequence Manager Operation(Configure) failed due to: $exceptionReason"))
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
       verify(sequencerUtil).startSequencers(darkNight, darkNightVariationIds)
     }
 
@@ -262,7 +262,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "transition sm from Idle -> Processing -> Idle state and return location of master sequencer | ESW-164, ESW-178, ESW-342" in {
       val componentId    = ComponentId(Prefix(ESW, darkNight.name), Sequencer)
       val configResponse = Success(componentId)
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(darkNight, darkNightVariationIds))
         .thenReturn(Future.successful(configResponse))
       val configureProbe = TestProbe[ConfigureResponse]()
@@ -274,44 +274,44 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       assertState(Idle)
 
       configureProbe.expectMessage(configResponse)
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
       verify(sequencerUtil).startSequencers(darkNight, darkNightVariationIds)
     }
 
     "return LocationServiceError if location service fails to return running observation mode | ESW-164, ESW-178" in {
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("Sequencer"))))
 
       val probe = TestProbe[ConfigureResponse]()
       smRef ! Configure(darkNight, probe.ref)
 
       probe.expectMessage(LocationServiceError("Sequencer"))
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
     }
 
     "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-169, ESW-168, ESW-170, ESW-179, ESW-178" in {
       // this simulates that ClearSkies observation is running
-      val location = akkaLocation(ComponentId(Prefix(ESW, clearSkies.name), Sequencer))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
+      val location = pekkoLocation(ComponentId(Prefix(ESW, clearSkies.name), Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
       val probe = TestProbe[ConfigureResponse]()
 
       // r2 is a conflicting resource between DarkNight and ClearSkies observations
       smRef ! Configure(darkNight, probe.ref)
 
       probe.expectMessage(ConflictingResourcesWithRunningObsMode(Set(clearSkies)))
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
       verify(sequencerUtil, times(0)).startSequencers(darkNight, darkNightVariationIds)
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164, ESW-178" in {
-      val location = akkaLocation(ComponentId(Prefix(ESW, randomObsMode.name), Sequencer))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
+      val location = pekkoLocation(ComponentId(Prefix(ESW, randomObsMode.name), Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
       val probe = TestProbe[ConfigureResponse]()
 
       smRef ! Configure(randomObsMode, probe.ref)
 
       probe.expectMessage(ConfigurationMissing(randomObsMode))
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
     }
   }
 
@@ -631,7 +631,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "Processing -> Unhandled" must {
     "return Unhandled if msg is unhandled in processing state | ESW-349, ESW-561" in {
       // hold configure completion by delay of 60 seconds. So SM will remain in processing state
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(60.seconds, Right(List.empty)))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(future(60.seconds, Right(List.empty)))
 
       val configureProbe  = TestProbe[ConfigureResponse]()
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2, Prefix(IRIS, "primary") -> 2)
@@ -662,7 +662,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "GetObsModesDetails" must {
     "return LocationServiceError if location service fails to return running observation mode | ESW-466" in {
       val errorMessage = "Sequencer not found"
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Left(RegistrationListingFailed(errorMessage))))
 
       val probe = TestProbe[ObsModesDetailsResponse]()
@@ -670,11 +670,11 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       smRef ! GetObsModesDetails(probe.ref)
 
       probe.expectMessage(LocationServiceError(errorMessage))
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
     }
 
     "return set of Observer modes that are all configurable if location service returns empty list | ESW-466, ESW-561" in {
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Right(List())))
 
       val idleSeqComps = List.empty
@@ -697,12 +697,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         )
       )
       probe.expectMessage(expectedMessage)
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
     }
 
     "return set of Observation modes with their respective statuses | ESW-466" in {
-      val location = akkaLocation(ComponentId(Prefix(ESW, clearSkies.name), Sequencer))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
+      val location = pekkoLocation(ComponentId(Prefix(ESW, clearSkies.name), Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(location))))
 
       val idleSeqComps = List.empty
       when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
@@ -727,12 +727,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         )
       )
       obsModesDetailsResponseProbe.expectMessage(expectedMessage)
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
 
     }
 
     "return set of Observation modes with non-configurable when sequence component are  missing | ESW-529, ESW-561" in {
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
 
       val idleSeqComps = List.empty
       when(sequenceComponentUtil.getAllIdleSequenceComponents).thenReturn(Future.successful(Right(idleSeqComps)))
@@ -760,7 +760,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         )
       )
       obsModesDetailsResponseProbe.expectMessage(expectedMessage)
-      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
+      verify(locationServiceUtil).listPekkoLocationsBy(ESW, Sequencer)
     }
   }
 
@@ -769,7 +769,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "return all available resources when no obsMode is running | ESW-467 " in {
       val getResponseProbe = TestProbe[ResourcesStatusResponse]()
 
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
 
       val expectedResources =
         Set(
@@ -786,8 +786,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "return resources in use when obsMode is configured | ESW-467 " in {
       val getResponseProbe = TestProbe[ResourcesStatusResponse]()
-      val locations        = List(akkaLocation(ComponentId(Prefix(ESW, darkNight.name), Sequencer)))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(locations)))
+      val locations        = List(pekkoLocation(ComponentId(Prefix(ESW, darkNight.name), Sequencer)))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(locations)))
 
       val expectedResources =
         Set(
@@ -803,7 +803,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return Failed if RegistrationListingFailed gives error | ESW-467" in {
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("error"))))
 
       val getResponseProbe = TestProbe[ResourcesStatusResponse]()
@@ -839,6 +839,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  private def akkaLocation(componentId: ComponentId) =
-    AkkaLocation(AkkaConnection(componentId), URI.create("uri"), Metadata.empty)
+  private def pekkoLocation(componentId: ComponentId) =
+    PekkoLocation(PekkoConnection(componentId), URI.create("uri"), Metadata.empty)
 }

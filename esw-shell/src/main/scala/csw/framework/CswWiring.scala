@@ -9,7 +9,7 @@ import esw.commons.extensions.FutureExt.FutureOps
 
 class CswWiring {
   lazy val wiring = new FrameworkWiring
-  import wiring._
+  import wiring.*
 
   private implicit lazy val cswFrameworkSystem: CswFrameworkSystem = new CswFrameworkSystem(actorSystem)
 

@@ -1,10 +1,10 @@
 package esw.sm.impl.utils
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Machine
-import csw.location.api.models.Connection.AkkaConnection
-import esw.agent.akka.client.AgentClient
+import csw.location.api.models.Connection.PekkoConnection
+import esw.agent.pekko.client.AgentClient
 import esw.agent.service.api.models.{Failed, Spawned}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
@@ -32,7 +32,7 @@ class AgentUtil(
       .flatMapToAdt(provisionOn(_, provisionConfig), identity)
 
   // gets all the running agent from location service
-  private def getAllAgents = locationServiceUtil.listAkkaLocationsBy(Machine)
+  private def getAllAgents = locationServiceUtil.listPekkoLocationsBy(Machine)
 
   /*
    * provisions/starts all the sequence component on the required agent as mentioned in provision config
@@ -92,7 +92,7 @@ class AgentUtil(
    */
   private[utils] def getAndMakeAgentClient(agentPrefix: AgentPrefix): Future[Either[LocationServiceError, AgentClient]] =
     locationServiceUtil
-      .find(AkkaConnection(ComponentId(agentPrefix, Machine)))
+      .find(PekkoConnection(ComponentId(agentPrefix, Machine)))
       .mapRight(location => makeAgentClient(location))
       .mapLeft(error => LocationServiceError(error.msg))
 

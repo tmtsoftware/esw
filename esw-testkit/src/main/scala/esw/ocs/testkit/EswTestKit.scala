@@ -1,14 +1,14 @@
 package esw.ocs.testkit
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.location.api.scaladsl.LocationService
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.FrameworkTestKit
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, MachineAgent}
-import esw.ocs.testkit.utils._
+import esw.ocs.testkit.utils.*
 
 abstract class EswTestKit(services: Service*)
     extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)

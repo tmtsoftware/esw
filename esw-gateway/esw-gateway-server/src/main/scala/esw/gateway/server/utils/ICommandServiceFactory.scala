@@ -1,6 +1,6 @@
 package esw.gateway.server.utils
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.location.api.models.Location

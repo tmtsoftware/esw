@@ -27,8 +27,8 @@ object Common {
     Seq(
       organization     := "com.github.tmtsoftware.esw",
       organizationName := "TMT Org",
-      dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
-      dependencyOverrides += Libs.`slf4j-api`,
+//      dependencyOverrides += PekkoHttp.`pekko-http-spray-json`,
+//      dependencyOverrides += Libs.`slf4j-api`,
       scalaVersion := EswKeys.scalaVersion,
       scmInfo      := Some(ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")),
       // ======== sbt-docs Settings =========
@@ -36,6 +36,8 @@ object Common {
       docsParentDir  := EswKeys.projectName,
       gitCurrentRepo := "https://github.com/tmtsoftware/esw",
       // ================================
+      resolvers += "Apache Pekko Staging".at("https://repository.apache.org/content/groups/staging"),
+//      resolvers += "Apache Pekko Snapshots".at("https://repository.apache.org/content/groups/snapshots"),
       resolvers += "jitpack" at "https://jitpack.io",
       resolvers += Resolver.mavenLocal, // required to resolve kotlin `examples` deps published locally
       autoCompilerPlugins := true,
@@ -45,15 +47,6 @@ object Common {
         "-feature",
         "-unchecked",
         "-deprecation",
-        // -W Options
-        "-Wdead-code",
-        if (enableFatalWarnings) "-Wconf:any:error" else "-Wconf:any:warning-verbose",
-        // -X Options
-        "-Xlint:_,-missing-interpolator",
-        "-Xsource:3",
-        "-Xcheckinit",
-        "-Xasync"
-        // -Y options are rarely needed, please look for -W equivalents
       ),
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
       Test / testOptions ++= reporterOptions,
@@ -65,7 +58,7 @@ object Common {
       fork        := true,
       javaOptions += "-Xmx2G",
       Test / fork := false,
-      Test / javaOptions ++= Seq("-Dakka.actor.serialize-messages=on"),
+      Test / javaOptions ++= Seq("-Dpekko.actor.serialize-messages=on"),
       cancelable in Global    := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
       scalafmtOnCompile       := true,
       unidocGenjavadocVersion := "0.18",

@@ -1,6 +1,6 @@
 package esw.ocs.app
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
 import csw.event.client.EventServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue

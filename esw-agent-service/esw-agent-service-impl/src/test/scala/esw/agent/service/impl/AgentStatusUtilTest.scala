@@ -1,9 +1,9 @@
 package esw.agent.service.impl
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.agent.service.api.models.AgentStatusResponse.{LocationServiceError, Success}
@@ -16,7 +16,7 @@ import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.Mockito.{times, verify, when}
 
 import java.net.URI
-import scala.jdk.CollectionConverters.CollectionHasAsScala
+import scala.jdk.CollectionConverters.*
 
 class AgentStatusUtilTest extends BaseTestSuite {
   private implicit val testSystem: ActorSystem[_] = ActorSystem(SpawnProtocol(), "test")
@@ -36,7 +36,7 @@ class AgentStatusUtilTest extends BaseTestSuite {
       //            eswSeqComp2 => None
       val eswMachinePrefix = Prefix(ESW, "machine1")
       val eswMachine       = ComponentId(eswMachinePrefix, Machine)
-      val eswMachineLoc    = AkkaLocation(AkkaConnection(eswMachine), URI.create("uri"), Metadata.empty)
+      val eswMachineLoc    = PekkoLocation(PekkoConnection(eswMachine), URI.create("uri"), Metadata.empty)
 
       val seqComp1Prefix = Prefix(ESW, "primary")
       val eswSeqComp1    = ComponentId(seqComp1Prefix, SequenceComponent)
@@ -68,13 +68,13 @@ class AgentStatusUtilTest extends BaseTestSuite {
       val tcsMachine       = ComponentId(tcsMachinePrefix, Machine)
       val tcsMachineLoc    = seqCompLocationWithAgentPrefix(tcsMachine, None)
 
-      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
+      when(locationServiceUtil.listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(List(eswMachineLoc, tcsMachineLoc)))
 
-      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
+      when(locationServiceUtil.listPekkoLocationsBy(argEq(SequenceComponent), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(List(eswSeqCompLoc1, eswSeqCompLoc2, irisSeqCompLoc, tcsSeqCompLoc)))
 
-      when(locationServiceUtil.listAkkaLocationsBy(argEq(Sequencer), any[AkkaLocation => Boolean]))
+      when(locationServiceUtil.listPekkoLocationsBy(argEq(Sequencer), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(List(eswSequencer1, tcsSequencer1)))
 
       val expectedAgentStatus = List(
@@ -87,7 +87,7 @@ class AgentStatusUtilTest extends BaseTestSuite {
       status.seqCompsWithoutAgent.toSet should ===(List(irisSeqCompStatus, tcsSeqCompStatus).toSet)
 
       val captor: ArgumentCaptor[ComponentType] = ArgumentCaptor.forClass(classOf[ComponentType])
-      verify(locationServiceUtil, times(3)).listAkkaLocationsBy(captor.capture(), any[AkkaLocation => Boolean])
+      verify(locationServiceUtil, times(3)).listPekkoLocationsBy(captor.capture(), any[PekkoLocation => Boolean])
 
       val values: List[ComponentType] = captor.getAllValues.asScala.toList
       values should ===(List(SequenceComponent, Machine, Sequencer))
@@ -97,25 +97,25 @@ class AgentStatusUtilTest extends BaseTestSuite {
       val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
       val agentStatusUtil: AgentStatusUtil         = new AgentStatusUtil(locationServiceUtil)
 
-      when(locationServiceUtil.listAkkaLocationsBy(argEq(SequenceComponent), any[AkkaLocation => Boolean]))
+      when(locationServiceUtil.listPekkoLocationsBy(argEq(SequenceComponent), any[PekkoLocation => Boolean]))
         .thenReturn(futureLeft(RegistrationListingFailed("error")))
       agentStatusUtil.getAllAgentStatus.futureValue should ===(LocationServiceError("error"))
 
-      verify(locationServiceUtil).listAkkaLocationsBy(SequenceComponent)
+      verify(locationServiceUtil).listPekkoLocationsBy(SequenceComponent)
     }
 
   }
 
   private def seqCompLocationWithAgentPrefix(componentId: ComponentId, agentPrefix: Option[Prefix]) =
-    AkkaLocation(
-      AkkaConnection(componentId),
+    PekkoLocation(
+      PekkoConnection(componentId),
       URI.create("uri"),
       agentPrefix.fold(Metadata.empty)(p => Metadata().withAgentPrefix(p))
     )
 
   private def sequencerLocationWithSeqCompPrefix(componentId: ComponentId, seqCompPrefix: Option[Prefix]) =
-    AkkaLocation(
-      AkkaConnection(componentId),
+    PekkoLocation(
+      PekkoConnection(componentId),
       URI.create("uri"),
       seqCompPrefix.fold(Metadata.empty)(p => Metadata().withSequenceComponentPrefix(p))
     )

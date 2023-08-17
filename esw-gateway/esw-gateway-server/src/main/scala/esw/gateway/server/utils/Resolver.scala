@@ -1,6 +1,6 @@
 package esw.gateway.server.utils
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.models.ComponentId
 import csw.location.api.scaladsl.LocationService
@@ -13,7 +13,7 @@ import scala.concurrent.Future
 /**
  * This class provides functionality to resolve hcd/assembly/container/sequencer using component factory.
  * @param locationService - an instance of locationService
- * @param typedSystem - an instance of akka actor typed system
+ * @param typedSystem - an instance of pekko actor typed system
  */
 class Resolver(locationService: LocationService)(implicit typedSystem: ActorSystem[_]) {
   import typedSystem.executionContext

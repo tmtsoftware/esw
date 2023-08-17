@@ -9,7 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models.{AgentStatusResponse, KillResponse, SpawnContainersResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentServiceRequest
-import esw.agent.service.api.protocol.AgentServiceRequest._
+import esw.agent.service.api.protocol.AgentServiceRequest.*
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport

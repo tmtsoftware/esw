@@ -1,9 +1,9 @@
 package esw.http.core.wiring
 
-import akka.Done
-import akka.actor.CoordinatedShutdown
-import akka.actor.CoordinatedShutdown.Reason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.CoordinatedShutdown.Reason
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.logging.client.internal.LoggingSystem
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks

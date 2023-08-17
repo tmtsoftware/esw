@@ -1,10 +1,10 @@
 package esw.ocs.app.wiring
 
-import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
-import akka.util.Timeout
-import csw.location.api.models.AkkaLocation
+import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
+import org.apache.pekko.util.Timeout
+import csw.location.api.models.PekkoLocation
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -32,7 +32,7 @@ private[esw] class SequenceComponentWiring(
     ActorSystemFactory.remote(SpawnProtocol(), "sequence-component-system")
 
   lazy val actorRuntime: ActorRuntime = new ActorRuntime(actorSystem)
-  import actorRuntime._
+  import actorRuntime.*
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
@@ -60,7 +60,7 @@ private[esw] class SequenceComponentWiring(
   private lazy val sequenceComponentRegistration =
     new SequenceComponentRegistration(subsystem, name, agentPrefix, locationService, sequenceComponentFactory)
 
-  def start(): Either[RegistrationError, AkkaLocation] =
+  def start(): Either[RegistrationError, PekkoLocation] =
     Await.result(sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount), CommonTimeouts.Wiring)
 
 }

@@ -1,7 +1,7 @@
 package esw.gateway.server.handlers
 
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
+import org.apache.pekko.http.scaladsl.server.Directives.*
+import org.apache.pekko.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import csw.command.api.messages.CommandServiceRequest
 import csw.command.client.auth.CommandRoles
@@ -9,9 +9,9 @@ import csw.command.client.handlers.CommandServiceRequestHandler
 import csw.location.api.models.ComponentId
 import csw.logging.models.Level
 import esw.commons.auth.AuthPolicies
-import esw.gateway.api.codecs.GatewayCodecs._
+import esw.gateway.api.codecs.GatewayCodecs.*
 import esw.gateway.api.protocol.GatewayRequest
-import esw.gateway.api.protocol.GatewayRequest._
+import esw.gateway.api.protocol.GatewayRequest.*
 import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerRequest

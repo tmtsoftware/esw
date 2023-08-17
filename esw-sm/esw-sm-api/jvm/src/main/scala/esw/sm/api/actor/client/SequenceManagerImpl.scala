@@ -1,9 +1,9 @@
 package esw.sm.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.constants.SequenceManagerTimeouts
 import esw.ocs.api.models.{ObsMode, Variation}
@@ -16,12 +16,12 @@ import esw.sm.api.protocol.*
 import scala.concurrent.Future
 
 /**
- * Akka actor client for the sequence manager
+ * Pekko actor client for the sequence manager
  *
- * @param location - akka Location of the sequence manager
- * @param actorSystem - an Akka ActorSystem
+ * @param location - pekko Location of the sequence manager
+ * @param actorSystem - an Pekko ActorSystem
  */
-class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
+class SequenceManagerImpl(location: PekkoLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 

@@ -3,13 +3,13 @@ package esw.ocs.api.protocol
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Error, Invalid, SubmitResponse}
 import csw.params.core.models.Id
-import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsPekkoSerializable
 import esw.ocs.api.models.{SequencerState, Step, StepList}
 
 /**
  * These models are being used as responses for sequencers e.g., in SequencerApi
  */
-sealed trait EswSequencerResponse     extends OcsAkkaSerializable
+sealed trait EswSequencerResponse     extends OcsPekkoSerializable
 sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name
 sealed trait GenericResponse          extends EswSequencerResponse // fixme: think about better name
 sealed trait PauseResponse            extends EswSequencerResponse

@@ -1,7 +1,7 @@
 package esw.gateway.impl
 
-import akka.Done
-import akka.stream.scaladsl.Source
+import org.apache.pekko.Done
+import org.apache.pekko.stream.scaladsl.Source
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber, EventSubscription}
@@ -16,7 +16,7 @@ import msocket.jvm.SourceExtension.RichSource
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
- * Akka actor client for the Event service
+ * Pekko actor client for the Event service
  * @param eventService - an instance of AlarmService
  * @param eventSubscriberUtil - an instance of eventSubscriberUtil
  * @param ec - an implicit execution context

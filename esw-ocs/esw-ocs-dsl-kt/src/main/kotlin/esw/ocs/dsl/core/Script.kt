@@ -1,7 +1,7 @@
 package esw.ocs.dsl.core
 
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.SpawnProtocol
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.SpawnProtocol
 import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup

@@ -1,6 +1,6 @@
 package esw.demo
 
-import akka.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
 import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.internal.wiring.{FrameworkWiring, Standalone}

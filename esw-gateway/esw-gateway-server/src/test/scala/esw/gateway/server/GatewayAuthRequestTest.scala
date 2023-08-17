@@ -1,13 +1,13 @@
 package esw.gateway.server
 
-import akka.Done
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
-import akka.http.scaladsl.marshalling.ToEntityMarshaller
-import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
-import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
-import akka.http.scaladsl.server.AuthorizationFailedRejection
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.scaladsl.adapter.ClassicActorSystemOps
+import org.apache.pekko.http.scaladsl.marshalling.ToEntityMarshaller
+import org.apache.pekko.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, StatusCodes}
+import org.apache.pekko.http.scaladsl.server.AuthorizationFailedRejection
+import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import csw.command.client.auth.CommandRoles
 import csw.gateway.mock.AuthMocks
 import csw.location.api.models.{ComponentId, ComponentType}
@@ -34,10 +34,10 @@ class GatewayAuthRequestTest extends BaseTestSuite with ScalatestRouteTest with 
 
   implicit val typedSystem: ActorSystem[_] = system.toTyped
   private val cswCtxMocks                  = new CswTestMocks()
-  import cswCtxMocks._
+  import cswCtxMocks.*
 
   private val mocks = new AuthMocks()
-  import mocks._
+  import mocks.*
   private val commandRoles = CommandRoles.empty
 
   private val postHandlerImpl =

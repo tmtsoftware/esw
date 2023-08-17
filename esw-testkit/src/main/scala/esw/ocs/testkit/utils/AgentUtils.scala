@@ -1,11 +1,11 @@
 package esw.ocs.testkit.utils
 
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
+import esw.agent.pekko.app.{AgentApp, AgentSettings, AgentWiring}
 
 import scala.util.Random
 

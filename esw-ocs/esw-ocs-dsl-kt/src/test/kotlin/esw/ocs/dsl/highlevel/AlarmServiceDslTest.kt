@@ -1,6 +1,6 @@
 package esw.ocs.dsl.highlevel
 
-import akka.Done.done
+import org.apache.pekko.Done.done
 import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.models.Key.AlarmKey
 import csw.prefix.models.Prefix

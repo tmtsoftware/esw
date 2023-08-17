@@ -1,13 +1,13 @@
 package esw.ocs.api.actor.client
 
-import akka.actor.typed.ActorRef
-import akka.stream.scaladsl.Sink
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.ActorRef
+import org.apache.pekko.stream.scaladsl.Sink
+import org.apache.pekko.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.params.commands.CommandResponse.{Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
@@ -293,8 +293,8 @@ class SequencerImplTest extends ActorTestSuit {
 
   "getSequenceComponent | ESW-255, ESW-362" in {
     val getSequenceComponentResponse =
-      AkkaLocation(
-        AkkaConnection(ComponentId(Prefix(randomSubsystem, randomString5), SequenceComponent)),
+      PekkoLocation(
+        PekkoConnection(ComponentId(Prefix(randomSubsystem, randomString5), SequenceComponent)),
         new URI("uri"),
         Metadata.empty
       )

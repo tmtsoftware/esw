@@ -11,7 +11,7 @@ This DSL registers a provided `Registration` with the Location Service and retur
 
 @extref[Registration](csw_scaladoc:csw/location/api/models/Registration) can be one of:
 
-1. @extref[AkkaRegistration](csw_scaladoc:csw/location/api/models/AkkaRegistration)
+1. @extref[PekkoRegistration](csw_scaladoc:csw/location/api/models/PekkoRegistration)
 1. @extref[HttpRegistration](csw_scaladoc:csw/location/api/models/HttpRegistration)
 1. @extref[TcpRegistration](csw_scaladoc:csw/location/api/models/TcpRegistration)
 
@@ -24,7 +24,7 @@ This DSL un-registers the provided `Connection` from Location Service
 
 @extref[Connection](csw_scaladoc:csw/location/api/models/Connection) can be one of:
 
-1. @extref[AkkaConnection](csw_scaladoc:csw/location/api/models/Connection$$AkkaConnection)
+1. @extref[PekkoConnection](csw_scaladoc:csw/location/api/models/Connection$$PekkoConnection)
 1. @extref[HttpConnection](csw_scaladoc:csw/location/api/models/Connection$$HttpConnection)
 1. @extref[TcpConnection](csw_scaladoc:csw/location/api/models/Connection$$TcpConnection)
 
@@ -70,9 +70,9 @@ Kotlin
 ### @extref[ConnectionType](csw_scaladoc:csw/location/api/models/ConnectionType)
 
 Filters locations based on provided `ConnectionType`. A DSL is provided to specify the type, which can be one of:
-`AkkaType`, `HttpType`, `TcpType`.
+`PekkoType`, `HttpType`, `TcpType`.
 
-The following example demonstrates a use case where the script locks all the Akka Type components i.e. Assemblies and HCD's.
+The following example demonstrates a use case where the script locks all the Pekko Type components i.e. Assemblies and HCD's.
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-connection-type }

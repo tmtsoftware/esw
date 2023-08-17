@@ -1,13 +1,13 @@
 package esw.sm.impl.utils
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.util.Timeout
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS}
-import esw.agent.akka.client.AgentClient
+import esw.agent.pekko.client.AgentClient
 import esw.agent.service.api.models.{Failed, SpawnResponse, Spawned}
 import esw.commons.utils.config.{FetchingScriptVersionFailed, VersionManager}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
@@ -41,13 +41,13 @@ class AgentUtilTest extends BaseTestSuite {
       val agentAllocator      = mock[AgentAllocator]
       val agentClient         = mock[AgentClient]
       val agentPrefix         = Prefix(ESW, "primary")
-      val connection          = AkkaConnection(ComponentId(agentPrefix, Machine))
-      val location            = AkkaLocation(connection, new URI("mock"), Metadata.empty)
+      val connection          = PekkoConnection(ComponentId(agentPrefix, Machine))
+      val location            = PekkoLocation(connection, new URI("mock"), Metadata.empty)
 
       when(locationServiceUtil.find(connection)).thenReturn(futureRight(location))
 
       val agentUtil = new AgentUtil(locationServiceUtil, agentAllocator, versionManager) {
-        override private[utils] def makeAgentClient(agentLocation: AkkaLocation) = agentClient
+        override private[utils] def makeAgentClient(agentLocation: PekkoLocation) = agentClient
       }
 
       agentUtil.getAndMakeAgentClient(agentPrefix).rightValue should ===(agentClient)
@@ -58,7 +58,7 @@ class AgentUtilTest extends BaseTestSuite {
       val locationServiceUtil = mock[LocationServiceUtil]
       val agentAllocator      = mock[AgentAllocator]
       val agentPrefix         = Prefix(ESW, "primary")
-      val connection          = AkkaConnection(ComponentId(agentPrefix, Machine))
+      val connection          = PekkoConnection(ComponentId(agentPrefix, Machine))
       val locationNotFound    = LocationNotFound("location not found")
 
       when(locationServiceUtil.find(connection)).thenReturn(futureLeft(locationNotFound))
@@ -73,7 +73,7 @@ class AgentUtilTest extends BaseTestSuite {
       val locationServiceUtil = mock[LocationServiceUtil]
       val agentAllocator      = mock[AgentAllocator]
       val agentPrefix         = Prefix(ESW, "primary")
-      val connection          = AkkaConnection(ComponentId(agentPrefix, Machine))
+      val connection          = PekkoConnection(ComponentId(agentPrefix, Machine))
       val listingFailed       = RegistrationListingFailed("listing failed")
 
       when(locationServiceUtil.find(connection)).thenReturn(futureLeft(listingFailed))
@@ -104,7 +104,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       val agentUtil: AgentUtil =
         new AgentUtil(locationServiceUtil, agentAllocator, versionManager) {
-          override def makeAgentClient(agentLocation: AkkaLocation): AgentClient =
+          override def makeAgentClient(agentLocation: PekkoLocation): AgentClient =
             if (agentLocation.prefix.subsystem == ESW) eswClient else irisClient
         }
 
@@ -113,7 +113,7 @@ class AgentUtilTest extends BaseTestSuite {
       val mapping         = List(eswPrimaryMachine -> eswSeqComp1Prefix, irisPrimaryMachine -> irisSeqComp1Prefix)
       val version         = randomString(10)
 
-      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
+      when(locationServiceUtil.listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
       when(eswClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), simulation = false))
@@ -123,7 +123,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       agentUtil.provision(provisionConfig).futureValue should ===(ProvisionResponse.Success)
 
-      verify(locationServiceUtil).listAkkaLocationsBy(Machine)
+      verify(locationServiceUtil).listPekkoLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
       verify(eswClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false)
       verify(irisClient).spawnSequenceComponent(irisSeqComp1Name, Some(version), false)
@@ -139,7 +139,7 @@ class AgentUtilTest extends BaseTestSuite {
       val mapping         = List(eswPrimaryMachine -> eswSeqComp1Prefix, eswPrimaryMachine -> eswSeqComp2Prefix)
       val version         = randomString(10)
 
-      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
+      when(locationServiceUtil.listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
       when(agentClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), false)).thenReturn(Future.successful(Spawned))
@@ -155,7 +155,7 @@ class AgentUtilTest extends BaseTestSuite {
       failureMgs.contains(eswSeqComp2Name) shouldBe true
       failureMgs.contains(errorMsg) shouldBe true
 
-      verify(locationServiceUtil).listAkkaLocationsBy(Machine)
+      verify(locationServiceUtil).listPekkoLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
       verify(agentClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false)
       verify(agentClient).spawnSequenceComponent(eswSeqComp2Name, Some(version), false)
@@ -165,13 +165,13 @@ class AgentUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup.*
       val errorMsg = "listing failed"
-      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
+      when(locationServiceUtil.listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean]))
         .thenReturn(Future.successful(Left(RegistrationListingFailed(errorMsg))))
 
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 2)
       agentUtil.provision(provisionConfig).futureValue should ===(LocationServiceError(errorMsg))
 
-      verify(locationServiceUtil).listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean])
+      verify(locationServiceUtil).listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean])
     }
 
     "return CouldNotFindMachines error if any subsystem does not have machine available | ESW-347" in {
@@ -180,12 +180,12 @@ class AgentUtilTest extends BaseTestSuite {
       val provisionConfig = ProvisionConfig(Prefix(ESW, "primary") -> 1, Prefix(IRIS, "primary") -> 1)
       val machines        = List(eswPrimaryMachine)
       val error           = CouldNotFindMachines(Set(Prefix(IRIS, "primary")))
-      when(locationServiceUtil.listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean]))
+      when(locationServiceUtil.listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Left(error))
 
       agentUtil.provision(provisionConfig).futureValue should ===(error)
-      verify(locationServiceUtil).listAkkaLocationsBy(argEq(Machine), any[AkkaLocation => Boolean])
+      verify(locationServiceUtil).listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean])
       verify(agentAllocator).allocate(provisionConfig, machines)
     }
 
@@ -197,7 +197,7 @@ class AgentUtilTest extends BaseTestSuite {
       val mapping         = List(eswPrimaryMachine -> eswSeqComp1Prefix, eswPrimaryMachine -> eswSeqComp2Prefix)
       val errorMsg        = randomString(10)
 
-      when(locationServiceUtil.listAkkaLocationsBy(Machine)).thenReturn(futureRight(machines))
+      when(locationServiceUtil.listPekkoLocationsBy(Machine)).thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
       when(versionManager.getScriptVersion).thenReturn(Future.failed(FetchingScriptVersionFailed(errorMsg)))
 
@@ -214,16 +214,16 @@ class AgentUtilTest extends BaseTestSuite {
       new AgentUtil(locationServiceUtil, agentAllocator, versionManager) {
         override private[sm] def getAndMakeAgentClient(agentPrefix: Prefix) = futureRight(agentClient)
 
-        override private[utils] def makeAgentClient(agentLocation: AkkaLocation) = agentClient
+        override private[utils] def makeAgentClient(agentLocation: PekkoLocation) = agentClient
       }
 
     val eswPrimarySeqCompId: ComponentId = ComponentId(Prefix(ESW, "primary"), SequenceComponent)
-    val eswPrimarySeqCompLocation: AkkaLocation =
-      AkkaLocation(AkkaConnection(eswPrimarySeqCompId), new URI("some-uri"), Metadata.empty)
+    val eswPrimarySeqCompLocation: PekkoLocation =
+      PekkoLocation(PekkoConnection(eswPrimarySeqCompId), new URI("some-uri"), Metadata.empty)
 
     val eswSecondarySeqCompId: ComponentId = ComponentId(Prefix(ESW, "secondary"), SequenceComponent)
-    val eswSecondarySeqCompLocation: AkkaLocation =
-      AkkaLocation(AkkaConnection(eswSecondarySeqCompId), new URI("some-uri"), Metadata.empty)
+    val eswSecondarySeqCompLocation: PekkoLocation =
+      PekkoLocation(PekkoConnection(eswSecondarySeqCompId), new URI("some-uri"), Metadata.empty)
 
     def mockSpawnComponent(response: SpawnResponse): Unit =
       when(agentClient.spawnSequenceComponent(any[String], any[Option[String]]))
@@ -234,8 +234,8 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   private def seqCompLocationWithAgentPrefix(componentId: ComponentId, agentPrefix: Option[Prefix]) =
-    AkkaLocation(
-      AkkaConnection(componentId),
+    PekkoLocation(
+      PekkoConnection(componentId),
       URI.create("uri"),
       agentPrefix.fold(Metadata.empty)(p => Metadata().withAgentPrefix(p))
     )

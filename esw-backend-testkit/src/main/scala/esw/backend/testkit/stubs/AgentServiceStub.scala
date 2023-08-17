@@ -3,16 +3,16 @@ package esw.backend.testkit.stubs
 import java.net.URI
 import java.nio.file.Path
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.backend.auth.MockedAuth
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.AgentServiceApi
-import esw.agent.service.api.models._
+import esw.agent.service.api.models.*
 import esw.agent.service.app.AgentServiceWiring
 import esw.ocs.testkit.utils.LocationUtils
 
@@ -44,8 +44,8 @@ class AgentServiceStubImpl extends AgentServiceApi {
     val sequenceComponentStatus = SequenceComponentStatus(
       ComponentId(Prefix(ESW, "seqcomp1"), SequenceComponent),
       Some(
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer)),
+        PekkoLocation(
+          PekkoConnection(ComponentId(Prefix(ESW, "IRIS_DARKNIGHT"), Sequencer)),
           new URI(""),
           Metadata().withSequenceComponentPrefix(Prefix(ESW, "seqcomp1"))
         )

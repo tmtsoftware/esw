@@ -1,9 +1,9 @@
 package esw.ocs.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.prefix.models.Subsystem
 import esw.constants.SequenceComponentTimeouts
 import esw.ocs.api.SequenceComponentApi
@@ -20,9 +20,9 @@ import scala.concurrent.Future
  * This client takes actor ref of the sequence component as a constructor argument
  *
  * @param sequenceComponentLocation - location of the sequence component
- * @param actorSystem - an Akka ActorSystem
+ * @param actorSystem - an Pekko ActorSystem
  */
-class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
+class SequenceComponentImpl(sequenceComponentLocation: PekkoLocation)(implicit
     actorSystem: ActorSystem[_]
 ) extends SequenceComponentApi {
 

@@ -2,8 +2,8 @@ package esw.commons.utils.config
 
 import java.nio.file.Path
 
-import akka.actor.testkit.typed.scaladsl.ActorTestKit
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.testkit.typed.scaladsl.ActorTestKit
+import org.apache.pekko.actor.typed.ActorSystem
 import com.typesafe.config.{Config, ConfigException, ConfigOrigin}
 import csw.config.api.exceptions.FileNotFound
 import csw.config.client.commons.ConfigUtils

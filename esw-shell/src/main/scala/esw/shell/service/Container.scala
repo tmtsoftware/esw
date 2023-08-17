@@ -1,7 +1,7 @@
 package esw.shell.service
 
 import csw.location.api.models.ComponentType
-import esw.agent.akka.client.AgentClient
+import esw.agent.pekko.client.AgentClient
 import esw.agent.service.api.models.SpawnContainersResponse
 import esw.commons.utils.files.FileUtils
 

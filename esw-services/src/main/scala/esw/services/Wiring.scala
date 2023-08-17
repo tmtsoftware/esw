@@ -1,6 +1,6 @@
 package esw.services
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -10,7 +10,7 @@ import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.*
-import esw.agent.akka.app.AgentWiring
+import esw.agent.pekko.app.AgentWiring
 import esw.agent.service.api.models.SpawnResponse
 import esw.agent.service.app.AgentServiceWiring
 import esw.commons.extensions.FutureExt.FutureOps

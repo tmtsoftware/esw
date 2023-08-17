@@ -1,16 +1,16 @@
 package esw.services.apps
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, Service}
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.services.utils.ColoredConsole.GREEN
-import esw.agent.akka.app.AgentWiring
-import esw.agent.akka.client.AgentClient
+import esw.agent.pekko.app.AgentWiring
+import esw.agent.pekko.client.AgentClient
 import esw.agent.service.api.models.SpawnResponse
 import esw.commons.utils.files.FileUtils
 import esw.constants.{AgentTimeouts, CommonTimeouts}
@@ -57,7 +57,7 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
   private def startSM(obsModeConfigPath: Path, simulation: Boolean): SpawnResponse = {
     smAgent.start()
     val spawnResponseF = locationService
-      .resolve(AkkaConnection(ComponentId(smAgentPrefix, Machine)), CommonTimeouts.ResolveLocation)
+      .resolve(PekkoConnection(ComponentId(smAgentPrefix, Machine)), CommonTimeouts.ResolveLocation)
       .flatMap {
         case Some(agentLocation) =>
           new AgentClient(agentLocation)
@@ -78,7 +78,7 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
     val smLocation = Await
       .result(
         locationService
-          .resolve(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), CommonTimeouts.ResolveLocation),
+          .resolve(PekkoConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), CommonTimeouts.ResolveLocation),
         CommonTimeouts.Wiring
       )
       .getOrElse(throw new RuntimeException("Sequence Manager kill failed: Failed to resolve sequence manager"))
@@ -86,7 +86,7 @@ class SequenceManager(locationService: LocationService)(implicit actorSystem: Ac
     val smAgentLocation = Await
       .result(
         locationService
-          .resolve(AkkaConnection(ComponentId(smAgentPrefix, Machine)), CommonTimeouts.ResolveLocation),
+          .resolve(PekkoConnection(ComponentId(smAgentPrefix, Machine)), CommonTimeouts.ResolveLocation),
         CommonTimeouts.Wiring
       )
       .getOrElse(

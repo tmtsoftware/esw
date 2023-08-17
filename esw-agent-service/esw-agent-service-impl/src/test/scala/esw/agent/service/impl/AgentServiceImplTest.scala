@@ -1,12 +1,12 @@
 package esw.agent.service.impl
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.Machine
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.agent.akka.client.AgentClient
+import esw.agent.pekko.client.AgentClient
 import esw.agent.service.api.models.*
 import esw.commons.utils.location.EswLocationError.*
 import esw.commons.utils.location.LocationServiceUtil
@@ -30,7 +30,7 @@ class AgentServiceImplTest extends BaseTestSuite {
     override private[impl] def agentClient(agentPrefix: Prefix): Future[Either[String, AgentClient]] =
       Future.successful(Right(agentClientMock))
 
-    override private[impl] def makeAgentClient(akkaLocation: AkkaLocation) = agentClientMock
+    override private[impl] def makeAgentClient(pekkoLocation: PekkoLocation) = agentClientMock
   }
 
   override protected def beforeEach(): Unit = {
@@ -60,16 +60,16 @@ class AgentServiceImplTest extends BaseTestSuite {
 
       "give Failed when agent is not there | ESW-361" in {
         val locationService  = mock[LocationServiceUtil]
-        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val pekkoConnection  = PekkoConnection(ComponentId(agentPrefix, Machine))
         val expectedErrorMsg = "error"
 
-        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+        when(locationService.find(pekkoConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
         val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
 
         agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue should ===(Failed(expectedErrorMsg))
 
-        verify(locationService).find(akkaConnection)
+        verify(locationService).find(pekkoConnection)
       }
     }
 
@@ -90,9 +90,9 @@ class AgentServiceImplTest extends BaseTestSuite {
       "give Failed when agent is not there | ESW-361" in {
         val locationService = mock[LocationServiceUtil]
 
-        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val pekkoConnection  = PekkoConnection(ComponentId(agentPrefix, Machine))
         val expectedErrorMsg = "error"
-        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+        when(locationService.find(pekkoConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
         val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
 
@@ -100,7 +100,7 @@ class AgentServiceImplTest extends BaseTestSuite {
           Failed(expectedErrorMsg)
         )
 
-        verify(locationService).find(akkaConnection)
+        verify(locationService).find(pekkoConnection)
       }
     }
 
@@ -121,9 +121,9 @@ class AgentServiceImplTest extends BaseTestSuite {
       "give Failed when agent is not available | ESW-480" in {
         val locationService = mock[LocationServiceUtil]
 
-        val akkaConnection   = AkkaConnection(ComponentId(agentPrefix, Machine))
+        val pekkoConnection  = PekkoConnection(ComponentId(agentPrefix, Machine))
         val expectedErrorMsg = "error"
-        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
+        when(locationService.find(pekkoConnection)).thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
         val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
 
@@ -131,7 +131,7 @@ class AgentServiceImplTest extends BaseTestSuite {
           Failed(expectedErrorMsg)
         )
 
-        verify(locationService).find(akkaConnection)
+        verify(locationService).find(pekkoConnection)
       }
     }
 
@@ -142,30 +142,30 @@ class AgentServiceImplTest extends BaseTestSuite {
       when(componentId.prefix).thenReturn(componentPrefix)
       when(componentId.componentType).thenReturn(Machine)
 
-      val componentConnection = AkkaConnection(componentId)
-      val componentLocation = AkkaLocation(
+      val componentConnection = PekkoConnection(componentId)
+      val componentLocation = PekkoLocation(
         componentConnection,
-        new URI(s"akka://iris-system@$hostname:59405/user/iris#663907945"),
+        new URI(s"pekko://iris-system@$hostname:59405/user/iris#663907945"),
         Metadata.empty
       )
-      val agentLocation = AkkaLocation(componentConnection, new URI(hostname), Metadata.empty)
+      val agentLocation = PekkoLocation(componentConnection, new URI(hostname), Metadata.empty)
 
       "be able to kill component for the given componentId | ESW-361, ESW-367, ESW-480" in {
         when(agentClientMock.killComponent(componentLocation)).thenReturn(Future.successful(Killed))
-        when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
+        when(locationService.findPekkoLocation(componentId.prefix.toString(), componentId.componentType))
           .thenReturn(Future.successful(Right(componentLocation)))
         when(locationService.findAgentByHostname(hostname)).thenReturn(Future.successful(Right(agentLocation)))
 
         agentService.killComponent(componentId).futureValue should ===(Killed)
 
-        verify(locationService).findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
+        verify(locationService).findPekkoLocation(componentId.prefix.toString(), componentId.componentType)
         verify(agentClientMock).killComponent(componentLocation)
       }
 
       "give error message when agent is not there | ESW-361, ESW-480" in {
         val expectedErrorMsg = "error"
 
-        when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
+        when(locationService.findPekkoLocation(componentId.prefix.toString(), componentId.componentType))
           .thenReturn(Future.successful(Right(componentLocation)))
         when(locationService.findAgentByHostname(hostname))
           .thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
@@ -173,43 +173,43 @@ class AgentServiceImplTest extends BaseTestSuite {
         val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
         agentService.killComponent(componentId).futureValue should ===(Failed(expectedErrorMsg))
 
-        verify(locationService).findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
+        verify(locationService).findPekkoLocation(componentId.prefix.toString(), componentId.componentType)
       }
 
       "be able to return an error if component is not there | ESW-361, ESW-367, ESW-480" in {
         val expectedErrorMsg = "error"
-        when(locationService.findAkkaLocation(componentId.prefix.toString(), componentId.componentType))
+        when(locationService.findPekkoLocation(componentId.prefix.toString(), componentId.componentType))
           .thenReturn(Future.successful(Left(LocationNotFound(expectedErrorMsg))))
 
         agentService.killComponent(componentId).futureValue should ===(Failed(expectedErrorMsg))
 
-        verify(locationService).findAkkaLocation(componentId.prefix.toString(), componentId.componentType)
+        verify(locationService).findPekkoLocation(componentId.prefix.toString(), componentId.componentType)
       }
     }
 
     "agentClient API" must {
       "be able to create agent client for given agentPrefix | ESW-361" in {
         val locationService = mock[LocationServiceUtil]
-        val akkaConnection  = AkkaConnection(ComponentId(agentPrefix, Machine))
-        val location        = AkkaLocation(akkaConnection, URI.create("some"), Metadata.empty)
-        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Right(location)))
+        val pekkoConnection = PekkoConnection(ComponentId(agentPrefix, Machine))
+        val location        = PekkoLocation(pekkoConnection, URI.create("some"), Metadata.empty)
+        when(locationService.find(pekkoConnection)).thenReturn(Future.successful(Right(location)))
 
         val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
         agentService.agentClient(agentPrefix).futureValue
-        verify(locationService).find(akkaConnection)
+        verify(locationService).find(pekkoConnection)
       }
 
       "be able to throw AgentNotFound exception for given agentPrefix | ESW-361" in {
         val locationService = mock[LocationServiceUtil]
 
-        val akkaConnection = AkkaConnection(ComponentId(agentPrefix, Machine))
-        when(locationService.find(akkaConnection)).thenReturn(Future.successful(Left(LocationNotFound("error"))))
+        val pekkoConnection = PekkoConnection(ComponentId(agentPrefix, Machine))
+        when(locationService.find(pekkoConnection)).thenReturn(Future.successful(Left(LocationNotFound("error"))))
 
         val agentService = new AgentServiceImpl(locationService, agentStatusUtil)
 
         agentService.agentClient(agentPrefix).leftValue should ===("error")
 
-        verify(locationService).find(akkaConnection)
+        verify(locationService).find(pekkoConnection)
       }
     }
 

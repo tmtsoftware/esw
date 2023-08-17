@@ -1,6 +1,6 @@
 package esw.ocs.impl.core
 
-import akka.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse.*

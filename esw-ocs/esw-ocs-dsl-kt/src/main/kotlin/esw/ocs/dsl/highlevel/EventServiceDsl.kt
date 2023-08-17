@@ -1,7 +1,7 @@
 package esw.ocs.dsl.highlevel
 
-import akka.Done
-import akka.actor.Cancellable
+import org.apache.pekko.Done
+import org.apache.pekko.actor.Cancellable
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.scaladsl.SubscriptionModes
@@ -60,7 +60,7 @@ interface EventServiceDsl {
      * [[csw.event.api.exceptions.PublishFailure]] containing the cause for other failures.
      *
      * @param event to publish
-     * @return [[akka.Done]] when event is published
+     * @return [[pekko.Done]] when event is published
      */
     suspend fun publishEvent(event: Event): Done = eventPublisher.publish(event).await()
 
@@ -71,7 +71,7 @@ interface EventServiceDsl {
      *
      * @param every frequency with which the events are to be published
      * @param eventGenerator function which will be called at given frequency to generate an event to be published
-     * @return handle of [[akka.actor.Cancellable]] which can be used to stop event publishing
+     * @return handle of [[pekko.actor.Cancellable]] which can be used to stop event publishing
      */
     fun publishEvent(every: Duration, eventGenerator: SuspendableSupplier<Event?>): Cancellable =
             eventPublisher.publishAsync({

@@ -1,6 +1,6 @@
 package esw.ocs.script
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.logging.client.appenders.{LogAppenderBuilder, StdOutAppender}
 import csw.logging.client.internal.JsonExtensions.RichJsObject
 import csw.logging.client.internal.LoggingSystem

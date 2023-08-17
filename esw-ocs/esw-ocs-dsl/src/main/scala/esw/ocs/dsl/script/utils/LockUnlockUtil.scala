@@ -1,11 +1,11 @@
 package esw.ocs.dsl.script.utils
 
-import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
-import akka.stream.scaladsl.{Keep, Sink}
-import akka.stream.typed.scaladsl.ActorSource
-import akka.stream.{Materializer, OverflowStrategy}
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.Askable
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
+import org.apache.pekko.stream.scaladsl.{Keep, Sink}
+import org.apache.pekko.stream.typed.scaladsl.ActorSource
+import org.apache.pekko.stream.{Materializer, OverflowStrategy}
+import org.apache.pekko.util.Timeout
 import csw.command.client.messages.ComponentMessage
 import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse
@@ -14,7 +14,7 @@ import csw.prefix.models.Prefix
 
 import java.time.Duration
 import java.util.concurrent.{CompletionStage, TimeUnit}
-import scala.compat.java8.FutureConverters.FutureOps
+import scala.jdk.FutureConverters.*
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.FutureConverters.CompletionStageOps
@@ -24,7 +24,7 @@ import scala.util.Success
  * An Util class mainly written to send Lock/Unlock command to a particular HCD/Assembly
  *
  * @param source - represents the prefix of component that is acquiring lock
- * @param actorSystem - an Akka ActorSystem
+ * @param actorSystem - an Pekko ActorSystem
  */
 class LockUnlockUtil(val source: Prefix)(actorSystem: ActorSystem[SpawnProtocol.Command]) {
   implicit val timeout: Timeout             = 5.seconds

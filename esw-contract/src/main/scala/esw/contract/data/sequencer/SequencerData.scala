@@ -1,15 +1,15 @@
 package esw.contract.data.sequencer
 
 import csw.contract.data.command.CommandData
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
-import csw.params.commands._
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, Metadata}
+import csw.params.commands.*
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerRequest.*
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 
 import java.net.URI
 import java.time.Instant
@@ -36,8 +36,8 @@ trait SequencerData extends CommandData {
   val goOfflineHookFailed: GoOfflineHookFailed.type   = GoOfflineHookFailed
   val diagnosticHookFailed: DiagnosticHookFailed.type = DiagnosticHookFailed
   val operationsHookFailed: OperationsHookFailed.type = OperationsHookFailed
-  val akkaConnection: AkkaConnection                  = AkkaConnection(ComponentId(prefix, ComponentType.Assembly))
-  val akkaLocation: AkkaLocation = AkkaLocation(akkaConnection, new URI("path"), Metadata().add("key1", "value"))
+  val pekkoConnection: PekkoConnection                = PekkoConnection(ComponentId(prefix, ComponentType.Assembly))
+  val pekkoLocation: PekkoLocation = PekkoLocation(pekkoConnection, new URI("path"), Metadata().add("key1", "value"))
 
   val loadSequence: LoadSequence          = LoadSequence(sequence)
   val startSequence: StartSequence.type   = StartSequence

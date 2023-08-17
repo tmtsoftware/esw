@@ -48,8 +48,8 @@ described above, the entire package can be thoroughly tested by the implementing
 using mocks or stubs for its dependencies.
 
 In some cases, a layer is nothing more than translation or adapter layer which maps methods to some
-other protocol call to the layer below. An example of this is an Akka client layer that maps methods
-to Akka ask or tell calls to some Actor below it. In these case, all that is needed is to
+other protocol call to the layer below. An example of this is an Pekko client layer that maps methods
+to Pekko ask or tell calls to some Actor below it. In these case, all that is needed is to
 demonstrate is that each method maps to the appropriate request or method of the layer below. This
 is done by mocking the method call of the dependency and verifying the appropriate method is called
 when the client method is called.
@@ -88,17 +88,17 @@ trait SequenceManagerApi {
 }
 ```
 
-The Sequence Manager provides both an HTTP and Akka interface to it, so it has two implementations
-of the API: a HTTP client and an Akka Client. The core functionality of the program is written as an
-Akka actor, and the HTTP service is merely an adaptive wrapper around the Akka interface, in that
-the HTTP service contains the Akka Client, and translates HTTP requests into Akka calls to the
+The Sequence Manager provides both an HTTP and Pekko interface to it, so it has two implementations
+of the API: a HTTP client and an Pekko Client. The core functionality of the program is written as an
+Pekko actor, and the HTTP service is merely an adaptive wrapper around the Pekko interface, in that
+the HTTP service contains the Pekko Client, and translates HTTP requests into Pekko calls to the
 Sequence Manager Actor Behavior.
 
 The HTTP server in the Sequence Manager is implemented using
 [msocket](https://github.com/tmtsoftware/msocket) without any streams or callback methods
 (i.e. no websocket are needed), so only a “post-handler” class needs to be implemented. This class
 merely translates msocket requests, that is, POST requests to the “post-endpoint”, to SM API calls
-in the Akka implementation.
+in the Pekko implementation.
 
 This program has many layers to it, summarized by the following list:
 
@@ -108,10 +108,10 @@ This program has many layers to it, summarized by the following list:
 - **SequenceManagerRequestHandler**: This takes the HTTP requests and, based on the request model,
   translates them to commands in the
 
-- **SequenceManagerImpl**: an Akka client to the SequenceManager actor, in which method calls are
-  translated to Akka messages, sent to the actor, and handled in the
+- **SequenceManagerImpl**: an Pekko client to the SequenceManager actor, in which method calls are
+  translated to Pekko messages, sent to the actor, and handled in the
 
-- **SequenceManagerBehavior**: the actor behavior which receives the Akka messages and delegates to
+- **SequenceManagerBehavior**: the actor behavior which receives the Pekko messages and delegates to
   utility classes, which sometimes is
 
 - **SequencerUtil**: which performs operations on Sequencers.  It uses the Location Service, and
@@ -229,10 +229,10 @@ Here, the lower layer is the **SequenceManagerImpl**, passed in as the `sequence
 method, the `handle` method matches the request model as a **ShutdownSequencer** type, and then
 calls `shutdownSequencer(subsystem, obsMode, variation)` which is an imported method of `sequenceManager`
 object. This call is wrapped in an `sPost` method, which provides AAS security, and `complete`, is
-an Akka-HTTP method to complete the HTTP request.
+an Pekko-HTTP method to complete the HTTP request.
 
 Again, this layer is just an adapter layer that changes HTTP requests into **SequenceManagerImpl**
-calls. All that is needed to test this class is to make sure each request calls the appropriate Akka
+calls. All that is needed to test this class is to make sure each request calls the appropriate Pekko
 client call. The real implementation of this class is used, and the layer below is mocked. `sPost`
 is mocked too, since this is already tested as part of AAS:
 
@@ -251,7 +251,7 @@ class SequenceManagerRequestHandlerTest
 ```
 
 The test creates a `post-endpoint` route via msocket, just like we using in our msocket-based HTTP
-server. Now, our test uses Akka-HTTP to POST a request to this route, using the Akka-HTTP testkit to
+server. Now, our test uses Pekko-HTTP to POST a request to this route, using the Pekko-HTTP testkit to
 `check` that what happens when the request with the proper model is sent to this endpoint is what
 expect.  
 
@@ -272,7 +272,7 @@ expect.
 ```
 
 This test verifies when we send this model to this endpoint, `sPost` is called, and then the
-`shutdownSequencer` method of our Akka client is called, and the response matches the mocked
+`shutdownSequencer` method of our Pekko client is called, and the response matches the mocked
 response set up to return from that client method call. Note, in this case, the response here is a
 single real type of expected response, and not a mocked response. This is because the response
 requires serialization and we don’t have serialization set up for mocked typed. This is okay because
@@ -284,7 +284,7 @@ As mentioned above, testing of de/serialization for all the public facing models
 [RoundTripTest]($github.base_url$/esw-contract/src/test/scala/esw/contract/data/RoundTripTest.scala)
 
 The [esw-contract]($github.dir.base_url$/esw-contract/src/main/scala) module contains examples
-for all the models which are sent over the wire for HTTP requests/responses and AKKA messages.
+for all the models which are sent over the wire for HTTP requests/responses and PEKKO messages.
 **RoundTripTest** consumes all these models and verifies that they are serialized and deserialized
 properly using both `CBOR` and `JSON` formats.
 
@@ -338,7 +338,7 @@ object RoundTrip {
 
 As seen in code above, the following actions are performed:
 
-- Iterate over all the types of models in `EswData.services.data`, which includes *models* for Akka, *HTTP request models* and
+- Iterate over all the types of models in `EswData.services.data`, which includes *models* for Pekko, *HTTP request models* and
   *websocket request models*,  and call the `validate` method for each of them.
 - The `validate` method iterates over all the models of each type and calls the `RoundTrip.roundTrip` method for each of
   them with both `CBOR` and `JSON` format.
@@ -347,8 +347,8 @@ As seen in code above, the following actions are performed:
 
 ### SequenceManagerImpl
 
-The next layer down is the Akka Client, [SequenceManagerImpl]($github.base_url$/esw-sm/esw-sm-api/jvm/src/main/scala/esw/sm/api/actor/client/SequenceManagerImpl.scala).
-It takes API method calls and turns them into Akka ask calls to the Sequence Manager actor. The
+The next layer down is the Pekko Client, [SequenceManagerImpl]($github.base_url$/esw-sm/esw-sm-api/jvm/src/main/scala/esw/sm/api/actor/client/SequenceManagerImpl.scala).
+It takes API method calls and turns them into Pekko ask calls to the Sequence Manager actor. The
 lower layer in this case is the Sequence Manager actor, implemented in **SequenceManagerBehavior**.  
 
 In this, however, the actor reference is not passed in. It is assumed to be created (by the wiring)
@@ -356,14 +356,14 @@ and registered with the Location Service. Therefore, just the location is passed
 reference is obtained from that:
 
 ```scala
-class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
+class SequenceManagerImpl(location: PekkoLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
 ```
 
-The code for our method simply creates an Akka message the actor can handle (in this case,
-**SequencerShutdown**, which is a subtype of **SequenceManagerMsg**), and then performs an Akka ask
+The code for our method simply creates an Pekko message the actor can handle (in this case,
+**SequencerShutdown**, which is a subtype of **SequenceManagerMsg**), and then performs an Pekko ask
 by sending this message to the SM actor and transforming the reply into a Future.
 
 ```scala
@@ -379,18 +379,18 @@ override def shutdownSequencer(
 ```
 
 For testing, instead of mocking the actor behavior directly, we use the [AskProxyTestKit]($github.base_url$/esw-test-commons/src/main/scala/esw/testcommons/AskProxyTestKit.scala).
-This piece of code can be used to create a custom behavior for an Akka ask with a particular message.
+This piece of code can be used to create a custom behavior for an Pekko ask with a particular message.
 In our case, we set up the **AskProxyTestKit** expect messages to be of type **SequenceManagerMsg**
 and come from a **SequenceManagerImpl**.
 
-The test kit is set up by overriding the `make` method to return an instance of our Akka client to
+The test kit is set up by overriding the `make` method to return an instance of our Pekko client to
 be used in the test kit features.
 
 ```scala
 private val askProxyTestKit = new AskProxyTestKit[SequenceManagerMsg, SequenceManagerImpl] {
     override def make(actorRef: ActorRef[SequenceManagerMsg]): SequenceManagerImpl = {
       val location =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), actorRef.toURI, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), actorRef.toURI, Metadata.empty)
       new SequenceManagerImpl(location)
     }
   }
@@ -519,19 +519,19 @@ class SequencerUtil(
     locationServiceUtil.findSequencer(prefix).mapRight(List(_))
 
   private def shutdownSequencersAndHandleErrors(
-  sequencers: Future[Either[EswLocationError, List[AkkaLocation]]]
+  sequencers: Future[Either[EswLocationError, List[PekkoLocation]]]
   ) =
     sequencers
     .flatMapRight(unloadScripts)
     .mapToAdt(identity, locationErrorToShutdownSequencersResponse)
 
     // get sequence component from Sequencer and unload sequencer script
-  private def unloadScript(sequencerLocation: AkkaLocation) =
+  private def unloadScript(sequencerLocation: PekkoLocation) =
     makeSequencerClient(sequencerLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.unloadScript)
       .map(_ => ShutdownSequencersResponse.Success)
 
-  private def unloadScripts(sequencerLocations: List[AkkaLocation]) =
+  private def unloadScripts(sequencerLocations: List[PekkoLocation]) =
     Future.traverse(sequencerLocations)(unloadScript).map(_ => ShutdownSequencersResponse.Success)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
@@ -570,7 +570,7 @@ class SequenceComponentUtil(
 }
 ```
 
-This is the bottom layer of our method. For our method here, a new Akka client to the Sequence
+This is the bottom layer of our method. For our method here, a new Pekko client to the Sequence
 Component is constructed from the location, and the `unloadScript` method is called on it. Thus, we
 have reached the bottom of our layers, and will not need to provide any test classes beyond this.
 The testing for this class must have tests for the methods we use, which in this case is just
@@ -586,7 +586,7 @@ The testing for this class must have tests for the methods we use, which in this
       sequenceComponentAllocator
       ) {
       override private[sm] def sequenceComponentApi(
-      seqCompLocation: AkkaLocation
+      seqCompLocation: PekkoLocation
       ): SequenceComponentApi = mockSeqCompApi
     }
 
@@ -602,9 +602,9 @@ The testing for this class must have tests for the methods we use, which in this
 
 ```
 
-Here, the Akka client for the Sequence Component is mocked, and it’s shown that when the
+Here, the Pekko client for the Sequence Component is mocked, and it’s shown that when the
 `unloadScript` method in **SequenceComponentUtil** is called, it calls the `unloadScript` method in
-the Akka client. Note that this method always returns **Ok**. If it didn’t, the failure modes of
+the Pekko client. Note that this method always returns **Ok**. If it didn’t, the failure modes of
 this call would also need to be tested, using mocks, and it must be verified the proper error
 response is returned.
 
@@ -655,7 +655,7 @@ If we take another look at the **SequencerUtil** class, we can see that when thi
 error occurs, it’s actually transformed to another type:
 
 ```scala
- private def shutdownSequencersAndHandleErrors(sequencers: Future[Either[EswLocationError, List[AkkaLocation]]]) =
+ private def shutdownSequencersAndHandleErrors(sequencers: Future[Either[EswLocationError, List[PekkoLocation]]]) =
     sequencers.flatMapRight(unloadScripts).mapToAdt(identity, locationErrorToShutdownSequencersResponse)
 
   private def locationErrorToShutdownSequencersResponse(err: EswLocationError) =
@@ -666,7 +666,7 @@ error occurs, it’s actually transformed to another type:
 ```
 
 The **LocationServiceError** type is a **ShutdownSequencersResponse.Failure** message that can be
-returned to the Akka client. Therefore, this type needs to be tested in the
+returned to the Pekko client. Therefore, this type needs to be tested in the
 **SequenceManagerBehaviorTest**
 
 ```scala

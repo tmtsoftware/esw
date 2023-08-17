@@ -1,9 +1,9 @@
 package esw.services.apps
 
-import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
+import org.apache.pekko.actor.CoordinatedShutdown.ActorSystemTerminateReason
 import com.typesafe.config.Config
 import csw.prefix.models.Prefix
-import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
+import esw.agent.pekko.app.{AgentApp, AgentSettings, AgentWiring}
 import esw.constants.CommonTimeouts
 import esw.services.internal.ManagedService
 

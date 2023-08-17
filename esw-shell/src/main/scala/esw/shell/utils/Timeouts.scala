@@ -1,8 +1,8 @@
 package esw.shell.utils
 
-import akka.util.Timeout
+import org.apache.pekko.util.Timeout
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 object Timeouts {
   implicit val defaultTimeout: Timeout = 10.seconds

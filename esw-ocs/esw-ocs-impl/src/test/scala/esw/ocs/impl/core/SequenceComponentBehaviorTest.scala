@@ -1,14 +1,14 @@
 package esw.ocs.impl.core
 
-import akka.Done
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.*
-import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.*
+import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.util.Timeout
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.*
 import csw.location.api.scaladsl.LocationService
 import csw.logging.client.scaladsl.LoggerFactory
@@ -55,20 +55,20 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val obsMode                 = ObsMode("darknight")
       val variation               = Some(Variation("variation"))
       val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get.name}")
-      val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
+      val pekkoConnection         = PekkoConnection(ComponentId(prefix, ComponentType.Sequencer))
 
       when(sequencerServerFactory.make(prefix, sequenceComponentPrefix)).thenReturn(sequencerServer)
-      when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
+      when(sequencerServer.start()).thenReturn(Right(PekkoLocation(pekkoConnection, URI.create("new_uri"), Metadata.empty)))
 
       // LoadScript
       sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
 
-      // Assert if script loaded and returns AkkaLocation of sequencer
+      // Assert if script loaded and returns PekkoLocation of sequencer
       val scriptResponseOrUnhandled = loadScriptResponseProbe.receiveMessage()
       scriptResponseOrUnhandled shouldBe a[SequencerLocation]
-      val loadScriptLocationResponse: AkkaLocation = scriptResponseOrUnhandled.asInstanceOf[SequencerLocation].location
+      val loadScriptLocationResponse: PekkoLocation = scriptResponseOrUnhandled.asInstanceOf[SequencerLocation].location
 
-      loadScriptLocationResponse.connection shouldEqual akkaConnection
+      loadScriptLocationResponse.connection shouldEqual pekkoConnection
 
       verify(sequencerServerFactory).make(prefix, sequenceComponentPrefix)
       verify(sequencerServer).start()
@@ -76,11 +76,11 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       // GetStatus
       sequenceComponentRef ! GetStatus(getStatusProbe.ref)
 
-      // Assert if get status returns AkkaLocation of sequencer currently running
+      // Assert if get status returns PekkoLocation of sequencer currently running
       val getStatusResponseOrUnhandled = getStatusProbe.receiveMessage(5.seconds)
       getStatusResponseOrUnhandled shouldBe a[GetStatusResponse]
       val getStatusLocationResponse: Location = getStatusResponseOrUnhandled.response.get
-      getStatusLocationResponse.connection shouldEqual AkkaConnection(
+      getStatusLocationResponse.connection shouldEqual PekkoConnection(
         ComponentId(prefix, ComponentType.Sequencer)
       )
 
@@ -103,18 +103,18 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val obsMode                 = ObsMode("darknight")
       val variation               = Some(Variation("variation"))
       val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get.name}")
-      val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
+      val pekkoConnection         = PekkoConnection(ComponentId(prefix, ComponentType.Sequencer))
       when(sequencerServerFactory.make(prefix, sequenceComponentPrefix)).thenReturn(sequencerServer)
-      when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"), Metadata.empty)))
+      when(sequencerServer.start()).thenReturn(Right(PekkoLocation(pekkoConnection, URI.create("new_uri"), Metadata.empty)))
 
       // LoadScript
       sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
 
-      // Assert if script loaded and returns AkkaLocation of sequencer
+      // Assert if script loaded and returns PekkoLocation of sequencer
       val response = loadScriptResponseProbe.receiveMessage()
       response shouldBe a[SequencerLocation]
-      val loadScriptLocationResponse: AkkaLocation = response.asInstanceOf[SequencerLocation].location
-      loadScriptLocationResponse.connection shouldEqual akkaConnection
+      val loadScriptLocationResponse: PekkoLocation = response.asInstanceOf[SequencerLocation].location
+      loadScriptLocationResponse.connection shouldEqual pekkoConnection
 
       sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, TCS, obsMode, variation)
       val response1 = loadScriptResponseProbe.receiveMessage()
@@ -172,15 +172,15 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val prefix                  = Prefix(s"$subsystem.${obsMode.name}.${variation.get.name}")
       val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
       val restartResponseProbe    = TestProbe[ScriptResponseOrUnhandled]()
-      val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
+      val pekkoConnection         = PekkoConnection(ComponentId(prefix, ComponentType.Sequencer))
 
       when(sequencerServerFactory.make(prefix, sequenceComponentPrefix)).thenReturn(sequencerServer)
       when(sequencerServer.start()).thenReturn(
-        Right(AkkaLocation(akkaConnection, URI.create("first_load_uri"), Metadata.empty)),
-        Right(AkkaLocation(akkaConnection, URI.create("after_restart_uri"), Metadata.empty))
+        Right(PekkoLocation(pekkoConnection, URI.create("first_load_uri"), Metadata.empty)),
+        Right(PekkoLocation(pekkoConnection, URI.create("after_restart_uri"), Metadata.empty))
       )
 
-      // Assert if script loaded and returns AkkaLocation of sequencer
+      // Assert if script loaded and returns PekkoLocation of sequencer
       sequenceComponentRef ! LoadScript(loadScriptResponseProbe.ref, subsystem, obsMode, variation)
       val message = loadScriptResponseProbe.receiveMessage()
       message shouldBe a[SequencerLocation]
@@ -188,13 +188,13 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
       when(sequencerServer.shutDown()).thenReturn(Done)
 
-      // Restart sequencer and assert if it returns new AkkaLocation of sequencer
+      // Restart sequencer and assert if it returns new PekkoLocation of sequencer
       sequenceComponentRef ! RestartScript(restartResponseProbe.ref)
 
       val message1 = restartResponseProbe.receiveMessage()
       message1 shouldBe a[SequencerLocation]
-      val restartLocationResponse: AkkaLocation = message1.asInstanceOf[SequencerLocation].location
-      restartLocationResponse.connection shouldEqual AkkaConnection(
+      val restartLocationResponse: PekkoLocation = message1.asInstanceOf[SequencerLocation].location
+      restartLocationResponse.connection shouldEqual PekkoConnection(
         ComponentId(prefix, ComponentType.Sequencer)
       )
       restartLocationResponse should not equal initialLocation
@@ -212,7 +212,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "sequencer-shut-down-system")
       val (sequenceComponentRef, _)                  = spawnSequenceComponent()(system)
 
-      when(locationService.unregister(AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent))))
+      when(locationService.unregister(PekkoConnection(ComponentId(sequenceComponentPrefix, SequenceComponent))))
         .thenReturn(Future.successful(Done))
 
       val shutdownResponseProbe = TestProbe[Ok.type]()(system)
@@ -224,7 +224,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
   private def spawnSequenceComponent()(implicit
       actorSystem: ActorSystem[SpawnProtocol.Command]
-  ): (ActorRef[SequenceComponentMsg], AkkaLocation) = {
+  ): (ActorRef[SequenceComponentMsg], PekkoLocation) = {
     val sequenceComponentRef = (actorSystem ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
         new SequenceComponentBehavior(
@@ -240,8 +240,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
     })(timeout, actorSystem.scheduler).futureValue
 
     val seqCompLocation =
-      AkkaLocation(
-        AkkaConnection(ComponentId(Prefix(ocsSequenceComponentName), SequenceComponent)),
+      PekkoLocation(
+        PekkoConnection(ComponentId(Prefix(ocsSequenceComponentName), SequenceComponent)),
         sequenceComponentRef.toURI,
         Metadata.empty
       )

@@ -1,16 +1,16 @@
 package esw.ocs.impl.internal
 
 import java.net.URI
-import akka.Done
-import akka.actor.CoordinatedShutdown
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import csw.location.api.AkkaRegistrationFactory
+import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import csw.location.api.PekkoRegistrationFactory
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.*
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.ESW
@@ -44,11 +44,11 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
   }
 
   "registerSequenceComponent with name and agent prefix provided" must {
-    val retryCount     = 2
-    val name           = Some("primary")
-    val prefix         = Prefix("TCS.primary")
-    val akkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
-    val akkaLocation   = AkkaLocation(akkaConnection, uri, metadata)
+    val retryCount      = 2
+    val name            = Some("primary")
+    val prefix          = Prefix("TCS.primary")
+    val pekkoConnection = PekkoConnection(ComponentId(prefix, SequenceComponent))
+    val pekkoLocation   = PekkoLocation(pekkoConnection, uri, metadata)
 
     "return successful RegistrationResult | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
@@ -56,15 +56,15 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       val coordinatedShutdown                                 = CoordinatedShutdown(system)
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, name, Some(agentPrefix))
-      val akkaRegistration = AkkaRegistrationFactory.make(akkaConnection, sequenceComponentProbe.ref, metadata)
+      val pekkoRegistration = PekkoRegistrationFactory.make(pekkoConnection, sequenceComponentProbe.ref, metadata)
 
-      when(locationService.register(akkaRegistration)).thenReturn(Future(registrationResult))
-      when(registrationResult.location).thenReturn(akkaLocation)
+      when(locationService.register(pekkoRegistration)).thenReturn(Future(registrationResult))
+      when(registrationResult.location).thenReturn(pekkoLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      sequenceComponentRegistration.registerSequenceComponent(retryCount).rightValue should ===(akkaLocation)
+      sequenceComponentRegistration.registerSequenceComponent(retryCount).rightValue should ===(pekkoLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
-      verify(locationService).register(akkaRegistration)
+      verify(locationService).register(pekkoRegistration)
       verify(registrationResult, times(2)).location
       verify(registrationResult).unregister()
     }
@@ -77,24 +77,24 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, name, Some(agentPrefix))
 
-      val akkaRegistration = AkkaRegistrationFactory.make(akkaConnection, sequenceComponentProbe.ref, metadata)
+      val pekkoRegistration = PekkoRegistrationFactory.make(pekkoConnection, sequenceComponentProbe.ref, metadata)
 
-      when(locationService.register(akkaRegistration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
+      when(locationService.register(pekkoRegistration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
 
       sequenceComponentRegistration.registerSequenceComponent(retryCount).leftValue should ===(
         EswLocationError.OtherLocationIsRegistered(errorMsg)
       )
 
       // assert that No retry attempt in case of subsystem and name are provided
-      verify(locationService, times(1)).register(akkaRegistration)
+      verify(locationService, times(1)).register(pekkoRegistration)
       coordinatedShutdown.run(UnknownReason).futureValue
     }
   }
 
   "registerSequenceComponent without name" must {
-    val prefix         = Prefix("TCS.TCS_23")
-    val akkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
-    val akkaLocation   = AkkaLocation(akkaConnection, uri, metadata)
+    val prefix          = Prefix("TCS.TCS_23")
+    val pekkoConnection = PekkoConnection(ComponentId(prefix, SequenceComponent))
+    val pekkoLocation   = PekkoLocation(pekkoConnection, uri, metadata)
 
     "return successful RegistrationResult | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
@@ -104,11 +104,11 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, None, Some(agentPrefix))
 
-      when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
-      when(registrationResult.location).thenReturn(akkaLocation)
+      when(locationService.register(any[PekkoRegistration])).thenReturn(Future(registrationResult))
+      when(registrationResult.location).thenReturn(pekkoLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      sequenceComponentRegistration.registerSequenceComponent(retryCount).rightValue should ===(akkaLocation)
+      sequenceComponentRegistration.registerSequenceComponent(retryCount).rightValue should ===(pekkoLocation)
 
       coordinatedShutdown.run(UnknownReason).futureValue
 
@@ -126,19 +126,19 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, None, Some(agentPrefix))
 
-      when(locationService.register(any[AkkaRegistration]))
+      when(locationService.register(any[PekkoRegistration]))
         .thenReturn(
           Future.failed(OtherLocationIsRegistered(errorMsg)),
           Future.successful(registrationResult)
         )
-      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.location).thenReturn(pekkoLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
       val regResult = sequenceComponentRegistration.registerSequenceComponent(retryCount)
 
       // Assert that sequenceComponentActor ref receives Stop message once when OtherLocationIsRegistered is received
       sequenceComponentProbe.expectMessage(Stop)
-      regResult.rightValue should ===(akkaLocation)
+      regResult.rightValue should ===(pekkoLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
       verifyRegister(sequenceComponentProbe, metadata, 2)
       verify(registrationResult, times(2)).location
@@ -154,7 +154,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, None, Some(agentPrefix))
 
-      when(locationService.register(any[AkkaRegistration]))
+      when(locationService.register(any[PekkoRegistration]))
         .thenReturn(Future.failed(RegistrationFailed(errorMsg)), Future(registrationResult))
 
       val error = sequenceComponentRegistration.registerSequenceComponent(retryCount).leftValue
@@ -173,7 +173,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       val errorMsg   = "error message"
       val retryCount = 2
 
-      when(locationService.register(any[AkkaRegistration]))
+      when(locationService.register(any[PekkoRegistration]))
         .thenReturn(
           Future.failed(OtherLocationIsRegistered(errorMsg)),
           Future.failed(OtherLocationIsRegistered(errorMsg)),
@@ -193,11 +193,11 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
   }
 
   "registerSequenceComponent without agent prefix" must {
-    val retryCount     = 2
-    val name           = Some("primary")
-    val prefix         = Prefix("TCS.primary")
-    val akkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
-    val akkaLocation   = AkkaLocation(akkaConnection, uri, Metadata.empty)
+    val retryCount      = 2
+    val name            = Some("primary")
+    val prefix          = Prefix("TCS.primary")
+    val pekkoConnection = PekkoConnection(ComponentId(prefix, SequenceComponent))
+    val pekkoLocation   = PekkoLocation(pekkoConnection, uri, Metadata.empty)
 
     "return successful RegistrationResult | ESW-144, ESW-366" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
@@ -206,19 +206,19 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       val (sequenceComponentRegistration, sequenceComponentProbe) =
         createSequenceComponentRegistration(locationService, name, None)
 
-      val akkaRegistration = AkkaRegistrationFactory.make(
-        akkaConnection,
+      val pekkoRegistration = PekkoRegistrationFactory.make(
+        pekkoConnection,
         sequenceComponentProbe.ref,
         Metadata().withPid(ProcessHandle.current().pid())
       )
 
-      when(locationService.register(akkaRegistration)).thenReturn(Future(registrationResult))
-      when(registrationResult.location).thenReturn(akkaLocation)
+      when(locationService.register(pekkoRegistration)).thenReturn(Future(registrationResult))
+      when(registrationResult.location).thenReturn(pekkoLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      sequenceComponentRegistration.registerSequenceComponent(retryCount).rightValue should ===(akkaLocation)
+      sequenceComponentRegistration.registerSequenceComponent(retryCount).rightValue should ===(pekkoLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
-      verify(locationService).register(akkaRegistration)
+      verify(locationService).register(pekkoRegistration)
       verify(registrationResult, times(2)).location
       verify(registrationResult).unregister()
     }
@@ -244,7 +244,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       metadata: Metadata,
       noOfInvocation: Int = 1
   ): Unit = {
-    val captor: ArgumentCaptor[AkkaRegistration] = ArgumentCaptor.forClass(classOf[AkkaRegistration])
+    val captor: ArgumentCaptor[PekkoRegistration] = ArgumentCaptor.forClass(classOf[PekkoRegistration])
     verify(locationService, times(noOfInvocation)).register(captor.capture())
     val value = captor.getValue
     value.connection.componentId.prefix.toString().contains(s"$subsystem.${subsystem}_") shouldBe true

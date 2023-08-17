@@ -1,12 +1,12 @@
 package esw.ocs.impl.core
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Setup}
 import csw.prefix.models.Prefix
-import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.{Step, StepStatus}
 import esw.ocs.api.protocol.{Ok, PullNextResult}

@@ -2,10 +2,10 @@ package esw.testcommons
 
 import java.util.UUID
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 
-import scala.language.reflectiveCalls
+import scala.reflect.Selectable.reflectiveSelectable
 
 abstract class AskProxyTestKit[Msg, Impl](implicit actorSystem: ActorSystem[_]) {
   protected def make(actorRef: ActorRef[Msg]): Impl

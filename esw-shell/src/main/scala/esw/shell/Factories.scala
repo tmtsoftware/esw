@@ -1,16 +1,16 @@
 package esw.shell
 
-import akka.actor.typed.scaladsl.ActorContext
-import akka.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
-import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
+import csw.command.client.extensions.PekkoLocationExt.RichPekkoLocation
 import csw.command.client.messages.{ComponentMessage, TopLevelActorMessage}
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
 import csw.location.api.models.ComponentType.{Assembly, HCD, Machine, SequenceComponent}
 import csw.prefix.models.Prefix
-import esw.agent.akka.client.AgentClient
+import esw.agent.pekko.client.AgentClient
 import esw.agent.service.api.models.SpawnContainersResponse
 import esw.commons.extensions.EitherExt.EitherOps
 import esw.commons.extensions.FutureExt.FutureOps
@@ -41,11 +41,11 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
 
   // ============= CSW ============
   def assemblyCommandService(prefix: String): CommandService =
-    CommandServiceFactory.make(locationUtils.findAkkaLocation(prefix, Assembly).map(_.throwLeft).await())
+    CommandServiceFactory.make(locationUtils.findPekkoLocation(prefix, Assembly).map(_.throwLeft).await())
 
   def hcdCommandService(prefix: String): CommandService =
     CommandServiceFactory.make(
-      locationUtils.findAkkaLocation(prefix, HCD).map(_.throwLeft).await()
+      locationUtils.findPekkoLocation(prefix, HCD).map(_.throwLeft).await()
     )
 
   def spawnSimulatedHCD(hcdPrefix: String, agentPrefix: String): SpawnContainersResponse = {
@@ -85,7 +85,7 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
 
   def sequenceComponentService(seqCompPrefix: String): SequenceComponentApi = {
     new SequenceComponentImpl(
-      locationUtils.findAkkaLocation(seqCompPrefix, SequenceComponent).map(_.throwLeft).await()
+      locationUtils.findPekkoLocation(seqCompPrefix, SequenceComponent).map(_.throwLeft).await()
     )
   }
 
@@ -93,7 +93,7 @@ class Factories(val locationUtils: LocationServiceUtil, configServiceExt: Config
 
   def agentClient(agentPrefix: String): AgentClient =
     new AgentClient(
-      locationUtils.findAkkaLocation(agentPrefix, Machine).map(_.throwLeft).await()
+      locationUtils.findPekkoLocation(agentPrefix, Machine).map(_.throwLeft).await()
     )
 
   def sequenceManager(): SequenceManagerApi = new SequenceManager(locationUtils, configServiceExt).service

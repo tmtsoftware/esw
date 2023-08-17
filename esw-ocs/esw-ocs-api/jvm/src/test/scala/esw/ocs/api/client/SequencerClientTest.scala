@@ -1,10 +1,10 @@
 package esw.ocs.api.client
 
-import akka.stream.scaladsl.Source
-import akka.util.Timeout
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.Timeout
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
@@ -338,15 +338,18 @@ class SequencerClientTest extends BaseTestSuite with SequencerServiceCodecs {
 
     "call postClient with GetSequenceComponent request | ESW-222, ESW-255" in {
       val sequenceComponentLocation =
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(randomSubsystem, "primary"), SequenceComponent)),
+        PekkoLocation(
+          PekkoConnection(ComponentId(Prefix(randomSubsystem, "primary"), SequenceComponent)),
           new URI("mock-uri"),
           Metadata.empty
         )
 
       when(
         postClient
-          .requestResponse[AkkaLocation](argsEq(GetSequenceComponent))(any[Decoder[AkkaLocation]](), any[Encoder[AkkaLocation]]())
+          .requestResponse[PekkoLocation](argsEq(GetSequenceComponent))(
+            any[Decoder[PekkoLocation]](),
+            any[Encoder[PekkoLocation]]()
+          )
       ).thenReturn(Future.successful(sequenceComponentLocation))
       sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
     }

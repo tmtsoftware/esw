@@ -1,7 +1,7 @@
 package esw.backend.testkit
 
-import akka.actor.CoordinatedShutdown
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import caseapp.RemainingArgs
 import com.typesafe.config.ConfigFactory
 import csw.location.api.scaladsl.LocationService

@@ -1,4 +1,4 @@
-import sbt.{Def, _}
+import sbt._
 
 object Settings {
   def addAliases(): Seq[Setting[_]] = {

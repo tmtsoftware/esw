@@ -1,14 +1,14 @@
 package esw.ocs.impl.core
 
-import akka.Done
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
-import csw.location.api.extensions.ActorExtension._
+import csw.location.api.extensions.ActorExtension.*
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
@@ -18,14 +18,14 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Running}
-import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.actor.messages.{InternalSequencerState, SequenceComponentMsg}
 import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 import esw.ocs.impl.script.ScriptApi
 import org.scalatest.Assertion
-import org.scalatest.concurrent.Eventually._
+import org.scalatest.concurrent.Eventually.*
 import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.duration.DurationLong
@@ -33,29 +33,29 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Random, Success}
 import org.mockito.Mockito.{verify, when}
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
-  import Matchers._
-  import org.scalatestplus.mockito.MockitoSugar._
+  import Matchers.*
+  import org.scalatestplus.mockito.MockitoSugar.*
 
   implicit private val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
   implicit val ec: ExecutionContext                   = system.executionContext
 
-  val script: ScriptApi                             = mock[ScriptApi]
-  private val componentId                           = mock[ComponentId]
-  private val locationService                       = mock[LocationService]
-  private val logger                                = mock[Logger]
-  private val sequenceComponentPrefix: Prefix       = Prefix(ESW, "primary")
-  private val seqCompAkkaConnection: AkkaConnection = AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent))
-  private val sequenceComponentLocation: AkkaLocation = AkkaLocation(
-    seqCompAkkaConnection,
+  val script: ScriptApi                               = mock[ScriptApi]
+  private val componentId                             = mock[ComponentId]
+  private val locationService                         = mock[LocationService]
+  private val logger                                  = mock[Logger]
+  private val sequenceComponentPrefix: Prefix         = Prefix(ESW, "primary")
+  private val seqCompPekkoConnection: PekkoConnection = PekkoConnection(ComponentId(sequenceComponentPrefix, SequenceComponent))
+  private val sequenceComponentLocation: PekkoLocation = PekkoLocation(
+    seqCompPekkoConnection,
     TestProbe[SequenceComponentMsg]().ref.toURI,
     Metadata.empty
   )
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
-  when(locationService.unregister(AkkaConnection(componentId))).thenReturn(Future.successful(Done))
+  when(locationService.unregister(PekkoConnection(componentId))).thenReturn(Future.successful(Done))
   when(script.executeShutdown()).thenReturn(Future.successful(Done))
 
   // for getSequenceComponent message
-  when(locationService.find(seqCompAkkaConnection)).thenReturn(Future.successful(Some(sequenceComponentLocation)))
+  when(locationService.find(seqCompPekkoConnection)).thenReturn(Future.successful(Some(sequenceComponentLocation)))
 
   val sequencerName = s"SequencerActor${Random.between(0, Int.MaxValue)}"
   when(componentId.prefix).thenReturn(Prefix(ESW, sequencerName))
@@ -393,9 +393,9 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     probe.expectMessageType[Option[StepList]]
   }
 
-  def assertForGettingSequenceComponent(replyTo: TestProbe[AkkaLocation]): Unit = {
+  def assertForGettingSequenceComponent(replyTo: TestProbe[PekkoLocation]): Unit = {
     replyTo.expectMessage(sequenceComponentLocation)
-    verify(locationService).find(seqCompAkkaConnection)
+    verify(locationService).find(seqCompPekkoConnection)
   }
 }
 
@@ -438,7 +438,7 @@ object SequencerTestSetup {
 
   def finished(sequence: Sequence)(implicit system: ActorSystem[_]): (Started, SequencerTestSetup) = {
     val sequencerSetup = idle(sequence)
-    import sequencerSetup._
+    import sequencerSetup.*
 
     when { script.executeNewSequenceHandler() }.thenReturn(Future.successful(Done))
 

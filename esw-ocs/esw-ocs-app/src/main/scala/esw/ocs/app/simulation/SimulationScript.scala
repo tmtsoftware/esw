@@ -1,6 +1,6 @@
 package esw.ocs.app.simulation
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.impl.script.ScriptApi

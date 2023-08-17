@@ -1,6 +1,6 @@
 package esw.ocs.script
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
 import csw.location.api.models.{HttpLocation, LocationRemoved, LocationUpdated}
 import csw.location.api.scaladsl.RegistrationResult
 import csw.params.commands.{CommandName, Sequence, Setup}

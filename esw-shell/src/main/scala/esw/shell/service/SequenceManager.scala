@@ -1,7 +1,7 @@
 package esw.shell.service
 
 import java.nio.file.Paths
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import com.typesafe.config.ConfigFactory
 import csw.config.api.ConfigData
 import csw.location.api.models.ComponentType.Service
@@ -27,9 +27,9 @@ class SequenceManager(val locationUtils: LocationServiceUtil, configServiceExt: 
   private lazy val SequencerScriptVersionConfigPath: String = config.getString("osw.version.confPath")
   private val SequenceManagerPrefix                         = "ESW.sequence_manager"
 
-  // creates an akka client for the Sequence Manager
+  // creates an pekko client for the Sequence Manager
   def service: SequenceManagerApi =
-    new SequenceManagerImpl(locationUtils.findAkkaLocation(SequenceManagerPrefix, Service).map(_.throwLeft).await())
+    new SequenceManagerImpl(locationUtils.findPekkoLocation(SequenceManagerPrefix, Service).map(_.throwLeft).await())
 
   // does provision on SM with the given provision config and sequence script version
   def provision(config: ProvisionConfig, sequencerScriptsVersion: String): ProvisionResponse = {

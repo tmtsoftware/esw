@@ -1,6 +1,6 @@
 package esw.ocs.dsl.highlevel
 
-import akka.util.Timeout
+import org.apache.pekko.util.Timeout
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id

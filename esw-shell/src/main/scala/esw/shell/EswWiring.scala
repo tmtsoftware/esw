@@ -1,6 +1,6 @@
 package esw.shell
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
 import csw.config.api.TokenFactory
 import csw.config.api.scaladsl.ConfigService

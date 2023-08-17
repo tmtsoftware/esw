@@ -5,7 +5,7 @@ import csw.command.api.codecs.CommandServiceCodecs
 import csw.location.api.codec.LocationCodecs
 import csw.logging.models.codecs.LoggingCodecs
 import csw.params.events.EventKey
-import esw.gateway.api.protocol._
+import esw.gateway.api.protocol.*
 import esw.ocs.api.codecs.SequencerServiceCodecs
 import io.bullet.borer.Dom.MapElem
 import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec

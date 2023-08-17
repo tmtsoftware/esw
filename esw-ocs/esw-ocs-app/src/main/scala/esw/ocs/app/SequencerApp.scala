@@ -1,10 +1,10 @@
 package esw.ocs.app
 
-import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
 import caseapp.RemainingArgs
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Subsystem
 import esw.commons.cli.EswCommandApp
@@ -75,7 +75,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
       sequencerSubsystem: Subsystem,
       obsMode: ObsMode,
       variation: Option[Variation],
-      sequenceComponentLocation: AkkaLocation,
+      sequenceComponentLocation: PekkoLocation,
       sequenceComponentWiring: SequenceComponentWiring
   ) = {
     import sequenceComponentWiring.*
@@ -107,7 +107,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     }
   }
 
-  private def reportSequenceComponent(sequencerAppResult: Either[RegistrationError, AkkaLocation]) =
+  private def reportSequenceComponent(sequencerAppResult: Either[RegistrationError, PekkoLocation]) =
     sequencerAppResult match {
       case Left(err) =>
         val msg = s"Failed to start with error: ${err.msg}"

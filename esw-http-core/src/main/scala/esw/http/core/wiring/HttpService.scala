@@ -1,11 +1,11 @@
 package esw.http.core.wiring
 
-import akka.actor.CoordinatedShutdown
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.server.Directives.handleRejections
-import akka.http.scaladsl.server.{RejectionHandler, Route}
-import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.cors.scaladsl.CorsDirectives.cors
+import org.apache.pekko.http.scaladsl.Http.ServerBinding
+import org.apache.pekko.http.scaladsl.server.Directives.handleRejections
+import org.apache.pekko.http.scaladsl.server.{RejectionHandler, Route}
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{HttpRegistration, Metadata, NetworkType}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
@@ -13,7 +13,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.network.utils.Networks
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 
-import scala.async.Async._
+import cps.compat.FutureAsync.*
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
@@ -34,7 +34,7 @@ class HttpService(
     networkType: NetworkType = NetworkType.Outside
 ) {
 
-  import actorRuntime._
+  import actorRuntime.*
   def startAndRegisterServer(metadata: Metadata = Metadata.empty): Future[(ServerBinding, RegistrationResult)] =
     async {
       val binding            = await(startServer())

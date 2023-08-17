@@ -1,7 +1,7 @@
 package esw.ocs.testkit.utils
 
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import esw.agent.service.app.{AgentServiceApp, AgentServiceWiring}
 
 trait AgentServiceUtils {

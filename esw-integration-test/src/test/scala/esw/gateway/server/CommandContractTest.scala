@@ -1,7 +1,7 @@
 package esw.gateway.server
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.stream.scaladsl.Sink
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.stream.scaladsl.Sink
 import csw.event.client.EventServiceFactory
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Assembly

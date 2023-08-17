@@ -1,6 +1,6 @@
 package esw.services.apps
 
-import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
+import org.apache.pekko.actor.CoordinatedShutdown.ActorSystemTerminateReason
 import csw.network.utils.SocketUtils
 import csw.services.utils.ColoredConsole.GREEN
 import esw.commons.utils.files.FileUtils

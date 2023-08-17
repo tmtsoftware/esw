@@ -1,20 +1,20 @@
 package esw.integration
 
-import akka.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.CswVersionJvm
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, Metadata}
 import csw.params.commands.CommandResponse.Started
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.*
 import csw.testkit.ConfigTestKit
-import esw.agent.akka.AgentSetup
-import esw.agent.akka.app.AgentSettings
-import esw.agent.akka.client.AgentClient
+import esw.agent.pekko.AgentSetup
+import esw.agent.pekko.app.AgentSettings
+import esw.agent.pekko.client.AgentClient
 import esw.agent.service.api.AgentServiceApi
 import esw.agent.service.api.client.AgentServiceClientFactory
 import esw.agent.service.api.models.*
@@ -213,7 +213,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
       seqCompLoc.connection shouldBe irisSeqCompConnection
 
-      // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
+      // ESW-366 verify agent prefix and pid metadata is present in Sequence component pekko location
       seqCompLoc.metadata.getAgentPrefix.value should ===(agentPrefix)
       seqCompLoc.metadata.getPid.isDefined should ===(true)
 
@@ -235,10 +235,10 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       agentClient.spawnSequenceManager(obsModeConfigPath, isConfigLocal = true, eswVersion).futureValue should ===(Spawned)
 
       // Verify registration in location service
-      val seqManagerConnection   = AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))
-      val location: AkkaLocation = locationService.resolve(seqManagerConnection, 5.seconds).futureValue.value
+      val seqManagerConnection    = PekkoConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service))
+      val location: PekkoLocation = locationService.resolve(seqManagerConnection, 5.seconds).futureValue.value
 
-      // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
+      // ESW-366 verify agent prefix and pid metadata is present in Sequence component pekko location
       location.metadata.getAgentPrefix.get should ===(agentPrefix)
       location.metadata.getPid.isDefined should ===(true)
 
@@ -278,15 +278,15 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       )
 
       // Verify registration in location service
-      val containerConnection = AkkaConnection(ComponentId(Prefix(Container, "TestContainer"), ComponentType.Container))
-      val containerLocation: AkkaLocation = locationService.resolve(containerConnection, 5.seconds).futureValue.value
+      val containerConnection = PekkoConnection(ComponentId(Prefix(Container, "TestContainer"), ComponentType.Container))
+      val containerLocation: PekkoLocation = locationService.resolve(containerConnection, 5.seconds).futureValue.value
 
       // kill the spawned container CSW-131
       val killResult = agentClient.killComponent(containerLocation).futureValue
       killResult should ===(Killed)
 
       // verify that container and its child components are killed
-      intercept[RuntimeException](resolveAkkaLocation(Prefix("Container.TestContainer"), ComponentType.Container))
+      intercept[RuntimeException](resolvePekkoLocation(Prefix("Container.TestContainer"), ComponentType.Container))
     }
   }
 
@@ -318,13 +318,13 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
         .futureValue shouldBe Spawned
 
       // verify sequence manager is started
-      resolveAkkaLocation(smPrefix, Service)
+      resolvePekkoLocation(smPrefix, Service)
 
       // stop sequence manager
       agentService.killComponent(ComponentId(smPrefix, Service)).futureValue shouldBe Killed
 
       // verify that component is killed
-      intercept[RuntimeException](resolveAkkaLocation(smPrefix, Service))
+      intercept[RuntimeException](resolvePekkoLocation(smPrefix, Service))
     }
 
     "start and kill containers on the given agent | ESW-480" in {
@@ -351,7 +351,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
         .futureValue shouldBe Completed(Map("Container.TestContainer" -> Spawned))
 
       // verify container is started
-      resolveAkkaLocation(Prefix(Container, "TestContainer"), ComponentType.Container)
+      resolvePekkoLocation(Prefix(Container, "TestContainer"), ComponentType.Container)
 
       // kill container
       agentService
@@ -359,7 +359,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
         .futureValue shouldBe Killed
 
       // verify that container is killed
-      intercept[RuntimeException](resolveAkkaLocation(Prefix(Container, "TestContainer"), ComponentType.Container))
+      intercept[RuntimeException](resolvePekkoLocation(Prefix(Container, "TestContainer"), ComponentType.Container))
     }
 
     "getAgentStatus should return status for running sequence components and loaded scripts | ESW-349, ESW-332, ESW-367, ESW-481" in {
@@ -407,14 +407,14 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
 
   "sequence manager" must {
 
-    "start sequence manager and register akka + http locations| ESW-171, ESW-172, ESW-173, ESW-366, ESW-332, ESW-532" in {
+    "start sequence manager and register pekko + http locations| ESW-171, ESW-172, ESW-173, ESW-366, ESW-332, ESW-532" in {
       val agentPrefix = Prefix(ESW, "agent1")
       val expectedMetadata =
         Metadata().withCSWVersion(new CswVersionJvm().get).withAgentPrefix(agentPrefix).withPid(ProcessHandle.current().pid())
       val port = 9898
 
-      // resolving sequence manager fails for Akka and Http
-      intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
+      // resolving sequence manager fails for Pekko and Http
+      intercept[Exception](resolvePekkoLocation(sequenceManagerPrefix, Service))
       intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
 
       // ESW-173 Start sequence manager using command line arguments without any other ESW dependency
@@ -422,12 +422,12 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
         Array("start", "-o", obsModeConfigPath.toString, "--local", "-a", agentPrefix.toString(), "-p", port.toString)
       )
 
-      // verify sequence manager is started and AkkaLocation & HttpLocation are registered with location service
-      val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
-      smAkkaLocation.prefix shouldBe sequenceManagerPrefix
+      // verify sequence manager is started and PekkoLocation & HttpLocation are registered with location service
+      val smPekkoLocation = resolvePekkoLocation(sequenceManagerPrefix, Service)
+      smPekkoLocation.prefix shouldBe sequenceManagerPrefix
 
-      // ESW-366 verify agent prefix and pid metadata is present in Sequence manager akka location
-      smAkkaLocation.metadata should ===(expectedMetadata)
+      // ESW-366 verify agent prefix and pid metadata is present in Sequence manager pekko location
+      smPekkoLocation.metadata should ===(expectedMetadata)
 
       val smHttpLocation = resolveHTTPLocation(sequenceManagerPrefix, Service)
       smHttpLocation.prefix shouldBe sequenceManagerPrefix
@@ -451,8 +451,8 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
       // ESW-366 verify SM Location metadata contains pid
-      val smAkkaLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
-      smAkkaLocation.metadata shouldBe Metadata().withCSWVersion(new CswVersionJvm().get).withPid(ProcessHandle.current().pid())
+      val smPekkoLocation = resolvePekkoLocation(sequenceManagerPrefix, Service)
+      smPekkoLocation.metadata shouldBe Metadata().withCSWVersion(new CswVersionJvm().get).withPid(ProcessHandle.current().pid())
 
       val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL.name)
       val irisCalPrefix      = Prefix(IRIS, IRIS_CAL.name)
@@ -693,7 +693,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       locationService.unregisterAll().futureValue
       registerKeycloak()
       val componentId = ComponentId(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer)
-      val connection  = AkkaConnection(componentId)
+      val connection  = PekkoConnection(componentId)
 
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
 
@@ -714,18 +714,18 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val calSequencerL       = spawnSequencer(WFOS, WFOS_CAL)
 
       // verify all sequencers are started
-      resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
-      resolveAkkaLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
+      resolvePekkoLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
+      resolvePekkoLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
 
       // ESW-351 - shutdown all ESW sequencers that are running
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
       sequenceManagerClient.shutdownSubsystemSequencers(ESW).futureValue should ===(ShutdownSequencersResponse.Success)
 
       // verify ESW sequencer has stopped
-      intercept[Exception](resolveAkkaLocation(irisDarkNightPrefix, Sequencer))
+      intercept[Exception](resolvePekkoLocation(irisDarkNightPrefix, Sequencer))
 
       // verify WFOS sequencer is still running
-      resolveAkkaLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
+      resolvePekkoLocation(wfosCalPrefix, Sequencer) should ===(calSequencerL)
       TestSetup.cleanup()
     }
 
@@ -739,16 +739,16 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val calSequencerL       = spawnSequencer(ESW, IRIS_CAL)
 
       // verify Sequencers are started
-      resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
-      resolveAkkaLocation(irisCalPrefix, Sequencer) should ===(calSequencerL)
+      resolvePekkoLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
+      resolvePekkoLocation(irisCalPrefix, Sequencer) should ===(calSequencerL)
 
       // ESW-351 - shutdown all the sequencers that are running
       val sequenceManagerClient = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
       sequenceManagerClient.shutdownAllSequencers().futureValue should ===(ShutdownSequencersResponse.Success)
 
       // verify all sequencers has stopped
-      intercept[Exception](resolveAkkaLocation(irisDarkNightPrefix, Sequencer))
-      intercept[Exception](resolveAkkaLocation(irisCalPrefix, Sequencer))
+      intercept[Exception](resolvePekkoLocation(irisDarkNightPrefix, Sequencer))
+      intercept[Exception](resolvePekkoLocation(irisCalPrefix, Sequencer))
       TestSetup.cleanup()
     }
 
@@ -814,7 +814,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       spawnAgent(AgentSettings(agentPrefix, channel, versionConfPath))
 
       // verify that agent is available
-      resolveAkkaLocation(agentPrefix, Machine)
+      resolvePekkoLocation(agentPrefix, Machine)
 
       // ESW-337 verify that sequence component is not running
       intercept[Exception](resolveSequenceComponentLocation(seqCompPrefix))
@@ -846,9 +846,9 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
 
       // verify sequence components are started
-      resolveSequenceComponentLocation(eswSeqCompPrefix) shouldBe a[AkkaLocation]
-      resolveSequenceComponentLocation(irisSeqCompPrefix) shouldBe a[AkkaLocation]
-      resolveSequenceComponentLocation(aoeswSeqCompPrefix) shouldBe a[AkkaLocation]
+      resolveSequenceComponentLocation(eswSeqCompPrefix) shouldBe a[PekkoLocation]
+      resolveSequenceComponentLocation(irisSeqCompPrefix) shouldBe a[PekkoLocation]
+      resolveSequenceComponentLocation(aoeswSeqCompPrefix) shouldBe a[PekkoLocation]
 
       val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(sequenceManagerPrefix, tokenWithEswUserRole)
       sequenceManagerApi.shutdownAllSequenceComponents().futureValue should ===(ShutdownSequenceComponentResponse.Success)

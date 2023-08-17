@@ -2,7 +2,7 @@ package esw.commons.extensions
 
 import java.util.concurrent.CompletionStage
 
-import scala.compat.java8.FutureConverters.FutureOps
+import scala.jdk.FutureConverters.*
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 

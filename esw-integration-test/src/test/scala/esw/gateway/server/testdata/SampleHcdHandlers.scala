@@ -1,6 +1,6 @@
 package esw.gateway.server.testdata
 
-import akka.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
@@ -14,7 +14,7 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 
 class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
-  import cswCtx._
+  import cswCtx.*
 
   val log: Logger = loggerFactory.getLogger(ctx)
   override def initialize(): Unit = {

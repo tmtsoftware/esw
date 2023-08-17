@@ -1,8 +1,8 @@
 package esw.sm.impl.utils
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.{AkkaLocation, ComponentId, Location}
+import csw.location.api.models.{PekkoLocation, ComponentId, Location}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
@@ -61,7 +61,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       )
   }
 
-  private def restartSequencer(sequencerLocation: AkkaLocation) =
+  private def restartSequencer(sequencerLocation: PekkoLocation) =
     makeSequencerClient(sequencerLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.restartScript(_).map {
         case SequencerLocation(location) => RestartSequencerResponse.Success(location.connection.componentId)
@@ -72,14 +72,14 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private def getSequencer(prefix: SequencerPrefix): Future[Either[EswLocationError.FindLocationError, List[SeqCompLocation]]] =
     locationServiceUtil.findSequencer(prefix).mapRight(List(_))
 
-  private def getSubsystemSequencers(subsystem: Subsystem) = locationServiceUtil.listAkkaLocationsBy(subsystem, Sequencer)
+  private def getSubsystemSequencers(subsystem: Subsystem) = locationServiceUtil.listPekkoLocationsBy(subsystem, Sequencer)
 
   private def getObsModeSequencers(obsMode: ObsMode) = locationServiceUtil
-    .listSequencersAkkaLocationsBy(obsMode.name)
+    .listSequencersPekkoLocationsBy(obsMode.name)
 
-  private def getAllSequencers = locationServiceUtil.listAkkaLocationsBy(Sequencer)
+  private def getAllSequencers = locationServiceUtil.listPekkoLocationsBy(Sequencer)
 
-  private def shutdownSequencersAndHandleErrors(sequencers: Future[Either[EswLocationError, List[AkkaLocation]]]) =
+  private def shutdownSequencersAndHandleErrors(sequencers: Future[Either[EswLocationError, List[PekkoLocation]]]) =
     sequencers.flatMapRight(unloadScripts).mapToAdt(identity, locationErrorToShutdownSequencersResponse)
 
   private def locationErrorToShutdownSequencersResponse(err: EswLocationError) =
@@ -89,12 +89,12 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     }
 
   // get sequence component from Sequencer and unload sequencer script
-  private def unloadScript(sequencerLocation: AkkaLocation) =
+  private def unloadScript(sequencerLocation: PekkoLocation) =
     makeSequencerClient(sequencerLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.unloadScript)
       .map(_ => ShutdownSequencersResponse.Success)
 
-  private def unloadScripts(sequencerLocations: List[AkkaLocation]) =
+  private def unloadScripts(sequencerLocations: List[PekkoLocation]) =
     Future.traverse(sequencerLocations)(unloadScript).map(_ => ShutdownSequencersResponse.Success)
 
   // Created in order to mock the behavior of sequencer API availability for unit test

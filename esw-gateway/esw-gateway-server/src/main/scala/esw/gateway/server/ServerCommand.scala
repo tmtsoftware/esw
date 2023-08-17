@@ -2,7 +2,7 @@ package esw.gateway.server
 
 import java.nio.file.Path
 
-import caseapp._
+import caseapp.*
 
 /**
  * ServerCommand - a set of command line param written using case app for the gateway server.

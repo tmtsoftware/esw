@@ -1,7 +1,7 @@
 package esw.sm.handler
 
-import akka.http.scaladsl.server.Directives.complete
-import akka.http.scaladsl.server.Route
+import org.apache.pekko.http.scaladsl.server.Directives.complete
+import org.apache.pekko.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import esw.commons.auth.AuthPolicies
 import esw.sm.api.SequenceManagerApi
