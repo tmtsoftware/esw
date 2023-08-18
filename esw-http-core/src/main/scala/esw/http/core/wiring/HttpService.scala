@@ -35,8 +35,8 @@ class HttpService(
 ) {
 
   import actorRuntime.*
-  def startAndRegisterServer(metadata: Metadata = Metadata.empty): Future[(ServerBinding, RegistrationResult)] =
-    async {
+  def startAndRegisterServer(metadata: Metadata = Metadata.empty): Future[(ServerBinding, RegistrationResult)] = {
+    val f = async {
       val binding            = await(startServer())
       val registrationResult = await(register(binding, settings.httpConnection, metadata))
 
@@ -47,9 +47,11 @@ class HttpService(
 
       log.info(s"Server online at http://${binding.localAddress.getHostString}:${binding.localAddress.getPort}/")
       (binding, registrationResult)
-    } recoverWith { case NonFatal(ex) =>
+    }
+    f.recoverWith { case NonFatal(ex) =>
       actorRuntime.shutdown(FailureReason(ex)).map(_ => throw ex)
     }
+  }
 
   private def applicationRoute: Route = {
     val rejectionHandler = corsRejectionHandler.withFallback(RejectionHandler.default)

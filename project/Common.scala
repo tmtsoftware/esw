@@ -47,6 +47,9 @@ object Common {
         "-feature",
         "-unchecked",
         "-deprecation",
+//        "-rewrite",
+//        "-source",
+//        "3.0-migration"
       ),
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
       Test / testOptions ++= reporterOptions,
@@ -54,13 +57,14 @@ object Common {
       // jitpack provides the env variable VERSION=<version being built> # A tag or commit. We have aliased VERSION to JITPACK_VERSION
       // we make use of it so that the version in class metadata (e.g. classOf[HttpService].getPackage.getSpecificationVersion)
       // and the maven repo match
-      version     := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
-      fork        := true,
+      version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
+      fork    := true,
       javaOptions += "-Xmx2G",
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dpekko.actor.serialize-messages=on"),
       cancelable in Global    := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
-      scalafmtOnCompile       := true,
+//      scalafmtOnCompile       := true,
+      scalafmtOnCompile       := false, // temp
       unidocGenjavadocVersion := "0.18",
       commands += Command.command("openSite") { state =>
         val uri = s"file://${Project.extract(state).get(siteDirectory)}/${docsParentDir.value}/${version.value}/index.html"

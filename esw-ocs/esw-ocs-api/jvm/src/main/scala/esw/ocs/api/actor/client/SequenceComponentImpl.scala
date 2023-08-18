@@ -39,14 +39,14 @@ class SequenceComponentImpl(sequenceComponentLocation: PekkoLocation)(implicit
     )
 
   override def restartScript(): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? RestartScript)(SequenceComponentTimeouts.RestartScript, actorSystem.scheduler)
+    (sequenceComponentRef ? RestartScript.apply)(SequenceComponentTimeouts.RestartScript, actorSystem.scheduler)
 
   override def status: Future[GetStatusResponse] =
-    (sequenceComponentRef ? GetStatus)(SequenceComponentTimeouts.Status, actorSystem.scheduler)
+    (sequenceComponentRef ? GetStatus.apply)(SequenceComponentTimeouts.Status, actorSystem.scheduler)
 
   override def unloadScript(): Future[Ok.type] =
-    (sequenceComponentRef ? UnloadScript)(SequenceComponentTimeouts.UnloadScript, actorSystem.scheduler)
+    (sequenceComponentRef ? UnloadScript.apply)(SequenceComponentTimeouts.UnloadScript, actorSystem.scheduler)
 
   override def shutdown(): Future[Ok.type] =
-    (sequenceComponentRef ? Shutdown)(SequenceComponentTimeouts.Shutdown, actorSystem.scheduler)
+    (sequenceComponentRef ? Shutdown.apply)(SequenceComponentTimeouts.Shutdown, actorSystem.scheduler)
 }

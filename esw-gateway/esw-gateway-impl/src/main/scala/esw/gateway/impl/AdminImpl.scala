@@ -56,11 +56,11 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
   override def goOnline(componentId: ComponentId): Future[Done]  = sendMessageToComponent(componentId, Lifecycle(GoOnline))
 
   override def getComponentLifecycleState(componentId: ComponentId): Future[SupervisorLifecycleState] =
-    findComponent(componentId).flatMap(pekkoLocation => pekkoLocation.componentRef ? GetSupervisorLifecycleState)
+    findComponent(componentId).flatMap(pekkoLocation => pekkoLocation.componentRef ? GetSupervisorLifecycleState.apply)
 
   override def getContainerLifecycleState(prefix: Prefix): Future[ContainerLifecycleState] =
     findComponent(ComponentId(prefix, ComponentType.Container)).flatMap(pekkoLocation =>
-      pekkoLocation.containerRef ? GetContainerLifecycleState
+      pekkoLocation.containerRef ? GetContainerLifecycleState.apply
     )
 
   override def getLogMetadata(componentId: ComponentId): Future[LogMetadata] = {
@@ -73,8 +73,8 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
           Map("prefix" -> prefix.toString, "location" -> pekkoLocation.toString)
         )
         componentId.componentType match {
-          case Sequencer => pekkoLocation.sequencerRef ? GetComponentLogMetadata
-          case _         => pekkoLocation.componentRef ? GetComponentLogMetadata
+          case Sequencer => pekkoLocation.sequencerRef ? GetComponentLogMetadata.apply
+          case _         => pekkoLocation.componentRef ? GetComponentLogMetadata.apply
         }
       })
   }

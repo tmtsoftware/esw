@@ -71,6 +71,7 @@ object Dependencies {
     Seq(
       Borer.`borer-core`.value,
       Borer.`borer-derivation`.value,
+      Borer.`borer-compat-pekko`,
       Csw.`csw-location-api`.value,
       MSocket.`msocket-api`.value
     )
@@ -131,6 +132,7 @@ object Dependencies {
       Csw.`csw-location-client`,
       Pekko.`pekko-actor-typed`,
       PekkoHttp.`pekko-http`,
+      Borer.`borer-compat-pekko`,
       Pekko.`pekko-stream`,
       PekkoHttp.`pekko-http-cors`,
       Libs.`dotty-cps-async`.value,

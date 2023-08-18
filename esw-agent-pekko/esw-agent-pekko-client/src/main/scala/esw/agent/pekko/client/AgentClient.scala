@@ -31,7 +31,7 @@ class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSyste
       version: Option[String] = None,
       simulation: Boolean = false
   ): Future[SpawnResponse] =
-    (agentRef ? (SpawnSequenceComponent(_, agentPrefix, componentName, version, simulation)))(
+    (agentRef ? (SpawnSequenceComponent(_: ActorRef[SpawnResponse], agentPrefix, componentName, version, simulation)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
@@ -42,7 +42,7 @@ class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSyste
       version: Option[String] = None,
       simulation: Boolean = false
   ): Future[SpawnResponse] =
-    (agentRef ? (SpawnSequenceManager(_, obsModeConfigPath, isConfigLocal, version, simulation)))(
+    (agentRef ? (SpawnSequenceManager(_: ActorRef[SpawnResponse], obsModeConfigPath, isConfigLocal, version, simulation)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
@@ -51,13 +51,13 @@ class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSyste
       hostConfigPath: String,
       isConfigLocal: Boolean
   ): Future[SpawnContainersResponse] =
-    (agentRef ? (SpawnContainers(_, hostConfigPath, isConfigLocal)))(
+    (agentRef ? (SpawnContainers(_: ActorRef[SpawnContainersResponse], hostConfigPath, isConfigLocal)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
 
   def killComponent(location: Location): Future[KillResponse] =
-    (agentRef ? (KillComponent(_, location)))(AgentTimeouts.KillComponent, actorSystem.scheduler)
+    (agentRef ? (KillComponent(_: ActorRef[KillResponse], location)))(AgentTimeouts.KillComponent, actorSystem.scheduler)
 }
 
 object AgentClient {

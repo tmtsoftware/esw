@@ -71,7 +71,7 @@ class LockUnlockUtil(val source: Prefix)(actorSystem: ActorSystem[SpawnProtocol.
    * @return the [[csw.command.client.models.framework.LockingResponse]] as CompletionStage value
    */
   def unlock(componentRef: ActorRef[ComponentMessage]): CompletionStage[LockingResponse] =
-    (componentRef ? (Unlock(source, _: ActorRef[LockingResponse]))).toJava
+    (componentRef ? (Unlock(source, _: ActorRef[LockingResponse]))).asJava
 
   private def actorSource =
     ActorSource

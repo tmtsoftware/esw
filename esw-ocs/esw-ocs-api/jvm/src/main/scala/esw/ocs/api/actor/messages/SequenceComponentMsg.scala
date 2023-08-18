@@ -43,5 +43,5 @@ object SequenceComponentMsg {
       with UnhandleableSequenceComponentMsg
       with RunningStateSequenceComponentMsg
 
-  private[ocs] final case object Stop extends SequenceComponentMsg with CommonMsg
+  private[ocs] case object Stop extends SequenceComponentMsg with CommonMsg
 }

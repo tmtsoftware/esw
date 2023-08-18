@@ -7,7 +7,7 @@ import java.util.Properties
 import scala.util.Using
 
 object Libs {
-  private val MSocketVersion = "0.6.0"
+``  private val MSocketVersion = "0.6.0"
 
   val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M25"
   val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.3") // MIT License

@@ -26,7 +26,7 @@ object ElementConverter {
     }
 
   def toSeq(input: Dom.ArrayElem): Seq[Any] =
-    input.elements.collect {
+    input.elems.collect {
       case x if x != Dom.NullElem => toAny(x)
     }
 

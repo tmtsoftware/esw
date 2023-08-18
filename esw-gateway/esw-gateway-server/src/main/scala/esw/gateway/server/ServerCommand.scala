@@ -2,7 +2,7 @@ package esw.gateway.server
 
 import java.nio.file.Path
 
-import caseapp.*
+import caseapp._
 
 /**
  * ServerCommand - a set of command line param written using case app for the gateway server.
@@ -10,8 +10,7 @@ import caseapp.*
 sealed trait ServerCommand
 
 object ServerCommand {
-  @CommandName("start")
-  final case class StartCommand(
+  final case class StartOptions(
       @ExtraName("p")
       @HelpMessage(
         "HTTP server will be bound to this port. " +

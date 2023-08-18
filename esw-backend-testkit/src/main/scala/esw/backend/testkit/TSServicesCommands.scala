@@ -5,7 +5,7 @@ import java.nio.file.Path
 import caseapp.core.Error.UnrecognizedArgument
 import caseapp.core.argparser.SimpleArgParser
 import caseapp.{ExtraName, HelpMessage, _}
-import csw.testkit.scaladsl.CSWService.*
+import csw.testkit.scaladsl.CSWService._
 import esw.backend.testkit.utils.IOUtils
 import esw.ocs.testkit.Service
 import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, SequenceManager}
@@ -30,7 +30,7 @@ object TSServicesCommands {
     }
 
   @CommandName("start")
-  final case class Start(
+  final case class StartOptions(
       @HelpMessage("Service name e.g., Location, Gateway etc")
       @ExtraName("s")
       services: List[Service],

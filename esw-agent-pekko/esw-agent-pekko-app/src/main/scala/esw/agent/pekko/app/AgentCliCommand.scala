@@ -20,8 +20,7 @@ object AgentCliCommand {
         .getOrElse(Left(Error.Other(s"Prefix [$prefixStr] is invalid")))
     }
 
-  @CommandName("start")
-  final case class StartCommand(
+  final case class StartOptions(
       @HelpMessage("Required: Prefix of machine. tcs.primary_machine, esw.machine1 etc")
       @Short("p")
       prefix: String,

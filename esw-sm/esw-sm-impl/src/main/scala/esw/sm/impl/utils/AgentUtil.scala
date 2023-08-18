@@ -68,7 +68,7 @@ class AgentUtil(
       .traverse(mapping) { case (agentLocation, seqCompPrefix) =>
         spawnSeqComp(agentLocation.prefix, makeAgentClient(agentLocation), seqCompPrefix, version)
       }
-      .map(_.sequence.map(_ => ProvisionResponse.Success).left.map(SpawningSequenceComponentsFailed).merge)
+      .map(_.sequence.map(_ => ProvisionResponse.Success).left.map(SpawningSequenceComponentsFailed.apply).merge)
 
   /*
    * Spawn a sequence component with the given prefix on the agent of given agentPrefix.

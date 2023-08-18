@@ -41,7 +41,7 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   private val extensions = new SequencerCommandServiceExtension(this)
 
-  override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence
+  override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence.apply
 
   override def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]       = sequencer ? (Add(commands, _))
   override def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]   = sequencer ? (Prepend(commands, _))
@@ -51,26 +51,26 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
     sequencer ? (InsertAfter(id, commands, _))
 
   override def delete(id: Id): Future[GenericResponse]                    = sequencer ? (Delete(id, _))
-  override def pause: Future[PauseResponse]                               = sequencer ? Pause
-  override def resume: Future[OkOrUnhandledResponse]                      = sequencer ? Resume
+  override def pause: Future[PauseResponse]                               = sequencer ? Pause.apply
+  override def resume: Future[OkOrUnhandledResponse]                      = sequencer ? Resume.apply
   override def addBreakpoint(id: Id): Future[GenericResponse]             = sequencer ? (AddBreakpoint(id, _))
   override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
-  override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
+  override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset.apply
   override def abortSequence(): Future[OkOrUnhandledResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? AbortSequence
+    sequencer ? AbortSequence.apply
   }
 
   override def stop(): Future[OkOrUnhandledResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? Stop
+    sequencer ? Stop.apply
   }
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
 
   override def isOnline: Future[Boolean] = getState.map(_ != Offline)
 
-  private def getState: Future[InternalSequencerState[SequencerMsg]] = sequencer ? GetSequencerState
+  private def getState: Future[InternalSequencerState[SequencerMsg]] = sequencer ? GetSequencerState.apply
 
   def getSequencerState: Future[SequencerState] =
     getState.map {
@@ -105,7 +105,7 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def startSequence(): Future[SubmitResponse] = {
     implicit val timeout: Timeout                         = SequencerTimeouts.ScriptHandlerExecution
-    val sequenceResponse: Future[SequencerSubmitResponse] = sequencer ? StartSequence
+    val sequenceResponse: Future[SequencerSubmitResponse] = sequencer ? StartSequence.apply
     sequenceResponse.map(_.toSubmitResponse())
   }
 
@@ -124,12 +124,12 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def goOnline(): Future[GoOnlineResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? GoOnline
+    sequencer ? GoOnline.apply
   }
 
   override def goOffline(): Future[GoOfflineResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? GoOffline
+    sequencer ? GoOffline.apply
   }
 
   override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = {
@@ -139,8 +139,8 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def operationsMode(): Future[OperationsModeResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? OperationsMode
+    sequencer ? OperationsMode.apply
   }
 
-  override def getSequenceComponent: Future[PekkoLocation] = sequencer ? GetSequenceComponent
+  override def getSequenceComponent: Future[PekkoLocation] = sequencer ? GetSequenceComponent.apply
 }

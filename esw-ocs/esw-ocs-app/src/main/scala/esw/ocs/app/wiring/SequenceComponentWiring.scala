@@ -31,8 +31,8 @@ private[esw] class SequenceComponentWiring(
   private[wiring] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequence-component-system")
 
-  lazy val actorRuntime: ActorRuntime = new ActorRuntime(actorSystem)
-  import actorRuntime.*
+  final lazy val actorRuntime: ActorRuntime = new ActorRuntime(actorSystem)
+  import actorRuntime._
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
@@ -42,7 +42,7 @@ private[esw] class SequenceComponentWiring(
     val sequenceComponentLogger: Logger = loggerFactory.getLogger
 
     sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentPrefix")
-    typedSystem ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
+    typedSystem ? { (replyTo: ActorRef[ActorRef[SequenceComponentMsg]]) =>
       Spawn(
         new SequenceComponentBehavior(
           sequenceComponentPrefix,

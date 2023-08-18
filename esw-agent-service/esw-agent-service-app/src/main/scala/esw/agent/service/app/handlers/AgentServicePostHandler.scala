@@ -4,9 +4,11 @@ import org.apache.pekko.http.scaladsl.server.Directives.*
 import org.apache.pekko.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import esw.agent.service.api.AgentServiceApi
+import esw.agent.service.api.codecs.AgentCodecs.*
 import esw.agent.service.api.codecs.AgentServiceCodecs.*
 import esw.agent.service.api.protocol.AgentServiceRequest
 import esw.agent.service.api.protocol.AgentServiceRequest.*
+
 import esw.commons.auth.AuthPolicies
 import msocket.http.post.{HttpPostHandler, ServerHttpCodecs}
 
