@@ -7,7 +7,7 @@ import java.util.Properties
 import scala.util.Using
 
 object Libs {
-``  private val MSocketVersion = "0.6.0"
+  private val MSocketVersion = "0.6.0"
 
   val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M25"
   val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.3") // MIT License
@@ -21,12 +21,9 @@ object Libs {
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.8.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "590c5e7" // Apache 2.0
 
-  val `ammonite` = ("com.lihaoyi" % "ammonite" % "3.0.0-M0-49-151446c5" cross CrossVersion.full)
-    .exclude("com.lihaoyi", "upickle_2.13")
+  val `ammonite` = ("com.lihaoyi" % "ammonite_3.3.0" % "3.0.0-M0-49-151446c5")
     .exclude("com.lihaoyi", "requests_2.13")
-    .exclude("com.lihaoyi", "os-lib_2.13")
     .exclude("com.lihaoyi", "geny_2.13")
-    .exclude("org.scala-lang.modules", "scala-xml_2.13")
 
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "2.0.7"
