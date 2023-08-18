@@ -59,7 +59,7 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   private[ocs] lazy val config: Config  = actorSystem.settings.config
-  private[ocs] final lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
+  private[ocs] val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
   import sequencerConfig.*
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring

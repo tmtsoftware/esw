@@ -29,7 +29,7 @@ object ProcessExt {
         destroy(p).timeout(terminationTimeout).recoverWith(_ => destroyForcibly(p))
 
       // descendants can throw exception
-      Future(parent.descendants().toScala[List]).flatMap { children =>
+      Future(parent.descendants().toScala(List)).flatMap { children =>
         Future
           .traverse(children)(kill)
           .transformWith(_ => kill(parent))

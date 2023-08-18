@@ -13,11 +13,11 @@ object AgentServiceCodecs extends AgentServiceCodecs
  */
 trait AgentServiceCodecs extends AgentCodecs {
 
-  lazy implicit val agentHttpMessageCodecs: Codec[AgentServiceRequest] = deriveAllCodecs
+  final lazy implicit val agentHttpMessageCodecs: Codec[AgentServiceRequest] = deriveAllCodecs
 
-  lazy implicit val agentExceptionCodec: Codec[AgentNotFoundException] = deriveCodec
+  final lazy implicit val agentExceptionCodec: Codec[AgentNotFoundException] = deriveCodec
 
-  implicit lazy val agentHttpErrorProtocol: ErrorProtocol[AgentServiceRequest] =
+  final lazy implicit val agentHttpErrorProtocol: ErrorProtocol[AgentServiceRequest] =
     ErrorProtocol.bind[AgentServiceRequest, AgentNotFoundException]
 
 }

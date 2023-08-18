@@ -61,7 +61,7 @@ class LockUnlockUtil(val source: Prefix)(actorSystem: ActorSystem[SpawnProtocol.
       .takeWhile(isNotFinalLockResponse)
       .toMat(Sink.ignore)(Keep.left)
       .run()
-      .toJava
+      .asJava
   }
 
   /**

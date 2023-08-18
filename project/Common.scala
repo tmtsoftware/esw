@@ -62,7 +62,7 @@ object Common {
       javaOptions += "-Xmx2G",
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dpekko.actor.serialize-messages=on"),
-      cancelable in Global    := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
+      Global / cancelable     := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
 //      scalafmtOnCompile       := true,
       scalafmtOnCompile       := false, // temp
       unidocGenjavadocVersion := "0.18",

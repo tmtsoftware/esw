@@ -21,9 +21,17 @@ object Libs {
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.8.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "590c5e7" // Apache 2.0
 
-  val `ammonite` = ("com.lihaoyi" % "ammonite_3.3.0" % "3.0.0-M0-49-151446c5")
+  // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
+  val `ammonite` = ("com.lihaoyi" %% "ammonite" % "3.0.0-M0-49-151446c5" cross CrossVersion.full)
     .exclude("com.lihaoyi", "requests_2.13")
+    .exclude("com.lihaoyi", "upickle_2.13")
     .exclude("com.lihaoyi", "geny_2.13")
+    .exclude("com.lihaoyi", "upack_2.13")
+    .exclude("com.lihaoyi", "ujson_2.13")
+    .exclude("com.lihaoyi", "upickle-implicits_2.13")
+    .exclude("com.lihaoyi", "upickle-core_2.13")
+    .exclude("com.lihaoyi", "os-lib_2.13")
+    .exclude("org.scala-lang.modules", "scala-xml_2.13")
 
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "2.0.7"

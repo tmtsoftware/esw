@@ -17,7 +17,7 @@ class SimulationSequencerWiring(
   private val heartbeatInterval      = config.getDuration("esw.heartbeat-interval")
   private val enableThreadMonitoring = config.getBoolean("esw.enable-thread-monitoring")
 
-  override private[ocs] lazy val sequencerConfig =
+  override private[ocs] val sequencerConfig =
     SequencerConfig(
       sequencerPrefix,
       simulationScript.getClass.getName,
