@@ -6,7 +6,7 @@ inThisBuild(
   CommonSettings
 )
 
-val KotlincOptions = Seq("-opt-in=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+val KotlincOptions = Seq("-opt-in=kotlin.time.ExperimentalTime", "-Xallow-any-scripts-in-source-roots", "-jvm-target", "1.8")
 
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-ocs`,
