@@ -40,7 +40,7 @@ class SequenceComponentBehavior(
 
   /*
    * Sequence Component Behaviour when it is in Idle state means there are no Sequencer running
-   * @return an typed actor [[pekko.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
+   * @return an typed actor [[org.apache.pekko.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
    */
   def idle: Behavior[SequenceComponentMsg] =
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (_, msg) =>
@@ -84,7 +84,7 @@ class SequenceComponentBehavior(
 
   /*
    * Sequence Component Behaviour when it is in Running state means there is a Sequencer running
-   * @return an typed actor [[pekko.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
+   * @return an typed actor [[org.apache.pekko.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
    */
   private def running(sequencerPrefix: Prefix, sequencerServer: SequencerServer, location: PekkoLocation) =
     receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (_, msg) =>

@@ -60,7 +60,7 @@ interface EventServiceDsl {
      * [[csw.event.api.exceptions.PublishFailure]] containing the cause for other failures.
      *
      * @param event to publish
-     * @return [[pekko.Done]] when event is published
+     * @return [[org.apache.pekko.Done]] when event is published
      */
     suspend fun publishEvent(event: Event): Done = eventPublisher.publish(event).await()
 
@@ -71,7 +71,7 @@ interface EventServiceDsl {
      *
      * @param every frequency with which the events are to be published
      * @param eventGenerator function which will be called at given frequency to generate an event to be published
-     * @return handle of [[pekko.actor.Cancellable]] which can be used to stop event publishing
+     * @return handle of [[org.apache.pekko.actor.Cancellable]] which can be used to stop event publishing
      */
     fun publishEvent(every: Duration, eventGenerator: SuspendableSupplier<Event?>): Cancellable =
             eventPublisher.publishAsync({
