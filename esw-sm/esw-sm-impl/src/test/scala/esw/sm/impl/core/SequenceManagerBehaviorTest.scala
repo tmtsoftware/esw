@@ -645,16 +645,16 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       // Assert that following msgs are getting unhandled response back in processing state
       assertUnhandled(
         state = Processing,
-        ShutdownAllSequencers,
-        Configure(clearSkies, _),
+        ShutdownAllSequencers.apply,
+        Configure(clearSkies, _: ActorRef[SmResponse]),
         ShutdownSequencer(ESW, darkNight, None, _),
         ShutdownObsModeSequencers(clearSkies, _),
         ShutdownSubsystemSequencers(ESW, _),
-        StartSequencer(ESW, darkNight, None, _),
-        RestartSequencer(ESW, darkNight, None, _),
-        ShutdownSequenceComponent(Prefix(ESW, "primary"), _),
-        ShutdownAllSequenceComponents,
-        Provision(provisionConfig, _)
+        StartSequencer(ESW, darkNight, None, _: ActorRef[SmResponse]),
+        RestartSequencer(ESW, darkNight, None, _: ActorRef[SmResponse]),
+        ShutdownSequenceComponent(Prefix(ESW, "primary"), _: ActorRef[SmResponse]),
+        ShutdownAllSequenceComponents.apply,
+        Provision(provisionConfig, _: ActorRef[SmResponse])
       )
     }
   }

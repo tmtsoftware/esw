@@ -80,10 +80,10 @@ object Pekko {
   val Version = "1.0.1" // all pekko is Apache License 2.0
   val Org     = "org.apache.pekko"
 
-  val `pekko-actor-typed`         = Org %% "pekko-actor-typed"         % Version
-  val `pekko-stream-typed`        = Org %% "pekko-stream-typed"        % Version
-  val `pekko-stream`              = Org %% "pekko-stream"              % Version
-  val `pekko-remote`              = Org %% "pekko-remote"              % Version
+  val `pekko-actor-typed`  = Org %% "pekko-actor-typed"  % Version
+  val `pekko-stream-typed` = Org %% "pekko-stream-typed" % Version
+  val `pekko-stream`       = Org %% "pekko-stream"       % Version
+  val `pekko-remote`       = Org %% "pekko-remote"       % Version
 
   val `pekko-actor-testkit-typed` = Org %% "pekko-actor-testkit-typed" % Version
   val `pekko-stream-testkit`      = Org %% "pekko-stream-testkit"      % Version
@@ -98,7 +98,7 @@ object PekkoHttp {
   val `pekko-http-testkit`    = Org %% "pekko-http-testkit"    % Version
   val `pekko-http-spray-json` = Org %% "pekko-http-spray-json" % Version
 
-  val `pekko-http-cors`       = Org %% "pekko-http-cors"       % Version
+  val `pekko-http-cors` = Org %% "pekko-http-cors" % Version
 }
 
 object Borer {
@@ -127,7 +127,7 @@ object Kotlin {
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
   val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.6.2"
-  val mockk      = "io.mockk"  % "mockk"                      % "1.13.5"
+  val mockk      = "io.mockk"  % "mockk-jvm"                  % "1.13.7"
 }
 
 object BuildProperties {

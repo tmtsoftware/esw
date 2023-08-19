@@ -12,7 +12,7 @@ import esw.agent.service.api.models.*
 import esw.commons.utils.config.FetchingScriptVersionFailed
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.Mockito.{verify, when}
-import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
+import org.scalatest.matchers.must.Matchers.*
 
 import java.nio.file.{Path, Paths}
 import scala.concurrent.Future

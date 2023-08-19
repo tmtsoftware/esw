@@ -61,10 +61,10 @@ class GatewayAuthRequestTest extends BaseTestSuite with ScalatestRouteTest with 
 
     val data: TableFor3[String, GatewayRequest, AdminApi => Future[Done]] = Table(
       ("Name", "command", "api"),
-      ("GoOffline", GoOffline(componentId), _.goOffline(componentId)),
-      ("GoOnline", GoOnline(componentId), _.goOnline(componentId)),
-      ("Shutdown", Shutdown(componentId), _.shutdown(componentId)),
-      ("Restart", Restart(componentId), _.restart(componentId))
+      ("GoOffline", GoOffline(componentId), (_: AdminApi).goOffline(componentId)),
+      ("GoOnline", GoOnline(componentId), (_: AdminApi).goOnline(componentId)),
+      ("Shutdown", Shutdown(componentId), (_: AdminApi).shutdown(componentId)),
+      ("Restart", Restart(componentId), (_: AdminApi).restart(componentId))
     )
 
     data.foreach { case (name, command, api) =>

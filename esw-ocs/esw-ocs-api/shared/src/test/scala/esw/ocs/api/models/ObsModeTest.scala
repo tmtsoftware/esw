@@ -3,7 +3,7 @@ package esw.ocs.api.models
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.IRIS
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.shouldBe
 import org.scalatest.wordspec.AnyWordSpec
 
 class ObsModeTest extends AnyWordSpec with Matchers {

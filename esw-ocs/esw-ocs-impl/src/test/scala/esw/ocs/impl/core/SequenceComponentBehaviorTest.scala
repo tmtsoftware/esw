@@ -225,7 +225,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
   private def spawnSequenceComponent()(implicit
       actorSystem: ActorSystem[SpawnProtocol.Command]
   ): (ActorRef[SequenceComponentMsg], PekkoLocation) = {
-    val sequenceComponentRef = (actorSystem ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
+    val sequenceComponentRef = (actorSystem ? { (replyTo: ActorRef[ActorRef[SequenceComponentMsg]]) =>
       Spawn(
         new SequenceComponentBehavior(
           sequenceComponentPrefix,

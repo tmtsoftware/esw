@@ -34,7 +34,7 @@ class HTTPServiceCorsTest extends EswTestKit {
 //  lazy val wiring: ServerWiring = ServerWiring.make(Some(gatewayPort))
 //  import wiring.*
 
-  lazy val actorRuntime = new ActorRuntime(actorSystem)
+  final lazy val actorRuntime = new ActorRuntime(actorSystem)
   import actorRuntime.typedSystem
 
   private lazy val config = actorSystem.settings.config
