@@ -13,7 +13,9 @@ addSbtPlugin("com.dwijnand"                      % "sbt-project-graph"        % 
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 
 resolvers += "jitpack" at "https://jitpack.io"
-libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "24d598a"
+
+libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "793d9f9"
+
 libraryDependencies += "com.github.tmtsoftware" % "sbt-docs"      % "8d39500"
 
 resolvers += Resolver.jcenterRepo
@@ -29,3 +31,5 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code",
   "-Xfuture"
 )
+
+classpathTypes += "maven-plugin"
