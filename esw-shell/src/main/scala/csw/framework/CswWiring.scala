@@ -19,6 +19,10 @@ import org.apache.pekko.Done
 import scala.concurrent.{ExecutionContext, Future}
 
 class CswWiring {
+  // Duplicating some code from csw's FrameworkWiring below due to scala 3 restrictions on importing non-final
+  // lazy vals and because FrameworkWiring has subclasses overriding lazy vals and the tests fail
+  // if the "lazy" keyword is removed...
+
   lazy val redisClient: RedisClient = {
     val client = RedisClient.create()
     shutdownRedisOnTermination(client)
