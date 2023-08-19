@@ -15,9 +15,9 @@ import scala.concurrent.{ExecutionContext, Future}
  * A convenient class wrapping actor system and providing handles for execution context, materializer and clean up of actor system
  */
 class ActorRuntime(_typedSystem: ActorSystem[SpawnProtocol.Command]) {
-  implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = _typedSystem
-  implicit val ec: ExecutionContext                            = typedSystem.executionContext
-  val coordinatedShutdown: CoordinatedShutdown                 = CoordinatedShutdown(typedSystem)
+  final implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = _typedSystem
+  final implicit val ec: ExecutionContext                            = typedSystem.executionContext
+  final val coordinatedShutdown: CoordinatedShutdown                 = CoordinatedShutdown(typedSystem)
 
   def startLogging(name: String, version: String = BuildInfo.version): LoggingSystem =
     LoggingSystemFactory.start(name, version, Networks().hostname, typedSystem)

@@ -18,7 +18,7 @@ import esw.constants.CommonTimeouts
 class EswWiring {
   lazy val cswWiring = new CswWiring
 
-  private implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = cswWiring.wiring.actorSystem
+  private implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = cswWiring.actorSystem
 
   private lazy val locationService: LocationService   = cswWiring.cswContext.locationService
   private lazy val locationUtils: LocationServiceUtil = new LocationServiceUtil(locationService)

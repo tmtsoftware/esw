@@ -20,10 +20,10 @@ trait AgentUtils {
   def spawnAgent(agentSettings: AgentSettings, hostConfigPath: Option[String] = None, isHostConfigLocal: Boolean = true): Unit = {
     val system = actorSystem
     val wiring = new AgentWiring(agentSettings, hostConfigPath, isHostConfigLocal) {
-      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = system
+      override val actorSystem: ActorSystem[SpawnProtocol.Command] = system
     }
     agentWiring = Some(wiring)
-    AgentApp.start(
+    AgentApp.StartCommand.start(
       wiring,
       startLogging = false
     )

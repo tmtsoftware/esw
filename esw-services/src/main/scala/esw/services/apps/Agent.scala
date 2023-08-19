@@ -24,7 +24,7 @@ object Agent {
 
   // This method is for starting the agent and being called in the start hook for the Agent
   private def startAgent(prefix: Prefix, agentConfig: Config, hostConfigPath: Option[String]): AgentWiring =
-    AgentApp.start(AgentSettings(prefix, agentConfig), hostConfigPath, isConfigLocal = true)
+    AgentApp.StartCommand.start(AgentSettings(prefix, agentConfig), hostConfigPath, isConfigLocal = true)
 
   // This method is for stopping the agent and being called in the stop hook for the Agent
   private def stopAgent(wiring: AgentWiring): Unit =

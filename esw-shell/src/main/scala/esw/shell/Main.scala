@@ -1,5 +1,7 @@
 package esw.shell
 
+import ammonite.util.Bind
+
 import scala.sys.exit
 
 //main to start the esw-shell
@@ -9,7 +11,7 @@ object Main extends App {
 
   println(s"+++++ starting $progName-$appVersion +++++")
 
-  val eswWiring = new EswWiring
+  val eswWiring: EswWiring = new EswWiring
   eswWiring.startLogging(progName, appVersion)
 
   val ammoniteResponse = ammonite
@@ -48,6 +50,7 @@ object Main extends App {
                        |import esw.shell.utils.*
                        |import esw.commons.extensions.FutureExt.*
                        |import esw.shell.utils.Timeouts.*
+                       |val eswWiring = new esw.shell.EswWiring
                        |import eswWiring.*
                        |import eswWiring.factories.*
                        |import eswWiring.cswWiring.cswContext.*
@@ -55,7 +58,7 @@ object Main extends App {
                        |// #imports
                        |""".stripMargin
     )
-    .run("eswWiring" -> eswWiring)
+    .run()
     ._1
 
   if (!ammoniteResponse.isSuccess) {

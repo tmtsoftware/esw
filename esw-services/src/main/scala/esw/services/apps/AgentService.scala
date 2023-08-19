@@ -14,7 +14,7 @@ object AgentService {
     ManagedService("agent-service", enable, () => startAgentService(), stopAgentService)
 
   // This method is for starting the Agent Service and being called in the start hook for the Agent Service
-  private def startAgentService(): AgentServiceWiring = AgentServiceApp.start(None)
+  private def startAgentService(): AgentServiceWiring = AgentServiceApp.StartCommand.start(None)
 
   // This method is for stopping the Agent Service and being called in the stop hook for the Agent Service
   private def stopAgentService(wiring: AgentServiceWiring): Unit =
