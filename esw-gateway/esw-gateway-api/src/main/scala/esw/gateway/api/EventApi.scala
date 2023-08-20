@@ -44,7 +44,7 @@ trait EventApi {
    *
    * @param eventKeys     a set of [[csw.params.events.EventKey]] to subscribe to
    * @param maxFrequency  the frequency with which the events are received (in Hz)
-   * @return              a [[pekko.stream.scaladsl.Source]] of [[csw.params.events.Event]]. The materialized value of the source provides
+   * @return              a [[org.apache.pekko.stream.scaladsl.Source]] of [[csw.params.events.Event]]. The materialized value of the source provides
    *                      an [[msocket.api.Subscription]] which can be used to unsubscribe from all the Event Keys which were subscribed to
    */
   def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int] = None): Source[Event, Subscription]
@@ -64,7 +64,7 @@ trait EventApi {
    *                      - h*llo subscribes to hllo and heeeello
    *                      - h[ae]llo subscribes to hello and hallo, but not hillo
    *                      Use \ to escape special characters if you want to match them verbatim.
-   * @return a [[pekko.stream.scaladsl.Source]] of [[csw.params.events.Event]]. The materialized value of the source provides
+   * @return a [[org.apache.pekko.stream.scaladsl.Source]] of [[csw.params.events.Event]]. The materialized value of the source provides
    *         an [[msocket.api.Subscription]] which can be used to unsubscribe from all the Event Keys which were subscribed to
    */
   def pSubscribe(subsystem: Subsystem, maxFrequency: Option[Int] = None, pattern: String = "*"): Source[Event, Subscription]
@@ -76,7 +76,7 @@ trait EventApi {
    * and the subscription is stopped after logging appropriately. [[csw.event.api.scaladsl.EventSubscription!.ready]] method can be used to determine this
    * state. In all other cases of exception, the subscription resumes to receive remaining elements.
    *
-   * @return a [[pekko.stream.scaladsl.Source]] of [[csw.params.events.Event]]. The materialized value of the source provides
+   * @return a [[org.apache.pekko.stream.scaladsl.Source]] of [[csw.params.events.Event]]. The materialized value of the source provides
    *         an [[csw.event.api.scaladsl.EventSubscription]] which can be used to unsubscribe from observe events subscription
    */
   def subscribeObserveEvents(maxFrequency: Option[Int] = None): Source[Event, Subscription]

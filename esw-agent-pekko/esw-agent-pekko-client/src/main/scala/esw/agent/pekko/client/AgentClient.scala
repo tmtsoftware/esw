@@ -20,7 +20,7 @@ import scala.concurrent.Future
 /**
  * Pekko client for the Agent
  * @param pekkoLocation - [[csw.location.api.models.PekkoLocation]] of the Agent Server.
- * @param actorSystem - [[pekko.actor.typed.ActorSystem]] - an Pekko ActorSystem.
+ * @param actorSystem - [[org.apache.pekko.actor.typed.ActorSystem]] - an Pekko ActorSystem.
  */
 class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSystem[_]) {
   private val agentRef: ActorRef[AgentCommand] = pekkoLocation.uri.toActorRef.unsafeUpcast[AgentCommand]

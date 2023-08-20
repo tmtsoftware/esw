@@ -32,12 +32,12 @@ object GatewayMain extends CommandsEntryPoint {
     }
 
     def start(
-               port: Option[Int],
-               local: Boolean,
-               commandRoleConfigPath: Path,
-               metricsEnabled: Boolean,
-               startLogging: Boolean
-             ): GatewayWiring =
+        port: Option[Int],
+        local: Boolean,
+        commandRoleConfigPath: Path,
+        metricsEnabled: Boolean,
+        startLogging: Boolean
+    ): GatewayWiring =
       start(new GatewayWiring(port, local, commandRoleConfigPath, metricsEnabled), startLogging)
 
     private[esw] def start(gatewayWiring: GatewayWiring, startLogging: Boolean): GatewayWiring = {

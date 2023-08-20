@@ -41,9 +41,9 @@ object AgentApp extends CommandsEntryPoint {
     }
 
     private[esw] def start(
-                            wiring: AgentWiring,
-                            startLogging: Boolean = true
-                          ): AgentWiring = {
+        wiring: AgentWiring,
+        startLogging: Boolean = true
+    ): AgentWiring = {
       import wiring._
       try {
         if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)

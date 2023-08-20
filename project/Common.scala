@@ -63,8 +63,7 @@ object Common {
       Test / fork := false,
       Test / javaOptions ++= Seq("-Dpekko.actor.serialize-messages=on"),
       Global / cancelable     := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
-//      scalafmtOnCompile       := true,
-      scalafmtOnCompile       := false, // temp
+      scalafmtOnCompile       := true,
       unidocGenjavadocVersion := "0.18",
       commands += Command.command("openSite") { state =>
         val uri = s"file://${Project.extract(state).get(siteDirectory)}/${docsParentDir.value}/${version.value}/index.html"

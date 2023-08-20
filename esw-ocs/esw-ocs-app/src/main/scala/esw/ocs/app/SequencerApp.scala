@@ -83,19 +83,19 @@ object SequencerApp extends CommandsEntryPoint {
     }
 
     private def loadAndStartSequencer(
-                                       sequencerSubsystem: Subsystem,
-                                       obsMode: ObsMode,
-                                       variation: Option[Variation],
-                                       sequenceComponentLocation: PekkoLocation,
-                                       sequenceComponentWiring: SequenceComponentWiring
-                                     ) = {
+        sequencerSubsystem: Subsystem,
+        obsMode: ObsMode,
+        variation: Option[Variation],
+        sequenceComponentLocation: PekkoLocation,
+        sequenceComponentWiring: SequenceComponentWiring
+    ) = {
       import sequenceComponentWiring.*
       import actorRuntime.*
       val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val response: Future[ScriptResponseOrUnhandled] =
         (actorRef ? ((replyTo: ActorRef[ScriptResponseOrUnhandled]) =>
           LoadScript(replyTo, sequencerSubsystem, obsMode, variation)
-          ))(
+        ))(
           SequenceComponentTimeouts.LoadScript,
           actorRuntime.typedSystem.scheduler
         )

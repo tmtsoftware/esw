@@ -40,7 +40,7 @@ class CommandUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem
    *
    * @param prefix - prefix of the component
    * @param componentType - ComponentType of the component - e.g., HCD, Sequencer etc
-   * @return a typed [[pekko.actor.typed.ActorRef]] which understand only [[csw.command.client.messages.ComponentMessage]] as a CompletionStage value
+   * @return a typed [[org.apache.pekko.actor.typed.ActorRef]] which understand only [[csw.command.client.messages.ComponentMessage]] as a CompletionStage value
    */
   def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
     jResolvePekkoLocation(prefix, componentType).thenApply { l => l.componentRef }

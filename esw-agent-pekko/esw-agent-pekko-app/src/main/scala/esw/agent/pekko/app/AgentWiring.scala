@@ -33,7 +33,7 @@ class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Option[String], 
   private[agent] val agentConnection: PekkoConnection = PekkoConnection(ComponentId(prefix, ComponentType.Machine))
 
   val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
-  final lazy val actorRuntime: ActorRuntime                      = new ActorRuntime(actorSystem)
+  final lazy val actorRuntime: ActorRuntime           = new ActorRuntime(actorSystem)
 
   import actorRuntime.typedSystem
   implicit lazy val ec: ExecutionContext    = actorRuntime.typedSystem.executionContext
