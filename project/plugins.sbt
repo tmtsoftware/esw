@@ -16,7 +16,7 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "793d9f9"
 
-libraryDependencies += "com.github.tmtsoftware" % "sbt-docs"      % "8d39500"
+libraryDependencies += "com.github.tmtsoftware" % "sbt-docs" % "ac4d094"
 
 resolvers += Resolver.jcenterRepo
 addSbtPlugin("net.aichler" % "sbt-jupiter-interface" % "0.11.1")

@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: coursier/setup-action@v1.2.0-M2
+      - uses: actions/checkout@v3
+      - uses: coursier/setup-action@v1
         with:
           jvm: temurin:1.17
-          apps: sbt sbtn
+          apps: sbt
       - uses: coursier/cache-action@v6
 
       - name: Install Redis
@@ -36,8 +36,8 @@ jobs:
 
       - name: Build
         run: |
-          sbtn clean
-          sbtn scalafmtCheck
+          sbt clean
+          sbt scalafmtCheck
           sbt -DenableFatalWarnings=true makeSite
 
       - name: Unit Tests
@@ -49,7 +49,7 @@ jobs:
       - name: Coverage Report
         run: |
           sbt -DenableCoverage=true coverageReport
-          sbtn coverageAggregate
+          sbt coverageAggregate
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v2

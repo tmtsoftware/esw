@@ -58,9 +58,10 @@ import scala.util.control.NonFatal
 private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) extends SequencerServiceCodecs {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
-  private[ocs] lazy val config: Config = actorSystem.settings.config
-  private[ocs] val sequencerConfig     = SequencerConfig.from(config, sequencerPrefix)
-  import sequencerConfig.*
+  private[ocs] lazy val config: Config  = actorSystem.settings.config
+  private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
+  final lazy val sc                     = sequencerConfig
+  import sc.*
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
   final lazy val actorRuntime        = new ActorRuntime(actorSystem)
