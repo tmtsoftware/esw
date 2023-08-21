@@ -135,7 +135,8 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
 
       laserComponentLogs.exists(log => log.getString("@severity").toLowerCase.equalsIgnoreCase("info")) shouldBe true
       laserComponentLogs.foreach { log =>
-        val currentLogLevel = log.getString("@severity").toLowerCase
+        val severity = log.getString("@severity")
+        val currentLogLevel = log.getString(severity).toLowerCase
         Level(currentLogLevel) >= INFO shouldBe true
       }
 
