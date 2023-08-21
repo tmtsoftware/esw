@@ -41,38 +41,13 @@ jobs:
           sbt -DenableFatalWarnings=true makeSite
 
       - name: Unit Tests
-        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
+        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=false -DgenerateStoryReport=false -DdisableIntegrationTests test:test
 
       - name: Integration Tests
-        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
-
-      - name: Coverage Report
-        run: |
-          sbt -DenableCoverage=true coverageReport
-          sbt coverageAggregate
-
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v2
-        with:
-          name: Coverage Report
-          path: target/scala-2.13/scoverage-report
+        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=false -DgenerateStoryReport=false esw-integration-test/test:test
 
       - name: Multi-Jvm Tests
-        run: sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test
-
-      - name: Generate RTM
-        if: always()
-        continue-on-error: true
-        run: |
-          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:0.3.0 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
-
-      - name: Upload RTM
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v2
-        with:
-          name: RTM
-          path: target/RTM
+        run: sbt -DgenerateStoryReport=false esw-integration-test/multi-jvm:test
 
       - name: Notify slack
         if: always()
