@@ -12,6 +12,16 @@ All notable changes to this project will be documented in this file.
 ## Upcoming Changes
 n/a
 
+## [ESW v0.6.0] - 
+
+- Replaced akka dependency with pekko
+- Updated to scala-3.3.0
+- Updated all dependencies
+
+### Documentation
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.6.0/
+- Scaladoc: https://tmtsoftware.github.io/esw/0.6.0/api/scala/index.html
+
 ## [ESW v0.5.1] - 2023-03-28
 
 - Updated releasing instructions
