@@ -17,6 +17,7 @@ n/a
 - Replaced akka dependency with pekko
 - Updated to scala-3.3.0
 - Updated all dependencies
+- Updated kotlin version to 1.9.0 (Note: Now the kotlinc option `-Xallow-any-scripts-in-source-roots` is required for *.kts files under a source root)
 
 ### Documentation
 - Reference paradox documentation: https://tmtsoftware.github.io/esw/0.6.0/
