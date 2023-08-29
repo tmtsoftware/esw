@@ -118,7 +118,7 @@ trait KeycloakUtils extends BaseTestSuite {
   }
 
   private[esw] def registerKeycloak() =
-    Await.result(locationService.register(HttpRegistration(AASConnection.value, keycloakPort, "auth")), defaultTimeout)
+    Await.result(locationService.register(HttpRegistration(AASConnection.value, keycloakPort, "")), defaultTimeout)
 
   def stopKeycloak(): Unit = keycloakStopHandle.foreach(_.stop())
 

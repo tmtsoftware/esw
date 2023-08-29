@@ -12,14 +12,14 @@ object Libs {
   val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M25"
   val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.3") // MIT License
   val `mockito`           = "org.scalatestplus"            %% "mockito-3-4"       % "3.2.10.0"
-  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.17")
+  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.18")
   val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.16") // Apache License 2.0
   val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.1.7"
   val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
   val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "f922171"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.8.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "590c5e7" // Apache 2.0
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "b339ef1" // Apache 2.0
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
   val `ammonite` = ("com.lihaoyi" %% "ammonite" % "3.0.0-M0-49-151446c5" cross CrossVersion.full)
