@@ -9,11 +9,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      CSW_VERSION: "5.0.1"
-      ESW_OCS_ENG_UI_VERSION: "0.3.1"
+      CSW_VERSION: "5726045"
+      ESW_OCS_ENG_UI_VERSION: "0.3.1.TODO"
     steps:
-      - uses: actions/checkout@v2
-      - uses: coursier/setup-action@v1.2.0-M2
+      - uses: actions/checkout@v3
+      - uses: coursier/setup-action@v1
         with:
           jvm: temurin:1.17
           apps: sbt sbtn
@@ -21,7 +21,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.x"
+          node-version: "20.6.1"
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Redis
