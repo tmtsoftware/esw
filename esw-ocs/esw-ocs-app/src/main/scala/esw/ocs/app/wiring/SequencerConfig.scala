@@ -2,7 +2,7 @@ package esw.ocs.app.wiring
 
 import com.typesafe.config.{Config, ConfigException}
 import csw.prefix.models.Prefix
-import esw.ocs.impl.script.ScriptLoadingException.ScriptConfigurationMissingException
+import esw.ocs.impl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
 
 import java.time.Duration
 

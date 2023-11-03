@@ -36,6 +36,7 @@ object Libs {
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "2.0.7"
 
+  val `ivy` = "org.apache.ivy" % "ivy"   % "2.5.0"
 }
 
 object MSocket {
@@ -126,8 +127,13 @@ object Kotlin {
   // JDK8 - CompletionStage.await, Guava ListenableFuture.await, and Google Play Services Task.await;
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
-  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.6.2"
-  val mockk      = "io.mockk"  % "mockk-jvm"                  % "1.13.7"
+  val `kotlin-scripting-common`       = "org.jetbrains.kotlin" % "kotlin-scripting-common"       % EswKeys.kotlinVersion
+  val `kotlin-scripting-jvm`          = "org.jetbrains.kotlin" % "kotlin-scripting-jvm"          % EswKeys.kotlinVersion
+  val `kotlin-scripting-jvm-host`     = "org.jetbrains.kotlin" % "kotlin-scripting-jvm-host"     % EswKeys.kotlinVersion
+  val `kotlin-scripting-dependencies` = "org.jetbrains.kotlin" % "kotlin-scripting-dependencies" % EswKeys.kotlinVersion
+
+  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.4.1"
+  val mockk      = "io.mockk"  % "mockk"                      % "1.12.5"
 }
 
 object BuildProperties {

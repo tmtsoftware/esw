@@ -1,38 +1,30 @@
 package esw.ocs.impl.script
 
-import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import esw.ocs.impl.script.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 
-import java.lang.reflect.InvocationTargetException
 import scala.reflect.Selectable.reflectiveSelectable
+import esw.ocs.script.ScriptDefKt.loadScript
+
+import java.io.File
 
 private[esw] object ScriptLoader {
 
+  // noinspection ScalaUnusedSymbol
+  private def invokeScript(scriptContext: ScriptContext, res: Any): ScriptApi = {
+    type Result = { def invoke(context: ScriptContext): ScriptApi }
+    val result = res.asInstanceOf[Result]
+    result.invoke(scriptContext)
+  }
+
   // this loads .kts script
-  def loadKotlinScript(scriptClass: String, scriptContext: ScriptContext): ScriptApi =
-    withScript(scriptClass) { clazz =>
-      val script = clazz.getConstructor(classOf[Array[String]]).newInstance(Array(""))
-
-      // script written in kotlin script file [.kts] when compiled, assigns script result to $$result variable
-      val $$resultField = clazz.getDeclaredField("$$result")
-      $$resultField.setAccessible(true)
-
-      type Result = { def invoke(context: ScriptContext): ScriptApi }
-      val result = $$resultField.get(script).asInstanceOf[Result]
-      try {
-        result.invoke(scriptContext)
-      }
-      catch {
-        case ex: InvocationTargetException => throw ex.getCause
-      }
+  def loadKotlinScript(scriptFile: File, scriptContext: ScriptContext): ScriptApi = {
+    if (!scriptFile.isFile)
+      throw new ScriptNotFound(scriptFile.getPath)
+    loadScript(scriptFile) match {
+      case Right(res) =>
+        invokeScript(scriptContext, res)
+      case Left(err) =>
+        throw new InvalidScriptException(scriptFile.getPath)
     }
-
-  def withScript[T](scriptClass: String)(block: Class[_] => T): T =
-    try {
-      val clazz = Class.forName(scriptClass)
-      block(clazz)
-    }
-    catch {
-      case _: ClassNotFoundException => throw new ScriptNotFound(scriptClass)
-      case _: NoSuchFieldException   => throw new InvalidScriptException(scriptClass)
-    }
+  }
 }

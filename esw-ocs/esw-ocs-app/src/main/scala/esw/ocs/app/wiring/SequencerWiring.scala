@@ -80,7 +80,28 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
-  private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
+
+  // We need to know where the sequencer-scripts repo is in order to load the scripts at runtime.
+  // For now, require that an environment variable or system property is set.
+  private val sequencerScriptsKey      = "SEQUENCER_SCRIPTS_HOME"
+  private val maybeSequencerScriptsDir = Option(sys.env.getOrElse(sequencerScriptsKey, System.getProperty(sequencerScriptsKey)))
+  if (maybeSequencerScriptsDir.isEmpty)
+    throw new RuntimeException(
+      "Please set the SEQUENCER_SCRIPTS_HOME environment variable or system property to the root of the checked out sequencer-scripts repo"
+    )
+  private val scriptDir = s"${maybeSequencerScriptsDir.get}/scripts"
+
+  private def getScriptFile(scriptClass: String): File = {
+    val scriptFile = new File(scriptDir, scriptClass.replace(".", "/") + ".seq.kts")
+    if (!scriptFile.exists()) {
+      throw new FileNotFoundException(s"File not found: $scriptFile")
+    }
+    scriptFile
+  }
+
+  private val scriptFile = getScriptFile(scriptClass)
+
+  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptFile, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
@@ -95,7 +116,8 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLoggerFactory   = loggerFactory.asJava
-  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
+//  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
+  private lazy val jLogger: ILogger = jLoggerFactory.getLogger(this.getClass)
 
   private lazy val sequencerImplFactory =
     (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => // todo: revisit timeout value
