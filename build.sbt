@@ -10,7 +10,7 @@ val KotlincOptions = Seq(
   "-opt-in=kotlin.time.ExperimentalTime",
   "-Xallow-any-scripts-in-source-roots",
   "-jvm-target",
-  "1.8"
+  "17"
 )
 
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
