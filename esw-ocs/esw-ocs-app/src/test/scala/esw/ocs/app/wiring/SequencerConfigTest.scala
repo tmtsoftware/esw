@@ -7,7 +7,7 @@ import csw.prefix.models.Subsystem.{APS, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.ObsMode
-import esw.ocs.impl.script.ScriptLoadingException.ScriptConfigurationMissingException
+import esw.ocs.impl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
 import esw.ocs.impl.script.{ScriptApi, ScriptContext}
 import esw.testcommons.BaseTestSuite
 

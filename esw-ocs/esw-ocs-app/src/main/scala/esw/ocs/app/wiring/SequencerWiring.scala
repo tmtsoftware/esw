@@ -50,9 +50,11 @@ import msocket.http.post.PostRouteFactory
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.metrics.LabelExtractor
 
+import java.io.{File, FileNotFoundException}
 import cps.compat.FutureAsync.*
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
+import java.io.File
 
 // $COVERAGE-OFF$
 private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) extends SequencerServiceCodecs {
@@ -113,9 +115,9 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   private lazy val jAlarmService: IAlarmService     = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
 
-  private lazy val loggerFactory    = new LoggerFactory(prefix)
-  private lazy val logger: Logger   = loggerFactory.getLogger
-  private lazy val jLoggerFactory   = loggerFactory.asJava
+  private lazy val loggerFactory  = new LoggerFactory(prefix)
+  private lazy val logger: Logger = loggerFactory.getLogger
+  private lazy val jLoggerFactory = loggerFactory.asJava
 //  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
   private lazy val jLogger: ILogger = jLoggerFactory.getLogger(this.getClass)
 

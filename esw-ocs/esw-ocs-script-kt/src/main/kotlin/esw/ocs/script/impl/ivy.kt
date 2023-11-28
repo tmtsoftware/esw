@@ -125,7 +125,8 @@ class IvyResolver : ExternalDependenciesResolver {
         // val report = ivy.resolve(moduleDescriptor, resolveOptions)
 
         //creates an ivy configuration file
-        val ivyFile = createTempFile("ivy", ".xml").apply { deleteOnExit() }
+        val ivyFile = kotlin.io.path.createTempFile("ivy", ".xml").toFile()
+        ivyFile.apply { deleteOnExit() }
         XmlModuleDescriptorWriter.write(moduleDescriptor, ivyFile)
         val report = ivy.resolve(ivyFile.toURI().toURL(), resolveOptions)
 

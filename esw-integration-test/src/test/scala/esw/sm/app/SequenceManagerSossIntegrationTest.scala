@@ -2,6 +2,8 @@ package esw.sm.app
 
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
+import csw.logging.client.scaladsl.LoggingSystemFactory
+import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.events.{EventKey, EventName}
@@ -16,6 +18,9 @@ import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequencersResponse}
 
 class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 
+  // XXXXXXXXXXXXXXXXXXXXXXX
+  LoggingSystemFactory.start("XXX", "0.1.0", Networks().hostname, actorSystem)
+
   override def afterEach(): Unit = {
     super.afterEach()
     TestSetup.cleanup()
@@ -23,15 +28,20 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 
   "SOSS" must {
     "have ability be able to spawn sequencer hierarchy and send sequence to top level sequencer | ESW-146" in {
+      println("XXX 1 ")
+
       val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
       val obsMode               = ObsMode("IRIS_Cal")
       val sequence              = Sequence(Setup(sequenceManagerPrefix, CommandName("command-1"), None))
+
+      println("XXX 2 ")
 
       // start all needed sequence components
       TestSetup.spawnSequenceComponent(ESW, None)
       TestSetup.spawnSequenceComponent(AOESW, None)
       TestSetup.spawnSequenceComponent(IRIS, None)
 
+      println("XXX 3 ")
       val sequenceManager = TestSetup.startSequenceManager(sequenceManagerPrefix)
 
       val configureResponse = sequenceManager.configure(obsMode).futureValue
