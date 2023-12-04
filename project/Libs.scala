@@ -19,7 +19,7 @@ object Libs {
   val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "23c1000"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.8.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "6a111cd" // Apache 2.0
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "ca8b866" // Apache 2.0
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
   val `ammonite` = ("com.lihaoyi" %% "ammonite" % "3.0.0-M0-60-89836cd8" cross CrossVersion.full)
@@ -41,7 +41,7 @@ object Libs {
 
 object MSocket {
   //  val Version = "0.6.0"
-  val Version = "e205834"
+  val Version = "98e0993"
 
   val `msocket-api`  = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % Version)
   val `msocket-http` = "com.github.tmtsoftware.msocket" %% "msocket-http" % Version
@@ -78,7 +78,7 @@ object Csw {
 }
 
 object Pekko {
-  val Version = "1.0.1" // all pekko is Apache License 2.0
+  val Version = "1.0.2" // all pekko is Apache License 2.0
   val Org     = "org.apache.pekko"
 
   val `pekko-actor-typed`  = Org %% "pekko-actor-typed"  % Version
