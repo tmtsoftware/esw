@@ -7,19 +7,18 @@ import java.util.Properties
 import scala.util.Using
 
 object Libs {
-  private val MSocketVersion = "0.6.0"
 
   val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M26"
   val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.3") // MIT License
   val `mockito`           = "org.scalatestplus"            %% "mockito-3-4"       % "3.2.10.0"
-  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.19")
+  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.20")
   val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.17") // Apache License 2.0
   val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.1.8"
   val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
-  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "23c1000"
+  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "72269ec"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.8.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "ca8b866" // Apache 2.0
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "8b6676c" // Apache 2.0
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
   val `ammonite` = ("com.lihaoyi" %% "ammonite" % "3.0.0-M0-60-89836cd8" cross CrossVersion.full)
@@ -41,7 +40,7 @@ object Libs {
 
 object MSocket {
   //  val Version = "0.6.0"
-  val Version = "98e0993"
+  val Version = "b4b4931"
 
   val `msocket-api`  = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % Version)
   val `msocket-http` = "com.github.tmtsoftware.msocket" %% "msocket-http" % Version
@@ -103,7 +102,7 @@ object PekkoHttp {
 }
 
 object Borer {
-  val Version = "1.12.0"
+  val Version = "1.14.0"
   val Org = "io.bullet"
   //  val Org = "com.github.tmtsoftware.borer"
 
@@ -127,7 +126,7 @@ object Kotlin {
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
   val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.8.0"
-  val mockk      = "io.mockk"  % "mockk-jvm"                  % "1.13.8"
+  val mockk      = "io.mockk"  % "mockk-jvm"                  % "1.13.9"
 }
 
 object BuildProperties {
