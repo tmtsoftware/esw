@@ -34,7 +34,7 @@ case class CswServices(
     loggerFactory: LoggerFactory,
     configClientService: ConfigClientService
 ) {
-  def asJava(implicit actorSystem: ActorSystem[_]): JCswServices = {
+  def asJava(implicit actorSystem: ActorSystem[?]): JCswServices = {
     import actorSystem.executionContext
     val iLocationService = locationService.asJava
     JCswServices(

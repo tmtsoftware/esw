@@ -70,7 +70,7 @@ trait ServerWiring {
 
   def stop(): Future[Done] = actorRuntime.shutdown(UnknownReason)
 
-  private def shutdownRedisOnTermination(client: RedisClient)(implicit actorSystem: ActorSystem[_]): Unit = {
+  private def shutdownRedisOnTermination(client: RedisClient)(implicit actorSystem: ActorSystem[?]): Unit = {
     CoordinatedShutdown(actorSystem).addTask(
       CoordinatedShutdown.PhaseBeforeServiceUnbind,
       "redis-client-shutdown"

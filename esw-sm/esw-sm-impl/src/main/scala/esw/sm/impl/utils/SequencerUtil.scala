@@ -23,7 +23,7 @@ import esw.sm.impl.utils.Types.{SeqCompLocation, SequencerPrefix}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
-    actorSystem: ActorSystem[_]
+    actorSystem: ActorSystem[?]
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 

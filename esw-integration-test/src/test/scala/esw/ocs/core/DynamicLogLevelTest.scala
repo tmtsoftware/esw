@@ -13,7 +13,7 @@ import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
 class DynamicLogLevelTest extends EswTestKit(Gateway) with LoggingCodecs with GatewayCodecs {
-  private var sequencerLocation: PekkoLocation = _
+  private var sequencerLocation: PekkoLocation = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()

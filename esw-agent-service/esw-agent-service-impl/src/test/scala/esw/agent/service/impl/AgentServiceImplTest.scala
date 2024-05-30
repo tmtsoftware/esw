@@ -19,7 +19,7 @@ import scala.concurrent.Future
 
 class AgentServiceImplTest extends BaseTestSuite {
 
-  private implicit val testSystem: ActorSystem[_] = ActorSystem(SpawnProtocol(), "test")
+  private implicit val testSystem: ActorSystem[?] = ActorSystem(SpawnProtocol(), "test")
   private val locationService                     = mock[LocationServiceUtil]
   private val agentStatusUtil                     = mock[AgentStatusUtil]
   private val agentClientMock                     = mock[AgentClient]

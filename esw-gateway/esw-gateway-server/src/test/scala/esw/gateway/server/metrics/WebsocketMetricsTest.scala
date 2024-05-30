@@ -45,7 +45,7 @@ class WebsocketMetricsTest
     with ClientHttpCodecs
     with GatewayStreamRequestLabels {
 
-  implicit val typedSystem: ActorSystem[_] = system.toTyped
+  implicit val typedSystem: ActorSystem[?] = system.toTyped
   private val cswCtxMocks                  = new CswTestMocks()
   import cswCtxMocks.*
 

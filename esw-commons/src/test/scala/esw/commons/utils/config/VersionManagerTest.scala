@@ -15,7 +15,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import org.mockito.Mockito.when
 class VersionManagerTest extends BaseTestSuite {
   val actorTestKit: ActorTestKit            = ActorTestKit()
-  val actorSystem: ActorSystem[_]           = actorTestKit.system
+  val actorSystem: ActorSystem[?]           = actorTestKit.system
   implicit val ec: ExecutionContextExecutor = actorSystem.executionContext
 
   private val runtimeErrorStr = randomString(20)

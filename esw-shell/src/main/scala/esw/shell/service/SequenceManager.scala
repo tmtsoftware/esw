@@ -19,7 +19,7 @@ import esw.sm.api.protocol.ProvisionResponse
 import scala.concurrent.ExecutionContext
 
 class SequenceManager(val locationUtils: LocationServiceUtil, configServiceExt: ConfigServiceExt)(implicit
-    val actorSystem: ActorSystem[_]
+    val actorSystem: ActorSystem[?]
 ) {
   implicit lazy val ec: ExecutionContext = actorSystem.executionContext
 

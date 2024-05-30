@@ -29,7 +29,7 @@ class ProcessManager(
     versionManager: VersionManager,
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings
-)(implicit system: ActorSystem[_], log: Logger) {
+)(implicit system: ActorSystem[?], log: Logger) {
   import system.executionContext
 
   def spawn(command: SpawnCommand): Future[Either[String, Process]] =

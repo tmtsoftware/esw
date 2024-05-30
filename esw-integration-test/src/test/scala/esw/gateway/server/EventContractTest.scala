@@ -23,7 +23,7 @@ class EventContractTest extends EswTestKit(EventServer, Gateway) with GatewayCod
   private val arrayDataKey   = KeyType.IntArrayKey.make("arrayDataKey")
   private val arrayDataParam = arrayDataKey.set(ArrayData(a1), ArrayData(a2))
   private val byteKey        = ByteKey.make("byteKey")
-  private val paramSet: Set[Parameter[_]] = Set(
+  private val paramSet: Set[Parameter[?]] = Set(
     byteKey.set(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
   )
 

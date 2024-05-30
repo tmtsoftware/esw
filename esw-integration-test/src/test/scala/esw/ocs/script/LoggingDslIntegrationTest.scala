@@ -23,9 +23,9 @@ class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   private val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])
-  var loggingSystem: LoggingSystem                = _
-  private var ocsRef: ActorRef[SequencerMsg]      = _
-  private var ocsSequencer: SequencerApi          = _
+  var loggingSystem: LoggingSystem                = scala.compiletime.uninitialized
+  private var ocsRef: ActorRef[SequencerMsg]      = scala.compiletime.uninitialized
+  private var ocsSequencer: SequencerApi          = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()

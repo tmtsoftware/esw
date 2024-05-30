@@ -28,7 +28,7 @@ object SequencerApiFactory extends SequencerServiceCodecs {
    * @param actorSystem - actorSystem
    * @return a [[esw.ocs.api.SequencerApi]]
    */
-  def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): SequencerApi =
+  def make(componentLocation: Location)(implicit actorSystem: ActorSystem[?]): SequencerApi =
     componentLocation match {
       case _: TcpLocation => throw new RuntimeException("Only PekkoLocation and HttpLocation can be used to access sequencer")
       case pekkoLocation: PekkoLocation => new SequencerImpl(pekkoLocation.sequencerRef)
@@ -38,7 +38,7 @@ object SequencerApiFactory extends SequencerServiceCodecs {
   /*
    * This method is for creating an http client for the sequencer
    */
-  private def httpClient(httpLocation: HttpLocation)(implicit actorSystem: ActorSystem[_]): SequencerClient = {
+  private def httpClient(httpLocation: HttpLocation)(implicit actorSystem: ActorSystem[?]): SequencerClient = {
     import actorSystem.executionContext
 
     val baseUri         = httpLocation.uri.toString

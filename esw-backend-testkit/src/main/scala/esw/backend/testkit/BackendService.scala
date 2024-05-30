@@ -25,7 +25,7 @@ object BackendService extends CommandsEntryPoint {
   def appName: String           = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def progName: String = "backend-testkit"
 
-  override def commands: Seq[Command[_]] = List(StartCommand)
+  override def commands: Seq[Command[?]] = List(StartCommand)
 
   val StartCommand: Runner[StartOptions] = Runner[StartOptions]()
 
@@ -38,7 +38,7 @@ object BackendService extends CommandsEntryPoint {
 
     private def run(services: List[Service], commandRoles: Path, alarmConf: String): Unit = {
       val servicesWithoutGatewayAndAgent = services.filterNot(x => x == Gateway || x == AgentService)
-      val eswTestKit: EswTestKit         = new EswTestKit(servicesWithoutGatewayAndAgent.filterNot(_ == AAS): _*) {}
+      val eswTestKit: EswTestKit         = new EswTestKit(servicesWithoutGatewayAndAgent.filterNot(_ == AAS)*) {}
 
       var gatewayWiring: Option[GatewayStub]                       = None
       var sequenceManagerWiring: Option[SequenceManagerStub]       = None

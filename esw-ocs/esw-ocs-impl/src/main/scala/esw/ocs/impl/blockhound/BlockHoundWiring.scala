@@ -14,6 +14,6 @@ object BlockHoundWiring {
   }
 
   def install(): Unit = {
-    BlockHound.install(integrations: _*)
+    BlockHound.install(integrations*)
   }
 }

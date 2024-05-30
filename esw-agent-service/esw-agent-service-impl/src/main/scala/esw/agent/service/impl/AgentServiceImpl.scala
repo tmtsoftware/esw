@@ -20,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param actorSystem - an implicit Pekko ActorSystem
  */
 class AgentServiceImpl(locationServiceUtil: LocationServiceUtil, agentStatusUtil: AgentStatusUtil)(implicit
-    actorSystem: ActorSystem[_]
+    actorSystem: ActorSystem[?]
 ) extends AgentServiceApi {
 
   private implicit val ec: ExecutionContext = actorSystem.executionContext

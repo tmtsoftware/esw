@@ -19,7 +19,7 @@ object ProcessExt {
     def onComplete[T](f: Try[ProcessHandle] => T)(implicit executor: ExecutionContext): Unit =
       parent.onExit().asScala.onComplete(f)
 
-    def kill(terminationTimeout: FiniteDuration)(implicit system: ActorSystem[_]): Future[ProcessHandle] = {
+    def kill(terminationTimeout: FiniteDuration)(implicit system: ActorSystem[?]): Future[ProcessHandle] = {
       import system.executionContext
       def destroyF(p: ProcessHandle, f: ProcessHandle => Boolean) = { f(p); p.onExit().asScala }
       def destroy(p: ProcessHandle)                               = destroyF(p, _.destroy())

@@ -27,7 +27,7 @@ class AgentActor(
     hostConfigPath: Option[String],
     isConfigLocal: Boolean
 )(implicit
-    system: ActorSystem[_],
+    system: ActorSystem[?],
     log: Logger
 ) {
   import system.executionContext

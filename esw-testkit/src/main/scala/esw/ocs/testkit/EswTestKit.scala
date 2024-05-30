@@ -11,7 +11,7 @@ import esw.ocs.testkit.Service.{AAS, AgentService, Gateway, MachineAgent}
 import esw.ocs.testkit.utils.*
 
 abstract class EswTestKit(services: Service*)
-    extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)
+    extends ScalaTestFrameworkTestKit(Service.convertToCsw(services)*)
     with LocationUtils
     with SequencerUtils
     with AgentUtils

@@ -52,36 +52,54 @@ trait KeycloakUtils extends BaseTestSuite {
   private lazy val userWithEswUserRole = ApplicationUser(
     smRoleEswUserEng,
     smUser1Password,
+    firstName = smRoleEswUserEng,
+    lastName = smRoleEswUserEng,
+    email = s"$smRoleEswUserEng@tmt.org",
     realmRoles = Set(eswUserRole)
   )
 
   private lazy val userWithIrisEngAndIrisUserRole = ApplicationUser(
     gatewayRoleIrisUserIrisEng,
     gatewayUser1Password,
+    firstName = gatewayRoleIrisUserIrisEng,
+    lastName = gatewayRoleIrisUserIrisEng,
+    email = s"$gatewayRoleIrisUserIrisEng@tmt.org",
     realmRoles = Set(irisUserRole, irisEngRole)
   )
 
   private lazy val userWithIrisUserRole = ApplicationUser(
     gatewayRoleIrisUser,
     gatewayUser3Password,
+    firstName = gatewayRoleIrisUser,
+    lastName = gatewayRoleIrisUser,
+    email = s"$gatewayRoleIrisUser@tmt.org",
     realmRoles = Set(irisUserRole)
   )
 
   private lazy val userWithTcsUserRole = ApplicationUser(
     gatewayRoleTcsUser,
     gatewayUser2Password,
+    firstName = gatewayRoleTcsUser,
+    lastName = gatewayRoleTcsUser,
+    email = s"$gatewayRoleTcsUser@tmt.org",
     realmRoles = Set(tcsUserRole)
   )
 
   private lazy val userWithApsEngRole = ApplicationUser(
     gatewayRoleApsEng,
     gatewayUser4Password,
+    firstName = gatewayRoleApsEng,
+    lastName = gatewayRoleApsEng,
+    email = s"$gatewayRoleApsEng@tmt.org",
     realmRoles = Set(apsEngRole)
   )
 
   private lazy val userWithLocAdminRole = ApplicationUser(
     locationAdminUser,
     locationAdminPassword,
+    firstName = locationAdminUser,
+    lastName = locationAdminUser,
+    email = s"$locationAdminUser@tmt.org",
     realmRoles = Set(locAdminRole)
   )
 

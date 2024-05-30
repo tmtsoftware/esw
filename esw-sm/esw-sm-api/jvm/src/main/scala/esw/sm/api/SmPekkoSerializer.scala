@@ -14,7 +14,7 @@ import esw.sm.api.protocol.*
 class SmPekkoSerializer(_actorSystem: ExtendedActorSystem)
     extends CborPekkoSerializer[SmPekkoSerializable]
     with SequenceManagerMsgCodecs {
-  implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
+  implicit def actorSystem: ActorSystem[?] = _actorSystem.toTyped
 
   override def identifier: Int = 29945
 

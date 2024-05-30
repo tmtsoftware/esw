@@ -19,7 +19,7 @@ import java.net.URI
 import scala.jdk.CollectionConverters.*
 
 class AgentStatusUtilTest extends BaseTestSuite {
-  private implicit val testSystem: ActorSystem[_] = ActorSystem(SpawnProtocol(), "test")
+  private implicit val testSystem: ActorSystem[?] = ActorSystem(SpawnProtocol(), "test")
 
   override protected def afterAll(): Unit = {
     super.afterAll()

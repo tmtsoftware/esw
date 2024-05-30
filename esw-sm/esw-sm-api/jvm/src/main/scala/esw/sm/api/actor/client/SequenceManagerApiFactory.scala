@@ -22,7 +22,7 @@ object SequenceManagerApiFactory {
    *
    * @return an instance of [[esw.sm.api.SequenceManagerApi]]
    */
-  def makePekkoClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSystem[_]): SequenceManagerApi =
+  def makePekkoClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSystem[?]): SequenceManagerApi =
     new SequenceManagerImpl(pekkoLocation)
 
   /**
@@ -35,7 +35,7 @@ object SequenceManagerApiFactory {
    * @return an instance of [[esw.sm.api.SequenceManagerApi]]
    */
   def makeHttpClient(httpLocation: HttpLocation, tokenFactory: () => Option[String])(implicit
-      actorSystem: ActorSystem[_]
+      actorSystem: ActorSystem[?]
   ): SequenceManagerApi = {
     import SequenceManagerServiceCodecs.*
 

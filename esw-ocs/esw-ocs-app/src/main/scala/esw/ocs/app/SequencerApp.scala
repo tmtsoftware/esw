@@ -41,7 +41,7 @@ object SequencerApp extends CommandsEntryPoint {
   val SequenceComponent: Runner[SeqcompOptions] = Runner[SeqcompOptions]()
   val Sequencer: Runner[SequencerOptions]       = Runner[SequencerOptions]()
 
-  override def commands: Seq[Command[_]] = List(SequenceComponent, Sequencer)
+  override def commands: Seq[Command[?]] = List(SequenceComponent, Sequencer)
 
   class Runner[T <: SequencerAppCommand: Parser: Help] extends EswCommand[T] {
     override def run(command: T, args: RemainingArgs): Unit = {

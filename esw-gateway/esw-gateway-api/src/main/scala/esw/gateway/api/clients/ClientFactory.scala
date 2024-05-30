@@ -16,7 +16,7 @@ import msocket.api.Transport
  * @param actorSystem - An implicit actor system.
  */
 class ClientFactory(postTransport: Transport[GatewayRequest], websocketTransport: Transport[GatewayStreamRequest])(implicit
-    actorSystem: ActorSystem[_]
+    actorSystem: ActorSystem[?]
 ) {
 
   import esw.gateway.api.codecs.GatewayCodecs.*

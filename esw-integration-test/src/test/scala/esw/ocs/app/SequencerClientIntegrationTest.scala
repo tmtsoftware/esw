@@ -36,8 +36,8 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   private val command5 = Setup(Prefix("esw.test"), CommandName("command-5"), None)
   private val command6 = Setup(Prefix("esw.test"), CommandName("command-6"), None)
 
-  private var ocsSequencer: SequencerApi = _
-  private var tcsSequencer: SequencerApi = _
+  private var ocsSequencer: SequencerApi = scala.compiletime.uninitialized
+  private var tcsSequencer: SequencerApi = scala.compiletime.uninitialized
 
   override protected def beforeEach(): Unit = {
     // ocs sequencer, starts with TestScript2
@@ -115,7 +115,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val sequence = Sequence(command1, command2)
 
     val processSeqResponse: Future[SubmitResponse] = ocsSequencer.submitAndWait(sequence)
-    eventually(ocsSequencer.getSequence.futureValue shouldBe a[Some[_]])
+    eventually(ocsSequencer.getSequence.futureValue shouldBe a[Some[?]])
 
     ocsSequencer.add(List(command3)).futureValue should ===(Ok)
     processSeqResponse.futureValue shouldBe a[Completed]

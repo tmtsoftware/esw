@@ -23,7 +23,7 @@ import scala.concurrent.Future
  * @param actorSystem - an Pekko ActorSystem
  */
 class SequenceComponentImpl(sequenceComponentLocation: PekkoLocation)(implicit
-    actorSystem: ActorSystem[_]
+    actorSystem: ActorSystem[?]
 ) extends SequenceComponentApi {
 
   private val sequenceComponentRef = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]

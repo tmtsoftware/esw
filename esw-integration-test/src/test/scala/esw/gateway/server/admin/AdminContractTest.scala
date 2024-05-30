@@ -59,10 +59,10 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
   private val probe                      = TestProbe[OnewayResponse]()
   private val startLoggingCmd            = CommandName("StartLogging")
   private val prefix                     = Prefix("iris.command")
-  private var containerActorSystem: ActorSystem[SpawnProtocol.Command] = _
-  private var laserComponent: Component                                = _
-  private var galilComponent: Component                                = _
-  private var loggingSystem: LoggingSystem                             = _
+  private var containerActorSystem: ActorSystem[SpawnProtocol.Command] = scala.compiletime.uninitialized
+  private var laserComponent: Component                                = scala.compiletime.uninitialized
+  private var galilComponent: Component                                = scala.compiletime.uninitialized
+  private var loggingSystem: LoggingSystem                             = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()

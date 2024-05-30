@@ -45,9 +45,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   private val lgsfObsMode                  = ObsMode("darknight")
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
   private val tolerance: Long              = 1200
-  private var ocsSequencer: SequencerApi   = _
-  private var tcsSequencer: SequencerApi   = _
-  private var lgsfSequencer: SequencerApi  = _
+  private var ocsSequencer: SequencerApi   = scala.compiletime.uninitialized
+  private var tcsSequencer: SequencerApi   = scala.compiletime.uninitialized
+  private var lgsfSequencer: SequencerApi  = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -101,7 +101,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val testProbe = createTestProbe(Set(eventKey))
 
       // diagnosticMode
-      val diagnosticModeParam: Parameter[_] = StringKey.make("mode").set("diagnostic")
+      val diagnosticModeParam: Parameter[?] = StringKey.make("mode").set("diagnostic")
 
       ocsSequencer.diagnosticMode(UTCTime.now(), "engineering").futureValue should ===(Ok)
 

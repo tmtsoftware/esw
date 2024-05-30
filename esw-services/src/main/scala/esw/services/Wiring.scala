@@ -36,7 +36,7 @@ class Wiring(cmd: Command) {
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
-  private lazy val serviceList: List[ManagedService[_]] = cmd match {
+  private lazy val serviceList: List[ManagedService[?]] = cmd match {
     case s: StartOptions              => getServiceListForStart(s)
     case s: StartEngUIServicesOptions => getServiceListForEngUIBackend(s)
   }
@@ -99,7 +99,7 @@ class Wiring(cmd: Command) {
     serviceList
   }
 
-  private def getServiceListForEngUIBackend(command: StartEngUIServicesOptions): List[ManagedService[_]] = {
+  private def getServiceListForEngUIBackend(command: StartEngUIServicesOptions): List[ManagedService[?]] = {
     // start agents as per provision config
     val agentApp1 = Agent.service(enable = true, Prefix(ESW, "machine1"), systemConfig)
     val agentApp2 = Agent.service(enable = true, Prefix(AOESW, "machine1"), systemConfig)

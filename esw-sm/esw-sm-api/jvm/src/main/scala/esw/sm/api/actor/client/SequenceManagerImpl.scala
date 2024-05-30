@@ -21,7 +21,7 @@ import scala.concurrent.Future
  * @param location - pekko Location of the sequence manager
  * @param actorSystem - an Pekko ActorSystem
  */
-class SequenceManagerImpl(location: PekkoLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
+class SequenceManagerImpl(location: PekkoLocation)(implicit actorSystem: ActorSystem[?]) extends SequenceManagerApi {
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 

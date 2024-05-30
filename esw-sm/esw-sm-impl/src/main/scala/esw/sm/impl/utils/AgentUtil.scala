@@ -23,7 +23,7 @@ class AgentUtil(
     agentAllocator: AgentAllocator,
     versionManager: VersionManager,
     simulation: Boolean = false
-)(implicit actorSystem: ActorSystem[_]) {
+)(implicit actorSystem: ActorSystem[?]) {
   import actorSystem.executionContext
 
   def provision(provisionConfig: ProvisionConfig): Future[ProvisionResponse] =

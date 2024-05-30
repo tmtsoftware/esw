@@ -15,7 +15,7 @@ class ProcessExecutor(output: ProcessOutput)(implicit log: Logger) {
   // if process starts successfully it return process
   def runCommand(command: List[String], prefix: Prefix): Either[String, Process] =
     Try {
-      val processBuilder = new ProcessBuilder(command: _*)
+      val processBuilder = new ProcessBuilder(command*)
       debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
       output.attachToProcess(process, prefix.toString)

@@ -16,7 +16,7 @@ import scala.concurrent.Future
  * @param locationServiceUtil - an instance of locationServiceUtil
  * @param actorSystem - an implicit actor system
  */
-class AgentStatusUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
+class AgentStatusUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[?]) {
   import actorSystem.executionContext
 
   // returns map of all agents with information about sequence components & sequencer running on it.

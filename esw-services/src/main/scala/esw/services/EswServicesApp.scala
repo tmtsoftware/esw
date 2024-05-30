@@ -27,7 +27,7 @@ object EswServicesApp extends CommandsEntryPoint {
   val Start: Runner[StartOptions]                           = Runner[StartOptions]()
   val StartEngUIServices: Runner[StartEngUIServicesOptions] = Runner[StartEngUIServicesOptions]()
 
-  override def commands: Seq[Command[_]] = List(Start, StartEngUIServices)
+  override def commands: Seq[Command[?]] = List(Start, StartEngUIServices)
 
   class Runner[T <: cli.Command: Parser: Help] extends EswCommand[T] {
     override def run(command: T, args: RemainingArgs): Unit = {

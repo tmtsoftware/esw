@@ -25,7 +25,7 @@ class SequencerScriptLauncherTest extends EswTestKit {
   private val projectRootPath  = Path(sampleScriptPath) / up / up / up / up / up
   private val scriptLauncher   = (projectRootPath / "scripts" / "script-launcher" / "launchSequencer.sh").toString()
 
-  var process: Process = _
+  var process: Process = scala.compiletime.uninitialized
   "launch sequencer script should compile given sequencer script and start sequencer with it| ESW-150" in {
     val builder = new ProcessBuilder(scriptLauncher, "-f", sampleScriptPath, "-v", ocsAppVersion).inheritIO()
 

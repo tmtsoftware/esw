@@ -47,9 +47,9 @@ object Common {
         "-feature",
         "-unchecked",
         "-deprecation",
-//        "-rewrite",
-//        "-source",
-//        "3.0-migration"
+        "-rewrite",
+        "-source",
+        "3.4-migration"
       ),
       licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
       Test / testOptions ++= reporterOptions,

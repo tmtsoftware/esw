@@ -32,7 +32,7 @@ private[core] case class SequencerData(
     readyToExecuteSubscriber: Option[ActorRef[Ok.type]],
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[SequencerMsg],
-    actorSystem: ActorSystem[_],
+    actorSystem: ActorSystem[?],
     sequenceResponseSubscribers: Set[ActorRef[SubmitResponse]],
     sequencerStateSubscribers: Set[ActorRef[SequencerStateSubscriptionResponse]]
 ) {
@@ -177,6 +177,6 @@ private[core] case class SequencerData(
 }
 
 private[core] object SequencerData {
-  def initial(self: ActorRef[SequencerMsg])(implicit actorSystem: ActorSystem[_]): SequencerData =
+  def initial(self: ActorRef[SequencerMsg])(implicit actorSystem: ActorSystem[?]): SequencerData =
     SequencerData(None, None, None, None, self, actorSystem, Set.empty, Set.empty)
 }

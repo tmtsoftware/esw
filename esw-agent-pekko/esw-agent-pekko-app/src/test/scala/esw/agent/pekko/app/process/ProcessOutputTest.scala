@@ -17,7 +17,7 @@ class ProcessOutputTest extends BaseTestSuite {
     override def writeErr(value: String): Unit = data.getAndUpdate(_.appended((value, true)))
   }
 
-  private implicit val actorSystem: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+  private implicit val actorSystem: ActorSystem[?] = ActorSystem(Behaviors.empty, "test")
 
   override def afterAll(): Unit = {
     super.afterAll()
@@ -47,7 +47,7 @@ class ProcessOutputTest extends BaseTestSuite {
   private def runCommand: Process = {
     val filePath = getClass.getResource("/test-executable.sh").getPath
     val args     = List(filePath)
-    val processBuilder = new ProcessBuilder(args: _*)
+    val processBuilder = new ProcessBuilder(args*)
       .redirectInput(ProcessBuilder.Redirect.INHERIT)
 
     processBuilder.start()

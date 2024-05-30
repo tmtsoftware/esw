@@ -25,7 +25,7 @@ object AgentApp extends CommandsEntryPoint {
 
   val StartCommand: Runner[StartOptions] = Runner[StartOptions]()
 
-  override def commands: Seq[Command[_]] = List(StartCommand)
+  override def commands: Seq[Command[?]] = List(StartCommand)
 
   class Runner[T <: AgentCliCommand: Parser: Help] extends Command[T] {
     override def run(command: T, args: RemainingArgs): Unit = {

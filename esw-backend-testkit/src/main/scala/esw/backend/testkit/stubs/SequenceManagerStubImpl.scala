@@ -110,7 +110,7 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
 
 class SequenceManagerStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
     extends LocationUtils {
-  private var seqManagerWiring: Option[SequenceManagerWiring] = _
+  private var seqManagerWiring: Option[SequenceManagerWiring] = scala.compiletime.uninitialized
 
   def spawnMockSm(): SequenceManagerWiring = {
     val wiring: SequenceManagerWiring =

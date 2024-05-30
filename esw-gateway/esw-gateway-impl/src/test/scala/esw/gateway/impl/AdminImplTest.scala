@@ -26,7 +26,7 @@ import scala.concurrent.{Await, Future}
 
 class AdminImplTest extends BaseTestSuite {
   lazy val actorTestKit: ActorTestKit      = ActorTestKit()
-  lazy implicit val system: ActorSystem[_] = actorTestKit.system
+  lazy implicit val system: ActorSystem[?] = actorTestKit.system
 
   override def afterAll(): Unit = {
     super.afterAll()

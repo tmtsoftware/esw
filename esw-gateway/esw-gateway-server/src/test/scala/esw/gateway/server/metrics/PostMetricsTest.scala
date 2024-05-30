@@ -35,7 +35,7 @@ class PostMetricsTest
     with GatewayRequestLabels {
 
   override def clientContentType: ContentType = ContentType.Json
-  implicit val typedSystem: ActorSystem[_]    = system.toTyped
+  implicit val typedSystem: ActorSystem[?]    = system.toTyped
   private val cswCtxMocks                     = new CswTestMocks()
   import cswCtxMocks.*
 

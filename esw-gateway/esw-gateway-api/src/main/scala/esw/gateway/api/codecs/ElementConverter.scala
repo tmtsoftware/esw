@@ -45,7 +45,7 @@ object ElementConverter {
       case x              => throw new RuntimeException(s"can not create an element from value=$x")
     }
 
-  def fromMap(input: Map[_, Any]): Dom.MapElem =
+  def fromMap(input: Map[?, Any]): Dom.MapElem =
     Dom.MapElem.Unsized {
       input.collect {
         case (k, v) if v != null => fromAny(k) -> fromAny(v)

@@ -19,15 +19,15 @@ class NewSequenceHandlerIntegrationTest extends EswTestKit(EventServer) {
   private val command  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val sequence = Sequence(command)
 
-  private var sequencer: SequencerApi = _
+  private var sequencer: SequencerApi = scala.compiletime.uninitialized
 
   // create testprobe for the event publishing in command-1 handler in the script
   private val commandHandlerEventKeys                    = Set(EventKey("LGSF.darknight.command1"))
-  private var commandHandlerEventProbe: TestProbe[Event] = _
+  private var commandHandlerEventProbe: TestProbe[Event] = scala.compiletime.uninitialized
 
   // create testprobe for the event publishing in onNewSequence handler in the script
   private val newSequenceHandlerEventKeys                             = Set(EventKey("LGSF.darknight.NewSequenceHandler"))
-  private var newSequenceHandlerInitializationProbe: TestProbe[Event] = _
+  private var newSequenceHandlerInitializationProbe: TestProbe[Event] = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()

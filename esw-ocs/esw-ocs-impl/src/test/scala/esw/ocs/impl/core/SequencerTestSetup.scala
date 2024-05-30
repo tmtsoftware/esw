@@ -32,7 +32,7 @@ import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Random, Success}
 import org.mockito.Mockito.{verify, when}
-class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
+class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[?]) {
   import Matchers.*
   import org.scalatestplus.mockito.MockitoSugar.*
 
@@ -401,18 +401,18 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
 object SequencerTestSetup {
 
-  def idle(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
+  def idle(sequence: Sequence)(implicit system: ActorSystem[?]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     testSetup
   }
 
-  def loaded(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
+  def loaded(sequence: Sequence)(implicit system: ActorSystem[?]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadSequenceAndAssertResponse(Ok)
     sequencerSetup
   }
 
-  def running(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
+  def running(sequence: Sequence)(implicit system: ActorSystem[?]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadAndStartSequenceThenAssertRunning()
     sequencerSetup.startPullNext()
@@ -421,7 +421,7 @@ object SequencerTestSetup {
 
   def runningWithFirstCommandComplete(
       sequence: Sequence
-  )(implicit system: ActorSystem[_]): SequencerTestSetup = {
+  )(implicit system: ActorSystem[?]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadAndStartSequenceThenAssertRunning()
     sequencerSetup.startPullNext()
@@ -429,14 +429,14 @@ object SequencerTestSetup {
     sequencerSetup
   }
 
-  def offline(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
+  def offline(sequence: Sequence)(implicit system: ActorSystem[?]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     when(testSetup.script.executeGoOffline()).thenReturn(Future.successful(Done))
     testSetup.goOfflineAndAssertResponse(Ok)
     testSetup
   }
 
-  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): (Started, SequencerTestSetup) = {
+  def finished(sequence: Sequence)(implicit system: ActorSystem[?]): (Started, SequencerTestSetup) = {
     val sequencerSetup = idle(sequence)
     import sequencerSetup.*
 

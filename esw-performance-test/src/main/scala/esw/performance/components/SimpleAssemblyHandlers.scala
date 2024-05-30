@@ -23,7 +23,7 @@ class SimpleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   private val log = loggerFactory.getLogger
 
   private val connection: PekkoConnection  = PekkoConnection(ComponentId(Prefix("CSW.sampleHcd"), ComponentType.HCD))
-  private var pekkoLocation: PekkoLocation = _
+  private var pekkoLocation: PekkoLocation = scala.compiletime.uninitialized
 
   override def initialize(): Unit = {
     log.info("Initializing sampleAssembly...")

@@ -27,7 +27,7 @@ class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
    * @param stdHeaders the headers that are fixes for this service.
    * @return the stdout appender.
    */
-  def apply(system: ActorSystem[_], stdHeaders: JsObject): StdOutAppender =
+  def apply(system: ActorSystem[?], stdHeaders: JsObject): StdOutAppender =
     new StdOutAppender(system, stdHeaders, callback)
 }
 
@@ -36,10 +36,10 @@ class HealthCheckIntegrationTest extends EswTestKit {
   // HealthCheck.kts
   private val ocsSubsystem               = ESW
   private val ocsObsMode                 = ObsMode("healthCheck")
-  private var ocsSequencer: SequencerApi = _
+  private var ocsSequencer: SequencerApi = scala.compiletime.uninitialized
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
-  var loggingSystem: LoggingSystem                = _
+  var loggingSystem: LoggingSystem                = scala.compiletime.uninitialized
   val heartbeatReceivedLog                        = "[StrandEC Heartbeat Received]"
   val heartbeatMissedLog: String = "[StrandEC Heartbeat Delayed] - Scheduled sending of heartbeat was delayed. " +
     "The reason can be thread starvation, e.g. by running blocking tasks in sequencer script, CPU overload, or GC."

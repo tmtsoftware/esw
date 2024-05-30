@@ -50,10 +50,10 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
   private val locationServiceUtil                      = new LocationServiceUtil(locationService)
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
   private val configTestKit: ConfigTestKit             = frameworkTestKit.configTestKit
-  var gatewayServerWiring: GatewayWiring               = _
-  private var agentClient: AgentClient                 = _
-  private var agentService: AgentServiceApi            = _
-  private var agentServiceWiring: AgentServiceWiring   = _
+  var gatewayServerWiring: GatewayWiring               = scala.compiletime.uninitialized
+  private var agentClient: AgentClient                 = scala.compiletime.uninitialized
+  private var agentService: AgentServiceApi            = scala.compiletime.uninitialized
+  private var agentServiceWiring: AgentServiceWiring   = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     // gateway setup

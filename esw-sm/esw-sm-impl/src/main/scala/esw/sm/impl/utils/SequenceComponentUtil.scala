@@ -24,7 +24,7 @@ import cps.compat.FutureAsync.*
 import scala.concurrent.Future
 
 class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequenceComponentAllocator: SequenceComponentAllocator)(
-    implicit actorSystem: ActorSystem[_]
+    implicit actorSystem: ActorSystem[?]
 ) {
   import actorSystem.executionContext
 

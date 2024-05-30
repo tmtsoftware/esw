@@ -11,27 +11,27 @@ object Libs {
   val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M26"
   val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.3") // MIT License
   val `mockito`           = "org.scalatestplus"            %% "mockito-3-4"       % "3.2.10.0"
-  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.20")
-  val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.17") // Apache License 2.0
+  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.21")
+  val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.18") // Apache License 2.0
   val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.1.8"
   val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
-  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "72269ec"
+  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "1981053"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.8.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "283ab9a" // Apache 2.0
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "3c23339" // Apache 2.0
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
-  val `ammonite` = ("com.lihaoyi" %% "ammonite" % "3.0.0-M0-60-89836cd8" cross CrossVersion.full)
-    .exclude("com.lihaoyi", "requests_2.13")
-    .exclude("com.lihaoyi", "upickle_2.13")
-    .exclude("com.lihaoyi", "geny_2.13")
-    .exclude("com.lihaoyi", "upack_2.13")
-    .exclude("com.lihaoyi", "ujson_2.13")
-    .exclude("com.lihaoyi", "upickle-implicits_2.13")
-    .exclude("com.lihaoyi", "upickle-core_2.13")
-    .exclude("com.lihaoyi", "os-lib_2.13")
-    .exclude("org.scala-lang.modules", "scala-xml_2.13")
-    .exclude("org.scala-lang.modules", "scala-collection-compat_2.13")
+  val `ammonite` = ("com.lihaoyi" % "ammonite_3.3.3" % "3.0.0-M2-6-38698450")
+//    .exclude("com.lihaoyi", "requests_2.13")
+//    .exclude("com.lihaoyi", "upickle_2.13")
+//    .exclude("com.lihaoyi", "geny_2.13")
+//    .exclude("com.lihaoyi", "upack_2.13")
+//    .exclude("com.lihaoyi", "ujson_2.13")
+//    .exclude("com.lihaoyi", "upickle-implicits_2.13")
+//    .exclude("com.lihaoyi", "upickle-core_2.13")
+//    .exclude("com.lihaoyi", "os-lib_2.13")
+//    .exclude("org.scala-lang.modules", "scala-xml_2.13")
+//    .exclude("org.scala-lang.modules", "scala-collection-compat_2.13")
 
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "2.0.7"
@@ -40,7 +40,7 @@ object Libs {
 
 object MSocket {
   //  val Version = "0.6.0"
-  val Version = "b4b4931"
+  val Version = "033f412"
 
   val `msocket-api`  = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % Version)
   val `msocket-http` = "com.github.tmtsoftware.msocket" %% "msocket-http" % Version
@@ -91,7 +91,7 @@ object Pekko {
 }
 
 object PekkoHttp {
-  val Version = "1.0.0"
+  val Version = "1.0.1"
   val Org     = "org.apache.pekko"
 
   val `pekko-http`            = Org %% "pekko-http"            % Version

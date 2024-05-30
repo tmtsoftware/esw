@@ -38,13 +38,13 @@ class SequencerBehavior(
     sequenceComponentPrefix: Prefix,
     logger: Logger,
     shutdownHttpService: () => Future[Done]
-)(implicit val actorSystem: ActorSystem[_])
+)(implicit val actorSystem: ActorSystem[?])
     extends OcsCodecs {
   import actorSystem.executionContext
   import logger.*
 
   // Mapping of Sequencer state against corresponding state's behavior
-  private def stateMachine(state: InternalSequencerState[_]): SequencerData => Behavior[SequencerMsg] =
+  private def stateMachine(state: InternalSequencerState[?]): SequencerData => Behavior[SequencerMsg] =
     state match {
       case Idle             => idle
       case Loaded           => loaded

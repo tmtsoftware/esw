@@ -13,7 +13,7 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 
 class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
-  private var ocsSequencer: SequencerApi = _
+  private var ocsSequencer: SequencerApi = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()

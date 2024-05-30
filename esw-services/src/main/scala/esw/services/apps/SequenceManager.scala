@@ -21,7 +21,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext}
 
 // This class is created to start and stop the Sequence Manager on a particular agent
-class SequenceManager(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) {
+class SequenceManager(locationService: LocationService)(implicit actorSystem: ActorSystem[?]) {
 
   private val agentConfig: Config = ConfigFactory.load()
   // Prefix of the Agent on which SM will be started

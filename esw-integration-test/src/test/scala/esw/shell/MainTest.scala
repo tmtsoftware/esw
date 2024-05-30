@@ -12,7 +12,7 @@ class MainTest extends BaseTestSuite {
     val channel        = "https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update/apps.json"
     val version        = "0.1.0-SNAPSHOT"
     val commands       = List("cs", "launch", "--channel", channel, s"esw-shell:$version")
-    val processBuilder = new ProcessBuilder(commands: _*)
+    val processBuilder = new ProcessBuilder(commands*)
     val process        = processBuilder.start()
     Thread.sleep(10000)
     assert(process.isAlive, "esw-shell failed to start!")

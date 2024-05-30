@@ -31,7 +31,7 @@ class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
       val spawnSequenceManager = SpawnSequenceManager(agentPrefix, obsConfigPath, isConfigLocal = true, None)
 
       when(
-        postClient.requestResponse[SpawnResponse](argEq(spawnSequenceManager))(
+        postClient.requestResponse[SpawnResponse](argEq(spawnSequenceManager))(using
           any[Decoder[SpawnResponse]](),
           any[Encoder[SpawnResponse]]()
         )
@@ -48,7 +48,7 @@ class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
       val spawnResponse          = mock[SpawnResponse]
 
       when(
-        postClient.requestResponse[SpawnResponse](argEq(spawnSequenceComponent))(
+        postClient.requestResponse[SpawnResponse](argEq(spawnSequenceComponent))(using
           any[Decoder[SpawnResponse]](),
           any[Encoder[SpawnResponse]]()
         )
@@ -64,7 +64,7 @@ class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
       val spawnContainersResponse = mock[SpawnContainersResponse]
 
       when(
-        postClient.requestResponse[SpawnContainersResponse](argEq(spawnContainers))(
+        postClient.requestResponse[SpawnContainersResponse](argEq(spawnContainers))(using
           any[Decoder[SpawnContainersResponse]](),
           any[Encoder[SpawnContainersResponse]]()
         )
@@ -81,7 +81,7 @@ class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
       val killResponse         = mock[KillResponse]
 
       when(
-        postClient.requestResponse[KillResponse](argEq(killComponentRequest))(
+        postClient.requestResponse[KillResponse](argEq(killComponentRequest))(using
           any[Decoder[KillResponse]](),
           any[Encoder[KillResponse]]()
         )
@@ -95,7 +95,7 @@ class AgentServiceClientTest extends BaseTestSuite with AgentServiceCodecs {
       val agentStatusResponse   = mock[AgentStatusResponse]
 
       when(
-        postClient.requestResponse[AgentStatusResponse](argEq(getAgentStatusRequest))(
+        postClient.requestResponse[AgentStatusResponse](argEq(getAgentStatusRequest))(using
           any[Decoder[AgentStatusResponse]](),
           any[Encoder[AgentStatusResponse]]()
         )

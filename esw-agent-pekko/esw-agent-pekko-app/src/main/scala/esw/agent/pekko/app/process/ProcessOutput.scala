@@ -11,7 +11,7 @@ import esw.agent.pekko.app.process.ProcessOutput.ConsoleWriter
 /**
  * This class is central utility which write output of various processes that were spawned by Agent App to the console.
  */
-class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter())(implicit actorSystem: ActorSystem[_]) {
+class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter())(implicit actorSystem: ActorSystem[?]) {
 
   private def writeStream(stream: () => InputStream, processName: String, writeStr: String => Unit): Unit =
     StreamConverters
@@ -21,8 +21,8 @@ class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter())(implicit actorS
       .runForeach(str => writeStr(s"[$processName] ${str.utf8String}"))
 
   def attachToProcess(process: Process, processName: String): Unit = {
-    writeStream(process.getInputStream _, processName, writer.write)
-    writeStream(process.getErrorStream _, processName, writer.writeErr)
+    writeStream((() => process.getInputStream()), processName, writer.write)
+    writeStream((() => process.getErrorStream()), processName, writer.writeErr)
   }
 }
 

@@ -22,7 +22,7 @@ import scala.concurrent.Future
  * @param pekkoLocation - [[csw.location.api.models.PekkoLocation]] of the Agent Server.
  * @param actorSystem - [[org.apache.pekko.actor.typed.ActorSystem]] - an Pekko ActorSystem.
  */
-class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSystem[_]) {
+class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSystem[?]) {
   private val agentRef: ActorRef[AgentCommand] = pekkoLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
   private val agentPrefix                      = pekkoLocation.prefix
 
@@ -66,7 +66,7 @@ object AgentClient {
   // if there is no agent running with the given prefix it returns the FindLocationError as a Future
   // else AgentClient gets returned as a Future
   def make(agentPrefix: Prefix, locationService: LocationServiceUtil)(implicit
-      actorSystem: ActorSystem[_]
+      actorSystem: ActorSystem[?]
   ): Future[Either[EswLocationError.FindLocationError, AgentClient]] = {
     import actorSystem.executionContext
     locationService

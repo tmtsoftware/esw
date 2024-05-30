@@ -18,7 +18,7 @@ import java.util.concurrent.CompletionStage
  * @param locationServiceUtil - an instance of util class LocationServiceUtil
  * @param actorSystem - an Pekko ActorSystem
  */
-class CommandUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
+class CommandUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[?]) {
   import actorSystem.executionContext
 
   /**

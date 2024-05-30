@@ -21,7 +21,7 @@ object GatewayMain extends CommandsEntryPoint {
 
   val StartCommand: Runner[StartOptions] = Runner[StartOptions]()
 
-  override def commands: Seq[Command[_]] = List(StartCommand)
+  override def commands: Seq[Command[?]] = List(StartCommand)
 
   class Runner[T <: ServerCommand: Parser: Help] extends EswCommand[T] {
     override def run(command: T, args: RemainingArgs): Unit = {

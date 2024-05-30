@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param sequencer - actorRef of the Sequencer Actor
  * @param system - an Pekko ActorSystem
  */
-class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_]) extends SequencerApi {
+class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[?]) extends SequencerApi {
   private implicit val timeout: Timeout     = SequencerTimeouts.SequencerOperation
   private implicit val ec: ExecutionContext = system.executionContext
 

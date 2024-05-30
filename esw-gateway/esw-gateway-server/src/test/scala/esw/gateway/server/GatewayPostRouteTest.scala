@@ -43,7 +43,7 @@ import scala.concurrent.Future
 class GatewayPostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
   override def clientContentType: ContentType = ContentType.Json
-  implicit val typedSystem: ActorSystem[_]    = system.toTyped
+  implicit val typedSystem: ActorSystem[?]    = system.toTyped
   private val cswCtxMocks                     = new CswTestMocks()
   import cswCtxMocks.*
 

@@ -80,7 +80,7 @@ class ProcessExtTest extends BaseTestSuite {
     handles.foreach { case (process, onExit) => when(process.onExit()).thenReturn(onExit) }
 
   private def mockOnExitSuccess(handles: ProcessHandle*): Unit =
-    mockOnExit(handles.map(p => (p, CompletableFuture.completedFuture(p))): _*)
+    mockOnExit(handles.map(p => (p, CompletableFuture.completedFuture(p)))*)
 
   private def verifyDestroy(handles: List[ProcessHandle], mode: VerificationMode = times(1)): Unit =
     handles.foreach(verify(_, mode).destroy())

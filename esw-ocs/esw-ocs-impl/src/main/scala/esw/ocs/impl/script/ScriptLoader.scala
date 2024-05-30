@@ -26,7 +26,7 @@ private[esw] object ScriptLoader {
       }
     }
 
-  def withScript[T](scriptClass: String)(block: Class[_] => T): T =
+  def withScript[T](scriptClass: String)(block: Class[?] => T): T =
     try {
       val clazz = Class.forName(scriptClass)
       block(clazz)

@@ -31,7 +31,7 @@ import scala.concurrent.Future
  * @param locationService - an instance of locationService
  * @param actorSystem - an implicit Pekko ActorSystem
  */
-class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[_]) extends AdminApi {
+class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSystem[?]) extends AdminApi {
   import actorSystem.executionContext
   private val log: Logger       = AdminLogger.getLogger
   implicit val timeout: Timeout = AdminTimeouts.GetLogMetadata
@@ -41,7 +41,7 @@ class AdminImpl(locationService: LocationService)(implicit actorSystem: ActorSys
       .find(PekkoConnection(componentId))
       .map(_.getOrElse(throw InvalidComponent(s"Could not find component : $componentId")))
 
-  private def sendMessageToComponent[T <: ComponentMessage with ContainerMessage](componentId: ComponentId, message: T) =
+  private def sendMessageToComponent[T <: ComponentMessage & ContainerMessage](componentId: ComponentId, message: T) =
     findComponent(componentId).map(pekkoLocation => {
       componentId.componentType match {
         case Container => pekkoLocation.containerRef ! message

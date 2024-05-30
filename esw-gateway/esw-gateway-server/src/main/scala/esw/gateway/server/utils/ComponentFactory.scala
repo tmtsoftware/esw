@@ -18,7 +18,7 @@ import scala.concurrent.Future
 class ComponentFactory(
     locationService: LocationService,
     commandServiceFactory: ICommandServiceFactory = ICommandServiceFactory.default // todo: remove this and add function here
-)(implicit typedSystem: ActorSystem[_]) {
+)(implicit typedSystem: ActorSystem[?]) {
 
   import typedSystem.executionContext
 

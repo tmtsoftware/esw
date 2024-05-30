@@ -54,8 +54,8 @@ class SequencerImplTest extends ActorTestSuit {
   }
   "cancelling the source should unsubscribe from the sequencer state  | ESW-213" in {
     val sequencerStateResponse    = mock[SequencerStateResponse]
-    var subscriber: ActorRef[_]   = null
-    var unsubscribed: ActorRef[_] = null
+    var subscriber: ActorRef[?]   = null
+    var unsubscribed: ActorRef[?] = null
     withBehavior {
       case SubscribeSequencerState(replyTo) =>
         subscriber = replyTo

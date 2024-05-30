@@ -13,7 +13,7 @@ import esw.ocs.testkit.EswTestKit
 
 object SequencerApp extends CommandsEntryPoint {
 
-  override def commands: Seq[Command[_]] = Seq(StartCommand)
+  override def commands: Seq[Command[?]] = Seq(StartCommand)
 
   override def progName: String = getClass.getSimpleName.dropRight(1) // remove $ from class name
 

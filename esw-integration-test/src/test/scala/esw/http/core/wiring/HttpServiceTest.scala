@@ -29,7 +29,7 @@ class HttpServiceTest extends EswTestKit {
     }
   private val hostname                                 = Networks(NetworkType.Outside.envKey).hostname
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
-  var actorRuntime: ActorRuntime                       = _
+  var actorRuntime: ActorRuntime                       = scala.compiletime.uninitialized
 
   override protected def afterEach(): Unit = {
     cleanup(actorRuntime)

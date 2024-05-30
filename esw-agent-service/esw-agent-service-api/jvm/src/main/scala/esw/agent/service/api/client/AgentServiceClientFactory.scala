@@ -16,7 +16,7 @@ import msocket.http.post.HttpPostTransport
 object AgentServiceClientFactory {
 
   def apply(httpLocation: HttpLocation, tokenFactory: () => Option[String])(implicit
-      actorSystem: ActorSystem[_]
+      actorSystem: ActorSystem[?]
   ): AgentServiceApi = {
     import AgentServiceCodecs.*
 

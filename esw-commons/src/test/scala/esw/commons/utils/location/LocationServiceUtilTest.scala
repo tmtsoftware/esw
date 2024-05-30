@@ -60,7 +60,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
   "register" must {
     "return successful RegistrationResult | ESW-214" in {
-      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      implicit val system: ActorSystem[?] = ActorSystem(Behaviors.empty, "test")
       val coordinatedShutdown             = CoordinatedShutdown(system)
       val registrationResult              = mock[RegistrationResult]
       when(registrationResult.location).thenReturn(pekkoLocation)
@@ -75,7 +75,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
     }
 
     "map location service [OtherLocationIsRegistered] registration failure to error | ESW-214" in {
-      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      implicit val system: ActorSystem[?] = ActorSystem(Behaviors.empty, "test")
       val errorMsg                        = "error message"
       when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
 
@@ -86,7 +86,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
     }
 
     "map location service [RegistrationFailed] registration failure to error | ESW-214" in {
-      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      implicit val system: ActorSystem[?] = ActorSystem(Behaviors.empty, "test")
       val errorMsg                        = "error message"
       when(locationService.register(registration)).thenReturn(Future.failed(RegistrationFailed(errorMsg)))
 

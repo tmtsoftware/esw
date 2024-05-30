@@ -16,7 +16,7 @@ import scala.concurrent.Future
  * @param sequencer - Typed actor ref of the sequencer
  * @param system - An ActorSystem
  */
-private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_]) {
+private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[?]) {
   private implicit val timeout: Timeout = SequencerTimeouts.LongTimeout
 
   /**

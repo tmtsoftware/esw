@@ -15,7 +15,7 @@ import scala.concurrent.Future
  * @param locationService - an instance of locationService
  * @param typedSystem - an instance of pekko actor typed system
  */
-class Resolver(locationService: LocationService)(implicit typedSystem: ActorSystem[_]) {
+class Resolver(locationService: LocationService)(implicit typedSystem: ActorSystem[?]) {
   import typedSystem.executionContext
 
   private val componentFactory = new ComponentFactory(locationService)

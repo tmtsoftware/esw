@@ -15,7 +15,7 @@ import play.api.libs.json.{JsObject, Json}
 import scala.collection.mutable
 
 class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
-  def apply(system: ActorSystem[_], stdHeaders: JsObject): StdOutAppender =
+  def apply(system: ActorSystem[?], stdHeaders: JsObject): StdOutAppender =
     new StdOutAppender(system, stdHeaders, callback)
 }
 
