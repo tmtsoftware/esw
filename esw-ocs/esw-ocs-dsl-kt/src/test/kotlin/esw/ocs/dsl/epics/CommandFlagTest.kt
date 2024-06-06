@@ -4,7 +4,7 @@ import esw.ocs.dsl.highlevel.CommandServiceDsl
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.params.params
-import io.kotest.assertions.timing.eventually
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify

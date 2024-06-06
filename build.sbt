@@ -9,6 +9,7 @@ inThisBuild(
 val KotlincOptions = Seq(
   "-opt-in=kotlin.time.ExperimentalTime",
   "-Xallow-any-scripts-in-source-roots",
+  "-Xuse-fir-lt=false",
   "-jvm-target",
   "17"
 )

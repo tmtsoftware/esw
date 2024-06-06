@@ -6,7 +6,7 @@ import csw.alarm.models.Key.AlarmKey
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.Major
 import esw.ocs.dsl.highlevel.models.TCS
-import io.kotest.assertions.timing.eventually
+import io.kotest.assertions.nondeterministic.eventually
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
