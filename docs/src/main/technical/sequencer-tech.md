@@ -20,7 +20,7 @@ which defines an interface for Sequencer. This module also consists of core mode
 Sequencer.
 
 * esw-ocs-impl -
-This module consists of the core implementation of a Sequencer, the actor, which is `SequencerBehaviour` (Sequencer Actor),
+This module consists of the core implementation of a Sequencer, the actor, which is `SequencerBehavior` (Sequencer Actor),
 Engine and SequencerData.
 
 * esw-ocs-app -

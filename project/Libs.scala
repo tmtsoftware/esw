@@ -22,16 +22,6 @@ object Libs {
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
   val `ammonite` = ("com.lihaoyi" % "ammonite_3.3.3" % "3.0.0-M2-6-38698450")
-//    .exclude("com.lihaoyi", "requests_2.13")
-//    .exclude("com.lihaoyi", "upickle_2.13")
-//    .exclude("com.lihaoyi", "geny_2.13")
-//    .exclude("com.lihaoyi", "upack_2.13")
-//    .exclude("com.lihaoyi", "ujson_2.13")
-//    .exclude("com.lihaoyi", "upickle-implicits_2.13")
-//    .exclude("com.lihaoyi", "upickle-core_2.13")
-//    .exclude("com.lihaoyi", "os-lib_2.13")
-//    .exclude("org.scala-lang.modules", "scala-xml_2.13")
-//    .exclude("org.scala-lang.modules", "scala-collection-compat_2.13")
 
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "2.0.7"

@@ -80,7 +80,7 @@ The core of each Sequencer is a Sequence Component, a reusable framework compone
 used to construct a Sequencer as an OMOA component. Please refer @ref:[Sequencer Component](../technical/sequence-component-tech.md)
 for details about Sequence Component.
 
-All Sequencers use the same component framework. What makes a Sequencer unique is the Script with witch it was loaded.
+All Sequencers use the same component framework. What makes a Sequencer unique is the Script with which it was loaded.
 A Sequencer is a Sequence Component configured with a specific Script. The Script is written with a specific observing mode
 (or set of common observing modes) in mind. Behavior that is common to more than one observing mode can be defined in Scripts that
 can be shared and "imported" into other scripts (see @ref:[ReusableScripts](../scripts/dsl/constructs/define-script.md#reusable-scripts)).
