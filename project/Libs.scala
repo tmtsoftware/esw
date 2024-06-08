@@ -15,10 +15,10 @@ object Libs {
   val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.18") // Apache License 2.0
   val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.1.8"
   val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
-  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "1981053"
+  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "b7997a9"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.8.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "3c23339" // Apache 2.0
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "2572711" // Apache 2.0
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
   val `ammonite` = ("com.lihaoyi" % "ammonite_3.3.3" % "3.0.0-M2-6-38698450")
@@ -30,7 +30,7 @@ object Libs {
 
 object MSocket {
   //  val Version = "0.6.0"
-  val Version = "033f412"
+  val Version = "06b7251"
 
   val `msocket-api`  = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % Version)
   val `msocket-http` = "com.github.tmtsoftware.msocket" %% "msocket-http" % Version
