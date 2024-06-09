@@ -51,7 +51,7 @@ class CswWiring {
 
   private implicit lazy val cswFrameworkSystem: CswFrameworkSystem = new CswFrameworkSystem(actorSystem)
 
-  lazy val cswContext: CswContext =
+  val cswContext: CswContext =
     CswContext
       .make(
         locationService,
