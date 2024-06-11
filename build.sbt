@@ -145,7 +145,7 @@ lazy val `esw-ocs-script-server-kt` = project
     kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsScriptServerKt.value)
-  .dependsOn(`esw-ocs-dsl`)
+  .dependsOn(`esw-ocs-dsl`, `esw-ocs-impl`, `esw-ocs-app`, `esw-commons`)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))

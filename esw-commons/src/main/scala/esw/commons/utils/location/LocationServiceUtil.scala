@@ -19,7 +19,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param locationService - an instance of locationService
  * @param actorSystem - an implicit actor system
  */
-private[esw] class LocationServiceUtil(val locationService: LocationService)(implicit
+class LocationServiceUtil(val locationService: LocationService)(implicit
     val actorSystem: ActorSystem[?]
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext

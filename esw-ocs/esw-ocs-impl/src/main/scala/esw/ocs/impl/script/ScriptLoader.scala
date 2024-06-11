@@ -5,7 +5,7 @@ import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, Scrip
 import java.lang.reflect.InvocationTargetException
 import scala.reflect.Selectable.reflectiveSelectable
 
-private[esw] object ScriptLoader {
+object ScriptLoader {
 
   // this loads .kts script
   def loadKotlinScript(scriptClass: String, scriptContext: ScriptContext): ScriptApi =
