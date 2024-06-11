@@ -69,6 +69,7 @@ lazy val `esw-ocs` = project
     `esw-ocs-api`.jvm,
     `esw-ocs-dsl`,
     `esw-ocs-dsl-kt`,
+    `esw-ocs-script-server-kt`,
     `esw-ocs-impl`,
     `esw-ocs-app`
   )
@@ -134,6 +135,16 @@ lazy val `esw-ocs-dsl-kt` = project
     kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
+  .dependsOn(`esw-ocs-dsl`)
+
+lazy val `esw-ocs-script-server-kt` = project
+  .in(file("esw-ocs/esw-ocs-script-server-kt"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    kotlinVersion := EswKeys.kotlinVersion,
+    kotlincOptions ++= KotlincOptions
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsScriptServerKt.value)
   .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-ocs-app` = project

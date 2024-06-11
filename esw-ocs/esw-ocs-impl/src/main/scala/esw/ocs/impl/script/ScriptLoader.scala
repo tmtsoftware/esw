@@ -16,6 +16,7 @@ private[esw] object ScriptLoader {
       val $$resultField = clazz.getDeclaredField("$$result")
       $$resultField.setAccessible(true)
 
+      // See DslSupport.kt: fun invoke()
       type Result = { def invoke(context: ScriptContext): ScriptApi }
       val result = $$resultField.get(script).asInstanceOf[Result]
       try {

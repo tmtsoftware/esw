@@ -196,6 +196,23 @@ object Dependencies {
     )
   )
 
+  val OcsScriptServerKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-params`.value,
+      Libs.`play-json`,
+      Kotlin.`stdlib-jdk8`,
+      Kotlin.`coroutines-core`,
+      Kotlin.`coroutines-core-jvm`,
+      Kotlin.`coroutines-jdk8`,
+      Http4k.`http4k-core`,
+      Http4k.`http4k-server-jetty`,
+      Kotlin.mockk             % Test,
+      Kotlin.kotlintest        % Test,
+      Libs.`jupiter-interface` % Test,
+      Libs.`tmt-test-reporter` % Test
+    )
+  )
+
   val EswGatewayApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       MSocket.`msocket-api`.value,

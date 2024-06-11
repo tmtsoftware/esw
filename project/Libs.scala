@@ -23,8 +23,9 @@ object Libs {
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
   val `ammonite` = ("com.lihaoyi" % "ammonite_3.3.3" % "3.0.0-M2-6-38698450")
 
-  val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
-  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "2.0.7"
+  val `hdr-histogram` = "org.hdrhistogram"   % "HdrHistogram" % "2.1.12"
+  val `slf4j-api`     = "org.slf4j"          % "slf4j-api"    % "2.0.7"
+  val `play-json`     = "org.playframework" %% "play-json"    % "3.0.3" // Apache 2.0
 
 }
 
@@ -93,7 +94,7 @@ object PekkoHttp {
 
 object Borer {
   val Version = "1.14.0"
-  val Org = "io.bullet"
+  val Org     = "io.bullet"
   //  val Org = "com.github.tmtsoftware.borer"
 
   val `borer-core`         = dep(Org %%% "borer-core" % Version)
@@ -117,6 +118,13 @@ object Kotlin {
 
   val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.8.0"
   val mockk      = "io.mockk"  % "mockk-jvm"                  % "1.13.9"
+}
+
+object Http4k {
+  val Version                = "5.23.0.0"
+  val `http4k-core`          = "org.http4k" % "http4k-core"          % Version
+  val `http4k-server-jetty`  = "org.http4k" % "http4k-server-jetty"  % Version
+  val `http4k-client-okhttp` = "org.http4k" % "http4k-client-okhttp" % Version
 }
 
 object BuildProperties {
