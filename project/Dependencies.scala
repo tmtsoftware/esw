@@ -196,14 +196,18 @@ object Dependencies {
     )
   )
 
-  val OcsScriptServerKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val OcsScriptServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-params`.value,
       Csw.`csw-command-client`,
       Csw.`csw-logging-models`.value,
       Csw.`csw-location-api`.value,
       Libs.`play-json`,
+      Libs.scopt,
       Pekko.`pekko-actor-typed`,
+      PekkoHttp.`pekko-http`,
+      PekkoHttp.`pekko-http-cors`,
+      PekkoHttp.`pekko-http-spray-json`,
       Kotlin.`stdlib-jdk8`,
       Kotlin.`coroutines-core`,
       Kotlin.`coroutines-core-jvm`,
