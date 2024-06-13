@@ -1,5 +1,6 @@
 package esw.ocs.script.server
 
+import csw.command.client.messages.DiagnosticDataMessage.DiagnosticMode
 import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest, HttpResponse}
 import org.apache.pekko.http.scaladsl.model.StatusCodes.*
@@ -14,17 +15,6 @@ import esw.ocs.impl.script.ScriptApi
 import scala.concurrent.{ExecutionContext, Future}
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json.*
-
-trait ScriptJsonSupport extends SprayJsonSupport with DefaultJsonProtocol with JsonSupport {
-  implicit object sequenceCommandFormat extends RootJsonFormat[SequenceCommand] {
-    def write(obj: SequenceCommand): JsString = JsString(writeSequenceCommand(obj).toString)
-
-    def read(json: JsValue): SequenceCommand = json match {
-      case JsString(s) => readSequenceCommand(play.api.libs.json.Json.parse(s))
-      case _           => throw DeserializationException("SequenceCommand expected")
-    }
-  }
-}
 
 class OcsScriptServerRoutes(logger: Logger, script: ScriptApi)(implicit
     ec: ExecutionContext,
@@ -69,6 +59,41 @@ class OcsScriptServerRoutes(logger: Logger, script: ScriptApi)(implicit
           entity(as[SequenceCommand]) { sequenceCommand =>
             complete(script.execute(sequenceCommand).map(_ => OK))
           }
+        }
+        ~ path("executeGoOnline") {
+          complete(script.executeGoOnline().map(_ => OK))
+        }
+        ~ path("executeGoOffline") {
+          complete(script.executeGoOffline().map(_ => OK))
+        }
+        ~ path("executeShutdown") {
+          complete(script.executeShutdown().map(_ => OK))
+        }
+        ~ path("executeAbort") {
+          complete(script.executeAbort().map(_ => OK))
+        }
+        ~ path("executeNewSequenceHandler") {
+          complete(script.executeNewSequenceHandler().map(_ => OK))
+        }
+        ~ path("executeStop") {
+          complete(script.executeStop().map(_ => OK))
+        }
+        ~ path("executeDiagnosticMode") {
+          entity(as[DiagnosticMode]) { diagnosticMode =>
+            complete(script.executeDiagnosticMode(diagnosticMode.startTime, diagnosticMode.hint).map(_ => OK))
+          }
+        }
+        ~ path("executeOperationsMode") {
+          complete(script.executeOperationsMode().map(_ => OK))
+        }
+        ~ path("executeExceptionHandlers") {
+          entity(as[String]) { msg =>
+            complete(script.executeExceptionHandlers(RuntimeException(msg)).map(_ => OK))
+          }
+        }
+        ~ path("shutdownScript") {
+          script.shutdownScript()
+          complete(OK)
         }
       }
     }
