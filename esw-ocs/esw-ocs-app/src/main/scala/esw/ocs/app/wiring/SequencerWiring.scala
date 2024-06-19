@@ -59,6 +59,8 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   private[ocs] lazy val config: Config  = actorSystem.settings.config
+  private[ocs] val coursierChannel = config.getString("coursier.channel")
+
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
   final lazy val sc                     = sequencerConfig
   import sc.*
@@ -80,6 +82,7 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
+  // XXX TODO FIXME
   private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
@@ -95,6 +98,7 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLoggerFactory   = loggerFactory.asJava
+  // XXX TODO FIXME
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
   private lazy val sequencerImplFactory =

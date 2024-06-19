@@ -19,16 +19,17 @@ import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
 import esw.http.core.wiring.ActorRuntime
-import esw.ocs.api.actor.client.SequencerApiFactory
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.impl.core.*
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import io.lettuce.core.RedisClient
 import esw.ocs.app.wiring.SequencerConfig
+
+import java.util.concurrent.CompletionStage
 
 class OcsScriptServerWiring(sequencerPrefix: Prefix) {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
@@ -44,7 +45,8 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  private lazy val sequenceOperatorFactory: () => SequenceOperator = ??? // Not needed here
+  // Not needed here
+  private lazy val sequenceOperatorFactory: () => SequenceOperator = null
   private lazy val componentId                                     = ComponentId(prefix, ComponentType.Sequencer)
   private[ocs] lazy val script: ScriptApi                          = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
@@ -63,12 +65,8 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  private lazy val sequencerImplFactory =
-    (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => // todo: revisit timeout value
-      locationServiceUtil
-        .resolveSequencer(Variation.prefix(_subsystem, _obsMode, _variation), CommonTimeouts.ResolveLocation)
-        .mapRight(SequencerApiFactory.make)
-        .toJava
+  // not needed here
+  private lazy val sequencerImplFactory: (Subsystem, ObsMode, Option[Variation]) => CompletionStage[SequencerApi] = null
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,

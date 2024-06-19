@@ -1,5 +1,6 @@
 package esw.agent.pekko.app.process.cs
 
+import csw.prefix.models.Subsystem
 import esw.agent.pekko.app.BuildInfo
 import esw.agent.pekko.client.models.ContainerConfig
 
@@ -17,4 +18,9 @@ object Coursier {
     val appName = s"${config.orgName}:${config.deployModule}_${BuildInfo.scalaBinaryVersion}"
     CoursierLaunch(appName, Some(config.version))
   }
+
+  def ocsScriptServerApp(version: Option[String]): CoursierLaunch = {
+    CoursierLaunch("esw-ocs-script-server-app", version)
+  }
+
 }

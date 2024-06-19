@@ -203,7 +203,6 @@ object Dependencies {
       Csw.`csw-logging-models`.value,
       Csw.`csw-location-api`.value,
       Libs.`play-json`,
-      Libs.scopt,
       Pekko.`pekko-actor-typed`,
       PekkoHttp.`pekko-http`,
       PekkoHttp.`pekko-http-cors`,

@@ -26,7 +26,6 @@ object Libs {
   val `hdr-histogram` = "org.hdrhistogram"   % "HdrHistogram" % "2.1.12"
   val `slf4j-api`     = "org.slf4j"          % "slf4j-api"    % "2.0.7"
   val `play-json`     = "org.playframework" %% "play-json"    % "3.0.3" // Apache 2.0
-  val scopt           = "com.github.scopt"  %% "scopt"        % "4.1.0" // MIT License
 }
 
 object MSocket {
