@@ -69,7 +69,6 @@ lazy val `esw-ocs` = project
     `esw-ocs-api`.jvm,
     `esw-ocs-dsl`,
     `esw-ocs-dsl-kt`,
-    `esw-ocs-script-server`,
     `esw-ocs-impl`,
     `esw-ocs-app`
   )
@@ -137,15 +136,15 @@ lazy val `esw-ocs-dsl-kt` = project
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
   .dependsOn(`esw-ocs-dsl`)
 
-lazy val `esw-ocs-script-server` = project
-  .in(file("esw-ocs/esw-ocs-script-server"))
-  .enablePlugins(KotlinPlugin)
-  .settings(
-    kotlinVersion := EswKeys.kotlinVersion,
-    kotlincOptions ++= KotlincOptions
-  )
-  .settings(libraryDependencies ++= Dependencies.OcsScriptServer.value)
-  .dependsOn(`esw-ocs-dsl`, `esw-ocs-impl`, `esw-ocs-app`, `esw-commons`)
+//lazy val `esw-ocs-script-server` = project
+//  .in(file("esw-ocs/esw-ocs-script-server"))
+//  .enablePlugins(KotlinPlugin)
+//  .settings(
+//    kotlinVersion := EswKeys.kotlinVersion,
+//    kotlincOptions ++= KotlincOptions
+//  )
+//  .settings(libraryDependencies ++= Dependencies.OcsScriptServer.value)
+//  .dependsOn(`esw-ocs-dsl`, `esw-ocs-impl`, `esw-ocs-app`, `esw-commons`)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
@@ -158,6 +157,8 @@ lazy val `esw-ocs-app` = project
     `esw-http-core`,
     `esw-ocs-impl`,
     `esw-agent-pekko-app`,
+    `esw-ocs-dsl`,
+    `esw-commons`,
     `esw-test-commons` % Test
   )
 
@@ -225,7 +226,6 @@ lazy val `esw-integration-test` = project
     `esw-gateway-server`,
     `esw-http-core`,
     `esw-ocs-impl`,
-    `esw-ocs-script-server`, // needed for when tests run script server in the same process
     examples,
     `esw-ocs-app`,
     `esw-agent-pekko-app`,
@@ -404,7 +404,6 @@ lazy val `esw-testkit` = project
   .dependsOn(
     `esw-gateway-server`,
     `esw-ocs-app`,
-    `esw-ocs-script-server`, // needed for when tests run script server in the same process
     `esw-agent-pekko-app`,
     `esw-sm-app`,
     `esw-agent-service-app`

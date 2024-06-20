@@ -56,8 +56,11 @@ import esw.commons.extensions.FutureExt.FutureOps
 
 // $COVERAGE-OFF$
 // Note: Use scriptServerInSameProcess=true for tests that rely on test classpath, etc.
-private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix,
-                                   scriptServerInSameProcess: Boolean = false) extends SequencerServiceCodecs {
+private[ocs] class SequencerWiring(
+    val sequencerPrefix: Prefix,
+    sequenceComponentPrefix: Prefix,
+    scriptServerInSameProcess: Boolean = false
+) extends SequencerServiceCodecs {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   private[ocs] lazy val config: Config = actorSystem.settings.config
@@ -86,7 +89,8 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
 
 //  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
   private[ocs] lazy val scriptServerManager = ScriptServerManager(prefix, locationService, config, logger)
-  private[ocs] lazy val script: ScriptApi = scriptServerManager.spawn(scriptServerInSameProcess).await() match {
+  private val scriptServerF = if (scriptServerInSameProcess) scriptServerManager.start() else scriptServerManager.spawn()
+  private[ocs] lazy val script: ScriptApi = scriptServerF.await() match {
     case Left(msg)        => throw new RuntimeException(s"Failed to load script: $msg")
     case Right(scriptApi) => scriptApi
   }

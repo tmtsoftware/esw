@@ -21,6 +21,7 @@ object OcsScriptServerApp {
         NetworkType.Inside,
         Metadata.empty
       )
+      println(s"XXX 2 register $registration")
       wiring.locationService.register(registration)
     }
   }

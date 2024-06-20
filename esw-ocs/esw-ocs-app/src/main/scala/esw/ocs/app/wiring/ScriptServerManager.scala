@@ -17,6 +17,7 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.agent.pekko.app.ext.ProcessExt.ProcessOps
 import esw.ocs.app.client.OcsScriptClient
 import esw.ocs.impl.script.ScriptApi
+import esw.ocs.script.server.OcsScriptServerApp
 import org.apache.pekko.Done
 
 import java.nio.file.Path
@@ -56,14 +57,28 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   /**
    * Starts the script HTTP server and returns an HTTP client for it that implements the ScriptApi trait
    */
-  def spawn(scriptServerInSameProcess: Boolean): Future[Either[String, ScriptApi]] = {
+  def spawn(): Future[Either[String, ScriptApi]] = {
     verifyComponentIsNotAlreadyRegistered(connection)
-      .flatMapE(_ => startScriptServer(scriptServerInSameProcess))
+      .flatMapE(_ => startScriptServer())
       .flatMapE(process =>
         waitForRegistration(connection, durationToWaitForComponentRegistration)
           .flatMapE { loc =>
             reconcile(process, loc, connection)
           }
+          .flatMapE { loc =>
+            Future.successful(Right(OcsScriptClient(loc)))
+          }
+      )
+  }
+
+  /**
+   * Starts the script HTTP server in this process (for testing) and returns an HTTP client for it that implements the ScriptApi trait
+   */
+  def start(): Future[Either[String, ScriptApi]] = {
+    verifyComponentIsNotAlreadyRegistered(connection)
+      .flatMapE(_ =>
+        OcsScriptServerApp.main(Array(prefix.toString))
+        waitForRegistration(connection, durationToWaitForComponentRegistration)
           .flatMapE { loc =>
             Future.successful(Right(OcsScriptClient(loc)))
           }
@@ -107,7 +122,7 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   }
 
   // starts a process with the executable string of the given spawn command
-  private def startScriptServer(scriptServerInSameProcess: Boolean): Future[Either[String, Process]] = {
+  private def startScriptServer(): Future[Either[String, Process]] = {
 
     //    versionManager.getScriptVersion
 //      .map { version =>
@@ -121,17 +136,11 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
 //      }
 
     Future.successful {
-      if (scriptServerInSameProcess) {
-        // XXX TODO Use reflection
-
-      }
-      else {
-        val cmdStr =
-          CoursierLaunch("esw-ocs-script-server-app", Some("0.1.0-SNAPSHOT")).launch(coursierChannel, List(prefix.toString))
-        processExecutor
-          .runCommand(cmdStr, prefix)
-          .map(_.tap(onProcessExit(_, connection)))
-      }
+      val cmdStr =
+        CoursierLaunch("esw-ocs-script-server-app", Some("0.1.0-SNAPSHOT")).launch(coursierChannel, List(prefix.toString))
+      processExecutor
+        .runCommand(cmdStr, prefix)
+        .map(_.tap(onProcessExit(_, connection)))
     }
   }
 
