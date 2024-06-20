@@ -32,11 +32,12 @@ import esw.ocs.app.wiring.SequencerConfig
 import java.util.concurrent.CompletionStage
 
 class OcsScriptServerWiring(sequencerPrefix: Prefix) {
-  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
+  private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+    ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   private[ocs] lazy val config: Config  = actorSystem.settings.config
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
-  final lazy val sc                     = sequencerConfig
+  private final lazy val sc             = sequencerConfig
   import sc.*
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
@@ -50,15 +51,15 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
   private lazy val componentId                                     = ComponentId(prefix, ComponentType.Sequencer)
   private[ocs] lazy val script: ScriptApi                          = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
-  private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
-  lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
+  private lazy val locationServiceUtil                = new LocationServiceUtil(locationService)
+  private lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
 
-  lazy val redisClient: RedisClient                 = RedisClient.create()
-  lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))
-  lazy val eventService: EventService               = eventServiceFactory.make(locationService)
-  lazy val jEventService: JEventService             = new JEventService(eventService)
-  lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
-  private lazy val jAlarmService: IAlarmService     = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
+  private lazy val redisClient: RedisClient                 = RedisClient.create()
+  private lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))
+  private lazy val eventService: EventService               = eventServiceFactory.make(locationService)
+  private lazy val jEventService: JEventService             = new JEventService(eventService)
+  private lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
+  private lazy val jAlarmService: IAlarmService             = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
 
   private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
@@ -68,7 +69,7 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
   // not needed here
   private lazy val sequencerImplFactory: (Subsystem, ObsMode, Option[Variation]) => CompletionStage[SequencerApi] = null
 
-  lazy val scriptContext = new ScriptContext(
+  private lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
     prefix,
     ObsMode.from(prefix),
@@ -81,6 +82,5 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
     config
   )
 
-  val port                    = 9000 // XXX FIXME or 0?
-  val server: OcsScriptServer = OcsScriptServer(port, OcsScriptServerRoutes(logger, script).route)
+  val server: OcsScriptServer = OcsScriptServer(OcsScriptServerRoutes(logger, script).route)
 }

@@ -59,6 +59,7 @@ object Dependencies {
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
+      Libs.`dotty-cps-async`.value,
       MSocket.`msocket-http`,
       Libs.scalatest.value            % Test,
       Libs.`mockito`                  % Test,

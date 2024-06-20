@@ -157,6 +157,7 @@ lazy val `esw-ocs-app` = project
     `esw-ocs-handler`,
     `esw-http-core`,
     `esw-ocs-impl`,
+    `esw-agent-pekko-app`,
     `esw-test-commons` % Test
   )
 

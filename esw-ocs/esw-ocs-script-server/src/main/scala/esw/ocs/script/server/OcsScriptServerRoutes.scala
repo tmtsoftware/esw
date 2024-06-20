@@ -9,12 +9,9 @@ import org.apache.pekko.http.scaladsl.server.{Directive0, Directives, ExceptionH
 import org.apache.pekko.http.cors.scaladsl.CorsDirectives.*
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.SequenceCommand
-import csw.params.core.formats.JsonSupport
 import esw.ocs.impl.script.ScriptApi
 
-import scala.concurrent.{ExecutionContext, Future}
-import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import spray.json.*
+import scala.concurrent.ExecutionContext
 
 class OcsScriptServerRoutes(logger: Logger, script: ScriptApi)(implicit
     ec: ExecutionContext,
@@ -22,11 +19,11 @@ class OcsScriptServerRoutes(logger: Logger, script: ScriptApi)(implicit
 ) extends Directives
     with ScriptJsonSupport {
 
-  val logRequest: HttpRequest => Unit = req => {
+  private val logRequest: HttpRequest => Unit = req => {
     logger.info(s"${req.method.value} ${req.uri.toString()}")
   }
 
-  val routeLogger: Directive0 = DebuggingDirectives.logRequest(LoggingMagnet(_ => logRequest))
+  private val routeLogger: Directive0 = DebuggingDirectives.logRequest(LoggingMagnet(_ => logRequest))
 
   implicit def myExceptionHandler: ExceptionHandler =
     ExceptionHandler { case ex: Exception =>

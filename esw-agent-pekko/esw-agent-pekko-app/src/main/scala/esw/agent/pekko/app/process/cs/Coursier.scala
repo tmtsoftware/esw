@@ -18,9 +18,4 @@ object Coursier {
     val appName = s"${config.orgName}:${config.deployModule}_${BuildInfo.scalaBinaryVersion}"
     CoursierLaunch(appName, Some(config.version))
   }
-
-  def ocsScriptServerApp(version: Option[String]): CoursierLaunch = {
-    CoursierLaunch("esw-ocs-script-server-app", version)
-  }
-
 }

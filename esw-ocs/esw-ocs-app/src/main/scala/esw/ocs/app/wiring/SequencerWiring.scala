@@ -49,17 +49,16 @@ import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.metrics.LabelExtractor
-
 import cps.compat.FutureAsync.*
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
+import esw.commons.extensions.FutureExt.FutureOps
 
 // $COVERAGE-OFF$
 private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) extends SequencerServiceCodecs {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
-  private[ocs] lazy val config: Config  = actorSystem.settings.config
-  private[ocs] val coursierChannel = config.getString("coursier.channel")
+  private[ocs] lazy val config: Config = actorSystem.settings.config
 
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
   final lazy val sc                     = sequencerConfig
@@ -82,8 +81,13 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
-  // XXX TODO FIXME
-  private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
+
+//  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
+  private[ocs] lazy val scriptServerManager = ScriptServerManager(prefix, locationService, config, logger)
+  private[ocs] lazy val script: ScriptApi = scriptServerManager.spawn().await() match {
+    case Left(msg)        => throw new RuntimeException(s"Failed to load script: $msg")
+    case Right(scriptApi) => scriptApi
+  }
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
@@ -95,11 +99,13 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
   lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   private lazy val jAlarmService: IAlarmService     = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
 
-  private lazy val loggerFactory    = new LoggerFactory(prefix)
-  private lazy val logger: Logger   = loggerFactory.getLogger
-  private lazy val jLoggerFactory   = loggerFactory.asJava
+  private lazy val loggerFactory  = new LoggerFactory(prefix)
+  private lazy val logger: Logger = loggerFactory.getLogger
+  private lazy val jLoggerFactory = loggerFactory.asJava
+
   // XXX TODO FIXME
-  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
+//  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
+  private lazy val jLogger: ILogger = jLoggerFactory.getLogger(getClass)
 
   private lazy val sequencerImplFactory =
     (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => // todo: revisit timeout value
