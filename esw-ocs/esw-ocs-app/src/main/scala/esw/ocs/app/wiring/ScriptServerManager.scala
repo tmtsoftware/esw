@@ -50,7 +50,7 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   private val processOutput                          = new ProcessOutput()
   private val processExecutor                        = new ProcessExecutor(processOutput)(log)
   private val connection: PekkoConnection            = PekkoConnection(ComponentId(prefix, ComponentType.Service))
-  private val coursierChannel                        = config.getString("coursier.channel")
+  private val coursierChannel                        = config.getString("agent.coursier.channel")
   private val durationToWaitForComponentRegistration = 18.seconds
 
   /**

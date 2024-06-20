@@ -7,14 +7,14 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{AOESW, ESW, IRIS}
-import csw.testkit.scaladsl.CSWService.EventServer
+import csw.testkit.scaladsl.CSWService.{ConfigServer, EventServer, LocationServer}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.protocol.ConfigureResponse.Success
 import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequencersResponse}
 
-class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
+class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer, ConfigServer, LocationServer) {
 
   override def afterEach(): Unit = {
     super.afterEach()
