@@ -56,9 +56,9 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   /**
    * Starts the script HTTP server and returns an HTTP client for it that implements the ScriptApi trait
    */
-  def spawn(): Future[Either[String, ScriptApi]] = {
+  def spawn(scriptServerInSameProcess: Boolean): Future[Either[String, ScriptApi]] = {
     verifyComponentIsNotAlreadyRegistered(connection)
-      .flatMapE(_ => startScriptServer())
+      .flatMapE(_ => startScriptServer(scriptServerInSameProcess))
       .flatMapE(process =>
         waitForRegistration(connection, durationToWaitForComponentRegistration)
           .flatMapE { loc =>
@@ -107,17 +107,32 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   }
 
   // starts a process with the executable string of the given spawn command
-  private def startScriptServer(): Future[Either[String, Process]] = {
-    versionManager.getScriptVersion
-      .map { version =>
-        val cmdStr = CoursierLaunch("esw-ocs-script-server-app", Some(version)).launch(coursierChannel, List(prefix.toString))
+  private def startScriptServer(scriptServerInSameProcess: Boolean): Future[Either[String, Process]] = {
+
+    //    versionManager.getScriptVersion
+//      .map { version =>
+//        val cmdStr = CoursierLaunch("esw-ocs-script-server-app", Some(version)).launch(coursierChannel, List(prefix.toString))
+//        processExecutor
+//          .runCommand(cmdStr, prefix)
+//          .map(_.tap(onProcessExit(_, connection)))
+//      }
+//      .recover { case FetchingScriptVersionFailed(msg) =>
+//        Left(msg)
+//      }
+
+    Future.successful {
+      if (scriptServerInSameProcess) {
+        // XXX TODO Use reflection
+
+      }
+      else {
+        val cmdStr =
+          CoursierLaunch("esw-ocs-script-server-app", Some("0.1.0-SNAPSHOT")).launch(coursierChannel, List(prefix.toString))
         processExecutor
           .runCommand(cmdStr, prefix)
           .map(_.tap(onProcessExit(_, connection)))
       }
-      .recover { case FetchingScriptVersionFailed(msg) =>
-        Left(msg)
-      }
+    }
   }
 
   // it checks if the given process is alive

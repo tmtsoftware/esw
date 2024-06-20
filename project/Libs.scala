@@ -1,6 +1,7 @@
-import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
-import sbt.Def.{setting => dep}
-import sbt._
+import EswKeys.scalaVersion
+import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport.*
+import sbt.Def.setting as dep
+import sbt.*
 
 import java.io.FileReader
 import java.util.Properties

@@ -54,7 +54,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
     runOn(node1) {
       enterBarrier("event-server-started")
-      val ocsSequencerWiring = new SequencerWiring(Prefix(ocsSubsystem, ocsSequencerObsMode.name), sequenceComponentPrefix)
+      val ocsSequencerWiring = new SequencerWiring(Prefix(ocsSubsystem, ocsSequencerObsMode.name, true), sequenceComponentPrefix)
       ocsSequencerWiring.sequencerServer.start()
 
       enterBarrier("ocs-started")
@@ -68,7 +68,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
       val multiJVMEventSubscription = eventSubscriber.subscribeActorRef(Set(multiJVMCommandEventKey), testProbe.ref)
       multiJVMEventSubscription.ready().await
       testProbe.expectMessageType[SystemEvent] // discard invalid event
-      //##############
+      // ##############
       enterBarrier("submit-sequence-to-ocs")
       Thread.sleep(500)
 
@@ -81,7 +81,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
       enterBarrier("event-server-started")
       enterBarrier("ocs-started")
 
-      val tcsSequencerWiring = new SequencerWiring(Prefix(tcsSubsystem, tcsSequencerObsMode.name), sequenceComponentPrefix)
+      val tcsSequencerWiring = new SequencerWiring(Prefix(tcsSubsystem, tcsSequencerObsMode.name, true), sequenceComponentPrefix)
       tcsSequencerWiring.sequencerServer.start()
       enterBarrier("tcs-started")
       enterBarrier("assembly-started")

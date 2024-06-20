@@ -225,6 +225,7 @@ lazy val `esw-integration-test` = project
     `esw-gateway-server`,
     `esw-http-core`,
     `esw-ocs-impl`,
+    `esw-ocs-script-server`, // needed for when tests run script server in the same process
     examples,
     `esw-ocs-app`,
     `esw-agent-pekko-app`,
@@ -403,6 +404,7 @@ lazy val `esw-testkit` = project
   .dependsOn(
     `esw-gateway-server`,
     `esw-ocs-app`,
+    `esw-ocs-script-server`, // needed for when tests run script server in the same process
     `esw-agent-pekko-app`,
     `esw-sm-app`,
     `esw-agent-service-app`

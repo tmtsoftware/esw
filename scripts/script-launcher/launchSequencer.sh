@@ -70,7 +70,7 @@ fi
 # check if channel is available in env (used in test)
 if [[ ${CS_CHANNEL} == "" ]]; then
 #  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
-  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update/apps.json"
+  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update-esw-http-api/apps.json"
 fi
 
 # ---------------- Compiling ------------------
