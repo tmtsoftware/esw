@@ -11,6 +11,7 @@ import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.event.client.models.EventStores.RedisStore
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.models.*
+import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
@@ -32,6 +33,8 @@ import esw.ocs.app.wiring.SequencerConfig
 import java.util.concurrent.CompletionStage
 
 class OcsScriptServerWiring(sequencerPrefix: Prefix) {
+  private[ocs] val httpConnection: HttpConnection = HttpConnection(ComponentId(sequencerPrefix, ComponentType.Service))
+
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
@@ -82,5 +85,5 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
     config
   )
 
-  val server: OcsScriptServer = OcsScriptServer(OcsScriptServerRoutes(logger, script).route)
+  val server: OcsScriptServer = OcsScriptServer(OcsScriptServerRoutes(logger, script, this).route)
 }

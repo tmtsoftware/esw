@@ -13,7 +13,7 @@ import esw.ocs.impl.script.ScriptApi
 
 import scala.concurrent.ExecutionContext
 
-class OcsScriptServerRoutes(logger: Logger, script: ScriptApi)(implicit
+class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiring: OcsScriptServerWiring)(implicit
     ec: ExecutionContext,
     sys: ActorSystem[_]
 ) extends Directives
@@ -54,41 +54,53 @@ class OcsScriptServerRoutes(logger: Logger, script: ScriptApi)(implicit
         // Insert/update segment to M1 positions
         path("execute") {
           entity(as[SequenceCommand]) { sequenceCommand =>
+            println(s"XXX script server: execute $sequenceCommand")
             complete(script.execute(sequenceCommand).map(_ => OK))
           }
         }
         ~ path("executeGoOnline") {
+          println(s"XXX script server: executeGoOnline")
           complete(script.executeGoOnline().map(_ => OK))
         }
         ~ path("executeGoOffline") {
+          println(s"XXX script server: executeGoOffline")
           complete(script.executeGoOffline().map(_ => OK))
         }
         ~ path("executeShutdown") {
+          println(s"XXX script server: executeShutdown")
           complete(script.executeShutdown().map(_ => OK))
         }
         ~ path("executeAbort") {
+          println(s"XXX script server: executeAbort")
           complete(script.executeAbort().map(_ => OK))
         }
         ~ path("executeNewSequenceHandler") {
+          println(s"XXX script server: executeNewSequenceHandler")
           complete(script.executeNewSequenceHandler().map(_ => OK))
         }
         ~ path("executeStop") {
+          println(s"XXX script server: executeStop")
           complete(script.executeStop().map(_ => OK))
         }
         ~ path("executeDiagnosticMode") {
           entity(as[DiagnosticMode]) { diagnosticMode =>
+            println(s"XXX script server: executeDiagnosticMode: $diagnosticMode")
             complete(script.executeDiagnosticMode(diagnosticMode.startTime, diagnosticMode.hint).map(_ => OK))
           }
         }
         ~ path("executeOperationsMode") {
+          println(s"XXX script server: executeOperationsMode")
           complete(script.executeOperationsMode().map(_ => OK))
         }
         ~ path("executeExceptionHandlers") {
           entity(as[String]) { msg =>
+            println(s"XXX script server: executeExceptionHandlers")
             complete(script.executeExceptionHandlers(RuntimeException(msg)).map(_ => OK))
           }
         }
         ~ path("shutdownScript") {
+          println(s"XXX script server: shutdownScript")
+          wiring.locationService.unregister(wiring.httpConnection)
           script.shutdownScript()
           complete(OK)
         }

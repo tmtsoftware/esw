@@ -36,7 +36,8 @@ class LocationServiceUtil(val locationService: LocationService)(implicit
       s"unregistering-${registrationResult.location}"
     )(() => registrationResult.unregister())
 
-  private[esw] def register(pekkoRegistration: PekkoRegistration): Future[Either[RegistrationError, PekkoLocation]] =
+  private[esw] def register(pekkoRegistration: PekkoRegistration): Future[Either[RegistrationError, PekkoLocation]] = {
+    println(s"XXX register $pekkoRegistration")
     locationService
       .register(pekkoRegistration)
       .map { result =>
@@ -48,6 +49,8 @@ class LocationServiceUtil(val locationService: LocationService)(implicit
         case e: OtherLocationIsRegistered => EswLocationError.OtherLocationIsRegistered(e.msg)
         case x                            => throw new MatchError(x)
       }
+  }
+
   def list(componentId: ComponentId): Future[List[Location]] = {
     locationService.list.map(_.filter(loc => loc.connection.componentId == componentId))
   }

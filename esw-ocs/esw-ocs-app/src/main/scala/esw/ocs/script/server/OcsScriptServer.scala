@@ -15,8 +15,7 @@ class OcsScriptServer(routes: Route)(implicit
     val f = Http().newServerAt("0.0.0.0", 0).bind(routes)
     f.onComplete {
       case Success(b) =>
-        println(s"Server online at http://localhost:${b.localAddress.getPort}")
-        println(s"For HTTP API docs see: http://localhost:${b.localAddress.getPort}/docs")
+        println(s"Script server online at http://localhost:${b.localAddress.getPort}")
       case Failure(ex) =>
         ex.printStackTrace()
     }

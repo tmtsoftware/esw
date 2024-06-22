@@ -4,7 +4,7 @@ import com.typesafe.config.Config
 import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.models.{ComponentId, ComponentType, Connection, HttpLocation, Location}
-import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.Connection.{HttpConnection, PekkoConnection}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import esw.agent.pekko.app.process.{ProcessExecutor, ProcessOutput}
@@ -50,7 +50,7 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   private val versionManager                         = new VersionManager(versionConfPath, configUtils)
   private val processOutput                          = new ProcessOutput()
   private val processExecutor                        = new ProcessExecutor(processOutput)(log)
-  private val connection: PekkoConnection            = PekkoConnection(ComponentId(prefix, ComponentType.Service))
+  private val connection: HttpConnection             = HttpConnection(ComponentId(prefix, ComponentType.Service))
   private val coursierChannel                        = config.getString("agent.coursier.channel")
   private val durationToWaitForComponentRegistration = 18.seconds
 
@@ -58,6 +58,7 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
    * Starts the script HTTP server and returns an HTTP client for it that implements the ScriptApi trait
    */
   def spawn(): Future[Either[String, ScriptApi]] = {
+    println("XXX Start script server in new process")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ => startScriptServer())
       .flatMapE(process =>
@@ -75,6 +76,7 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
    * Starts the script HTTP server in this process (for testing) and returns an HTTP client for it that implements the ScriptApi trait
    */
   def start(): Future[Either[String, ScriptApi]] = {
+    println("XXX Start script server for testing")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ =>
         OcsScriptServerApp.main(Array(prefix.toString))
@@ -112,10 +114,13 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   // If it is registered then it returns an error message string as a Future
   // otherwise it return an unit value as a Future
   private def verifyComponentIsNotAlreadyRegistered(connection: Connection): Future[Either[String, Unit]] = {
+    println(s"XXX Verify script server not running at $connection")
     locationService
       .find(connection.of[Location])
       .map {
-        case None    => Right(())
+        case None =>
+          println("XXX Script server was not running")
+          Right(())
         case Some(l) => Left(s"${connection.componentId} is already registered with location service at $l".tap(log.error(_)))
       }
       .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
@@ -160,17 +165,24 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   // if not it returns the error message as a Future
   // otherwise it returns the location
   private def waitForRegistration(connection: Connection, timeout: FiniteDuration): Future[Either[String, HttpLocation]] = {
+    println(s"XXX waiting for reg of ${connection.of[Location]} with timeout $timeout")
     locationService
       .resolve(connection.of[Location], timeout)
       .map {
-        case Some(loc) => Right(loc.asInstanceOf[HttpLocation])
+        case Some(loc) =>
+          println(s"XXX resolved location at $loc")
+          Right(loc.asInstanceOf[HttpLocation])
         case None =>
+          println(s"XXX could not resolve location of $connection")
           Left(
             s"${connection.componentId} is not registered with location service. Reason: Process failed to spawn due to reasons like invalid binary version etc or failed to register with location service."
               .tap(log.warn(_))
           )
       }
-      .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
+      .mapError { e =>
+        println(s"XXX waitForRegistration failed: $e")
+        s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_))
+      }
   }
 
   // it attaches a job to unregister the started component on the completion of the process
