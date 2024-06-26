@@ -143,6 +143,7 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
     Future.successful {
       val cmdStr =
         CoursierLaunch("esw-ocs-script-server-app", Some("0.1.0-SNAPSHOT")).launch(coursierChannel, List(prefix.toString))
+      println(s"XXX ScriptServerManager.startScriptServer: cmd = $cmdStr")
       processExecutor
         .runCommand(cmdStr, prefix)
         .map(_.tap(onProcessExit(_, connection)))

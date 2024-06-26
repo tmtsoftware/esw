@@ -1,10 +1,12 @@
 package esw.ocs.script.server
 
-import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import org.apache.pekko.util.Timeout
 import com.typesafe.config.Config
+import cps.compat.FutureAsync.{async, await}
 import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.client.AlarmServiceFactory
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.api.scaladsl.EventService
 import csw.event.client.EventServiceFactory
 import csw.event.client.internal.commons.javawrappers.JEventService
@@ -24,13 +26,18 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
 import esw.http.core.wiring.ActorRuntime
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.impl.core.*
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import io.lettuce.core.RedisClient
 import esw.ocs.app.wiring.SequencerConfig
+import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
 
-import java.util.concurrent.CompletionStage
+import scala.concurrent.{Await, Future}
 
 class OcsScriptServerWiring(sequencerPrefix: Prefix) {
   private[ocs] val httpConnection: HttpConnection = HttpConnection(ComponentId(sequencerPrefix, ComponentType.Service))
@@ -49,8 +56,16 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  // Not needed here
-  private lazy val sequenceOperatorFactory: () => SequenceOperator = null
+  lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
+    actorSystem ? { (x: ActorRef[ActorRef[SequencerMsg]]) =>
+      Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
+    },
+    CommonTimeouts.Wiring
+  )
+
+  // Pass lambda to break circular dependency shown below.
+  // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
+  private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId                                     = ComponentId(prefix, ComponentType.Sequencer)
   private[ocs] lazy val script: ScriptApi                          = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
@@ -69,8 +84,26 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  // not needed here
-  private lazy val sequencerImplFactory: (Subsystem, ObsMode, Option[Variation]) => CompletionStage[SequencerApi] = null
+  private lazy val sequencerImplFactory =
+    (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => // todo: revisit timeout value
+      locationServiceUtil
+        .resolveSequencer(Variation.prefix(_subsystem, _obsMode, _variation), CommonTimeouts.ResolveLocation)
+        .mapRight(SequencerApiFactory.make)
+        .toJava
+
+  private val shutdownHttpService: () => Future[Done] = () =>
+    async {
+      logger.debug("Shutting down Sequencer http service")
+      val (serverBinding, registrationResult) = await(httpServerBinding)
+      val eventualTerminated                  = serverBinding.terminate(CommonTimeouts.Wiring)
+      val eventualDone                        = registrationResult.unregister()
+      await(eventualTerminated.flatMap(_ => eventualDone))
+    }
+
+  lazy val sequencerBehavior =
+    new SequencerBehavior(componentId, script, locationService, sequenceComponentPrefix, logger, shutdownHttpService)(
+      actorSystem
+    )
 
   private lazy val scriptContext = new ScriptContext(
     heartbeatInterval,

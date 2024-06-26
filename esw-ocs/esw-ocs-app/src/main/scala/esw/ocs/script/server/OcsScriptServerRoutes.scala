@@ -53,6 +53,7 @@ class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiring: OcsScript
       post {
         // Insert/update segment to M1 positions
         path("execute") {
+          println(s"XXX script server: execute ...")
           entity(as[SequenceCommand]) { sequenceCommand =>
             println(s"XXX script server: execute $sequenceCommand")
             complete(script.execute(sequenceCommand).map(_ => OK))
@@ -64,7 +65,10 @@ class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiring: OcsScript
         }
         ~ path("executeGoOffline") {
           println(s"XXX script server: executeGoOffline")
-          complete(script.executeGoOffline().map(_ => OK))
+//          complete(script.executeGoOffline().map(_ => OK))
+          complete(script.executeGoOffline().map { xxx =>
+            println(s"XXX script server: executeGoOffline: res = $xxx"); OK
+          })
         }
         ~ path("executeShutdown") {
           println(s"XXX script server: executeShutdown")

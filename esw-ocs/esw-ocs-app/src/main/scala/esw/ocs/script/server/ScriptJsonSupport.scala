@@ -20,8 +20,13 @@ trait ScriptJsonSupport extends SprayJsonSupport with DefaultJsonProtocol with J
     def write(obj: SequenceCommand): JsValue = writeSequenceCommand(obj).toString.parseJson
 
     def read(json: JsValue): SequenceCommand = json match {
-      case JsString(s) => readSequenceCommand(play.api.libs.json.Json.parse(s))
-      case _           => throw DeserializationException("SequenceCommand expected")
+      case js: JsObject =>
+        println(s"XXX read SequenceCommand from ${js.compactPrint}")
+        val sc: SequenceCommand = readSequenceCommand(play.api.libs.json.Json.parse(js.compactPrint))
+        sc
+      case x =>
+        println(s"XXX: read SequenceCommand (ERROR) from ${x.getClass}")
+        throw DeserializationException("SequenceCommand expected")
     }
   }
 
@@ -29,8 +34,12 @@ trait ScriptJsonSupport extends SprayJsonSupport with DefaultJsonProtocol with J
     def write(obj: Instant): JsValue = JsString(obj.toString)
 
     def read(json: JsValue): Instant = json match {
-      case JsString(s) => Instant.parse(s)
-      case _           => throw DeserializationException("Instant expected")
+      case JsString(s) =>
+        println(s"XXX read Instant from $s")
+        Instant.parse(s)
+      case x =>
+        println(s"XXX ERROR reading Instant from $x")
+        throw DeserializationException("Instant expected")
     }
   }
 
