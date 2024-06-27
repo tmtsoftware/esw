@@ -40,20 +40,16 @@ object SequenceComponentTimeouts {
   val LoadScript: FiniteDuration         = SequencerTimeouts.ScriptHandlerExecution
   val UnloadScript: FiniteDuration = SequencerTimeouts.ScriptHandlerExecution + 2.seconds // shutdown redis client
   val Shutdown: FiniteDuration     = UnloadScript + Processing
-  // XXX TODO FIXME
-//  require(Shutdown <= 8.seconds, "max timeout violated for Shutdown")
+  require(Shutdown <= 8.seconds, "max timeout violated for Shutdown")
   val RestartScript: FiniteDuration = UnloadScript + LoadScript
-  // XXX TODO FIXME
-//  require(RestartScript <= 12.seconds, "max timeout violated for RestartScript")
+  require(RestartScript <= 12.seconds, "max timeout violated for RestartScript")
 }
 
 object SequencerTimeouts {
   val LongTimeout: FiniteDuration        = 10.hours
   val SequencerOperation: FiniteDuration = 2.seconds
 
-  // XXX TODO FIXME Starting HTTP script server takes more time?
-//  val ScriptHandlerExecution: FiniteDuration = 5.seconds
-  val ScriptHandlerExecution: FiniteDuration = 20.seconds
+  val ScriptHandlerExecution: FiniteDuration = 5.seconds
 
   val GetSequenceComponent: FiniteDuration = SequencerOperation
 }
@@ -64,26 +60,21 @@ object SequenceManagerTimeouts {
   require(GetObsModesDetails <= 2.seconds, "max timeout violated for GetObsModesDetails")
 
   val Configure: FiniteDuration = SequenceComponentTimeouts.Status + SequenceComponentTimeouts.LoadScript + Processing
-  // XXX TODO FIXME
-//  require(Configure <= 7.seconds, "max timeout violated for Configure")
+  require(Configure <= 7.seconds, "max timeout violated for Configure")
 
   val Provision: FiniteDuration = SequenceComponentTimeouts.Shutdown + AgentTimeouts.SpawnComponent + Processing
-  // XXX TODO FIXME
-//  require(Provision <= 29.seconds, "max timeout violated for Provision")
+  require(Provision <= 29.seconds, "max timeout violated for Provision")
 
   val StartSequencer: FiniteDuration = SequenceComponentTimeouts.Status + SequenceComponentTimeouts.LoadScript + Processing
-  // XXX TODO FIXME
-//  require(StartSequencer <= 7.seconds, "max timeout violated for StartSequencer")
+  require(StartSequencer <= 7.seconds, "max timeout violated for StartSequencer")
 
   val ShutdownSequencer: FiniteDuration =
     SequencerTimeouts.GetSequenceComponent + SequenceComponentTimeouts.UnloadScript + Processing
-  // XXX TODO FIXME
-//  require(ShutdownSequencer <= 10.seconds, "max timeout violated for ShutdownSequencer")
+  require(ShutdownSequencer <= 10.seconds, "max timeout violated for ShutdownSequencer")
 
   val RestartSequencer: FiniteDuration =
     SequencerTimeouts.GetSequenceComponent + SequenceComponentTimeouts.RestartScript + Processing
-  // XXX TODO FIXME
-//  require(RestartSequencer <= 15.seconds, "max timeout violated for RestartSequencer")
+  require(RestartSequencer <= 15.seconds, "max timeout violated for RestartSequencer")
 
   val ShutdownSequenceComponent: FiniteDuration = SequenceComponentTimeouts.Shutdown
 

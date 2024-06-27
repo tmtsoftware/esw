@@ -110,7 +110,6 @@ private[ocs] class SequencerWiring(
   private lazy val logger: Logger = loggerFactory.getLogger
   private lazy val jLoggerFactory = loggerFactory.asJava
 
-  // XXX TODO FIXME
 //  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
   private lazy val jLogger: ILogger = jLoggerFactory.getLogger(getClass)
 
