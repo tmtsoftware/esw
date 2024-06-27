@@ -19,6 +19,7 @@ class ScriptWiring(val scriptContext: ScriptContext) {
     val heartbeatChannel: Channel<Unit> by lazy { Channel() }
 
     fun shutdown() {
+        println("XXX shutdown script " + scriptContext.prefix())
         supervisorJob.cancel()
         dispatcher.close()
         heartbeatChannel.cancel()

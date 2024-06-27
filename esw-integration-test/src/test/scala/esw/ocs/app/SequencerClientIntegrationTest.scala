@@ -43,9 +43,9 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   private var tcsSequencer: SequencerApi = scala.compiletime.uninitialized
 
   // XXX Uncomment to see logging
-//  private val host        = InetAddress.getLocalHost.getHostName
-//  private val typedSystem = ActorSystem(SpawnProtocol(), "SequencerClientIntegrationTest")
-//  LoggingSystemFactory.start("SequencerClientIntegrationTest", "0.1", host, typedSystem)
+  private val host        = InetAddress.getLocalHost.getHostName
+  private val typedSystem = ActorSystem(SpawnProtocol(), "SequencerClientIntegrationTest")
+  LoggingSystemFactory.start("SequencerClientIntegrationTest", "0.1", host, typedSystem)
 
   override protected def beforeEach(): Unit = {
     // ocs sequencer, starts with TestScript2

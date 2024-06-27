@@ -99,7 +99,7 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
         .mapRight(SequencerApiFactory.make)
         .toJava
 
-  private val shutdownHttpService: () => Future[Done] = () =>
+  private[ocs] val shutdownHttpService: () => Future[Done] = () =>
     async {
       logger.debug("Shutting down Sequencer http service")
       val (serverBinding, registrationResult) = await(httpServerBinding)
