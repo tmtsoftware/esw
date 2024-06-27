@@ -40,7 +40,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val insideHostname = Networks(NetworkType.Inside.envKey).hostname
 
       // start Sequence Component
-      SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "-a", agentPrefix.toString()))
+      SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "-a", agentPrefix.toString(), "--test"))
 
       // verify Sequence component is started and registered with location service
       val sequenceCompLocation: PekkoLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
@@ -94,7 +94,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
     "start sequence component and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144, ESW-279, ESW-366" in {
       val subsystem = "ESW"
-      SequencerApp.main(Array("seqcomp", "-s", subsystem))
+      SequencerApp.main(Array("seqcomp", "-s", subsystem, "--test"))
 
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
@@ -107,9 +107,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val subsystem = "ESW"
 
       // register sequence component with same subsystem concurrently
-      Future { SequencerApp.main(Array("seqcomp", "-s", subsystem)) }
-      Future { SequencerApp.main(Array("seqcomp", "-s", subsystem)) }
-      Future { SequencerApp.main(Array("seqcomp", "-s", subsystem)) }
+      Future { SequencerApp.main(Array("seqcomp", "-s", subsystem, "--test")) }
+      Future { SequencerApp.main(Array("seqcomp", "-s", subsystem, "--test")) }
+      Future { SequencerApp.main(Array("seqcomp", "-s", subsystem, "--test")) }
 
       // Wait till futures registering sequence component complete
       Thread.sleep(5000)
@@ -132,7 +132,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequenceComponentPrefix = Prefix(ESW, name)
 
       // start Sequence Component
-      SequencerApp.main(Array("seqcomp", "-s", subsystem, "-n", name))
+      SequencerApp.main(Array("seqcomp", "-s", subsystem, "-n", name, "--test"))
 
       // verify Sequence component is started and registered with location service
       val sequenceCompLocation: PekkoLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
@@ -164,14 +164,14 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
 
       // start Sequence Component
-      SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name))
+      SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "--test"))
 
       // verify Sequence component is started and registered with location service
       val sequenceCompLocation: PekkoLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
       sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
 
       // assert that exception is thrown when start Sequence Component with same name
-      intercept[RuntimeException](SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name)))
+      intercept[RuntimeException](SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "--test")))
     }
   }
 
@@ -183,7 +183,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val obsMode            = "darknight"
 
       // start Sequencer"
-      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", sequencerSubsystem, "-m", obsMode))
+      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", sequencerSubsystem, "-m", obsMode, "--test"))
 
       // verify sequence component is started and can be resolved
       val sequenceComponentPrefix = Prefix(s"$subsystem.$name")
@@ -204,7 +204,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val obsMode   = "darknight"
 
       // start Sequencer
-      SequencerApp.main(Array("sequencer", "-s", subsystem, "-m", obsMode))
+      SequencerApp.main(Array("sequencer", "-s", subsystem, "-m", obsMode, "--test"))
 
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
@@ -222,7 +222,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val obsMode             = "darknight"
 
       val exception = intercept[RuntimeException] {
-        SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", unexpectedSubsystem, "-m", obsMode))
+        SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", unexpectedSubsystem, "-m", obsMode, "--test"))
       }
 
       exception.getMessage shouldEqual s"Failed to start with error: Script configuration missing for [$unexpectedSubsystem] with [$obsMode]"
@@ -235,7 +235,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       // there is no script for esw.random mode but sequencer should start with esw.random as a simulation script
       // starting sequencer in simulation mode
-      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-m", obsMode, "--simulation"))
+      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-m", obsMode, "--simulation", "--test"))
 
       // assert sequencer has started
       resolveSequencerLocation(Prefix(ESW, obsMode))

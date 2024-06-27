@@ -58,7 +58,7 @@ object SequencerApp extends CommandsEntryPoint {
         if (enableLogging) startLogging(sequenceCompLocation.prefix.toString())
         command match {
           case _: SeqcompOptions => // sequence component is already started
-          case SequencerOptions(seqCompSubsystem, _, _, seqSubsystem, obsMode, variation, _) =>
+          case SequencerOptions(seqCompSubsystem, _, _, seqSubsystem, obsMode, variation, _, _) =>
             val subsystem = seqSubsystem.getOrElse(seqCompSubsystem)
             reportSequencer(
               loadAndStartSequencer(subsystem, obsMode, variation, sequenceCompLocation, wiring)
@@ -78,7 +78,7 @@ object SequencerApp extends CommandsEntryPoint {
       val sequencerServer: SequencerServerFactory =
         if (command.simulation) new SimulationSequencerWiring(_, _).sequencerServer
         else
-          new SequencerWiring(_, _).sequencerServer
+          new SequencerWiring(_, _, command.test).sequencerServer
       new SequenceComponentWiring(command.seqCompSubsystem, command.name, command.agentPrefix, sequencerServer)
     }
 

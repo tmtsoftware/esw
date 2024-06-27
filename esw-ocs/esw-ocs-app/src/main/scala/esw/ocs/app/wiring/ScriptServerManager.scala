@@ -66,6 +66,7 @@ class ScriptServerManager(
    * Starts the script HTTP server and returns an HTTP client for it that implements the ScriptApi trait
    */
   def spawn(): Future[Either[String, ScriptApi]] = {
+    println(s"XXX Start Script Server Process")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ => startScriptServer())
       .flatMapE(process =>
@@ -83,6 +84,7 @@ class ScriptServerManager(
    * Starts the script HTTP server in this process (for testing) and returns an HTTP client for it that implements the ScriptApi trait
    */
   def start(): Future[Either[String, ScriptApi]] = {
+    println(s"XXX Start Script Server in same process")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ =>
         OcsScriptServerApp.main(Array(sequencerPrefix.toString, sequenceComponentPrefix.toString))

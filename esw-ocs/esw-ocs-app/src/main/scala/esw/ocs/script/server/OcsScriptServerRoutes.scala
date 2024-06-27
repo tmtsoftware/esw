@@ -11,7 +11,7 @@ import csw.params.commands.SequenceCommand
 import esw.constants.CommonTimeouts
 import esw.ocs.impl.script.ScriptApi
 
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiring: OcsScriptServerWiring)(implicit
     ec: ExecutionContext,
@@ -50,7 +50,13 @@ private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiri
           complete(script.executeGoOffline().map(_ => OK))
         }
         ~ path("executeShutdown") {
-          complete(script.executeShutdown().map(_ => OK))
+          // Note: Throws RejectedExecutionException somewhere
+          val f = for {
+            _ <- script.executeShutdown()
+            _ <- wiring.shutdownHttpService()
+          } yield OK
+          complete(f)
+//          complete(OK)
         }
         ~ path("executeAbort") {
           complete(script.executeAbort().map(_ => OK))
@@ -76,9 +82,8 @@ private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiri
         }
         ~ path("shutdownScript") {
           script.shutdownScript()
-//          Await.ready(wiring.shutdownHttpService(), CommonTimeouts.Wiring)
-          wiring.shutdownHttpService()
-          complete(OK)
+          complete(wiring.shutdownHttpService().map(_ => OK))
+//          complete(OK)
         }
       }
     }
