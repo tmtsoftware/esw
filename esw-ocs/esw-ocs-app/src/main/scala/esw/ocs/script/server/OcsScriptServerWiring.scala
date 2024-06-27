@@ -21,11 +21,11 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
+import csw.network.utils.SocketUtils
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
-import esw.http.core.wiring.ActorRuntime
-import esw.ocs.api.SequencerApi
+import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.impl.core.*
@@ -39,7 +39,15 @@ import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
 
 import scala.concurrent.{Await, Future}
 
-class OcsScriptServerWiring(sequencerPrefix: Prefix) {
+/**
+ * Used to start the script server.
+ * Note: This contains a lot of code copied from SequencerWiring that could probably be shared,
+ * however the intention is to make this a separate project eventually (In Kotlin or Python)
+ * SequencerWiring also contains code that we do not need or want here.
+ */
+//noinspection DuplicatedCode
+private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) {
+
   private[ocs] val httpConnection: HttpConnection = HttpConnection(ComponentId(sequencerPrefix, ComponentType.Service))
 
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
@@ -66,8 +74,8 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
   // Pass lambda to break circular dependency shown below.
   // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
-  private lazy val componentId                                     = ComponentId(prefix, ComponentType.Sequencer)
-  private[ocs] lazy val script: ScriptApi                          = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
+  private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
+  private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil                = new LocationServiceUtil(locationService)
   private lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
@@ -118,5 +126,10 @@ class OcsScriptServerWiring(sequencerPrefix: Prefix) {
     config
   )
 
-  val server: OcsScriptServer = OcsScriptServer(OcsScriptServerRoutes(logger, script, this).route)
+  private lazy val routes      = OcsScriptServerRoutes(logger, script, this).route
+  private lazy val metadata    = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
+  private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)
+  private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime, NetworkType.Inside)
+  private lazy val httpServerBinding = httpService.startAndRegisterServer(metadata)
+  Await.result(httpServerBinding, CommonTimeouts.Wiring)
 }

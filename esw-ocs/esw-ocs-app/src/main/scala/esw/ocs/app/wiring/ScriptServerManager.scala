@@ -4,12 +4,12 @@ import com.typesafe.config.Config
 import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.api.models.{ComponentId, ComponentType, Connection, HttpLocation, Location}
-import csw.location.api.models.Connection.{HttpConnection, PekkoConnection}
+import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import esw.agent.pekko.app.process.{ProcessExecutor, ProcessOutput}
 import esw.agent.service.api.models.{Failed, KillResponse, Killed}
-import esw.commons.utils.config.{FetchingScriptVersionFailed, VersionManager}
+import esw.commons.utils.config.VersionManager
 import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.prefix.models.Prefix
 import esw.agent.pekko.app.process.cs.CoursierLaunch
@@ -29,18 +29,26 @@ import scala.util.control.NonFatal
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 /**
- * Start sequencer script HTTP server.
+ * Starts sequencer script HTTP server.
  * This code is based on the Agent service code, but copied here, assuming the script server will be
  * started by the esw-ocs-app (SequencerApp) process and not the agent process.
  * Also, if the Kotlin script implementation is replaced with a Python implementation, then Coursier would
  * no longer be used to start the server.
  *
- * @param prefix used to register and lookup the script server with the location service
+ * @param sequencerPrefix used to register and lookup the script server with the location service
+ * @param sequenceComponentPrefix sequnce component prefix (needed for accessing other sequencers?)
  * @param locationService CSW location service
  * @param config application/actor system config
  * @param log logger
  */
-class ScriptServerManager(prefix: Prefix, locationService: LocationService, config: Config, log: Logger)(implicit
+//noinspection DuplicatedCode
+class ScriptServerManager(
+    sequencerPrefix: Prefix,
+    sequenceComponentPrefix: Prefix,
+    locationService: LocationService,
+    config: Config,
+    log: Logger
+)(implicit
     typedSystem: ActorSystem[SpawnProtocol.Command],
     ec: ExecutionContext
 ) {
@@ -50,7 +58,7 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   private val versionManager                         = new VersionManager(versionConfPath, configUtils)
   private val processOutput                          = new ProcessOutput()
   private val processExecutor                        = new ProcessExecutor(processOutput)(log)
-  private val connection: HttpConnection             = HttpConnection(ComponentId(prefix, ComponentType.Service))
+  private val connection: HttpConnection             = HttpConnection(ComponentId(sequencerPrefix, ComponentType.Service))
   private val coursierChannel                        = config.getString("agent.coursier.channel")
   private val durationToWaitForComponentRegistration = 18.seconds
 
@@ -58,7 +66,6 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
    * Starts the script HTTP server and returns an HTTP client for it that implements the ScriptApi trait
    */
   def spawn(): Future[Either[String, ScriptApi]] = {
-    println("XXX Start script server in new process")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ => startScriptServer())
       .flatMapE(process =>
@@ -76,10 +83,9 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
    * Starts the script HTTP server in this process (for testing) and returns an HTTP client for it that implements the ScriptApi trait
    */
   def start(): Future[Either[String, ScriptApi]] = {
-    println("XXX Start script server for testing")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ =>
-        OcsScriptServerApp.main(Array(prefix.toString))
+        OcsScriptServerApp.main(Array(sequencerPrefix.toString, sequenceComponentPrefix.toString))
         waitForRegistration(connection, durationToWaitForComponentRegistration)
           .flatMapE { loc =>
             Future.successful(Right(OcsScriptClient(loc)))
@@ -108,18 +114,16 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
       .map(_.getMessage)
       .flatMap(_.toRight(s"Pid:$pid process does not exist"))
 
-  def processHandle(pid: Long): Option[ProcessHandle] = ProcessHandle.of(pid).toScala
+  private def processHandle(pid: Long): Option[ProcessHandle] = ProcessHandle.of(pid).toScala
 
   // It checks if the component of the given connection is already registered in the location service
   // If it is registered then it returns an error message string as a Future
   // otherwise it return an unit value as a Future
   private def verifyComponentIsNotAlreadyRegistered(connection: Connection): Future[Either[String, Unit]] = {
-    println(s"XXX Verify script server not running at $connection")
     locationService
       .find(connection.of[Location])
       .map {
         case None =>
-          println("XXX Script server was not running")
           Right(())
         case Some(l) => Left(s"${connection.componentId} is already registered with location service at $l".tap(log.error(_)))
       }
@@ -129,11 +133,11 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   // starts a process with the executable string of the given spawn command
   private def startScriptServer(): Future[Either[String, Process]] = {
 
-    //    versionManager.getScriptVersion
+//    versionManager.getScriptVersion
 //      .map { version =>
-//        val cmdStr = CoursierLaunch("esw-ocs-script-server-app", Some(version)).launch(coursierChannel, List(prefix.toString))
+//        val cmdStr = CoursierLaunch("esw-ocs-script-server-app", Some(version)).launch(coursierChannel, List(sequencerPrefix.toString, sequenceComponentPrefix.toString))
 //        processExecutor
-//          .runCommand(cmdStr, prefix)
+//          .runCommand(cmdStr, sequencerPrefix)
 //          .map(_.tap(onProcessExit(_, connection)))
 //      }
 //      .recover { case FetchingScriptVersionFailed(msg) =>
@@ -142,10 +146,10 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
 
     Future.successful {
       val cmdStr =
-        CoursierLaunch("esw-ocs-script-server-app", Some("0.1.0-SNAPSHOT")).launch(coursierChannel, List(prefix.toString))
-      println(s"XXX ScriptServerManager.startScriptServer: cmd = $cmdStr")
+        CoursierLaunch("esw-ocs-script-server-app", Some("0.1.0-SNAPSHOT"))
+          .launch(coursierChannel, List(sequencerPrefix.toString, sequenceComponentPrefix.toString))
       processExecutor
-        .runCommand(cmdStr, prefix)
+        .runCommand(cmdStr, sequencerPrefix)
         .map(_.tap(onProcessExit(_, connection)))
     }
   }
@@ -166,22 +170,18 @@ class ScriptServerManager(prefix: Prefix, locationService: LocationService, conf
   // if not it returns the error message as a Future
   // otherwise it returns the location
   private def waitForRegistration(connection: Connection, timeout: FiniteDuration): Future[Either[String, HttpLocation]] = {
-    println(s"XXX waiting for reg of ${connection.of[Location]} with timeout $timeout")
     locationService
       .resolve(connection.of[Location], timeout)
       .map {
         case Some(loc) =>
-          println(s"XXX resolved location at $loc")
           Right(loc.asInstanceOf[HttpLocation])
         case None =>
-          println(s"XXX could not resolve location of $connection")
           Left(
             s"${connection.componentId} is not registered with location service. Reason: Process failed to spawn due to reasons like invalid binary version etc or failed to register with location service."
               .tap(log.warn(_))
           )
       }
       .mapError { e =>
-        println(s"XXX waitForRegistration failed: $e")
         s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_))
       }
   }

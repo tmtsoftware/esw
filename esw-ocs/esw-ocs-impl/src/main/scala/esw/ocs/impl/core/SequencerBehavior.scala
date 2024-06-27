@@ -142,7 +142,6 @@ class SequencerBehavior(
       data: SequencerData,
       currentState: InternalSequencerState[SequencerMsg]
   ): Behavior[SequencerMsg] = {
-    println(s"XXX SequencerBehavior.goOffline: script class = ${script.getClass}")
     script.executeGoOffline().onComplete {
       case Success(_) =>
         debug("Successfully executed GoOffline script handlers")

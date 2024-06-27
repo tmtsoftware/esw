@@ -37,7 +37,6 @@ class LocationServiceUtil(val locationService: LocationService)(implicit
     )(() => registrationResult.unregister())
 
   private[esw] def register(pekkoRegistration: PekkoRegistration): Future[Either[RegistrationError, PekkoLocation]] = {
-    println(s"XXX register $pekkoRegistration")
     locationService
       .register(pekkoRegistration)
       .map { result =>
