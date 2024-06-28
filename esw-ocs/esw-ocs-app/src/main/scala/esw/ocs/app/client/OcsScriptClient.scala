@@ -13,9 +13,11 @@ import csw.params.core.formats.JsonSupport
 import csw.time.core.models.UTCTime
 import esw.ocs.script.server.ScriptJsonSupport
 import org.apache.pekko.http.scaladsl.model.StatusCodes.OK
+import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
+import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
 import java.net.URI
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
  * HTTP Client for OcsScriptServer.
@@ -29,7 +31,14 @@ class OcsScriptClient(loc: HttpLocation)(implicit
   private val baseUri = loc.uri
 
   def checkError(response: HttpResponse): Unit = {
-    if (response.status != OK) throw new RuntimeException(s"Server responded with ${response.status}")
+    if (response.status != OK) {
+      if (response.entity != null) {
+        val f         = Unmarshal(response.entity).to[String]
+        val s: String = Await.result(f, 3.seconds)
+        throw new RuntimeException(s)
+      }
+      throw new RuntimeException(s"${response.status}")
+    }
   }
 
   override def execute(command: SequenceCommand): Future[Unit] = async {

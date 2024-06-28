@@ -28,62 +28,65 @@ private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiri
   implicit def myExceptionHandler: ExceptionHandler =
     ExceptionHandler { case ex: Exception =>
       extractUri { uri =>
-        println(s"Request to $uri could not be handled normally")
-        ex.printStackTrace()
-        complete(HttpResponse(InternalServerError, entity = "Internal error"))
+//        println(s"Request to $uri could not be handled normally")
+//        ex.printStackTrace()
+        val msg = if (ex.getCause != null) ex.getCause.getMessage else ex.getMessage
+        complete(HttpResponse(InternalServerError, entity = msg))
       }
     }
 
   val route: Route = {
     routeLogger {
-      post {
-        // Insert/update segment to M1 positions
-        path("execute") {
-          entity(as[SequenceCommand]) { sequenceCommand =>
-            complete(script.execute(sequenceCommand).map(_ => OK))
+      handleExceptions(myExceptionHandler) {
+        post {
+          // Insert/update segment to M1 positions
+          path("execute") {
+            entity(as[SequenceCommand]) { sequenceCommand =>
+              complete(script.execute(sequenceCommand).map(_ => OK))
+            }
           }
-        }
-        ~ path("executeGoOnline") {
-          complete(script.executeGoOnline().map(_ => OK))
-        }
-        ~ path("executeGoOffline") {
-          complete(script.executeGoOffline().map(_ => OK))
-        }
-        ~ path("executeShutdown") {
-          // Note: Throws RejectedExecutionException somewhere
-          val f = for {
-            _ <- script.executeShutdown()
-            _ <- wiring.shutdownHttpService()
-          } yield OK
-          complete(f)
+          ~ path("executeGoOnline") {
+            complete(script.executeGoOnline().map(_ => OK))
+          }
+          ~ path("executeGoOffline") {
+            complete(script.executeGoOffline().map(_ => OK))
+          }
+          ~ path("executeShutdown") {
+            // Note: Throws RejectedExecutionException somewhere
+            val f = for {
+              _ <- script.executeShutdown()
+              _ <- wiring.shutdownHttpService()
+            } yield OK
+            complete(f)
+            //          complete(OK)
+          }
+          ~ path("executeAbort") {
+            complete(script.executeAbort().map(_ => OK))
+          }
+          ~ path("executeNewSequenceHandler") {
+            complete(script.executeNewSequenceHandler().map(_ => OK))
+          }
+          ~ path("executeStop") {
+            complete(script.executeStop().map(_ => OK))
+          }
+          ~ path("executeDiagnosticMode") {
+            entity(as[DiagnosticMode]) { diagnosticMode =>
+              complete(script.executeDiagnosticMode(diagnosticMode.startTime, diagnosticMode.hint).map(_ => OK))
+            }
+          }
+          ~ path("executeOperationsMode") {
+            complete(script.executeOperationsMode().map(_ => OK))
+          }
+          ~ path("executeExceptionHandlers") {
+            entity(as[String]) { msg =>
+              complete(script.executeExceptionHandlers(RuntimeException(msg)).map(_ => OK))
+            }
+          }
+          ~ path("shutdownScript") {
+            script.shutdownScript()
+            complete(wiring.shutdownHttpService().map(_ => OK))
 //          complete(OK)
-        }
-        ~ path("executeAbort") {
-          complete(script.executeAbort().map(_ => OK))
-        }
-        ~ path("executeNewSequenceHandler") {
-          complete(script.executeNewSequenceHandler().map(_ => OK))
-        }
-        ~ path("executeStop") {
-          complete(script.executeStop().map(_ => OK))
-        }
-        ~ path("executeDiagnosticMode") {
-          entity(as[DiagnosticMode]) { diagnosticMode =>
-            complete(script.executeDiagnosticMode(diagnosticMode.startTime, diagnosticMode.hint).map(_ => OK))
           }
-        }
-        ~ path("executeOperationsMode") {
-          complete(script.executeOperationsMode().map(_ => OK))
-        }
-        ~ path("executeExceptionHandlers") {
-          entity(as[String]) { msg =>
-            complete(script.executeExceptionHandlers(RuntimeException(msg)).map(_ => OK))
-          }
-        }
-        ~ path("shutdownScript") {
-          script.shutdownScript()
-          complete(wiring.shutdownHttpService().map(_ => OK))
-//          complete(OK)
         }
       }
     }

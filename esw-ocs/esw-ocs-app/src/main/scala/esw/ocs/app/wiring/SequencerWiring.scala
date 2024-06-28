@@ -43,7 +43,7 @@ import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core.*
 import esw.ocs.impl.internal.*
-import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
+import esw.ocs.impl.script.{ScriptApi, ScriptContext}
 import io.lettuce.core.RedisClient
 import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
@@ -54,6 +54,7 @@ import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 import esw.commons.extensions.FutureExt.FutureOps
 
+//noinspection DuplicatedCode
 // $COVERAGE-OFF$
 // Note: Use scriptServerInSameProcess=true for tests that rely on test classpath, etc.
 private[ocs] class SequencerWiring(
@@ -88,12 +89,13 @@ private[ocs] class SequencerWiring(
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
 
 //  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
-  private[ocs] lazy val scriptServerManager =
-    ScriptServerManager(prefix, sequenceComponentPrefix, locationService, config, logger)
-  private val scriptServerF = if (scriptServerInSameProcess) scriptServerManager.start() else scriptServerManager.spawn()
-  private[ocs] lazy val script: ScriptApi = scriptServerF.await() match {
-    case Right(scriptApi: ScriptApi) => scriptApi
-    case Left(msg)                   => throw new RuntimeException(s"Failed to load script: $msg")
+  private[ocs] lazy val script: ScriptApi = {
+    val scriptServerManager = ScriptServerManager(prefix, sequenceComponentPrefix, locationService, config, logger)
+    val scriptServerF       = if (scriptServerInSameProcess) scriptServerManager.start() else scriptServerManager.spawn()
+    scriptServerF.await() match {
+      case Right(scriptApi: ScriptApi) => scriptApi
+      case Left(msg)                   => throw new RuntimeException(s"Failed to load script: $msg")
+    }
   }
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)

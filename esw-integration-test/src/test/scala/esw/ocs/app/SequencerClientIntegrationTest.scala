@@ -157,6 +157,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     // ESW-294: Improve error response returned to caller
     val error = submitResponseF.futureValue.asInstanceOf[Error]
     error.message should fullyMatch regex s"StepId: .*, CommandName: ${failedCmdName.name}, reason: fail-command"
+//    error.message should fullyMatch regex s"StepId: .*, CommandName: ${failedCmdName.name}, reason: Server responded with 500 Internal Server Error"
 
     compareStepList(
       ocsSequencer.getSequence.futureValue,
