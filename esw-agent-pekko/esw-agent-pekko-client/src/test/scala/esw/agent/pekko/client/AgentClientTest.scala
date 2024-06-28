@@ -81,10 +81,10 @@ class AgentClientTest extends ActorTestSuit {
       val prefix        = Prefix(s"esw.$randomString5")
       val componentName = prefix.componentName
       val spawnResponse = mock[SpawnResponse]
-      withBehavior { case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) =>
+      withBehavior { case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _, _) =>
         replyTo ! spawnResponse
       } check { ac =>
-        ac.spawnSequenceComponent(componentName).futureValue should ===(spawnResponse)
+        ac.spawnSequenceComponent(componentName, None, simulation = false, test = true).futureValue should ===(spawnResponse)
       }
     }
 
@@ -92,10 +92,10 @@ class AgentClientTest extends ActorTestSuit {
       val prefix        = Prefix(s"esw.$randomString5")
       val componentName = prefix.componentName
       val spawnResponse = mock[SpawnResponse]
-      withBehavior { case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) =>
+      withBehavior { case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _, _) =>
         replyTo ! spawnResponse
       } check { ac =>
-        ac.spawnSequenceComponent(componentName, None, simulation = true).futureValue should ===(spawnResponse)
+        ac.spawnSequenceComponent(componentName, None, simulation = true, test = true).futureValue should ===(spawnResponse)
       }
     }
   }

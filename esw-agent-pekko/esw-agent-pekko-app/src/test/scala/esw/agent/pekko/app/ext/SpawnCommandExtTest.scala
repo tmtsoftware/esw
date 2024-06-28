@@ -29,9 +29,10 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val agentPrefix     = Prefix(randomSubsystem, randomString(10))
   private val prefix          = Prefix(agentPrefix.subsystem, compName)
 
-  private val spawnSeqComp            = SpawnSequenceComponent(replyTo, agentPrefix, compName, None)
-  private val spawnSeqCompWithVersion = SpawnSequenceComponent(replyTo, agentPrefix, compName, Some(version))
-  private val spawnSeqCompSimulation  = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = true)
+  private val spawnSeqComp = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = false, test = true)
+  private val spawnSeqCompWithVersion =
+    SpawnSequenceComponent(replyTo, agentPrefix, compName, Some(version), simulation = false, test = true)
+  private val spawnSeqCompSimulation = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = true)
 
   private val versionManager: VersionManager  = mock[VersionManager]
   private val sequencerScriptsVersion: String = randomString(10)

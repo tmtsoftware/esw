@@ -50,7 +50,7 @@ class AgentSetup extends BaseTestSuite {
   val seqCompLocation: PekkoLocation                = PekkoLocation(seqCompConn, new URI("some"), metadata)
   val seqCompLocationF: Future[Some[PekkoLocation]] = Future.successful(Some(seqCompLocation))
   val spawnSequenceComp: ActorRef[SpawnResponse] => SpawnSequenceComponent =
-    SpawnSequenceComponent(_, agentPrefix, seqCompName, None)
+    SpawnSequenceComponent(_, agentPrefix, seqCompName, None, simulation = false, test = true)
 
   val seqManagerPrefix: Prefix                         = Prefix("esw.sequence_manager")
   val seqManagerComponentId: ComponentId               = ComponentId(seqManagerPrefix, Service)

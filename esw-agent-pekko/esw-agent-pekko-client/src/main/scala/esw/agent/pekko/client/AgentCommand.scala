@@ -38,13 +38,15 @@ object AgentCommand {
      * @param componentName - the componentName part of sequence component prefix.
      * @param version - the version of sequencer script repo.
      * @param simulation - flag for starting SequenceComponent in simulation for testing purpose.
+     * @param test - flag for starting sequencer script HTTP server in same process, so it has the test scripts in the class path
      */
     case class SpawnSequenceComponent(
         replyTo: ActorRef[SpawnResponse],
         agentPrefix: Prefix,
         componentName: String,
         version: Option[String],
-        simulation: Boolean = false
+        simulation: Boolean = false,
+        test: Boolean = false
     ) extends SpawnCommand {
       override val prefix: Prefix              = Prefix(agentPrefix.subsystem, componentName)
       override val connection: PekkoConnection = PekkoConnection(ComponentId(prefix, SequenceComponent))
