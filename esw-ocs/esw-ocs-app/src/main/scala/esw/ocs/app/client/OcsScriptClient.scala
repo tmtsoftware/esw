@@ -93,9 +93,9 @@ class OcsScriptClient(loc: HttpLocation)(implicit
 
   override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] = async {
     val uri     = Uri(s"${baseUri}executeDiagnosticMode")
-    val request = HttpRequest(HttpMethods.POST, uri = uri)
-    val json    = diagnosticModeFormat.write(DiagnosticMode(startTime, hint)).compactPrint
+    val json    = diagnosticModeFormat.write(DiagnosticMode(startTime, hint)).toString
     val entity  = HttpEntity(ContentTypes.`application/json`, json)
+    val request = HttpRequest(HttpMethods.POST, uri = uri, entity = entity)
     checkError(await(Http().singleRequest(request)))
     Done
   }
