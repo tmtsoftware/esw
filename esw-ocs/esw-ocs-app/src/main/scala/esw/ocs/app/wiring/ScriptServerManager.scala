@@ -54,7 +54,7 @@ class ScriptServerManager(
 ) {
   private val configClientService                    = ConfigClientFactory.clientApi(typedSystem, locationService)
   private val configUtils                            = new ConfigUtils(configClientService)
-  private val versionConfPath: Path                  = Path.of(config.getString("osw.version.confPath"))
+  private val versionConfPath: Path                  = Path.of(config.getString("agent.osw.version.confPath"))
   private val versionManager                         = new VersionManager(versionConfPath, configUtils)
   private val processOutput                          = new ProcessOutput()
   private val processExecutor                        = new ProcessExecutor(processOutput)(log)

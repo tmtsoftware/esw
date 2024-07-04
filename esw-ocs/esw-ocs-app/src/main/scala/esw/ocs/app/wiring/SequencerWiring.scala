@@ -62,6 +62,7 @@ private[ocs] class SequencerWiring(
     sequenceComponentPrefix: Prefix,
     scriptServerInSameProcess: Boolean = false
 ) extends SequencerServiceCodecs {
+
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   private[ocs] lazy val config: Config = actorSystem.settings.config
