@@ -92,7 +92,11 @@ private[ocs] class SequencerWiring(
 //  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
   private[ocs] lazy val script: ScriptApi = {
     val scriptServerManager = ScriptServerManager(prefix, sequenceComponentPrefix, locationService, config, logger)
-    val scriptServerF       = if (scriptServerInSameProcess) scriptServerManager.start() else scriptServerManager.spawn()
+
+    // XXX TODO FIXME TEMP for testing
+//    val scriptServerF       = if (scriptServerInSameProcess) scriptServerManager.start() else scriptServerManager.spawn()
+    val scriptServerF = scriptServerManager.start()
+
     scriptServerF.await() match {
       case Right(scriptApi: ScriptApi) => scriptApi
       case Left(msg)                   => throw new RuntimeException(s"Failed to load script: $msg")

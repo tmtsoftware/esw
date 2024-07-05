@@ -67,12 +67,6 @@ class ScriptServerManager(
    */
   def spawn(): Future[Either[String, ScriptApi]] = {
     println(s"XXX Start Script Server Process")
-    try {
-      throw new RuntimeException(s"XXX Start Script Server Process")
-    }
-    catch {
-      case e: Exception => e.printStackTrace()
-    }
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ => startScriptServer())
       .flatMapE(process =>
