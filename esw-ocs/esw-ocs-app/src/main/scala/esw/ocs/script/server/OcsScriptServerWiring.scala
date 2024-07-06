@@ -105,7 +105,9 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
       val (serverBinding, registrationResult) = await(httpServerBinding)
       val eventualTerminated                  = serverBinding.terminate(CommonTimeouts.Wiring)
       val eventualDone                        = registrationResult.unregister()
-      await(eventualTerminated.flatMap(_ => eventualDone))
+      val f                                   = await(eventualTerminated.flatMap(_ => eventualDone))
+      actorSystem.terminate()
+      f
     }
 
   lazy val sequencerBehavior =

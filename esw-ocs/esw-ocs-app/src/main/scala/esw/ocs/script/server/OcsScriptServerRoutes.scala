@@ -58,7 +58,6 @@ private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiri
               _ <- wiring.shutdownHttpService()
             } yield OK
             complete(f)
-            //          complete(OK)
           }
           ~ path("executeAbort") {
             complete(script.executeAbort().map(_ => OK))
