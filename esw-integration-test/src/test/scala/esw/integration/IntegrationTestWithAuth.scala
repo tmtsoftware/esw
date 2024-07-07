@@ -47,6 +47,8 @@ import scala.concurrent.duration.DurationLong
 
 class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with AgentSetup with SequenceManagerSetup {
 
+  println(s"XXX testing? ${sys.props.get("test.esw")}")
+
   private val locationServiceUtil                      = new LocationServiceUtil(locationService)
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
   private val configTestKit: ConfigTestKit             = frameworkTestKit.configTestKit

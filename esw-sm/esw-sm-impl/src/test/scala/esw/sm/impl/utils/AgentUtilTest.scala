@@ -116,8 +116,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(eswClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), simulation = false))
-        .thenReturn(Future.successful(Spawned))
+      when(eswClient.spawnSequenceComponent(eswSeqComp1Name, Some(version))).thenReturn(Future.successful(Spawned))
       when(irisClient.spawnSequenceComponent(irisSeqComp1Name, Some(version))).thenReturn(Future.successful(Spawned))
       when(versionManager.getScriptVersion).thenReturn(Future.successful(version))
 
@@ -125,8 +124,8 @@ class AgentUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).listPekkoLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
-      verify(eswClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false)
-      verify(irisClient).spawnSequenceComponent(irisSeqComp1Name, Some(version), false)
+      verify(eswClient).spawnSequenceComponent(eswSeqComp1Name, Some(version))
+      verify(irisClient).spawnSequenceComponent(irisSeqComp1Name, Some(version))
     }
 
     "return SpawningSequenceComponentsFailed if agent fails to spawn sequence component | ESW-347" in {
@@ -142,8 +141,9 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(agentClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), false)).thenReturn(Future.successful(Spawned))
-      when(agentClient.spawnSequenceComponent(eswSeqComp2Name, Some(version), false))
+      when(agentClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), false, false))
+        .thenReturn(Future.successful(Spawned))
+      when(agentClient.spawnSequenceComponent(eswSeqComp2Name, Some(version), false, false))
         .thenReturn(Future.successful(Failed(errorMsg)))
       when(versionManager.getScriptVersion).thenReturn(Future.successful(version))
 
@@ -157,8 +157,8 @@ class AgentUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).listPekkoLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
-      verify(agentClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false)
-      verify(agentClient).spawnSequenceComponent(eswSeqComp2Name, Some(version), false)
+      verify(agentClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false, false)
+      verify(agentClient).spawnSequenceComponent(eswSeqComp2Name, Some(version), false, false)
     }
 
     "return LocationServiceError if location service gives error | ESW-347" in {

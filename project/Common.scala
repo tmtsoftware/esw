@@ -60,8 +60,8 @@ object Common {
       version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
       fork    := true,
       javaOptions += "-Xmx2G",
-      Test / fork := false,
-      Test / javaOptions ++= Seq("-Dpekko.actor.serialize-messages=on"),
+      Test / fork := true,
+      Test / javaOptions ++= Seq("-Dpekko.actor.serialize-messages=on", "-Dtest.esw=true"),
       Global / cancelable     := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
       scalafmtOnCompile       := true,
       unidocGenjavadocVersion := "0.18",

@@ -47,7 +47,8 @@ class SpawnComponentTest extends AgentSetup {
           "-n",
           seqCompName,
           "-a",
-          agentPrefix.toString()
+          agentPrefix.toString(),
+          "--test=true"
         )
 
       verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
@@ -80,7 +81,8 @@ class SpawnComponentTest extends AgentSetup {
           seqCompName,
           "-a",
           agentPrefix.toString(),
-          "--simulation"
+          "--simulation",
+          "--test=false"
         )
       verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
     }

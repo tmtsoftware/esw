@@ -31,11 +31,12 @@ class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSyste
       version: Option[String] = None,
       simulation: Boolean = false,
       test: Boolean = false
-  ): Future[SpawnResponse] =
+  ): Future[SpawnResponse] = {
     (agentRef ? (SpawnSequenceComponent(_: ActorRef[SpawnResponse], agentPrefix, componentName, version, simulation, test)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
+  }
 
   def spawnSequenceManager(
       obsModeConfigPath: Path,

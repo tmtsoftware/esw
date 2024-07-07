@@ -53,9 +53,9 @@ class AgentServiceImplTest extends BaseTestSuite {
       val componentName = randomString(10)
 
       "be able to send spawn sequence component message to given agent" in {
-        when(agentClientMock.spawnSequenceComponent(componentName, version, false)).thenReturn(Future.successful(spawnRes))
+        when(agentClientMock.spawnSequenceComponent(componentName, version, false, false)).thenReturn(Future.successful(spawnRes))
         agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue
-        verify(agentClientMock).spawnSequenceComponent(componentName, version)
+        verify(agentClientMock).spawnSequenceComponent(componentName, version, false, false)
       }
 
       "give Failed when agent is not there | ESW-361" in {
