@@ -56,11 +56,9 @@ import esw.commons.extensions.FutureExt.FutureOps
 
 //noinspection DuplicatedCode
 // $COVERAGE-OFF$
-// Note: Use scriptServerInSameProcess=true for tests that rely on test classpath, etc.
 private[ocs] class SequencerWiring(
     val sequencerPrefix: Prefix,
-    sequenceComponentPrefix: Prefix,
-    scriptServerInSameProcess: Boolean = false
+    sequenceComponentPrefix: Prefix
 ) extends SequencerServiceCodecs {
 
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
@@ -94,10 +92,9 @@ private[ocs] class SequencerWiring(
     val scriptServerManager = ScriptServerManager(prefix, sequenceComponentPrefix, locationService, config, logger)
 
     // XXX TODO FIXME TEMP for testing
-//    val scriptServerF       = if (scriptServerInSameProcess) scriptServerManager.start() else scriptServerManager.spawn()
-    val scriptServerF = scriptServerManager.start()
-//    val scriptServerF =
-//      if (sys.props.get("test.esw").contains("true")) scriptServerManager.start() else scriptServerManager.spawn()
+//    val scriptServerF = scriptServerManager.start()
+    val scriptServerF =
+      if (sys.props.get("test.esw").contains("true")) scriptServerManager.start() else scriptServerManager.spawn()
 
     scriptServerF.await() match {
       case Right(scriptApi: ScriptApi) => scriptApi

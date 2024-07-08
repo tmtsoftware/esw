@@ -54,7 +54,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
     runOn(node1) {
       enterBarrier("event-server-started")
-      val ocsSequencerWiring = new SequencerWiring(Prefix(ocsSubsystem, ocsSequencerObsMode.name), sequenceComponentPrefix, true)
+      val ocsSequencerWiring = new SequencerWiring(Prefix(ocsSubsystem, ocsSequencerObsMode.name), sequenceComponentPrefix)
       ocsSequencerWiring.sequencerServer.start()
 
       enterBarrier("ocs-started")
@@ -81,7 +81,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
       enterBarrier("event-server-started")
       enterBarrier("ocs-started")
 
-      val tcsSequencerWiring = new SequencerWiring(Prefix(tcsSubsystem, tcsSequencerObsMode.name), sequenceComponentPrefix, true)
+      val tcsSequencerWiring = new SequencerWiring(Prefix(tcsSubsystem, tcsSequencerObsMode.name), sequenceComponentPrefix)
       tcsSequencerWiring.sequencerServer.start()
       enterBarrier("tcs-started")
       enterBarrier("assembly-started")

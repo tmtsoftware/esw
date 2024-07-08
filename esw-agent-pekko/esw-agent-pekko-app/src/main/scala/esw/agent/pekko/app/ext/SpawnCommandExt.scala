@@ -22,11 +22,11 @@ object SpawnCommandExt {
       lazy val args = command.commandArgs(List("-a", agentPrefix.toString()))
 
       command match {
-        case SpawnSequenceComponent(_, _, _, version, _, test) =>
+        case SpawnSequenceComponent(_, _, _, version, _) =>
           val scriptsVersion =
             if (version.isEmpty) versionManager.getScriptVersion.map(Some(_))
             else Future.successful(version)
-          scriptsVersion.map(Coursier.ocsApp(_).launch(coursierChannel, args ::: List(s"--test=$test")))
+          scriptsVersion.map(Coursier.ocsApp(_).launch(coursierChannel, args))
         case SpawnSequenceManager(_, _, _, version, _) =>
           val smVersion =
             if (version.isEmpty) versionManager.eswVersion.map(Some(_))

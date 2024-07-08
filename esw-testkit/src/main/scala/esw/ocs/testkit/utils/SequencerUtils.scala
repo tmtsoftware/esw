@@ -56,7 +56,7 @@ trait SequencerUtils extends LocationUtils {
       subsystem,
       name,
       agentPrefix,
-      new SequencerWiring(_, _, scriptServerInSameProcess = true).sequencerServer
+      new SequencerWiring(_, _).sequencerServer
     )
 
   def spawnSequenceComponentInSimulation(

@@ -25,5 +25,5 @@ trait AgentSetup extends LocationServiceCodecs {
 
   // ESW-325: spawns sequence component via agent using coursier with provided sha
   def spawnSequenceComponent(agentClient: AgentClient, componentName: String): Future[SpawnResponse] =
-    agentClient.spawnSequenceComponent(componentName, eswVersion, simulation = false, test = true)
+    agentClient.spawnSequenceComponent(componentName, eswVersion, simulation = false)
 }

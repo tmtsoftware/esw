@@ -45,8 +45,7 @@ object AgentCommand {
         agentPrefix: Prefix,
         componentName: String,
         version: Option[String],
-        simulation: Boolean = false,
-        test: Boolean = false
+        simulation: Boolean = false
     ) extends SpawnCommand {
       override val prefix: Prefix              = Prefix(agentPrefix.subsystem, componentName)
       override val connection: PekkoConnection = PekkoConnection(ComponentId(prefix, SequenceComponent))

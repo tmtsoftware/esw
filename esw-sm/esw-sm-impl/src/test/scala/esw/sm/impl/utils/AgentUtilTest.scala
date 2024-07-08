@@ -141,9 +141,9 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.listPekkoLocationsBy(argEq(Machine), any[PekkoLocation => Boolean]))
         .thenReturn(futureRight(machines))
       when(agentAllocator.allocate(provisionConfig, machines)).thenReturn(Right(mapping))
-      when(agentClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), false, false))
+      when(agentClient.spawnSequenceComponent(eswSeqComp1Name, Some(version), false))
         .thenReturn(Future.successful(Spawned))
-      when(agentClient.spawnSequenceComponent(eswSeqComp2Name, Some(version), false, false))
+      when(agentClient.spawnSequenceComponent(eswSeqComp2Name, Some(version), false))
         .thenReturn(Future.successful(Failed(errorMsg)))
       when(versionManager.getScriptVersion).thenReturn(Future.successful(version))
 
@@ -157,8 +157,8 @@ class AgentUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).listPekkoLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
-      verify(agentClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false, false)
-      verify(agentClient).spawnSequenceComponent(eswSeqComp2Name, Some(version), false, false)
+      verify(agentClient).spawnSequenceComponent(eswSeqComp1Name, Some(version), false)
+      verify(agentClient).spawnSequenceComponent(eswSeqComp2Name, Some(version), false)
     }
 
     "return LocationServiceError if location service gives error | ESW-347" in {

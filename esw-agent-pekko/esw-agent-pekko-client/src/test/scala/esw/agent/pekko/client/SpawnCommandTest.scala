@@ -17,7 +17,7 @@ class SpawnCommandTest extends BaseTestSuite {
       val actorRef      = mock[ActorRef[SpawnResponse]]
       val agentPrefix   = Prefix(randomSubsystem, randomString(10))
       val componentName = randomString(10)
-      val command       = SpawnSequenceComponent(actorRef, agentPrefix, componentName, None, simulation = false, test = true)
+      val command       = SpawnSequenceComponent(actorRef, agentPrefix, componentName, None, simulation = false)
 
       val expectedDefaultArgs = List("seqcomp", "-s", agentPrefix.subsystem.name, "-n", componentName)
       val randomArgs          = List(randomString(10), randomString(10))

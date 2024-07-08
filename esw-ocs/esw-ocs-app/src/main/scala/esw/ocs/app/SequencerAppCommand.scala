@@ -16,7 +16,6 @@ sealed trait SequencerAppCommand {
   def name: Option[String]
   def agentPrefix: Option[Prefix]
   def simulation: Boolean
-  def test: Boolean
 }
 
 object SequencerAppCommand {
@@ -55,10 +54,7 @@ object SequencerAppCommand {
       agentPrefix: Option[Prefix] = None,
       @HelpMessage("simulation mode")
       @Short("simulation")
-      simulation: Boolean = false,
-      @HelpMessage("test mode: Causes script server to be started in same process")
-      @Short("test")
-      test: Boolean = false
+      simulation: Boolean = false
   ) extends SequencerAppCommand
 
   final case class SequencerOptions(
@@ -84,10 +80,7 @@ object SequencerAppCommand {
       variation: Option[Variation] = None,
       @HelpMessage("simulation mode")
       @Short("simulation")
-      simulation: Boolean = false,
-      @HelpMessage("test mode: Causes script HTTP server to be started in same process so that test scripts are in classpath")
-      @Short("test")
-      test: Boolean = false
+      simulation: Boolean = false
   ) extends SequencerAppCommand
 
 }

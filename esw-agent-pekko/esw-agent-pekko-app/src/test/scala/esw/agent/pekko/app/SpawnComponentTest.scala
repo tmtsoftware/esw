@@ -30,13 +30,14 @@ class SpawnComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false, test = true)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false)
       probe.expectMessage(Spawned)
 
       val expectedCommand =
         List(
           Coursier.cs,
           "launch",
+          "-Dtest.esw=true",
           "--channel",
           Cs.channel,
           s"esw-ocs-app:$sequencerScriptsVersion",
@@ -47,8 +48,7 @@ class SpawnComponentTest extends AgentSetup {
           "-n",
           seqCompName,
           "-a",
-          agentPrefix.toString(),
-          "--test=true"
+          agentPrefix.toString()
         )
 
       verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
@@ -70,6 +70,7 @@ class SpawnComponentTest extends AgentSetup {
         List(
           Coursier.cs,
           "launch",
+          "-Dtest.esw=true",
           "--channel",
           Cs.channel,
           s"esw-ocs-app:$sequencerScriptsVersion",
@@ -81,8 +82,7 @@ class SpawnComponentTest extends AgentSetup {
           seqCompName,
           "-a",
           agentPrefix.toString(),
-          "--simulation",
-          "--test=false"
+          "--simulation"
         )
       verify(processExecutor).runCommand(expectedCommand, seqCompPrefix)
     }
@@ -93,7 +93,7 @@ class SpawnComponentTest extends AgentSetup {
       val err           = "Failed to resolve component"
       when(locationService.find(argEq(seqCompConn))).thenReturn(Future.failed(new RuntimeException(err)))
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false, test = true)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false)
       probe.expectMessage(Failed(s"Failed to verify component registration in location service, reason: $err"))
     }
 
@@ -102,7 +102,7 @@ class SpawnComponentTest extends AgentSetup {
       val probe         = TestProbe[SpawnResponse]()
       when(locationService.find(argEq(seqCompConn))).thenReturn(seqCompLocationF)
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false, test = true)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false)
       probe.expectMessage(Failed(s"$seqCompComponentId is already registered with location service at $seqCompLocation"))
     }
 
@@ -114,7 +114,7 @@ class SpawnComponentTest extends AgentSetup {
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLocationF)
       when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Left("failure"))
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false, test = true)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false)
       probe.expectMessage(Failed("failure"))
     }
 
@@ -127,7 +127,7 @@ class SpawnComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false, test = true)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false)
       probe.expectMessage(
         Failed(
           s"$seqCompComponentId is not registered with location service. Reason: Process failed to spawn due to reasons like invalid binary version etc or failed to register with location service."
@@ -146,7 +146,7 @@ class SpawnComponentTest extends AgentSetup {
       when(process.isAlive).thenReturn(false)
       when(locationService.unregister(seqCompConn)).thenReturn(Future.successful(Done))
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false, test = true)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false)
       probe.expectMessage(Failed("Process terminated before registration was successful"))
     }
 
@@ -167,6 +167,7 @@ class SpawnComponentTest extends AgentSetup {
         List(
           Coursier.cs,
           "launch",
+          "-Dtest.esw=true",
           "--channel",
           Cs.channel,
           s"esw-sm-app:$eswVersion",
@@ -199,6 +200,7 @@ class SpawnComponentTest extends AgentSetup {
         List(
           Coursier.cs,
           "launch",
+          "-Dtest.esw=true",
           "--channel",
           Cs.channel,
           s"esw-sm-app:$eswVersion",
@@ -226,7 +228,7 @@ class SpawnComponentTest extends AgentSetup {
 
       mockSuccessfulProcess()
 
-      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false, test = true)
+      agentActorRef ! SpawnSequenceComponent(probe.ref, agentPrefix, seqCompName, None, simulation = false)
 
       probe.expectMessage(Failed(errorMsg))
     }
@@ -238,6 +240,7 @@ class SpawnComponentTest extends AgentSetup {
         List(
           "cs",
           "launch",
+          "-Dtest.esw=true",
           s"$org:${module}_3:0.0.1",
           "-r",
           "jitpack",
@@ -278,6 +281,7 @@ class SpawnComponentTest extends AgentSetup {
             List(
               "cs",
               "launch",
+              "-Dtest.esw=true",
               "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
               "-r",
               "jitpack",
@@ -326,6 +330,7 @@ class SpawnComponentTest extends AgentSetup {
           List(
             "cs",
             "launch",
+            "-Dtest.esw=true",
             "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
             "-r",
             "jitpack",
@@ -346,6 +351,7 @@ class SpawnComponentTest extends AgentSetup {
           List(
             "cs",
             "launch",
+            "-Dtest.esw=true",
             "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
             "-r",
             "jitpack",

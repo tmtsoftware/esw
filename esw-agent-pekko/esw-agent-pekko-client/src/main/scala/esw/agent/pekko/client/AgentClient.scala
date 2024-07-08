@@ -29,10 +29,9 @@ class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSyste
   def spawnSequenceComponent(
       componentName: String,
       version: Option[String] = None,
-      simulation: Boolean = false,
-      test: Boolean = false
+      simulation: Boolean = false
   ): Future[SpawnResponse] = {
-    (agentRef ? (SpawnSequenceComponent(_: ActorRef[SpawnResponse], agentPrefix, componentName, version, simulation, test)))(
+    (agentRef ? (SpawnSequenceComponent(_: ActorRef[SpawnResponse], agentPrefix, componentName, version, simulation)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
