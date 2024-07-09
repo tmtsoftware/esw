@@ -93,8 +93,8 @@ private[ocs] class SequencerWiring(
 
     // XXX TODO FIXME TEMP for testing
 //    val scriptServerF = scriptServerManager.start()
-    val scriptServerF =
-      if (sys.props.get("test.esw").contains("true")) scriptServerManager.start() else scriptServerManager.spawn()
+    val scriptServerF = scriptServerManager.spawn()
+//    val scriptServerF = if (sys.props.get("test.esw").contains("true")) scriptServerManager.start() else scriptServerManager.spawn()
 
     scriptServerF.await() match {
       case Right(scriptApi: ScriptApi) => scriptApi

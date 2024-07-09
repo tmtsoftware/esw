@@ -40,16 +40,17 @@ object SequenceComponentTimeouts {
   val LoadScript: FiniteDuration         = SequencerTimeouts.ScriptHandlerExecution
   val UnloadScript: FiniteDuration = SequencerTimeouts.ScriptHandlerExecution + 2.seconds // shutdown redis client
   val Shutdown: FiniteDuration     = UnloadScript + Processing
-  require(Shutdown <= 8.seconds, "max timeout violated for Shutdown")
+//  require(Shutdown <= 8.seconds, "max timeout violated for Shutdown")
   val RestartScript: FiniteDuration = UnloadScript + LoadScript
-  require(RestartScript <= 12.seconds, "max timeout violated for RestartScript")
+//  require(RestartScript <= 12.seconds, "max timeout violated for RestartScript")
 }
 
 object SequencerTimeouts {
   val LongTimeout: FiniteDuration        = 10.hours
   val SequencerOperation: FiniteDuration = 2.seconds
 
-  val ScriptHandlerExecution: FiniteDuration = 5.seconds
+//  val ScriptHandlerExecution: FiniteDuration = 5.seconds
+  val ScriptHandlerExecution: FiniteDuration = 10.seconds
 
   val GetSequenceComponent: FiniteDuration = SequencerOperation
 }

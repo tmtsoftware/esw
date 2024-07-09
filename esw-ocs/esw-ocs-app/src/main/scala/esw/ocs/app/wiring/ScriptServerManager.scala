@@ -22,7 +22,7 @@ import org.apache.pekko.Done
 
 import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import scala.jdk.OptionConverters.RichOptional
 import scala.util.chaining.scalaUtilChainingOps
 import scala.util.control.NonFatal
@@ -66,7 +66,7 @@ class ScriptServerManager(
    * Starts the script HTTP server and returns an HTTP client for it that implements the ScriptApi trait
    */
   def spawn(): Future[Either[String, ScriptApi]] = {
-    println(s"XXX Start Script Server Process")
+    println(s"XXX Start Script Server Process: prefix = $sequencerPrefix")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ => startScriptServer())
       .flatMapE(process =>
@@ -126,10 +126,17 @@ class ScriptServerManager(
       .find(connection.of[Location])
       .map {
         case None =>
+          println(s"XXX OK ${connection.componentId} was not already registered with location service")
           Right(())
-        case Some(l) => Left(s"${connection.componentId} is already registered with location service at $l".tap(log.error(_)))
+        case Some(l) =>
+          println(s"XXX ${connection.componentId} is already registered with location service at $l".tap(log.error(_)))
+          Left(s"${connection.componentId} is already registered with location service at $l".tap(log.error(_)))
       }
-      .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
+//      .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
+      .mapError { e =>
+        println(s"XXX Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
+        s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_))
+      }
   }
 
   // starts a process with the executable string of the given spawn command
@@ -146,14 +153,20 @@ class ScriptServerManager(
 //        Left(msg)
 //      }
 
-    Future.successful {
-      val cmdStr =
-        CoursierLaunch("esw-ocs-script-server-app", Some("0.1.0-SNAPSHOT"))
-          .launch(coursierChannel, List(sequencerPrefix.toString, sequenceComponentPrefix.toString))
+    println(s"XXX startScriptServer")
+
+    val version = "0.1.0-SNAPSHOT"
+    val app =
+      if (sys.props.get("test.esw").contains("true")) "esw-ocs-script-server-test-app" else "esw-ocs-script-server-app"
+    val cmdStr =
+      CoursierLaunch(app, Some(version))
+        .launch(coursierChannel, List(sequencerPrefix.toString, sequenceComponentPrefix.toString))
+    println(s"XXX ${cmdStr.mkString(" ")}")
+    Future.successful(
       processExecutor
         .runCommand(cmdStr, sequencerPrefix)
         .map(_.tap(onProcessExit(_, connection)))
-    }
+    )
   }
 
   // it checks if the given process is alive

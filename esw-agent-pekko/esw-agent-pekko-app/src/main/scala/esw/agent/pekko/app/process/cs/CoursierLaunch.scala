@@ -5,7 +5,8 @@ case class CoursierLaunch(appName: String, appVersion: Option[String]) {
 
   def launch(repos: List[String], mainClass: String, args: List[String]): List[String] = {
     val testOpt = sys.props.get("test.esw").getOrElse("false")
-    val xxx = List(Coursier.cs, "launch", s"-Dtest.esw=$testOpt") ::: app :: "-r" :: repos ::: "-M" :: mainClass :: "--" :: args
+    val xxx =
+      List(Coursier.cs, "launch", "-D", s"test.esw=$testOpt") ::: app :: "-r" :: repos ::: "-M" :: mainClass :: "--" :: args
     println(s"XXX CoursierLaunch: ${xxx.mkString(" ")}")
     xxx
   }
@@ -13,7 +14,7 @@ case class CoursierLaunch(appName: String, appVersion: Option[String]) {
   // cs launch --channel url://apps.json esw-ocs-app:2.0.0 -- start seqcomp
   def launch(channel: String, args: List[String]): List[String] = {
     val testOpt = sys.props.get("test.esw").getOrElse("false")
-    val xxx     = List(Coursier.cs, "launch", s"-Dtest.esw=$testOpt") ::: "--channel" :: channel :: app :: "--" :: args
+    val xxx     = List(Coursier.cs, "launch", "-D", s"test.esw=$testOpt") ::: "--channel" :: channel :: app :: "--" :: args
     println(s"XXX CoursierLaunch: ${xxx.mkString(" ")}")
     xxx
   }

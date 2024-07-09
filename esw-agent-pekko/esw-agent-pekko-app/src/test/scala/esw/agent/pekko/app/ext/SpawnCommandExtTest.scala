@@ -52,19 +52,19 @@ class SpawnCommandExtTest extends BaseTestSuite {
 
   "SpawnCommand.executableCommandStr" must {
     val spawnSeqCompCmd =
-      s"cs launch -Dtest.esw=true --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
+      s"cs launch -D test.esw=true --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
     val spawnSeqCompWithVersionCmd =
-      s"cs launch -Dtest.esw=true --channel $channel esw-ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
+      s"cs launch -D test.esw=true --channel $channel esw-ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
     val spawnSeqCompSimulationCmd =
-      s"cs launch -Dtest.esw=true --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
+      s"cs launch -D test.esw=true --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
     val spawnSeqMgrCmd =
-      s"cs launch -Dtest.esw=true --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix"
+      s"cs launch -D test.esw=true --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix"
     val spawnSeqMgrWithVersionCmd =
-      s"cs launch -Dtest.esw=true --channel $channel esw-sm-app:$version -- start -o $obsModeConf -l -a $agentPrefix"
+      s"cs launch -D test.esw=true --channel $channel esw-sm-app:$version -- start -o $obsModeConf -l -a $agentPrefix"
     val spawnSeqMgrSimulationCmd =
-      s"cs launch -Dtest.esw=true --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
+      s"cs launch -D test.esw=true --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
     val spawnContainerCmd =
-      s"cs launch -Dtest.esw=true ${containerConfig.orgName}:${containerConfig.deployModule}_${BuildInfo.scalaBinaryVersion}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local ${containerConfig.configFilePath}"
+      s"cs launch -D test.esw=true ${containerConfig.orgName}:${containerConfig.deployModule}_${BuildInfo.scalaBinaryVersion}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local ${containerConfig.configFilePath}"
 
     "SpawnCommand.executableCommandStr" must {
       Table(

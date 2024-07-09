@@ -224,6 +224,7 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val loadScriptResponse = seqCompApi.loadScript(IRIS, darknight).futureValue
 
       // verify sequencer location from load script and looked up from location service is the same
+      println(s"XXX loadScriptResponse = $loadScriptResponse")
       loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
 
       agentClient.killComponent(seqCompLoc).futureValue should ===(Killed)

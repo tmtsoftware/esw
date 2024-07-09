@@ -37,7 +37,8 @@ class SpawnComponentTest extends AgentSetup {
         List(
           Coursier.cs,
           "launch",
-          "-Dtest.esw=true",
+          "-D",
+          "test.esw=true",
           "--channel",
           Cs.channel,
           s"esw-ocs-app:$sequencerScriptsVersion",
@@ -70,7 +71,8 @@ class SpawnComponentTest extends AgentSetup {
         List(
           Coursier.cs,
           "launch",
-          "-Dtest.esw=true",
+          "-D",
+          "test.esw=true",
           "--channel",
           Cs.channel,
           s"esw-ocs-app:$sequencerScriptsVersion",
@@ -167,7 +169,8 @@ class SpawnComponentTest extends AgentSetup {
         List(
           Coursier.cs,
           "launch",
-          "-Dtest.esw=true",
+          "-D",
+          "test.esw=true",
           "--channel",
           Cs.channel,
           s"esw-sm-app:$eswVersion",
@@ -200,7 +203,8 @@ class SpawnComponentTest extends AgentSetup {
         List(
           Coursier.cs,
           "launch",
-          "-Dtest.esw=true",
+          "-D",
+          "test.esw=true",
           "--channel",
           Cs.channel,
           s"esw-sm-app:$eswVersion",
@@ -240,7 +244,8 @@ class SpawnComponentTest extends AgentSetup {
         List(
           "cs",
           "launch",
-          "-Dtest.esw=true",
+          "-D",
+          "test.esw=true",
           s"$org:${module}_3:0.0.1",
           "-r",
           "jitpack",
@@ -281,7 +286,8 @@ class SpawnComponentTest extends AgentSetup {
             List(
               "cs",
               "launch",
-              "-Dtest.esw=true",
+              "-D",
+              "test.esw=true",
               "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
               "-r",
               "jitpack",
@@ -330,7 +336,8 @@ class SpawnComponentTest extends AgentSetup {
           List(
             "cs",
             "launch",
-            "-Dtest.esw=true",
+            "-D",
+            "test.esw=true",
             "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
             "-r",
             "jitpack",
@@ -351,7 +358,8 @@ class SpawnComponentTest extends AgentSetup {
           List(
             "cs",
             "launch",
-            "-Dtest.esw=true",
+            "-D",
+            "test.esw=true",
             "com.github.tmtsoftware.sample2:csw-sample2deploy_3:0.0.1",
             "-r",
             "jitpack",
