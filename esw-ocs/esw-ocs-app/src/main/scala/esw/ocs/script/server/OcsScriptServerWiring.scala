@@ -47,8 +47,6 @@ import scala.concurrent.{Await, Future}
  */
 //noinspection DuplicatedCode
 private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) {
-  println(s"XXX OcsScriptServerWiring prefix = $sequencerPrefix")
-
   private[ocs] val httpConnection: HttpConnection = HttpConnection(ComponentId(sequencerPrefix, ComponentType.Service))
 
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =

@@ -32,7 +32,6 @@ import scala.util.control.NonFatal
  * The main app to start sequencer/sequence component
  */
 object SequencerApp extends CommandsEntryPoint {
-  println(s"XXX in SequencerApp")
   // $COVERAGE-OFF$
   def appName: String           = getClass.getSimpleName.dropRight(1) // remove $ from class name
   def appVersion: String        = BuildInfo.version
@@ -51,7 +50,6 @@ object SequencerApp extends CommandsEntryPoint {
     }
 
     def run(command: SequencerAppCommand, enableLogging: Boolean = true): SequenceComponentWiring = {
-      println(s"XXX in SequencerApp.run")
       val wiring = sequenceComponentWiring(command)
       import wiring.actorRuntime.*
       try {

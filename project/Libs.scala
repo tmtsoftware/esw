@@ -106,6 +106,7 @@ object Kotlin {
   val CoroutinesVersion = "1.7.3"
 
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % EswKeys.kotlinVersion
+  val `kotlin-reflect` = "org.jetbrains.kotlin" % "kotlin-reflect" % EswKeys.kotlinVersion
   val `coroutines-core` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core" % CoroutinesVersion
 
   // core/jvm — additional core features available on Kotlin/JVM:

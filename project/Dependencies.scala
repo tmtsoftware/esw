@@ -200,6 +200,7 @@ object Dependencies {
   val OcsDslKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Kotlin.`stdlib-jdk8`,
+      Kotlin.`kotlin-reflect`,
       Kotlin.`coroutines-core`,
       Kotlin.`coroutines-core-jvm`,
       Kotlin.`coroutines-jdk8`,
@@ -329,6 +330,7 @@ object Dependencies {
       Csw.`csw-aas-http`,
       Csw.`csw-location-api`.value,
       Libs.`embedded-keycloak`,
+      Kotlin.`kotlin-reflect`,
       Pekko.`pekko-stream-typed`        % Provided,
       Libs.`case-app`                   % Provided,
       Pekko.`pekko-remote`              % Test,

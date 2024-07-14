@@ -1,6 +1,7 @@
 import Common._
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+import kotlin.Keys._
 
 inThisBuild(
   CommonSettings
@@ -131,20 +132,11 @@ lazy val `esw-ocs-dsl-kt` = project
   .settings(
     Test / fork   := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "17",
     kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
   .dependsOn(`esw-ocs-dsl`)
-
-//lazy val `esw-ocs-script-server` = project
-//  .in(file("esw-ocs/esw-ocs-script-server"))
-//  .enablePlugins(KotlinPlugin)
-//  .settings(
-//    kotlinVersion := EswKeys.kotlinVersion,
-//    kotlincOptions ++= KotlincOptions
-//  )
-//  .settings(libraryDependencies ++= Dependencies.OcsScriptServer.value)
-//  .dependsOn(`esw-ocs-dsl`, `esw-ocs-impl`, `esw-ocs-app`, `esw-commons`)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
@@ -313,6 +305,7 @@ lazy val examples = project
   .enablePlugins(KotlinPlugin)
   .settings(
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "17",
     kotlincOptions ++= KotlincOptions
   )
   .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
@@ -443,5 +436,6 @@ lazy val `esw-performance-test` = project
   .settings(
     libraryDependencies ++= Dependencies.PerformanceTest.value,
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "17",
     kotlincOptions ++= KotlincOptions
   )

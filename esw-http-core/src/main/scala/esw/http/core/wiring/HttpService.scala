@@ -79,10 +79,6 @@ class HttpService(
       metadata
     )
 
-    println(
-      s"XXX Registering ${connection.name} Service HTTP Server with Location Service using registration: [${registration.toString}]"
-    )
-
     log.info(
       s"Registering ${connection.name} Service HTTP Server with Location Service using registration: [${registration.toString}]"
     )

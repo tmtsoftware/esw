@@ -66,7 +66,6 @@ class ScriptServerManager(
    * Starts the script HTTP server and returns an HTTP client for it that implements the ScriptApi trait
    */
   def spawn(): Future[Either[String, ScriptApi]] = {
-    println(s"XXX Start Script Server Process: prefix = $sequencerPrefix")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ => startScriptServer())
       .flatMapE(process =>
@@ -84,7 +83,6 @@ class ScriptServerManager(
    * Starts the script HTTP server in this process (for testing) and returns an HTTP client for it that implements the ScriptApi trait
    */
   def start(): Future[Either[String, ScriptApi]] = {
-    println(s"XXX Start Script Server in same process")
     verifyComponentIsNotAlreadyRegistered(connection)
       .flatMapE(_ =>
         OcsScriptServerApp.main(Array(sequencerPrefix.toString, sequenceComponentPrefix.toString))
@@ -126,17 +124,11 @@ class ScriptServerManager(
       .find(connection.of[Location])
       .map {
         case None =>
-          println(s"XXX OK ${connection.componentId} was not already registered with location service")
           Right(())
         case Some(l) =>
-          println(s"XXX ${connection.componentId} is already registered with location service at $l".tap(log.error(_)))
           Left(s"${connection.componentId} is already registered with location service at $l".tap(log.error(_)))
       }
-//      .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
-      .mapError { e =>
-        println(s"XXX Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
-        s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_))
-      }
+      .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
   }
 
   // starts a process with the executable string of the given spawn command
@@ -153,15 +145,12 @@ class ScriptServerManager(
 //        Left(msg)
 //      }
 
-    println(s"XXX startScriptServer")
-
     val version = "0.1.0-SNAPSHOT"
     val app =
-      if (sys.props.get("test.esw").contains("true")) "esw-ocs-script-server-test-app" else "esw-ocs-script-server-app"
+      if (sys.props.get("test.esw").contains("true")) "esw-ocs-script-server-test" else "esw-ocs-script-server-app"
     val cmdStr =
       CoursierLaunch(app, Some(version))
         .launch(coursierChannel, List(sequencerPrefix.toString, sequenceComponentPrefix.toString))
-    println(s"XXX ${cmdStr.mkString(" ")}")
     Future.successful(
       processExecutor
         .runCommand(cmdStr, sequencerPrefix)

@@ -21,7 +21,7 @@
       "csw-logging.appender-config.file.baseLogPath": "/tmp"
     }
   },
-  "esw-ocs-script-server-test-app": {
+  "esw-ocs-script-server-test": {
     "repositories": ["jitpack", "central"],
     "dependencies": [
       "com.github.tmtsoftware.esw:examples_3:0.1.0-SNAPSHOT"

@@ -47,8 +47,6 @@ import scala.concurrent.duration.DurationLong
 
 class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with AgentSetup with SequenceManagerSetup {
 
-  println(s"XXX testing? ${sys.props.get("test.esw")}")
-
   private val locationServiceUtil                      = new LocationServiceUtil(locationService)
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
   private val configTestKit: ConfigTestKit             = frameworkTestKit.configTestKit
@@ -224,7 +222,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       val loadScriptResponse = seqCompApi.loadScript(IRIS, darknight).futureValue
 
       // verify sequencer location from load script and looked up from location service is the same
-      println(s"XXX loadScriptResponse = $loadScriptResponse")
       loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, darknight))
 
       agentClient.killComponent(seqCompLoc).futureValue should ===(Killed)
