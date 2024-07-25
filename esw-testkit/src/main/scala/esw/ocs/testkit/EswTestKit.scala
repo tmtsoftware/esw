@@ -19,6 +19,9 @@ abstract class EswTestKit(services: Service*)
     with KeycloakUtils
     with AgentServiceUtils {
 
+  // This is needed so that spawned sequencers can have the test scripts in the classpath
+  System.setProperty("test.esw", "true")
+
   implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = underlyingFrameworkTestKit.actorSystem
 
   lazy val locationService: LocationService = underlyingFrameworkTestKit.locationService

@@ -20,8 +20,8 @@ import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
-import csw.logging.client.scaladsl.LoggerFactory
-import csw.network.utils.SocketUtils
+import csw.logging.client.scaladsl.{LoggerFactory, LoggingSystemFactory}
+import csw.network.utils.{Networks, SocketUtils}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
@@ -34,8 +34,10 @@ import io.lettuce.core.RedisClient
 import esw.ocs.app.wiring.SequencerConfig
 import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
 import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown
 import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
 import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 
 import scala.concurrent.{Await, Future}
 
@@ -59,7 +61,7 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
   final lazy val actorRuntime        = new ActorRuntime(actorSystem)
-  import actorRuntime.{ec, typedSystem}
+  import actorRuntime.{coordinatedShutdown, ec, typedSystem}
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
@@ -85,6 +87,9 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
   private lazy val jEventService: JEventService             = new JEventService(eventService)
   private lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   private lazy val jAlarmService: IAlarmService             = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
+
+  // XXX TODO check this
+  LoggingSystemFactory.start("SequencerApp", "0.1.0-SNAPSHOT", Networks().hostname, actorSystem) // XXX TEMP
 
   private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
@@ -133,4 +138,15 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime, NetworkType.Inside)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(metadata)
   Await.result(httpServerBinding, CommonTimeouts.Wiring)
+
+  private def cleanupResources() = {
+    redisClient.shutdown()
+    (sequencerRef ? Shutdown.apply).map(_ => Done)
+  }
+
+  coordinatedShutdown.addTask(
+    CoordinatedShutdown.PhaseBeforeServiceUnbind,
+    s"${prefix.toString()}-cleanup"
+  )(() => cleanupResources())
+
 }

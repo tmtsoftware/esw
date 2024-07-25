@@ -34,6 +34,7 @@ class SequenceComponentRegistration(
 
   private def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, PekkoLocation]] =
     registration().flatMap { pekkoRegistration =>
+      println(s"XXX registerWithRetry: $pekkoRegistration")
       locationServiceUtil.register(pekkoRegistration).flatMap {
         case Left(_: OtherLocationIsRegistered) if retryCount > 0 =>
           // kill actor ref if registration fails. Retry attempt will create new actor ref

@@ -26,8 +26,8 @@ import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
-import csw.logging.client.scaladsl.LoggerFactory
-import csw.network.utils.SocketUtils
+import csw.logging.client.scaladsl.{LoggerFactory, LoggingSystemFactory}
+import csw.network.utils.{Networks, SocketUtils}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
 import esw.commons.utils.location.LocationServiceUtil
@@ -50,6 +50,7 @@ import msocket.http.post.PostRouteFactory
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.metrics.LabelExtractor
 import cps.compat.FutureAsync.*
+
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 import esw.commons.extensions.FutureExt.FutureOps
@@ -106,6 +107,9 @@ private[ocs] class SequencerWiring(
   lazy val jEventService: JEventService             = new JEventService(eventService)
   lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   private lazy val jAlarmService: IAlarmService     = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
+
+  // XXX TODO check this
+  LoggingSystemFactory.start("SequencerApp", "0.1.0-SNAPSHOT", Networks().hostname, actorSystem) // XXX TEMP
 
   private lazy val loggerFactory  = new LoggerFactory(prefix)
   private lazy val logger: Logger = loggerFactory.getLogger
@@ -175,16 +179,21 @@ private[ocs] class SequencerWiring(
         Await.result(httpServerBinding, CommonTimeouts.Wiring)
 
         val registration = PekkoRegistrationFactory.make(PekkoConnection(componentId), sequencerRef, metadata)
+        println(s"XXX sequencerServer: Registering $registration")
         val loc = Await.result(
           locationServiceUtil.register(registration).mapLeft(e => LocationServiceError(e.msg)),
           CommonTimeouts.Wiring
         )
+        println(s"XXX sequencerServer: loc = $loc")
 
         coordinatedShutdown.addTask(
           CoordinatedShutdown.PhaseBeforeServiceUnbind,
           s"${prefix.toString()}-cleanup"
         )(() => cleanupResources())
 
+        println(
+          s"XXX Successfully started Sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
+        )
         logger.info(
           s"Successfully started Sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
         )
@@ -198,6 +207,10 @@ private[ocs] class SequencerWiring(
         // This error will be logged in SequenceComponent.Do not log it here,
         // because exception caused while initialising will fail the instance creation of logger.
         case NonFatal(e) =>
+          // XXX TODO FIXME
+          println(s"XXX sequencerServer: error: $e")
+          e.printStackTrace()
+
           terminateActorSystem()
           Left(LoadingScriptFailed(e.getMessage))
       }

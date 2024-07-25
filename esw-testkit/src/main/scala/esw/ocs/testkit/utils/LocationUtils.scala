@@ -39,11 +39,16 @@ trait LocationUtils extends BaseTestSuite {
   def resolveSequenceComponentLocation(prefix: Prefix): PekkoLocation =
     resolvePekkoLocation(prefix, ComponentType.SequenceComponent)
 
-  def resolvePekkoLocation(prefix: Prefix, componentType: ComponentType): PekkoLocation =
-    locationService
-      .resolve(PekkoConnection(ComponentId(prefix, componentType)), CommonTimeouts.ResolveLocation)
+  def resolvePekkoLocation(prefix: Prefix, componentType: ComponentType): PekkoLocation = {
+    val conn = PekkoConnection(ComponentId(prefix, componentType))
+    val maybeLoc = locationService
+      .resolve(conn, CommonTimeouts.ResolveLocation)
       .futureValue
-      .value
+    maybeLoc match {
+      case Some(loc) => loc
+      case None      => throw new RuntimeException(s"$conn not registered with the Location Service")
+    }
+  }
 
   def resolveSequenceComponent(prefix: Prefix): ActorRef[SequenceComponentMsg] =
     resolveSequenceComponentLocation(prefix).uri.toActorRef.unsafeUpcast[SequenceComponentMsg]

@@ -136,6 +136,7 @@ class SequenceManagerWiring(
 
     Await.result(httpServerBinding, CommonTimeouts.Wiring)
 
+    println(s"XXX SequenceManagerWiring: Register $registration")
     val loc = Await.result(locationServiceUtil.register(registration), CommonTimeouts.Wiring)
 
     logger.info(s"Successfully started Sequence Manager with prefix: $prefix")
