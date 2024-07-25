@@ -16,7 +16,6 @@ case class CoursierLaunch(appName: String, appVersion: Option[String]) {
       "launch",
       "-D",
       s"test.esw=$testOpt",
-      "--default-channels=false",
       "--channel",
       channel,
       app,
