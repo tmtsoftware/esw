@@ -60,7 +60,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       seqCompRef ! LoadScript(probe.ref, ESW, ObsMode("darknight"), None)
 
       // verify that loaded sequencer is started and able to process sequence command
-      val response          = probe.expectMessageType[SequencerLocation]
+      val response          = probe.expectMessageType[SequencerLocation](10.seconds)
       val sequencerLocation = response.location
 
       // verify sequencer is registered on inside network
@@ -89,7 +89,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // UnloadScript
       val probe2 = TestProbe[OkOrUnhandled]()
       seqCompRef ! UnloadScript(probe2.ref)
-      probe2.expectMessage(Ok)
+      probe2.expectMessage(10.seconds, Ok)
     }
 
     "start sequence component and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144, ESW-279, ESW-366" in {

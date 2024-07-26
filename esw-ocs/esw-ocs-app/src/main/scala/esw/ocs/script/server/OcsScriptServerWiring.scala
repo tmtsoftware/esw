@@ -38,6 +38,7 @@ import org.apache.pekko.actor.CoordinatedShutdown
 import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
 import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
+import esw.ocs.app.BuildInfo
 
 import scala.concurrent.{Await, Future}
 
@@ -88,8 +89,9 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
   private lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   private lazy val jAlarmService: IAlarmService             = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
 
-  // XXX TODO check this
-  LoggingSystemFactory.start("SequencerApp", "0.1.0-SNAPSHOT", Networks().hostname, actorSystem) // XXX TEMP
+  // Disable logging for tests
+  if (!sys.props.get("test.esw").contains("true"))
+    actorRuntime.startLogging("SequencerApp", BuildInfo.version)
 
   private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
