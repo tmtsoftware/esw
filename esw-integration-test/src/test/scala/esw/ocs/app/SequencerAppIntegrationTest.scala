@@ -9,7 +9,7 @@ import csw.location.api.CswVersionJvm
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.Connection.{HttpConnection, PekkoConnection}
 import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -20,14 +20,28 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg.{LoadScript, UnloadScript
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, OkOrUnhandled, ScriptResponseOrUnhandled, SequencerLocation}
+import esw.ocs.app.client.OcsScriptClient
 import esw.ocs.testkit.EswTestKit
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.DurationInt
 
 class SequencerAppIntegrationTest extends EswTestKit {
 
   override def afterEach(): Unit = locationService.unregisterAll()
+
+  private def shutdownScriptServer(sequencerPrefix: Prefix): Future[Unit] = {
+    val connection: HttpConnection = HttpConnection(ComponentId(sequencerPrefix, ComponentType.Service))
+    locationService
+      .resolve(connection.of[Location], 10.seconds)
+      .map {
+        case Some(loc: HttpLocation) =>
+          println(s"XXX Shutting down script server")
+          OcsScriptClient(loc).shutdownScript()
+        case _ => println(s"XXX Could not locate $sequencerPrefix")
+      }
+
+  }
 
   "SequenceComponent command" must {
     "start sequence component with provided subsystem and prefix and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214, ESW-366, ESW-481, ESW-511" in {
@@ -197,6 +211,8 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
       val sequence       = Sequence(setup)
       commandService.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      Await.ready(shutdownScriptServer(Prefix(s"$sequencerSubsystem.$obsMode")), 10.seconds)
+
     }
 
     "start sequencer with provided mandatory subsystem, mode register it with location service | ESW-103, ESW-279" in {
@@ -213,6 +229,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       // verify that sequencer is started and able to process sequence command
       resolveSequencerLocation(Prefix(ESW, obsMode))
+      Await.ready(shutdownScriptServer(Prefix(s"$subsystem.$obsMode")), 10.seconds)
     }
 
     "throw exception if ScriptError is returned | ESW-102, ESW-136, ESW-279" in {
