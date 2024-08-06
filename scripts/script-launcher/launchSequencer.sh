@@ -85,6 +85,8 @@ if [[ $? -eq 1 ]]; then
 fi
 echo "[INFO] Compilation completed. Compiled jar name:" $JARNAME
 
+# XXX TODO FIXME: --extra-jars won't work when using script server, since it is another process!
+
 # ---------------- Launching sequencer ------------------
 echo "[INFO] Launching sequencer with Subsystem:" $SUBSYSTEM "and Observation Mode:" $OBS_MODE
 cs launch --channel $CS_CHANNEL --extra-jars $JARNAME --java-opt -Dscripts.$SUBSYSTEM.$OBS_MODE.scriptClass="$CLASSNAME" esw-ocs-app$VERSION -- sequencer -s $SUBSYSTEM -m $OBS_MODE
