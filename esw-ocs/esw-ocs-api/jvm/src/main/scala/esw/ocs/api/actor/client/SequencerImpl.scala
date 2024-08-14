@@ -19,7 +19,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.InternalSequencerState
 import esw.ocs.api.actor.messages.InternalSequencerState.{Idle, Loaded, Offline, Running}
 import esw.ocs.api.actor.messages.SequencerMessages.*
-import esw.ocs.api.models.{SequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.protocol.*
 import esw.ocs.api.protocol.SequencerStateSubscriptionResponse.SequencerShuttingDown
 import msocket.api.Subscription
@@ -143,4 +143,11 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
   }
 
   override def getSequenceComponent: Future[PekkoLocation] = sequencer ? GetSequenceComponent.apply
+
+  // XXX For Script Server use
+  override def pullNext: Future[PullNextResponse]                = sequencer ? PullNext.apply
+  override def maybeNext: Future[Option[Step]]                   = sequencer ? MaybeNext.apply
+  override def readyToExecuteNext: Future[OkOrUnhandledResponse] = sequencer ? ReadyToExecuteNext.apply
+  override def stepSuccess(): Unit                               = sequencer ? StepSuccess.apply
+  override def stepFailure(message: String): Unit                = sequencer ? (StepFailure(message, _))
 }

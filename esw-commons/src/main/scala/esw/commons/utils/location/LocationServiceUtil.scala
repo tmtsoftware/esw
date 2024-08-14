@@ -5,7 +5,7 @@ import org.apache.pekko.actor.typed.ActorSystem
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.Connection.{HttpConnection, PekkoConnection}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.*
@@ -130,6 +130,9 @@ class LocationServiceUtil(val locationService: LocationService)(implicit
 
   private[esw] def resolveSequencer(prefix: Prefix, within: FiniteDuration) =
     resolve(PekkoConnection(ComponentId(prefix, Sequencer)), within)
+
+  private[esw] def resolveSequencerHttp(prefix: Prefix, within: FiniteDuration) =
+    resolve(HttpConnection(ComponentId(prefix, Sequencer)), within)
 
   private[esw] def findSequencer(prefix: Prefix) =
     find(PekkoConnection(ComponentId(prefix, Sequencer)))

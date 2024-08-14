@@ -33,6 +33,7 @@ import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import io.lettuce.core.RedisClient
 import esw.ocs.app.wiring.SequencerConfig
 import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
+import esw.ocs.api.SequencerApi
 import org.apache.pekko.Done
 import org.apache.pekko.actor.CoordinatedShutdown
 import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
@@ -66,17 +67,27 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
-    actorSystem ? { (x: ActorRef[ActorRef[SequencerMsg]]) =>
-      Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
-    },
-    CommonTimeouts.Wiring
-  )
+  private lazy val componentId = ComponentId(prefix, ComponentType.Sequencer)
+
+  // XXX TODO FIXME Await, Option.get
+  private def makeSequencerClient(): SequencerApi = {
+    try {
+      val sequencerLocation =
+        Await.result(locationService.resolve(httpConnection, CommonTimeouts.ResolveLocation), CommonTimeouts.ResolveLocation).get
+      SequencerApiFactory.make(sequencerLocation)
+    }
+    catch {
+      case ex: Exception =>
+        println(s"Failed to locate Sequencer Client for httpConnection: $httpConnection")
+        ex.printStackTrace()
+        throw ex
+    }
+  }
+  private val sequencerClient = makeSequencerClient()
 
   // Pass lambda to break circular dependency shown below.
   // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
-  private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
-  private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
+  private lazy val sequenceOperatorFactory = () => new SequenceOperatorHttp(sequencerClient)
   private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil                = new LocationServiceUtil(locationService)
@@ -101,7 +112,7 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
   private lazy val sequencerImplFactory =
     (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => // todo: revisit timeout value
       locationServiceUtil
-        .resolveSequencer(Variation.prefix(_subsystem, _obsMode, _variation), CommonTimeouts.ResolveLocation)
+        .resolveSequencerHttp(Variation.prefix(_subsystem, _obsMode, _variation), CommonTimeouts.ResolveLocation)
         .mapRight(SequencerApiFactory.make)
         .toJava
 
@@ -143,7 +154,8 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   private def cleanupResources() = {
     redisClient.shutdown()
-    (sequencerRef ? Shutdown.apply).map(_ => Done)
+//    (sequencerRef ? Shutdown.apply).map(_ => Done)
+    Future.successful(Done)
   }
 
   coordinatedShutdown.addTask(

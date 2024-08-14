@@ -59,6 +59,13 @@ class SequencerPostHandler(
       // Sequencer Command Protocol
       case Submit(sequence) => sPost(complete(submit(sequence)))
       case Query(runId)     => complete(query(runId))
+
+      // XXX For script server
+      case PullNext             => complete(pullNext)
+      case MaybeNext            => complete(maybeNext)
+      case ReadyToExecuteNext   => complete(readyToExecuteNext)
+      case StepSuccess          => complete(stepSuccess())
+      case StepFailure(message) => complete(stepFailure(message))
     }
 
   private def sPost(route: => Route) =

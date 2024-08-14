@@ -11,7 +11,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.{SequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.protocol.*
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription
@@ -96,4 +96,10 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
       .withSubscription()
   }
 
+  // XXX For Script Server use
+  override def pullNext: Future[PullNextResponse]                = Future.successful(Unhandled("stub", "stub"))
+  override def maybeNext: Future[Option[Step]]                   = Future.successful(None)
+  override def readyToExecuteNext: Future[OkOrUnhandledResponse] = Future.successful(Unhandled("stub", "stub"))
+  def stepSuccess(): Unit                                        = ()
+  def stepFailure(message: String): Unit                         = ()
 }

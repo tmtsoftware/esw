@@ -1,39 +1,28 @@
 package esw.ocs.impl.core
 
-import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
-import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
-import org.apache.pekko.util.Timeout
-import esw.constants.SequencerTimeouts
-import esw.ocs.api.actor.messages.SequencerMessages.*
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
 
 import scala.concurrent.Future
 
 /**
- * This class is to help execution of stepList(Sequence)
- *
- * @param sequencer - Typed actor ref of the sequencer
- * @param system - An ActorSystem
+ * This trait is to help execution of stepList(Sequence)
  */
-private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[?])
-    extends SequenceOperatorApi {
-
-  private implicit val timeout: Timeout = SequencerTimeouts.LongTimeout
+private[ocs] trait SequenceOperatorApi {
 
   /**
    * This method sends a PullNext message to sequencer if successful it returns the pending step which is to be executed next
    *
    * @return a [[esw.ocs.api.protocol.PullNextResponse]] as Future value
    */
-  def pullNext: Future[PullNextResponse] = sequencer ? PullNext.apply
+  def pullNext: Future[PullNextResponse]
 
   /**
    * This method returns the next step Pending step if sequencer is in Running state otherwise returns None
    *
    * @return an Option of [[esw.ocs.api.models.Step]] as Future value
    */
-  def maybeNext: Future[Option[Step]] = sequencer ? MaybeNext.apply
+  def maybeNext: Future[Option[Step]]
 
   /**
    * This method is to determine whether next step is ready to execute or not. It returns Ok if the next step is ready for execution
@@ -42,15 +31,15 @@ private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(im
    *
    * @return a [[esw.ocs.api.protocol.OkOrUnhandledResponse]] as Future value
    */
-  def readyToExecuteNext: Future[OkOrUnhandledResponse] = sequencer ? ReadyToExecuteNext.apply
+  def readyToExecuteNext: Future[OkOrUnhandledResponse]
 
   /**
    * This method changes the status from InFlight to [[esw.ocs.api.models.StepStatus.Finished.Success]](Finished) for current running step
    */
-  def stepSuccess(): Unit = sequencer ! StepSuccess(system.deadLetters)
+  def stepSuccess(): Unit
 
   /**
    * This method changes the status from InFlight to [[esw.ocs.api.models.StepStatus.Finished.Failure]](Finished) for current running step
    */
-  def stepFailure(message: String): Unit = sequencer ! StepFailure(message, system.deadLetters)
+  def stepFailure(message: String): Unit
 }

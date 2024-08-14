@@ -28,6 +28,13 @@ object SequencerRequest {
   case object GetSequenceComponent                                extends SequencerRequest
   case object GetSequencerState                                   extends SequencerRequest
 
+  // XXX For Script Server use
+  case object PullNext                    extends SequencerRequest
+  case object MaybeNext                   extends SequencerRequest
+  case object ReadyToExecuteNext          extends SequencerRequest
+  case object StepSuccess                 extends SequencerRequest
+  case class StepFailure(message: String) extends SequencerRequest
+
   case object IsAvailable   extends SequencerRequest
   case object IsOnline      extends SequencerRequest
   case object GoOnline      extends SequencerRequest
