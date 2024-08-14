@@ -82,6 +82,7 @@ class HttpService(
     log.info(
       s"Registering ${connection.name} Service HTTP Server with Location Service using registration: [${registration.toString}]"
     )
+    println(s"XXX Registering HTTP service: $registration")
     val eventualResult = locationService.register(registration)
     eventualResult
   }

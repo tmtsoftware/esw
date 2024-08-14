@@ -36,9 +36,6 @@ import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEither
 import esw.ocs.api.SequencerApi
 import org.apache.pekko.Done
 import org.apache.pekko.actor.CoordinatedShutdown
-import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
-import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
-import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.app.BuildInfo
 
 import scala.concurrent.{Await, Future}

@@ -89,16 +89,6 @@ private[ocs] class SequencerWiring(
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
 
-//  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
-  private[ocs] lazy val script: ScriptApi = {
-    val scriptServerManager = ScriptServerManager(prefix, sequenceComponentPrefix, locationService, config, logger)
-    val scriptServerF       = scriptServerManager.spawn()
-    scriptServerF.await() match {
-      case Right(scriptApi: ScriptApi) => scriptApi
-      case Left(msg)                   => throw new RuntimeException(s"Failed to load script: $msg")
-    }
-  }
-
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
 
@@ -161,6 +151,24 @@ private[ocs] class SequencerWiring(
       await(eventualTerminated.flatMap(_ => eventualDone))
     }
 
+  //  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
+  private[ocs] lazy val script: ScriptApi = {
+    println(s"XXX SequencerWiring 1: wait for httpServerBinding ($httpServerBinding)")
+    httpServerBinding.await()
+    println(s"XXX SequencerWiring 2: wait for httpServerBinding ($httpServerBinding)")
+    val scriptServerManager = ScriptServerManager(prefix, sequenceComponentPrefix, locationService, config, logger)
+    println(s"XXX SequencerWiring: Spawning $sequenceComponentPrefix")
+    val scriptServerF = scriptServerManager.spawn()
+    scriptServerF.await() match {
+      case Right(scriptApi: ScriptApi) =>
+        println(s"XXX SequencerWiring: Got script API")
+        scriptApi
+      case Left(msg) =>
+        println(s"XXX SequencerWiring: error getting scriptApi: $msg")
+        throw new RuntimeException(s"Failed to load script: $msg")
+    }
+  }
+
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponentPrefix, logger, shutdownHttpService)(
       actorSystem
@@ -169,24 +177,32 @@ private[ocs] class SequencerWiring(
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, PekkoLocation] = {
       try {
+        println(
+          s"XXX Starting sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
+        )
         logger.info(
           s"Starting sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
         )
-        new Engine(script).start(sequenceOperatorFactory())
-
-        Await.result(httpServerBinding, CommonTimeouts.Wiring)
+        val xxx1 = new Engine(script).start(sequenceOperatorFactory())
+        println(s"XXX engine = $xxx1")
+        val xxx2 = Await.result(httpServerBinding, CommonTimeouts.Wiring)
+        println(s"XXX httpServerBinding = $xxx2")
 
         val registration = PekkoRegistrationFactory.make(PekkoConnection(componentId), sequencerRef, metadata)
         val loc = Await.result(
           locationServiceUtil.register(registration).mapLeft(e => LocationServiceError(e.msg)),
           CommonTimeouts.Wiring
         )
+        println(s"XXX loc = $loc")
 
         coordinatedShutdown.addTask(
           CoordinatedShutdown.PhaseBeforeServiceUnbind,
           s"${prefix.toString()}-cleanup"
         )(() => cleanupResources())
 
+        println(
+          s"XXX Successfully started Sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
+        )
         logger.info(
           s"Successfully started Sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
         )

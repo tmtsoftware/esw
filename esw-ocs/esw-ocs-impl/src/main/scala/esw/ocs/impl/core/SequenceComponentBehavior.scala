@@ -47,6 +47,7 @@ class SequenceComponentBehavior(
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
         case LoadScript(replyTo, subsystem, obsMode, variation) =>
+          println(s"XXX SequenceComponentBehavior: received ${LoadScript(replyTo, subsystem, obsMode, variation)}")
           val sequencerPrefix = Variation.prefix(subsystem, obsMode, variation)
           load(sequencerPrefix, replyTo)
         case GetStatus(replyTo) =>
@@ -66,8 +67,10 @@ class SequenceComponentBehavior(
    * If failed it will remain in Idle state
    */
   private def load(sequencerPrefix: Prefix, replyTo: ActorRef[ScriptResponseOrUnhandled]): Behavior[SequenceComponentMsg] = {
-    val sequencerServer    = sequencerServerFactory.make(sequencerPrefix, prefix)
+    val sequencerServer = sequencerServerFactory.make(sequencerPrefix, prefix)
+    println(s"XXX sequencerServer = $sequencerServer")
     val registrationResult = sequencerServer.start().fold(identity, SequencerLocation.apply)
+    println(s"XXX registrationResult = $registrationResult")
     replyTo ! registrationResult
 
     registrationResult match {
