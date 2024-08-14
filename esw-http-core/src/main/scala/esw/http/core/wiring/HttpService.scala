@@ -36,6 +36,7 @@ class HttpService(
 
   import actorRuntime.*
   def startAndRegisterServer(metadata: Metadata = Metadata.empty): Future[(ServerBinding, RegistrationResult)] = {
+    println(s"XXX startAndRegisterServer: metadata = $metadata")
     val f = async {
       val binding            = await(startServer())
       val registrationResult = await(register(binding, settings.httpConnection, metadata))

@@ -153,9 +153,9 @@ private[ocs] class SequencerWiring(
 
   //  private[ocs] lazy val script: ScriptApi = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
   private[ocs] lazy val script: ScriptApi = {
-    println(s"XXX SequencerWiring 1: wait for httpServerBinding ($httpServerBinding)")
-    httpServerBinding.await()
-    println(s"XXX SequencerWiring 2: wait for httpServerBinding ($httpServerBinding)")
+    println(s"XXX SequencerWiring: script")
+    val xxx = httpServerBinding.await()
+    println(s"XXX SequencerWiring: httpServerBinding: ($xxx)")
     val scriptServerManager = ScriptServerManager(prefix, sequenceComponentPrefix, locationService, config, logger)
     println(s"XXX SequencerWiring: Spawning $sequenceComponentPrefix")
     val scriptServerF = scriptServerManager.spawn()

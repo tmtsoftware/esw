@@ -38,6 +38,7 @@ import org.apache.pekko.Done
 import org.apache.pekko.actor.CoordinatedShutdown
 import esw.ocs.app.BuildInfo
 
+import java.net.InetAddress
 import scala.concurrent.{Await, Future}
 
 /**
@@ -48,6 +49,7 @@ import scala.concurrent.{Await, Future}
  */
 //noinspection DuplicatedCode
 private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) {
+  println(s"XXX OcsScriptServerWiring")
   private[ocs] val httpConnection: HttpConnection = HttpConnection(ComponentId(sequencerPrefix, ComponentType.Service))
 
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
@@ -64,13 +66,15 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  private lazy val componentId = ComponentId(prefix, ComponentType.Sequencer)
+  private lazy val componentId = ComponentId(sequencerPrefix, ComponentType.Sequencer)
 
   // XXX TODO FIXME Await, Option.get
   private def makeSequencerClient(): SequencerApi = {
     try {
+      println(s"XXX makeSequencerClient")
       val sequencerLocation =
         Await.result(locationService.resolve(httpConnection, CommonTimeouts.ResolveLocation), CommonTimeouts.ResolveLocation).get
+      println(s"XXX makeSequencerClient: sequencerLocation = $sequencerLocation")
       SequencerApiFactory.make(sequencerLocation)
     }
     catch {
@@ -101,7 +105,12 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
   if (!sys.props.get("test.esw").contains("true"))
     actorRuntime.startLogging("SequencerApp", BuildInfo.version)
 
-  private lazy val loggerFactory    = new LoggerFactory(prefix)
+  // XXX Uncomment to see logging
+  private val host        = InetAddress.getLocalHost.getHostName
+  private val typedSystem = ActorSystem(SpawnProtocol(), "SequencerClientIntegrationTest")
+  LoggingSystemFactory.start("SequencerClientIntegrationTest", "0.1", host, typedSystem)
+
+  private lazy val loggerFactory    = new LoggerFactory(sequencerPrefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
@@ -131,8 +140,8 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   private lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
-    prefix,
-    ObsMode.from(prefix),
+    sequencerPrefix,
+    ObsMode.from(sequencerPrefix),
     jLogger,
     sequenceOperatorFactory,
     actorSystem,
@@ -142,9 +151,10 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
     config
   )
 
-  private lazy val routes      = OcsScriptServerRoutes(logger, script, this).route
-  private lazy val metadata    = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
-  private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)
+  private lazy val routes             = OcsScriptServerRoutes(logger, script, this).route
+  private lazy val metadata           = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
+  private lazy val scriptServerPrefix = Prefix(s"$sequencerPrefix.scriptServer)")
+  private lazy val settings = new Settings(Some(SocketUtils.getFreePort), Some(scriptServerPrefix), config, ComponentType.Service)
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime, NetworkType.Inside)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(metadata)
   Await.result(httpServerBinding, CommonTimeouts.Wiring)
@@ -157,7 +167,7 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   coordinatedShutdown.addTask(
     CoordinatedShutdown.PhaseBeforeServiceUnbind,
-    s"${prefix.toString()}-cleanup"
+    s"${sequencerPrefix.toString()}-cleanup"
   )(() => cleanupResources())
 
 }
