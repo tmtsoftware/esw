@@ -134,7 +134,7 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   private lazy val routes             = OcsScriptServerRoutes(logger, script, this).route
   private lazy val metadata           = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
-  private lazy val scriptServerPrefix = Prefix(s"$sequencerPrefix.scriptServer)")
+  private lazy val scriptServerPrefix = sequencerPrefix
   private lazy val settings = new Settings(Some(SocketUtils.getFreePort), Some(scriptServerPrefix), config, ComponentType.Service)
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime, NetworkType.Inside)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(metadata)

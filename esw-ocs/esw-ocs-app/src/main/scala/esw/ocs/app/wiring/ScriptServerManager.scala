@@ -58,7 +58,7 @@ class ScriptServerManager(
   private val versionManager                         = new VersionManager(versionConfPath, configUtils)
   private val processOutput                          = new ProcessOutput()
   private val processExecutor                        = new ProcessExecutor(processOutput)(log)
-  private val scriptServerPrefix                     = Prefix(s"$sequencerPrefix.scriptServer)")
+  private val scriptServerPrefix                     = sequencerPrefix
   private val connection: HttpConnection             = HttpConnection(ComponentId(scriptServerPrefix, ComponentType.Service))
   private val coursierChannel                        = config.getString("agent.coursier.channel")
   private val durationToWaitForComponentRegistration = 18.seconds
