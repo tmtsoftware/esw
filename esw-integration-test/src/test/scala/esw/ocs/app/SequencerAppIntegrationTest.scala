@@ -36,7 +36,6 @@ class SequencerAppIntegrationTest extends EswTestKit {
       .resolve(connection.of[Location], 10.seconds)
       .map {
         case Some(loc: HttpLocation) =>
-          println(s"XXX Shutting down script server")
           OcsScriptClient(loc).shutdownScript()
         case _ => println(s"XXX Could not locate $sequencerPrefix")
       }

@@ -12,10 +12,7 @@ import scala.util.{Failure, Success}
 
 private[ocs] class Engine(script: ScriptApi) {
 
-  println(s"XXX Engine")
-
   def start(sequenceOperator: SequenceOperator)(implicit mat: Materializer): Future[Done] = {
-    println(s"XXX Engine: start: sequenceOperator = $sequenceOperator")
     Source.repeat(()).mapAsync(1)(_ => processStep(sequenceOperator)(mat.executionContext)).runForeach(_ => ())
   }
 
@@ -32,24 +29,18 @@ private[ocs] class Engine(script: ScriptApi) {
    */
   private def processStep(sequenceOperator: SequenceOperator)(implicit ec: ExecutionContext): Future[Done] =
     async {
-      println(s"XXX processStep 1")
       val pullNextResponse = await(sequenceOperator.pullNext)
-      println(s"XXX processStep 1: pullNextResponse $pullNextResponse")
 
       pullNextResponse match {
         case PullNextResult(step) =>
-          println(s"XXX processStep execute step $step")
           script.execute(step.command).onComplete {
             case _: Success[_] =>
-              println(s"XXX Success")
               sequenceOperator.stepSuccess()
             case Failure(e) =>
-              println(s"XXX Failure $e")
               val message = if (e.getCause != null) e.getCause.getMessage else e.getMessage
               sequenceOperator.stepFailure(message)
           }
         case _: Unhandled =>
-          println(s"XXX processStep Unhandled")
       }
 
       await(sequenceOperator.readyToExecuteNext)

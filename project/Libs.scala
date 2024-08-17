@@ -24,9 +24,9 @@ object Libs {
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
   val `ammonite` = ("com.lihaoyi" % "ammonite_3.3.3" % "3.0.0-M2-6-38698450")
 
-  val `hdr-histogram` = "org.hdrhistogram"   % "HdrHistogram" % "2.1.12"
-  val `slf4j-api`     = "org.slf4j"          % "slf4j-api"    % "2.0.7"
-  val `play-json`     = "org.playframework" %% "play-json"    % "3.0.3" // Apache 2.0
+  val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
+//  val `slf4j-api`     = "org.slf4j"          % "slf4j-api"    % "2.0.7"
+  val `play-json`        = "org.playframework" %% "play-json"        % "3.0.3" // Apache 2.0
 }
 
 object MSocket {
@@ -106,7 +106,7 @@ object Kotlin {
   val CoroutinesVersion = "1.7.3"
 
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % EswKeys.kotlinVersion
-  val `kotlin-reflect` = "org.jetbrains.kotlin" % "kotlin-reflect" % EswKeys.kotlinVersion
+  val `kotlin-reflect`  = "org.jetbrains.kotlin"  % "kotlin-reflect"          % EswKeys.kotlinVersion
   val `coroutines-core` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core" % CoroutinesVersion
 
   // core/jvm — additional core features available on Kotlin/JVM:

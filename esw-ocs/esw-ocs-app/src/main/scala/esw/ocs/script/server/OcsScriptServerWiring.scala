@@ -49,11 +49,10 @@ import scala.concurrent.{Await, Future}
  */
 //noinspection DuplicatedCode
 private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) {
-  println(s"XXX OcsScriptServerWiring")
   private[ocs] val httpConnection: HttpConnection = HttpConnection(ComponentId(sequencerPrefix, ComponentType.Service))
 
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
-    ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
+    ActorSystemFactory.remote(SpawnProtocol(), "OcsScriptServer")
 
   private[ocs] lazy val config: Config  = actorSystem.settings.config
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
@@ -68,27 +67,14 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   private lazy val componentId = ComponentId(sequencerPrefix, ComponentType.Sequencer)
 
-  // XXX TODO FIXME Await, Option.get
-  private def makeSequencerClient(): SequencerApi = {
-    try {
-      println(s"XXX makeSequencerClient")
-      val sequencerLocation =
-        Await.result(locationService.resolve(httpConnection, CommonTimeouts.ResolveLocation), CommonTimeouts.ResolveLocation).get
-      println(s"XXX makeSequencerClient: sequencerLocation = $sequencerLocation")
-      SequencerApiFactory.make(sequencerLocation)
-    }
-    catch {
-      case ex: Exception =>
-        println(s"Failed to locate Sequencer Client for httpConnection: $httpConnection")
-        ex.printStackTrace()
-        throw ex
-    }
+  private lazy val sequencerClientF = async {
+    val maybeLoc = await(locationService.resolve(httpConnection, CommonTimeouts.ResolveLocation))
+    maybeLoc.map(SequencerApiFactory.make)
   }
-  private val sequencerClient = makeSequencerClient()
 
   // Pass lambda to break circular dependency shown below.
   // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
-  private lazy val sequenceOperatorFactory = () => new SequenceOperatorHttp(sequencerClient)
+  private lazy val sequenceOperatorFactory = () => new SequenceOperatorHttp(sequencerClientF)
   private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil                = new LocationServiceUtil(locationService)
@@ -104,11 +90,6 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
   // Disable logging for tests
   if (!sys.props.get("test.esw").contains("true"))
     actorRuntime.startLogging("SequencerApp", BuildInfo.version)
-
-  // XXX Uncomment to see logging
-  private val host        = InetAddress.getLocalHost.getHostName
-  private val typedSystem = ActorSystem(SpawnProtocol(), "SequencerClientIntegrationTest")
-  LoggingSystemFactory.start("SequencerClientIntegrationTest", "0.1", host, typedSystem)
 
   private lazy val loggerFactory    = new LoggerFactory(sequencerPrefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
@@ -161,7 +142,7 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   private def cleanupResources() = {
     redisClient.shutdown()
-//    (sequencerRef ? Shutdown.apply).map(_ => Done)
+    //    (sequencerRef ? Shutdown.apply).map(_ => Done)
     Future.successful(Done)
   }
 

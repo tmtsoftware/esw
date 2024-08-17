@@ -175,15 +175,12 @@ class ScriptServerManager(
   // if not it returns the error message as a Future
   // otherwise it returns the location
   private def waitForRegistration(connection: Connection, timeout: FiniteDuration): Future[Either[String, HttpLocation]] = {
-    println(s"XXX Wating for ${connection.of[Location]}")
     locationService
       .resolve(connection.of[Location], timeout)
       .map {
         case Some(loc) =>
-          println(s"XXX Found location $loc")
           Right(loc.asInstanceOf[HttpLocation])
         case None =>
-          println(s"XXX could not find location for ${connection.of[Location]}")
           Left(
             s"${connection.componentId} is not registered with location service. Reason: Process failed to spawn due to reasons like invalid binary version etc or failed to register with location service."
               .tap(log.warn(_))
