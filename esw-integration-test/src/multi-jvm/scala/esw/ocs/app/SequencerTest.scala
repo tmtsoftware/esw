@@ -26,6 +26,9 @@ class SequencerTestMultiJvmNode3 extends SequencerTest
 
 class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNodeSpec with ImplicitSender {
 
+  // This is needed so that spawned sequencers can have the test scripts in the classpath
+  System.setProperty("test.esw", "true")
+
   import MultiNodeSampleConfig.*
 
   private val frameworkTestKit = FrameworkTestKit()
