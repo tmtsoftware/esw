@@ -105,7 +105,7 @@ private[ocs] class OcsScriptServerWiring(sequencerPrefix: Prefix, sequenceCompon
 
   private[ocs] val shutdownHttpService: () => Future[Done] = () =>
     async {
-      logger.debug("Shutting down Sequencer http service")
+      logger.debug("Shutting down script server")
       val (serverBinding, registrationResult) = await(httpServerBinding)
       val eventualTerminated                  = serverBinding.terminate(CommonTimeouts.Wiring)
       val eventualDone                        = registrationResult.unregister()

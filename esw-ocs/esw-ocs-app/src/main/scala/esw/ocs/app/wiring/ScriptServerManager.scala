@@ -146,7 +146,9 @@ class ScriptServerManager(
 //        Left(msg)
 //      }
 
+    // XXX TODO FIXME
     val version = "0.1.0-SNAPSHOT"
+    // For tests, use a different target in osw-apps, so that the Kotlin examples subproject is in the classpath
     val app =
       if (sys.props.get("test.esw").contains("true")) "esw-ocs-script-server-test" else "esw-ocs-script-server-app"
     val cmdStr =

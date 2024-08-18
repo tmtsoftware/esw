@@ -28,8 +28,6 @@ private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiri
   implicit def myExceptionHandler: ExceptionHandler =
     ExceptionHandler { case ex: Exception =>
       extractUri { uri =>
-//        println(s"Request to $uri could not be handled normally")
-//        ex.printStackTrace()
         val msg = if (ex.getCause != null) ex.getCause.getMessage else ex.getMessage
         complete(HttpResponse(InternalServerError, entity = msg))
       }

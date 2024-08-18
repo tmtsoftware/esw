@@ -12,7 +12,7 @@ class ProcessExecutor(output: ProcessOutput)(implicit log: Logger) {
   // starts the process with the given list of command using ProcessBuilder
   // names the process with the given prefix
   // if process fails to start successfully it returns the error message
-  // if process starts successfully it return process
+  // if process starts successfully it returns process
   def runCommand(command: List[String], prefix: Prefix): Either[String, Process] =
     Try {
       val processBuilder = new ProcessBuilder(command*)
@@ -20,6 +20,7 @@ class ProcessExecutor(output: ProcessOutput)(implicit log: Logger) {
       val process = processBuilder.start()
       output.attachToProcess(process, prefix.toString)
       debug(s"new process spawned", Map("pid" -> process.pid()))
+      sys.addShutdownHook(process.destroy())
       process
     }.toEither.left.map { err =>
       error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.toString), ex = err)
