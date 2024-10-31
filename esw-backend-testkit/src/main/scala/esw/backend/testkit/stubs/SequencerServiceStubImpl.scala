@@ -98,7 +98,7 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   // XXX For Script Server use
   override def pullNext: Future[PullNextResponse]                = Future.successful(Unhandled("stub", "stub"))
-  override def maybeNext: Future[Option[Step]]                   = Future.successful(None)
+  override def maybeNext: Future[MaybeNextResponse]              = Future.successful(MaybeNextResult(None))
   override def readyToExecuteNext: Future[OkOrUnhandledResponse] = Future.successful(Unhandled("stub", "stub"))
   def stepSuccess(): Unit                                        = ()
   def stepFailure(message: String): Unit                         = ()

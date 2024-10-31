@@ -37,7 +37,6 @@ private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiri
     routeLogger {
       handleExceptions(myExceptionHandler) {
         post {
-          // Insert/update segment to M1 positions
           path("execute") {
             entity(as[SequenceCommand]) { sequenceCommand =>
               complete(script.execute(sequenceCommand).map(_ => OK))

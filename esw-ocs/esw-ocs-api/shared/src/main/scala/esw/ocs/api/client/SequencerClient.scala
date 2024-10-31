@@ -114,8 +114,8 @@ class SequencerClient(
   override def pullNext: Future[PullNextResponse] =
     postClient.requestResponse[PullNextResponse](PullNext)
 
-  override def maybeNext: Future[Option[Step]] =
-    postClient.requestResponse[Option[Step]](MaybeNext)
+  override def maybeNext: Future[MaybeNextResponse] =
+    postClient.requestResponse[MaybeNextResponse](MaybeNext)
 
   /**
    * This method is to determine whether next step is ready to execute or not. It returns Ok if the next step is ready for execution

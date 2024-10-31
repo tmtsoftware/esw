@@ -145,8 +145,11 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
   override def getSequenceComponent: Future[PekkoLocation] = sequencer ? GetSequenceComponent.apply
 
   // XXX For Script Server use
-  override def pullNext: Future[PullNextResponse]                = sequencer ? PullNext.apply
-  override def maybeNext: Future[Option[Step]]                   = sequencer ? MaybeNext.apply
+  override def pullNext: Future[PullNextResponse] = sequencer ? PullNext.apply
+  override def maybeNext: Future[MaybeNextResponse] = {
+    val x = sequencer ? MaybeNext.apply
+    x.map(y => MaybeNextResult(y))
+  }
   override def readyToExecuteNext: Future[OkOrUnhandledResponse] = sequencer ? ReadyToExecuteNext.apply
   override def stepSuccess(): Unit                               = sequencer ? StepSuccess.apply
   override def stepFailure(message: String): Unit                = sequencer ? (StepFailure(message, _))

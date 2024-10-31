@@ -209,7 +209,7 @@ trait SequencerApi extends SequencerCommandService {
 
   // XXX For Script Server use
   def pullNext: Future[PullNextResponse]
-  def maybeNext: Future[Option[Step]]
+  def maybeNext: Future[MaybeNextResponse]
   def readyToExecuteNext: Future[OkOrUnhandledResponse]
   def stepSuccess(): Unit
   def stepFailure(message: String): Unit

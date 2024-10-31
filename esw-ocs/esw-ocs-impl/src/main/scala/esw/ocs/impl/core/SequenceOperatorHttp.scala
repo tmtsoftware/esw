@@ -5,7 +5,7 @@ import org.apache.pekko.util.Timeout
 import esw.constants.SequencerTimeouts
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.Step
-import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
+import esw.ocs.api.protocol.{MaybeNextResult, OkOrUnhandledResponse, PullNextResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,7 +32,12 @@ private[ocs] class SequenceOperatorHttp(seqF: Future[Option[SequencerApi]])(impl
    *
    * @return an Option of [[esw.ocs.api.models.Step]] as Future value
    */
-  def maybeNext: Future[Option[Step]] = seqF.flatMap(_.get.maybeNext)
+  def maybeNext: Future[Option[Step]] = {
+    seqF.flatMap(_.get.maybeNext).map {
+      case MaybeNextResult(maybeStep) => maybeStep
+      case _                          => None
+    }
+  }
 
   /**
    * This method is to determine whether next step is ready to execute or not. It returns Ok if the next step is ready for execution

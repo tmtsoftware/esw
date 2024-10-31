@@ -43,6 +43,7 @@ sealed trait Ok
 case object Ok extends Ok
 
 final case class PullNextResult(step: Step)                   extends PullNextResponse
+final case class MaybeNextResult(maybeStep: Option[Step])     extends MaybeNextResponse
 final case class SubmitResult(submitResponse: SubmitResponse) extends SequencerSubmitResponse
 
 final case class Unhandled private[ocs] (state: String, messageType: String, msg: String)
