@@ -28,6 +28,17 @@ import scala.util.chaining.scalaUtilChainingOps
 import scala.util.control.NonFatal
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
+object ScriptServerManager {
+  // If true, use python sequencer scripts, otherwise Kotlin
+  private val enablePythonScripting: Boolean = sys.props.get("enableEswPythonScripting").contains("true")
+
+  // Path to csw-python sources
+  private val cswPythonPath: String = sys.props.get("CSW_PYTHON").getOrElse("/shared/work/tmt/csw/pycsw")
+
+  // If true, use test scripts (in examples project)
+  private val testEsw = sys.props.get("test.esw").contains("true")
+}
+
 /**
  * Starts sequencer script HTTP server.
  * This code is based on the Agent service code, but copied here, assuming the script server will be
@@ -52,6 +63,8 @@ class ScriptServerManager(
     typedSystem: ActorSystem[SpawnProtocol.Command],
     ec: ExecutionContext
 ) {
+  import ScriptServerManager.*
+
   private val configClientService                    = ConfigClientFactory.clientApi(typedSystem, locationService)
   private val configUtils                            = new ConfigUtils(configClientService)
   private val versionConfPath: Path                  = Path.of(config.getString("agent.osw.version.confPath"))
@@ -68,7 +81,12 @@ class ScriptServerManager(
    */
   def spawn(): Future[Either[String, ScriptApi]] = {
     verifyComponentIsNotAlreadyRegistered(connection)
-      .flatMapE(_ => startScriptServer())
+      .flatMapE { _ =>
+        if (enablePythonScripting)
+          startScriptServerPy()
+        else
+          startScriptServerKt()
+      }
       .flatMapE(process =>
         waitForRegistration(connection, durationToWaitForComponentRegistration)
           .flatMapE { loc =>
@@ -132,8 +150,8 @@ class ScriptServerManager(
       .mapError(e => s"Failed to verify component registration in location service, reason: ${e.getMessage}".tap(log.error(_)))
   }
 
-  // starts a process with the executable string of the given spawn command
-  private def startScriptServer(): Future[Either[String, Process]] = {
+  // starts the script server for Kotlin sequencer scripts
+  private def startScriptServerKt(): Future[Either[String, Process]] = {
 
 //    versionManager.getScriptVersion
 //      .map { version =>
@@ -150,10 +168,25 @@ class ScriptServerManager(
     val version = "0.1.0-SNAPSHOT"
     // For tests, use a different target in osw-apps, so that the Kotlin examples subproject is in the classpath
     val app =
-      if (sys.props.get("test.esw").contains("true")) "esw-ocs-script-server-test" else "esw-ocs-script-server-app"
+      if (testEsw) "esw-ocs-script-server-test" else "esw-ocs-script-server-app"
     val cmdStr =
       CoursierLaunch(app, Some(version))
         .launch(coursierChannel, List(sequencerPrefix.toString, sequenceComponentPrefix.toString))
+    Future.successful(
+      processExecutor
+        .runCommand(cmdStr, sequencerPrefix)
+        .map(_.tap(onProcessExit(_, connection)))
+    )
+  }
+
+  // starts the script server for Python sequencer scripts
+  private def startScriptServerPy(): Future[Either[String, Process]] = {
+    val cmdStr = List(
+      s"$cswPythonPath/.venv/bin/python",
+      s"$cswPythonPath/sequencer/OcsScriptServer.py",
+      sequencerPrefix.toString,
+      sequenceComponentPrefix.toString
+    )
     Future.successful(
       processExecutor
         .runCommand(cmdStr, sequencerPrefix)
