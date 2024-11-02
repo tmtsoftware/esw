@@ -24,7 +24,7 @@ trait SequencerUtils extends LocationUtils {
 
   def shutdownAllSequencers(): Unit = {
     val fList = sequenceComponentLocations.map(new SequenceComponentImpl(_).unloadScript()).toList
-    Await.ready(Future.sequence(fList), 10.seconds)
+    Await.ready(Future.sequence(fList), 100.seconds)
     sequenceComponentLocations.clear()
   }
 

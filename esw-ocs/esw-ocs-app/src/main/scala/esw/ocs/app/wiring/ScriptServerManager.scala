@@ -187,11 +187,16 @@ class ScriptServerManager(
       sequencerPrefix.toString,
       sequenceComponentPrefix.toString
     )
-    Future.successful(
+    val f = Future.successful(
       processExecutor
         .runCommand(cmdStr, sequencerPrefix)
         .map(_.tap(onProcessExit(_, connection)))
     )
+    f.onComplete {
+      case Success(Right(process)) => println(s"XXX Started process with PID: ${process.pid()}")
+      case x                       => println(s"XXX Error starting process: $x")
+    }
+    f
   }
 
   // it checks if the given process is alive
