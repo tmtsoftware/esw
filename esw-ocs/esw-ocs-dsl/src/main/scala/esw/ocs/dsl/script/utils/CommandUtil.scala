@@ -13,7 +13,7 @@ import esw.constants.CommonTimeouts
 import java.util.concurrent.CompletionStage
 
 /**
- * An util class written to resolve the pekko Location and actor ref of a particular component from location service(in java models)
+ * A util class written to resolve the pekko Location and actor ref of a particular component from location service(in java models)
  *
  * @param locationServiceUtil - an instance of util class LocationServiceUtil
  * @param actorSystem - an Pekko ActorSystem
