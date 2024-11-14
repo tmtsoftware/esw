@@ -82,4 +82,7 @@ class CommandServiceStubImpl(val locationService: LocationService, _actorSystem:
 
   override def executeOperationsMode(): Unit = ???
 
+  override def onGoOnline(): Unit = ???
+
+  override def onGoOffline(): Unit = ???
 }
