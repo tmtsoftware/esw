@@ -13,6 +13,7 @@ import csw.params.core.generics.KeyType.IntKey
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import csw.prefix.models.Prefix
+import csw.time.core.models.UTCTime
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription
 
@@ -76,5 +77,9 @@ class CommandServiceStubImpl(val locationService: LocationService, _actorSystem:
   override def submitAndWait(
       controlCommand: ControlCommand
   )(implicit timeout: Timeout): Future[CommandResponse.SubmitResponse] = ???
+
+  override def executeDiagnosticMode(startTime: UTCTime, hint: String): Unit = ???
+
+  override def executeOperationsMode(): Unit = ???
 
 }

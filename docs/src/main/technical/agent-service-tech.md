@@ -69,7 +69,7 @@ This module contains all the HTTP handlers, server wiring, and the CLI app to st
 
 ## Agent Introduction
 
-Agent is an Pekko-based actor which is used to spawn or kill a component on the machine where the Agent is running.
+Agent is a Pekko-based actor which is used to spawn or kill a component on the machine where the Agent is running.
 The Agent must be started on each machine that is available to spawn components. At this time, we anticipate this
 will be primarily ESW machines, but any subsystem that needs to run a Sequencer on their machine (rather than on ESW
 machines) will also start an Agent.
@@ -81,7 +81,7 @@ Currently, Agent is able to spawn or kill the following components:
 
 ## Agent Implementation
 
-Agent is an Pekko actor which can spawn or kill a JVM process (at this time) depending on the received message.
+Agent is a Pekko actor which can spawn or kill a JVM process (at this time) depending on the received message.
 If actor receives a spawn message(e.g., `SpawnSequenceManager` etc),
 it will first check if the given component is already registered in the Location Service. If yes, it replies with a
 failure response indicating the component already exists; otherwise,  it tries to spawn the component.

@@ -24,7 +24,7 @@ import scala.util.Success
  * A Util class mainly written to send Lock/Unlock command to a particular HCD/Assembly
  *
  * @param source - represents the prefix of component that is acquiring lock
- * @param actorSystem - an Pekko ActorSystem
+ * @param actorSystem - a Pekko ActorSystem
  */
 class LockUnlockUtil(val source: Prefix)(actorSystem: ActorSystem[SpawnProtocol.Command]) {
   implicit val timeout: Timeout             = 5.seconds

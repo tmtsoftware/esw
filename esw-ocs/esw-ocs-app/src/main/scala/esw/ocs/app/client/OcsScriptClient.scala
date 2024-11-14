@@ -101,7 +101,8 @@ class OcsScriptClient(loc: HttpLocation)(implicit
   }
 
   override def executeOperationsMode(): Future[Done] = async {
-    val uri     = Uri(s"${baseUri}executeOperationsMode")
+    val uri = Uri(s"${baseUri}executeOperationsMode")
+    println(s"XXX OcsScriptClient.executeOperationsMode(): uri: $uri")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
     checkError(await(Http().singleRequest(request)))
     Done

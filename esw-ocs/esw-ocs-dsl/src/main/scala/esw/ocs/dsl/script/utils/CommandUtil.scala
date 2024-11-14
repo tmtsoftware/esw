@@ -16,7 +16,7 @@ import java.util.concurrent.CompletionStage
  * A util class written to resolve the pekko Location and actor ref of a particular component from location service(in java models)
  *
  * @param locationServiceUtil - an instance of util class LocationServiceUtil
- * @param actorSystem - an Pekko ActorSystem
+ * @param actorSystem - a Pekko ActorSystem
  */
 class CommandUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[?]) {
   import actorSystem.executionContext
