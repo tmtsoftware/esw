@@ -246,13 +246,13 @@ akka.actor {
 
 This resource file is part of the **esw-ocs-api** package, so any client or service that depends on this api jar file will be configured to serialize and deserialize Akka CBOR-based messages.
 
-Refer [Akka Serialization](https://doc.akka.io/docs/akka/current/serialization.html) documentation for more details on how to wire up custom CBOR based serializer up with Akka.
+Refer [Akka Serialization](https://doc.akka.io/libraries/akka-core/current/serialization.html) documentation for more details on how to wire up custom CBOR based serializer up with Akka.
 
 Some of the examples for Actor remote message codecs are `OcsCodecs`, `SequencerServiceCodecs` etc
 
 #### HTTP-based Communication
 
-HTTP based services are implemented using [msocket](https://github.com/tmtsoftware/msocket) library which usage [Akka HTTP](https://doc.akka.io/docs/akka-http/current/) under the hood.
+HTTP based services are implemented using [msocket](https://github.com/tmtsoftware/msocket) library which usage [Akka HTTP](https://doc.akka.io/libraries/akka-http/current/) under the hood.
 
 MSocket exposes two factories, `PostRouteFactory[Req]` and `WebsocketRouteFactory[Req]` for generating HTTP and Websocket routes respectively.
 Both these factories require implicit decoder in scope, so that Akka HTTP server can decode the incoming HTTP request.
