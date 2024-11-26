@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: coursier/setup-action@v1
+      - uses: actions/checkout@v4
+      - uses: coursier/setup-action@v1.2.0-M2
         with:
           jvm: temurin:1.17
           apps: sbt
@@ -36,19 +36,19 @@ jobs:
 
       - name: Build
         run: |
-          sbt clean
-          sbt scalafmtCheck
-          sbt -DenableFatalWarnings=true makeSite
-          sbt publishLocal
+          sbt -Dsbt.log.noformat=true clean
+          sbt -Dsbt.log.noformat=true scalafmtCheck
+          sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true makeSite
+          sbt -Dsbt.log.noformat=true publishLocal
 
       - name: Unit Tests
-        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=false -DgenerateStoryReport=false -DdisableIntegrationTests test:test
+        run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=false -DgenerateStoryReport=false -DdisableIntegrationTests test:test
 
       - name: Integration Tests
-        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=false -DgenerateStoryReport=false esw-integration-test/test:test
+        run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=false -DgenerateStoryReport=false esw-integration-test/test:test
 
       - name: Multi-Jvm Tests
-        run: sbt -DgenerateStoryReport=false esw-integration-test/multi-jvm:test
+        run: sbt -Dsbt.log.noformat=true -DgenerateStoryReport=false esw-integration-test/multi-jvm:test
 
       - name: Notify slack
         if: always()
