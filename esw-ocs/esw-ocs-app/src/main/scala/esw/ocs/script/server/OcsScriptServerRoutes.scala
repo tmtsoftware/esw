@@ -52,7 +52,7 @@ private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiri
             // Note: Throws RejectedExecutionException somewhere
             val f = for {
               _ <- script.executeShutdown()
-              _ <- wiring.shutdownHttpService()
+//              _ <- wiring.shutdownHttpService()
             } yield OK
             complete(f)
           }

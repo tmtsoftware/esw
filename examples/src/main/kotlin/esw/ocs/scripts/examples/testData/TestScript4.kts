@@ -6,7 +6,6 @@ import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
 script {
-
     onNewSequence {
         val newSequenceHandlerParam = stringKey("onNewSequence").set("Started")
         val event = SystemEvent("LGSF.darknight", "NewSequenceHandler", newSequenceHandlerParam)

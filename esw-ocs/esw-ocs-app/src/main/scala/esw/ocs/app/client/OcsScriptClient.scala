@@ -9,20 +9,20 @@ import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMetho
 import cps.compat.FutureAsync.*
 import csw.command.client.messages.DiagnosticDataMessage.DiagnosticMode
 import csw.location.api.models.HttpLocation
+import csw.logging.api.scaladsl.Logger
 import csw.params.core.formats.JsonSupport
 import csw.time.core.models.UTCTime
 import esw.ocs.script.server.ScriptJsonSupport
 import org.apache.pekko.http.scaladsl.model.StatusCodes.OK
 import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
-import java.net.URI
+import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
  * HTTP Client for OcsScriptServer.
  */
-class OcsScriptClient(loc: HttpLocation)(implicit
+class OcsScriptClient(loc: HttpLocation, log: Logger)(implicit
     typedSystem: ActorSystem[SpawnProtocol.Command],
     ec: ExecutionContext
 ) extends ScriptApi
@@ -30,12 +30,13 @@ class OcsScriptClient(loc: HttpLocation)(implicit
 
   private val baseUri = loc.uri
 
-  def checkError(response: HttpResponse): Unit = {
+  def checkError(uri: Uri, response: HttpResponse): Unit = {
     if (response.status != OK) {
       if (response.entity != null) {
         val f         = Unmarshal(response.entity).to[String]
         val s: String = Await.result(f, 3.seconds)
-        throw new RuntimeException(s)
+        log.error(s"OcsScriptClient: $uri: $s")
+        throw new RuntimeException(s"$uri: $s")
       }
       throw new RuntimeException(s"${response.status}")
     }
@@ -46,48 +47,48 @@ class OcsScriptClient(loc: HttpLocation)(implicit
     val json    = JsonSupport.writeSequenceCommand(command).toString
     val entity  = HttpEntity(ContentTypes.`application/json`, json)
     val request = HttpRequest(HttpMethods.POST, uri = uri, entity = entity)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
   }
 
   override def executeGoOnline(): Future[Done] = async {
     val uri     = Uri(s"${baseUri}executeGoOnline")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
   override def executeGoOffline(): Future[Done] = async {
     val uri     = Uri(s"${baseUri}executeGoOffline")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
   override def executeShutdown(): Future[Done] = async {
     val uri     = Uri(s"${baseUri}executeShutdown")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
   override def executeAbort(): Future[Done] = async {
     val uri     = Uri(s"${baseUri}executeAbort")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
   override def executeNewSequenceHandler(): Future[Done] = async {
     val uri     = Uri(s"${baseUri}executeNewSequenceHandler")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
   override def executeStop(): Future[Done] = async {
     val uri     = Uri(s"${baseUri}executeStop")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
@@ -96,7 +97,7 @@ class OcsScriptClient(loc: HttpLocation)(implicit
     val json    = diagnosticModeFormat.write(DiagnosticMode(startTime, hint)).toString
     val entity  = HttpEntity(ContentTypes.`application/json`, json)
     val request = HttpRequest(HttpMethods.POST, uri = uri, entity = entity)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
@@ -104,7 +105,7 @@ class OcsScriptClient(loc: HttpLocation)(implicit
     val uri = Uri(s"${baseUri}executeOperationsMode")
     println(s"XXX OcsScriptClient.executeOperationsMode(): uri: $uri")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
@@ -113,13 +114,13 @@ class OcsScriptClient(loc: HttpLocation)(implicit
     val json    = ex.getMessage
     val entity  = HttpEntity(ContentTypes.`application/json`, json)
     val request = HttpRequest(HttpMethods.POST, uri = uri, entity = entity)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
     Done
   }
 
   override def shutdownScript(): Unit = async {
     val uri     = Uri(s"${baseUri}shutdownScript")
     val request = HttpRequest(HttpMethods.POST, uri = uri)
-    checkError(await(Http().singleRequest(request)))
+    checkError(uri, await(Http().singleRequest(request)))
   }
 }

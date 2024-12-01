@@ -93,7 +93,7 @@ class ScriptServerManager(
             reconcile(process, loc, connection)
           }
           .flatMapE { loc =>
-            Future.successful(Right(OcsScriptClient(loc)))
+            Future.successful(Right(OcsScriptClient(loc, log)))
           }
       )
   }
@@ -107,7 +107,7 @@ class ScriptServerManager(
         OcsScriptServerApp.main(Array(sequencerPrefix.toString, sequenceComponentPrefix.toString))
         waitForRegistration(connection, durationToWaitForComponentRegistration)
           .flatMapE { loc =>
-            Future.successful(Right(OcsScriptClient(loc)))
+            Future.successful(Right(OcsScriptClient(loc, log)))
           }
       )
   }
@@ -167,8 +167,7 @@ class ScriptServerManager(
     // XXX TODO FIXME
     val version = "0.1.0-SNAPSHOT"
     // For tests, use a different target in osw-apps, so that the Kotlin examples subproject is in the classpath
-    val app =
-      if (testEsw) "esw-ocs-script-server-test" else "esw-ocs-script-server-app"
+    val app = if (testEsw) "esw-ocs-script-server-test" else "esw-ocs-script-server-app"
     val cmdStr =
       CoursierLaunch(app, Some(version))
         .launch(coursierChannel, List(sequencerPrefix.toString, sequenceComponentPrefix.toString))
