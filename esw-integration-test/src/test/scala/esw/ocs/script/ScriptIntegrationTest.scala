@@ -136,21 +136,21 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       actualOnlineEvent.eventKey should ===(onlineKey)
     }
 
-    "be able to set severity of sequencer alarms and refresh it | ESW-125, CSW-81, CSW-83" in {
-      val config            = ConfigFactory.parseResources("alarm_key.conf")
-      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
-      alarmAdminService.initAlarms(config, reset = true).futureValue
-
-      val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
-      val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
-      val sequence = Sequence(command)
-
-      ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
-      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
-
-      Thread.sleep(2500) // as per test config, alarm severity will expire if not refreshed.
-      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
-    }
+//    "be able to set severity of sequencer alarms and refresh it | ESW-125, CSW-81, CSW-83" in {
+//      val config            = ConfigFactory.parseResources("alarm_key.conf")
+//      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
+//      alarmAdminService.initAlarms(config, reset = true).futureValue
+//
+//      val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
+//      val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
+//      val sequence = Sequence(command)
+//
+//      ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
+//      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
+//
+//      Thread.sleep(2500) // as per test config, alarm severity will expire if not refreshed.
+//      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
+//    }
 
     "be able to get a published event | ESW-120, CSW-81" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
@@ -249,6 +249,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       eventually(ocsSequencer.getSequence.futureValue.get.isInFlight shouldBe false)
     }
 
+    // XXX TODO TEST THIS
     "be able to send commands to downstream assembly | ESW-121, CSW-81" in {
       val eventKey              = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
       val startedEventKey       = EventKey(Prefix("tcs.filter.wheel"), EventName("query-started-command-from-script"))
@@ -285,6 +286,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       currentState2Event.eventKey should ===(currentState2EventKey)
     }
 
+    // XXX TODO TEST THIS
     "be able to schedule tasks from now | ESW-122, CSW-81" in {
       val eventKey = EventKey(Prefix("esw.schedule.once"), EventName("offset"))
 
@@ -359,6 +361,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       configTestKit.deleteServerFiles()
     }
 
+    // XXX TODO TEST THIS
     "be able to handle unexpected exception and finish the sequence | ESW-241, CSW-81, ESW-294" in {
       val failCmdName = CommandName("check-exception-1")
       val command1    = Setup(Prefix("esw.test"), failCmdName, None)

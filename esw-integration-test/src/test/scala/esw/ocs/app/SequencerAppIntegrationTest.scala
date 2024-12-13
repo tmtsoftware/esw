@@ -10,6 +10,7 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.{HttpConnection, PekkoConnection}
+import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -28,6 +29,9 @@ import scala.concurrent.duration.DurationInt
 
 class SequencerAppIntegrationTest extends EswTestKit {
 
+  private lazy val loggerFactory = new LoggerFactory(Prefix("ESW.test"))
+  private val log                = loggerFactory.getLogger
+
   override def afterEach(): Unit = locationService.unregisterAll()
 
   private def shutdownScriptServer(sequencerPrefix: Prefix): Future[Unit] = {
@@ -36,7 +40,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       .resolve(connection.of[Location], 10.seconds)
       .map {
         case Some(loc: HttpLocation) =>
-          OcsScriptClient(loc).shutdownScript()
+          OcsScriptClient(loc, log).shutdownScript()
         case _ => println(s"XXX Could not locate $sequencerPrefix")
       }
 
