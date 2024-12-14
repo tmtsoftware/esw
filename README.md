@@ -10,6 +10,17 @@ TMT Observatory.
 
 See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the ESW software.
 
+Note: In order to use Python for ESW sequencer scripts (instead of Kotlin), please add these system properties to the 
+runtime command line:
+
+* -DenableEswPythonScripting=true -DCSW_PYTHON=*path to csw-python sources*
+
+and also set this environment variable:
+
+* PYTHONPATH=*path to csw-python sources*
+
+replacing *path to csw-python sources* with the top level csw-python directory.
+
 ## Version compatibility
 
 | esw        | csw        |

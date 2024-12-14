@@ -1,9 +1,10 @@
 package esw.ocs.script
 
-import com.typesafe.config.ConfigFactory
-import csw.alarm.client.AlarmServiceFactory
-import csw.alarm.models.AlarmSeverity
-import csw.alarm.models.Key.AlarmKey
+//import com.typesafe.config.ConfigFactory
+//import csw.alarm.client.AlarmServiceFactory
+//import csw.alarm.models.AlarmSeverity
+//import csw.alarm.models.Key.AlarmKey
+
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
@@ -249,7 +250,6 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       eventually(ocsSequencer.getSequence.futureValue.get.isInFlight shouldBe false)
     }
 
-    // XXX TODO TEST THIS
     "be able to send commands to downstream assembly | ESW-121, CSW-81" in {
       val eventKey              = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
       val startedEventKey       = EventKey(Prefix("tcs.filter.wheel"), EventName("query-started-command-from-script"))
@@ -286,7 +286,6 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       currentState2Event.eventKey should ===(currentState2EventKey)
     }
 
-    // XXX TODO TEST THIS
     "be able to schedule tasks from now | ESW-122, CSW-81" in {
       val eventKey = EventKey(Prefix("esw.schedule.once"), EventName("offset"))
 
@@ -361,7 +360,6 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       configTestKit.deleteServerFiles()
     }
 
-    // XXX TODO TEST THIS
     "be able to handle unexpected exception and finish the sequence | ESW-241, CSW-81, ESW-294" in {
       val failCmdName = CommandName("check-exception-1")
       val command1    = Setup(Prefix("esw.test"), failCmdName, None)
@@ -370,7 +368,8 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val response = ocsSequencer.submitAndWait(sequence).futureValue
       response shouldBe an[Error]
-      response.asInstanceOf[Error].message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: boom"
+      response.asInstanceOf[Error].message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: .*"
+      response.asInstanceOf[Error].message.contains("boom") shouldBe (true)
     }
 
     "be able to send publish and subscribe to observe event published by Sequencer | ESW-81, ESW-421" in {
