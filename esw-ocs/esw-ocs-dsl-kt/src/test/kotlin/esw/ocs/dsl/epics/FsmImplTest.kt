@@ -65,19 +65,19 @@ class FsmImplTest {
     }
 
     @Test
-    fun `start should start the fsm and evaluate the initial state | ESW-142`() = runBlocking {
+    fun `start_should_start_the_fsm_and_evaluate_the_initial_state_|_ESW-142`() = runBlocking {
         fsm.start()
         checkInitFlag()
     }
 
     @Test
-    fun `start should throw exception if invalid initial state is given | ESW-142`() = runBlocking<Unit> {
+    fun `start_should_throw_exception_if_invalid_initial_state_is_given_|_ESW-142`() = runBlocking<Unit> {
         val invalidStateMachine = FsmImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
         shouldThrow<InvalidStateException> { invalidStateMachine.start() }
     }
 
     @Test
-    fun `become should transition state to given state and evaluate it | ESW-142`() = runBlocking {
+    fun `become_should_transition_state_to_given_state_and_evaluate_it_|_ESW-142`() = runBlocking {
         var inProgressFlag = false
         fsm.state(inProgress) { inProgressFlag = true }
 
@@ -89,20 +89,20 @@ class FsmImplTest {
     }
 
     @Test
-    fun `become should throw exception if invalid state is given | ESW-142`() = runBlocking<Unit> {
+    fun `become_should_throw_exception_if_invalid_state_is_given_|_ESW-142`() = runBlocking<Unit> {
         shouldThrow<InvalidStateException> {
             fsm.become("INVALIDSTATE")
         }
     }
 
     @Test
-    fun `become should treat stateNames case insensitively | ESW-142`() = runBlocking {
+    fun `become_should_treat_stateNames_case_insensitively_|_ESW-142`() = runBlocking {
         fsm.become(init.lowercase())
         checkInitFlag()
     }
 
     @Test
-    fun `become should be able to pass parameters to next state | ESW-252`() = runBlocking {
+    fun `become_should_be_able_to_pass_parameters_to_next_state_|_ESW-252`() = runBlocking {
         val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
         val event = SystemEvent(Prefix(TCS, "test"), EventName("trigger.INIT.state")).add(parameter)
         val expectedParamsInProgressState = Params(event.jParamSet())
@@ -128,13 +128,13 @@ class FsmImplTest {
     }
 
     @Test
-    fun `state should add the given lambda against the state | ESW-142`() = runBlocking {
+    fun `state_should_add_the_given_lambda_against_the_state_|_ESW-142`() = runBlocking {
         fsm.start()
         checkInitFlag()
     }
 
     @Test
-    fun `refresh should evaluate fsm with its current state | ESW-142`() = runBlocking {
+    fun `refresh_should_evaluate_fsm_with_its_current_state_|_ESW-142`() = runBlocking {
         var firstCalled = false
         var refreshFlag = false
 
@@ -155,7 +155,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `on should execute the given lambda if given condition is true | ESW-142`() = runBlocking {
+    fun `on_should_execute_the_given_lambda_if_given_condition_is_true_|_ESW-142`() = runBlocking {
         var flag = false
         fsm.on(true) {
             flag = true
@@ -165,7 +165,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `on should not execute the given lambda if given condition is false | ESW-142`() = runBlocking {
+    fun `on_should_not_execute_the_given_lambda_if_given_condition_is_false_|_ESW-142`() = runBlocking {
         var flag = false
         fsm.on(false) {
             flag = true
@@ -175,7 +175,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `after should execute given lambda after specified time | ESW-142`() = runBlocking {
+    fun `after_should_execute_given_lambda_after_specified_time_|_ESW-142`() = runBlocking {
         var flag = false
         coroutineScope.launch {
             fsm.after(2.seconds) {
@@ -190,7 +190,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `entry should call the given lambda only if state transition happens from other state | ESW-142`() = runBlocking {
+    fun `entry_should_call_the_given_lambda_only_if_state_transition_happens_from_other_state_|_ESW-142`() = runBlocking {
         var entryCalled = false
 
         fsm.start()
@@ -205,7 +205,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `entry should not call the given lambda if state transition happens in same state | ESW-142`() = runBlocking {
+    fun `entry_should_not_call_the_given_lambda_if_state_transition_happens_in_same_state_|_ESW-142`() = runBlocking {
         var entryCalled = false
         fsm.start()
         fsm.become(init)
@@ -221,7 +221,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `completeFsm should complete fsm and remove all subscriptions | ESW-142`() = runBlocking {
+    fun `completeFsm_should_complete_fsm_and_remove_all_subscriptions_|_ESW-142`() = runBlocking {
         val coroutineScope = CoroutineScope(SupervisorJob() + dispatcher)
         val fsm = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
 
@@ -259,7 +259,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `await should wait for completion of fsm | ESW-142`() = runBlocking {
+    fun `await_should_wait_for_completion_of_fsm_|_ESW-142`() = runBlocking {
         var waitingStarted = false
         var waitingFinished = false
 
@@ -278,7 +278,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `await should start and wait for completion of fsm if not started previously | ESW-142`() = runBlocking {
+    fun `await_should_start_and_wait_for_completion_of_fsm_if_not_started_previously_|_ESW-142`() = runBlocking {
         var started = false
         fsm.state(init) {
             started = true
@@ -291,7 +291,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `should complete Fsm if an exception is thrown in any state`() = runBlocking {
+    fun `should_complete_Fsm_if_an_exception_is_thrown_in_any_state`() = runBlocking {
         fsm.state(inProgress) { throw RuntimeException("Boom!") }
         fsm.start()
         fsm.become(inProgress)
@@ -302,7 +302,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `should call the exception handler if exception is thrown in any state`() = runBlocking {
+    fun `should_call_the_exception_handler_if_exception_is_thrown_in_any_state`() = runBlocking {
         val job = SupervisorJob()
 
         var exceptionHandlerCalled = false

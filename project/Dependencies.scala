@@ -199,7 +199,7 @@ object Dependencies {
 
   val OcsDslKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Kotlin.`stdlib-jdk8`,
+      Kotlin.`kotlin-stdlib`,
       Kotlin.`kotlin-reflect`,
       Kotlin.`coroutines-core`,
       Kotlin.`coroutines-core-jvm`,

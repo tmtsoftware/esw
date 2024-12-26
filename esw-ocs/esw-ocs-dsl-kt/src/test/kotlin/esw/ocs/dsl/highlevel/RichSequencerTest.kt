@@ -58,7 +58,7 @@ class RichSequencerTest {
     private val sequencerApi: SequencerApi = mockk()
 
     @Test
-    fun `submit should resolve sequencerCommandService for given sequencer and call submit method on it | ESW-245, ESW-195 `() = runBlocking {
+    fun `submit_should_resolve_sequencerCommandService_for_given_sequencer_and_call_submit_method_on_it_|_ESW-245,_ESW-195_`() = runBlocking {
 
         every { sequencerApi.submit(sequence) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
 
@@ -68,7 +68,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submit should resolve sequencerCommandService for given sequencer, call submit and should throw exception if submit response is negative and resumeOnError=false | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `submit_should_resolve_sequencerCommandService_for_given_sequencer,_call_submit_and_should_throw_exception_if_submit_response_is_negative_and_resumeOnError=false_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
         val message = "error-occurred"
         val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -80,7 +80,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submit should resolve sequencerCommandService for given sequencer, call submit and shouldn't throw exception if submit response is negative and resumeOnError=true | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `submit_should_resolve_sequencerCommandService_for_given_sequencer,_call_submit_and_shouldn't_throw_exception_if_submit_response_is_negative_and_resumeOnError=true_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
         val message = "error-occurred"
         val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -92,7 +92,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `query should resolve sequencerCommandService for given sequencer and call query method on it | ESW-245, ESW-195 `() = runBlocking {
+    fun `query_should_resolve_sequencerCommandService_for_given_sequencer_and_call_query_method_on_it_|_ESW-245,_ESW-195_`() = runBlocking {
         val runId: Id = mockk()
 
         every { sequencerApi.query(runId) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
@@ -103,7 +103,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `query should resolve sequencerCommandService for given sequencer, call query and should throw exception if submit response is negative and resumeOnError=false | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `query_should_resolve_sequencerCommandService_for_given_sequencer,_call_query_and_should_throw_exception_if_submit_response_is_negative_and_resumeOnError=false_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
         val runId: Id = mockk()
 
         val message = "error-occurred"
@@ -117,7 +117,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `query should resolve sequencerCommandService for given sequencer, call query and shouldn't throw exception if submit response is negative and resumeOnError=true | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `query_should_resolve_sequencerCommandService_for_given_sequencer,_call_query_and_shouldn't_throw_exception_if_submit_response_is_negative_and_resumeOnError=true_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
         val runId: Id = mockk()
 
         val message = "error-occurred"
@@ -131,7 +131,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `queryFinal should resolve sequencerCommandService for given sequencer and call queryFinal method on it | ESW-245, ESW-195 `() = runBlocking {
+    fun `queryFinal_should_resolve_sequencerCommandService_for_given_sequencer_and_call_queryFinal_method_on_it_|_ESW-245,_ESW-195_`() = runBlocking {
         val runId: Id = mockk()
 
         every { sequencerApi.queryFinal(runId, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
@@ -142,7 +142,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `queryFinal should resolve sequencerCommandService for given sequencer and call queryFinal method on it with defaultTimeout if timeout is not provided | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `queryFinal_should_resolve_sequencerCommandService_for_given_sequencer_and_call_queryFinal_method_on_it_with_defaultTimeout_if_timeout_is_not_provided_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
         val runId: Id = mockk()
 
         every { sequencerApi.queryFinal(runId, defaultTimeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
@@ -153,7 +153,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `queryFinal should resolve sequencerCommandService for given sequencer, call queryFinal and should throw exception if submit response is negative and resumeOnError=false | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `queryFinal_should_resolve_sequencerCommandService_for_given_sequencer,_call_queryFinal_and_should_throw_exception_if_submit_response_is_negative_and_resumeOnError=false_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
         val runId: Id = mockk()
 
         val message = "error-occurred"
@@ -167,7 +167,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `queryFinal should resolve sequencerCommandService for given sequencer, call queryFinal and shouldn't throw exception if submit response is negative and resumeOnError=true | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `queryFinal_should_resolve_sequencerCommandService_for_given_sequencer,_call_queryFinal_and_shouldn't_throw_exception_if_submit_response_is_negative_and_resumeOnError=true_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
         val runId: Id = mockk()
 
         val message = "error-occurred"
@@ -181,7 +181,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait | ESW-245, ESW-195 `() = runBlocking {
+    fun `submitAndWait_should_resolve_sequencerCommandService_for_given_sequencer_and_call_submitAndWait_|_ESW-245,_ESW-195_`() = runBlocking {
 
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
 
@@ -191,7 +191,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait on it with defaultTimeout if timeout is not provided | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `submitAndWait_should_resolve_sequencerCommandService_for_given_sequencer_and_call_submitAndWait_on_it_with_defaultTimeout_if_timeout_is_not_provided_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
 
         every { sequencerApi.submitAndWait(sequence, defaultTimeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
 
@@ -201,7 +201,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and should throw exception if submit response is negative and resumeOnError=false | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `submitAndWait_should_resolve_sequencerCommandService_for_given_sequencer,_call_submitAndWait_and_should_throw_exception_if_submit_response_is_negative_and_resumeOnError=false_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
 
         val message = "error-occurred"
         val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -214,7 +214,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and shouldn't throw exception if submit response is negative and resumeOnError=true | ESW-245, ESW-195, ESW-139, ESW-249 `() = runBlocking {
+    fun `submitAndWait_should_resolve_sequencerCommandService_for_given_sequencer,_call_submitAndWait_and_shouldn't_throw_exception_if_submit_response_is_negative_and_resumeOnError=true_|_ESW-245,_ESW-195,_ESW-139,_ESW-249_`() = runBlocking {
 
         val message = "error-occurred"
         val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -227,7 +227,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `diagnosticMode should resolve sequencerAdmin for given sequencer and call diagnosticMode method on it | ESW-143, ESW-245 `() = runBlocking {
+    fun `diagnosticMode_should_resolve_sequencerAdmin_for_given_sequencer_and_call_diagnosticMode_method_on_it_|_ESW-143,_ESW-245_`() = runBlocking {
 
         every { sequencerApi.diagnosticMode(startTime, hint) }.answers { Future.successful(Ok) }
 
@@ -236,7 +236,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `operationsMode should resolve sequencerAdmin for given sequencer and call operationsMode method on it | ESW-143, ESW-245 `() = runBlocking {
+    fun `operationsMode_should_resolve_sequencerAdmin_for_given_sequencer_and_call_operationsMode_method_on_it_|_ESW-143,_ESW-245_`() = runBlocking {
 
         every { sequencerApi.operationsMode() }.answers { Future.successful(Ok) }
 
@@ -245,7 +245,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `goOnline should resolve sequencerAdmin for given sequencer and call goOnline method on it | ESW-236, ESW-245 `() = runBlocking {
+    fun `goOnline_should_resolve_sequencerAdmin_for_given_sequencer_and_call_goOnline_method_on_it_|_ESW-236,_ESW-245_`() = runBlocking {
 
         every { sequencerApi.goOnline() }.answers { Future.successful(Ok) }
 
@@ -254,7 +254,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `goOffline should resolve sequencerAdmin for given sequencer and call goOffline method on it | ESW-236, ESW-245 `() {
+    fun `goOffline_should_resolve_sequencerAdmin_for_given_sequencer_and_call_goOffline_method_on_it_|_ESW-236,_ESW-245_`() {
         runBlocking {
 
             every { sequencerApi.goOffline() }.answers { Future.successful(Ok) }
@@ -265,7 +265,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `abortSequence should resolve sequencerAdmin for given sequencer and call abortSequence method on it | ESW-137, ESW-245 `() = runBlocking {
+    fun `abortSequence_should_resolve_sequencerAdmin_for_given_sequencer_and_call_abortSequence_method_on_it_|_ESW-137,_ESW-245_`() = runBlocking {
 
         every { sequencerApi.abortSequence() }.answers { Future.successful(Ok) }
 
@@ -274,7 +274,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `stop should resolve sequencerAdmin for given sequencer and call stop method on it | ESW-138, ESW-245 `() = runBlocking {
+    fun `stop_should_resolve_sequencerAdmin_for_given_sequencer_and_call_stop_method_on_it_|_ESW-138,_ESW-245_`() = runBlocking {
 
         every { sequencerApi.stop() }.answers { Future.successful(Ok) }
 

@@ -510,7 +510,7 @@ shows bits of code from SequenceUtil pieced together to show the relevant logic:
 class SequencerUtil(
   locationServiceUtil: LocationServiceUtil,
   sequenceComponentUtil: SequenceComponentUtil
-)(implicit actorSystem: ActorSystem[_]) {
+)(implicit actorSystem: ActorSystem[?]) {
 
   def shutdownSequencer(prefix: SequencerPrefix): Future[ShutdownSequencersResponse] =
     shutdownSequencersAndHandleErrors(getSequencer(prefix))
@@ -558,7 +558,7 @@ uses the Sequence Component location to unload the script, thus destroying the S
 class SequenceComponentUtil(
   locationServiceUtil: LocationServiceUtil,
   sequenceComponentAllocator: SequenceComponentAllocator
-)(implicit actorSystem: ActorSystem[_]) {
+)(implicit actorSystem: ActorSystem[?]) {
 
   def unloadScript(seqCompLocation: SeqCompLocation): Future[Ok.type] = 
     sequenceComponentApi(seqCompLocation).unloadScript()

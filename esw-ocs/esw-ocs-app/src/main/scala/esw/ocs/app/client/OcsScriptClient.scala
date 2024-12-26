@@ -36,7 +36,7 @@ class OcsScriptClient(loc: HttpLocation, log: Logger)(implicit
         val f         = Unmarshal(response.entity).to[String]
         val s: String = Await.result(f, 3.seconds)
         log.error(s"OcsScriptClient: $uri: $s")
-        throw new RuntimeException(s"$uri: $s")
+        throw new RuntimeException(s)
       }
       throw new RuntimeException(s"${response.status}")
     }

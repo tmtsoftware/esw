@@ -15,7 +15,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 
 private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiring: OcsScriptServerWiring)(implicit
     ec: ExecutionContext,
-    sys: ActorSystem[_]
+    sys: ActorSystem[?]
 ) extends Directives
     with ScriptJsonSupport {
 

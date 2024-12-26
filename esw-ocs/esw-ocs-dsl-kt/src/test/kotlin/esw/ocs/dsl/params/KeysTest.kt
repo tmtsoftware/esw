@@ -11,7 +11,7 @@ class KeysTest {
 
     @Suppress("DANGEROUS_CHARACTERS")
     @Test
-    fun `verify kotlin to scala key mappings`() {
+    fun `verify_kotlin_to_scala_key_mappings`() {
         choiceKey("choiceKey", choicesOf("A", "B")) shouldBe ChoiceKey().make("choiceKey", choicesOf("A", "B"))
         choiceKey("choiceKey", Choice("A")) shouldBe ChoiceKey().make("choiceKey", choicesOf("A"))
         eqCoordKey("eqCoordKey") shouldBe EqCoordKey().make("eqCoordKey")
@@ -46,7 +46,7 @@ class KeysTest {
     }
 
     @Test
-    fun `verify kotlin to scala arrayData and matrixData mappings`() {
+    fun `verify_kotlin_to_scala_arrayData_and_matrixData_mappings`() {
         val arrayData = arrayData(arrayOf(1, 2, 3))
         arrayData.shouldBeTypeOf<ArrayData<Int>>()
         arrayData.jValues() shouldBe listOf(1, 2, 3)

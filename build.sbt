@@ -132,7 +132,7 @@ lazy val `esw-ocs-dsl-kt` = project
   .settings(
     Test / fork   := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := EswKeys.kotlinVersion,
-    kotlincJvmTarget := "17",
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
@@ -305,7 +305,7 @@ lazy val examples = project
   .enablePlugins(KotlinPlugin)
   .settings(
     kotlinVersion := EswKeys.kotlinVersion,
-    kotlincJvmTarget := "17",
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )
   .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
@@ -436,6 +436,6 @@ lazy val `esw-performance-test` = project
   .settings(
     libraryDependencies ++= Dependencies.PerformanceTest.value,
     kotlinVersion := EswKeys.kotlinVersion,
-    kotlincJvmTarget := "17",
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )

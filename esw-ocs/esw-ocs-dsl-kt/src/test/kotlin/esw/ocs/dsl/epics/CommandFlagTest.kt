@@ -18,7 +18,7 @@ class CommandFlagTest : CommandServiceDsl {
     private val timeout = 100.milliseconds
 
     @Test
-    fun `set should update commandFlag value | ESW-252`() = runBlocking {
+    fun `set_should_update_commandFlag_value_|_ESW-252`() = runBlocking {
         val setup = Setup("TCS.test", "command-1", "2020A-001-123").madd(intKey("encoder").set(1))
 
         val commandFlag = CommandFlag()
@@ -28,7 +28,7 @@ class CommandFlagTest : CommandServiceDsl {
     }
 
     @Test
-    fun `bind should update subscribers of commandFlag | ESW-252`() = runBlocking {
+    fun `bind_should_update_subscribers_of_commandFlag_|_ESW-252`() = runBlocking {
         val flag = CommandFlag()
         val refreshable = mockk<Refreshable>()
         val params = mockk<Params>()

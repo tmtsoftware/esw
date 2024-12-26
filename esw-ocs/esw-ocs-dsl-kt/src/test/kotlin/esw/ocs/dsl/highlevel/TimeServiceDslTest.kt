@@ -40,21 +40,21 @@ class TimeServiceDslTest : TimeServiceDsl {
     }
 
     @Test
-    fun `TimeServiceDsl should scheduleOnce should delegate to timeServiceScheduler#scheduleOnce | ESW-122`() = runBlocking {
+    fun `TimeServiceDsl_should_scheduleOnce_should_delegate_to_timeServiceScheduler#scheduleOnce_|_ESW-122`() = runBlocking {
         every { scheduler.scheduleOnce(startTime, any<Runnable>()) }.answers { cancellable }
         scheduleOnce(startTime, mockk()) shouldBe cancellable
         verify { scheduler.scheduleOnce(startTime, any<Runnable>()) }
     }
 
     @Test
-    fun `TimeServiceDsl should scheduleOnceFromNow should delegate to timeServiceScheduler#scheduleOnce | ESW-122`() = runBlocking {
+    fun `TimeServiceDsl_should_scheduleOnceFromNow_should_delegate_to_timeServiceScheduler#scheduleOnce_|_ESW-122`() = runBlocking {
         every { scheduler.scheduleOnce(any(), any<Runnable>()) }.answers { cancellable }
         scheduleOnceFromNow(1.seconds, mockk()) shouldBe cancellable
         verify { scheduler.scheduleOnce(any(), any<Runnable>()) }
     }
 
     @Test
-    fun `schedulePeriodically should delegate to timeServiceScheduler#schedulePeriodically | ESW-122`() = runBlocking {
+    fun `schedulePeriodically_should_delegate_to_timeServiceScheduler#schedulePeriodically_|_ESW-122`() = runBlocking {
         every {
             scheduler.schedulePeriodically(startTime, jDuration, any<Runnable>())
         }.answers { cancellable }
@@ -64,7 +64,7 @@ class TimeServiceDslTest : TimeServiceDsl {
     }
 
     @Test
-    fun `schedulePeriodicallyFromNow should delegate to timeServiceScheduler#schedulePeriodically | ESW-122`() = runBlocking {
+    fun `schedulePeriodicallyFromNow_should_delegate_to_timeServiceScheduler#schedulePeriodically_|_ESW-122`() = runBlocking {
         every {
             scheduler.schedulePeriodically(any(), jDuration, any<Runnable>())
         }.answers { cancellable }
@@ -74,19 +74,19 @@ class TimeServiceDslTest : TimeServiceDsl {
     }
 
     @Test
-    fun `offsetFromNow should give offset between current time and provided instance of the time | ESW-122`() {
+    fun `offsetFromNow_should_give_offset_between_current_time_and_provided_instance_of_the_time_|_ESW-122`() {
         val offset: Duration = UTCTime.after(FiniteDuration(1, TimeUnit.SECONDS)).offsetFromNow()
         assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
     }
 
     @Test
-    fun `utcTimeAfter should give UTC time of after given duration from now | ESW-122`() {
+    fun `utcTimeAfter_should_give_UTC_time_of_after_given_duration_from_now_|_ESW-122`() {
         val offset: Duration = utcTimeAfter(1.seconds).offsetFromNow()
         assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
     }
 
     @Test
-    fun `taiTimeAfter should give time TAI of after given duration from now | ESW-122`() {
+    fun `taiTimeAfter_should_give_time_TAI_of_after_given_duration_from_now_|_ESW-122`() {
         val offset: Duration = taiTimeAfter(1.seconds).offsetFromNow()
         assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
     }
