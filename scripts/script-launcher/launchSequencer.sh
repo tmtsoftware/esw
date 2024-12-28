@@ -77,7 +77,7 @@ fi
 echo "[INFO] Compiling the script:" $FILE_PATH
 JARNAME=$CLASSNAME.jar
 
-kotlinc -jvm-target 17 -opt-in=kotlin.time.ExperimentalTime -Xallow-any-scripts-in-source-roots -classpath "$(cs fetch --channel $CS_CHANNEL esw-ocs-app$VERSION --classpath)" $FILE_PATH -d $JARNAME
+kotlinc -Xuse-fir-lt=false -jvm-target 17 -opt-in=kotlin.time.ExperimentalTime -Xallow-any-scripts-in-source-roots -classpath "$(cs fetch --channel $CS_CHANNEL esw-ocs-app$VERSION --classpath)" $FILE_PATH -d $JARNAME
 
 if [[ $? -eq 1 ]]; then
   echo "[ERROR] Compilation failed. Fix the compiler errors and also Make sure script is .kts file"
