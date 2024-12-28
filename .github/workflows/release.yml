@@ -13,9 +13,9 @@ jobs:
       ESW_OCS_ENG_UI_VERSION: "0.3.1.TODO"
     steps:
       - uses: actions/checkout@v4
-      - uses: coursier/setup-action@v1.2.0-M2
+      - uses: coursier/setup-action@v1.2.0
         with:
-          jvm: temurin:1.17
+          jvm: temurin:1.21
           apps: sbt sbtn
       - uses: coursier/cache-action@v6
 
