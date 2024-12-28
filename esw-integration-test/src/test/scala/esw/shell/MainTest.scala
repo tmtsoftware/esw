@@ -9,7 +9,7 @@ class MainTest extends BaseTestSuite {
   // XXX Ignoring for now, since apps.json has not been updated to use this branch
   "verify esw-shell compiles and starts successfully" ignore {
 //    val channel        = "https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
-    val channel        = "https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update-esw-http-api/apps.json"
+    val channel        = "https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update/apps.json"
     val version        = "0.1.0-SNAPSHOT"
     val commands       = List("cs", "launch", "--channel", channel, s"esw-shell:$version")
     val processBuilder = new ProcessBuilder(commands*)

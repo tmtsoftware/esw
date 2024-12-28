@@ -5,7 +5,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.params.Params
-import esw.ocs.impl.core.{SequenceOperator, SequenceOperatorApi}
+import esw.ocs.impl.core.SequenceOperator
 
 import scala.concurrent.Future
 
@@ -19,14 +19,14 @@ import scala.concurrent.Future
  * @param initialState - initial state of FSM from where the transition into the next state will begin
  */
 private[esw] class FsmScriptDsl(
-    sequenceOperatorFactory: () => SequenceOperatorApi,
+    sequenceOperatorFactory: () => SequenceOperator,
     logger: ILogger,
     strandEc: StrandEc,
     shutdownTask: Runnable,
     initialState: FsmScriptState
 ) extends ScriptDsl(sequenceOperatorFactory, logger, strandEc, shutdownTask) {
 
-  def this(sequenceOperatorFactory: () => SequenceOperatorApi, logger: ILogger, strandEc: StrandEc, shutdownTask: Runnable) =
+  def this(sequenceOperatorFactory: () => SequenceOperator, logger: ILogger, strandEc: StrandEc, shutdownTask: Runnable) =
     this(sequenceOperatorFactory, logger, strandEc, shutdownTask, FsmScriptState.init())
 
   private var scriptState = initialState

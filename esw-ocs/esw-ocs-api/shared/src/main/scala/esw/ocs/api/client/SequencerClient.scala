@@ -10,7 +10,7 @@ import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.{SequencerState, Step, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol.*
 import esw.ocs.api.protocol.SequencerRequest.*
 import esw.ocs.api.protocol.SequencerStreamRequest.{QueryFinal, SubscribeSequencerState}
@@ -109,38 +109,5 @@ class SequencerClient(
 
   override def subscribeSequencerState(): Source[SequencerStateResponse, Subscription] =
     websocketClient.requestStream[SequencerStateResponse](SubscribeSequencerState)
-
-  // XXX For Script Server use
-  override def pullNext: Future[PullNextResponse] =
-    postClient.requestResponse[PullNextResponse](PullNext)
-
-  override def maybeNext: Future[MaybeNextResponse] =
-    postClient.requestResponse[MaybeNextResponse](MaybeNext)
-
-  /**
-   * This method is to determine whether next step is ready to execute or not. It returns Ok if the next step is ready for execution
-   * otherwise it waits until it is ready to execute and then returns the Ok response.
-   * Unhandled is returned when the ReadyToExecuteNext message is not acceptable by sequencer
-   *
-   * @return a [[esw.ocs.api.protocol.OkOrUnhandledResponse]] as Future value
-   */
-  override def readyToExecuteNext: Future[OkOrUnhandledResponse] =
-    postClient.requestResponse[OkOrUnhandledResponse](ReadyToExecuteNext)
-
-  /**
-   * This method changes the status from InFlight to [[esw.ocs.api.models.StepStatus.Finished.Success]](Finished) for current running step
-   */
-  override def stepSuccess(): Unit = {
-    postClient.requestResponse[Unit](StepSuccess)
-    ()
-  }
-
-  /**
-   * This method changes the status from InFlight to [[esw.ocs.api.models.StepStatus.Finished.Failure]](Finished) for current running step
-   */
-  override def stepFailure(message: String): Unit = {
-    postClient.requestResponse[Unit](StepFailure(message))
-    ()
-  }
 
 }

@@ -1,10 +1,9 @@
 package esw.ocs.script
 
-//import com.typesafe.config.ConfigFactory
-//import csw.alarm.client.AlarmServiceFactory
-//import csw.alarm.models.AlarmSeverity
-//import csw.alarm.models.Key.AlarmKey
-
+import com.typesafe.config.ConfigFactory
+import csw.alarm.client.AlarmServiceFactory
+import csw.alarm.models.AlarmSeverity
+import csw.alarm.models.Key.AlarmKey
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
@@ -137,21 +136,21 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       actualOnlineEvent.eventKey should ===(onlineKey)
     }
 
-//    "be able to set severity of sequencer alarms and refresh it | ESW-125, CSW-81, CSW-83" in {
-//      val config            = ConfigFactory.parseResources("alarm_key.conf")
-//      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
-//      alarmAdminService.initAlarms(config, reset = true).futureValue
-//
-//      val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
-//      val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
-//      val sequence = Sequence(command)
-//
-//      ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
-//      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
-//
-//      Thread.sleep(2500) // as per test config, alarm severity will expire if not refreshed.
-//      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
-//    }
+    "be able to set severity of sequencer alarms and refresh it | ESW-125, CSW-81, CSW-83" in {
+      val config            = ConfigFactory.parseResources("alarm_key.conf")
+      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
+      alarmAdminService.initAlarms(config, reset = true).futureValue
+
+      val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
+      val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
+      val sequence = Sequence(command)
+
+      ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
+
+      Thread.sleep(2500) // as per test config, alarm severity will expire if not refreshed.
+      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
+    }
 
     "be able to get a published event | ESW-120, CSW-81" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
@@ -368,8 +367,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val response = ocsSequencer.submitAndWait(sequence).futureValue
       response shouldBe an[Error]
-      response.asInstanceOf[Error].message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: .*"
-      response.asInstanceOf[Error].message.contains("boom") shouldBe (true)
+      response.asInstanceOf[Error].message should fullyMatch regex s"StepId: .*, CommandName: ${failCmdName.name}, reason: boom"
     }
 
     "be able to send publish and subscribe to observe event published by Sequencer | ESW-81, ESW-421" in {

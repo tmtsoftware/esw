@@ -13,8 +13,6 @@ import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhand
 import esw.ocs.app.simulation.SimulationSequencerWiring
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.internal.SequencerServerFactory
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.concurrent.{Await, Future}
 
 import scala.collection.mutable
 
@@ -23,8 +21,7 @@ trait SequencerUtils extends LocationUtils {
   private val sequenceComponentLocations: mutable.Buffer[PekkoLocation] = mutable.Buffer.empty
 
   def shutdownAllSequencers(): Unit = {
-    val fList = sequenceComponentLocations.map(new SequenceComponentImpl(_).unloadScript()).toList
-    Await.ready(Future.sequence(fList), 100.seconds)
+    sequenceComponentLocations.foreach(new SequenceComponentImpl(_).unloadScript())
     sequenceComponentLocations.clear()
   }
 
@@ -62,7 +59,7 @@ trait SequencerUtils extends LocationUtils {
       new SequencerWiring(_, _).sequencerServer
     )
 
-  private def spawnSequenceComponentInSimulation(
+  def spawnSequenceComponentInSimulation(
       subsystem: Subsystem,
       name: Option[String],
       agentPrefix: Option[Prefix] = None

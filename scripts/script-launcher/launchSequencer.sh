@@ -70,7 +70,7 @@ fi
 # check if channel is available in env (used in test)
 if [[ ${CS_CHANNEL} == "" ]]; then
 #  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
-  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update-esw-http-api/apps.json"
+  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update/apps.json"
 fi
 
 # ---------------- Compiling ------------------
@@ -84,8 +84,6 @@ if [[ $? -eq 1 ]]; then
   exit 1
 fi
 echo "[INFO] Compilation completed. Compiled jar name:" $JARNAME
-
-# XXX TODO FIXME: --extra-jars won't work when using script server, since it is another process!
 
 # ---------------- Launching sequencer ------------------
 echo "[INFO] Launching sequencer with Subsystem:" $SUBSYSTEM "and Observation Mode:" $OBS_MODE

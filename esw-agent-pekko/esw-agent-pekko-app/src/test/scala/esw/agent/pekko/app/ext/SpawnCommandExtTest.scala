@@ -29,10 +29,9 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val agentPrefix     = Prefix(randomSubsystem, randomString(10))
   private val prefix          = Prefix(agentPrefix.subsystem, compName)
 
-  private val spawnSeqComp = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = false)
-  private val spawnSeqCompWithVersion =
-    SpawnSequenceComponent(replyTo, agentPrefix, compName, Some(version), simulation = false)
-  private val spawnSeqCompSimulation = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = true)
+  private val spawnSeqComp            = SpawnSequenceComponent(replyTo, agentPrefix, compName, None)
+  private val spawnSeqCompWithVersion = SpawnSequenceComponent(replyTo, agentPrefix, compName, Some(version))
+  private val spawnSeqCompSimulation  = SpawnSequenceComponent(replyTo, agentPrefix, compName, None, simulation = true)
 
   private val versionManager: VersionManager  = mock[VersionManager]
   private val sequencerScriptsVersion: String = randomString(10)
@@ -52,19 +51,18 @@ class SpawnCommandExtTest extends BaseTestSuite {
 
   "SpawnCommand.executableCommandStr" must {
     val spawnSeqCompCmd =
-      s"cs launch -D test.esw=true --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
+      s"cs launch --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
     val spawnSeqCompWithVersionCmd =
-      s"cs launch -D test.esw=true --channel $channel esw-ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
+      s"cs launch --channel $channel esw-ocs-app:$version -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix"
     val spawnSeqCompSimulationCmd =
-      s"cs launch -D test.esw=true --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
-    val spawnSeqMgrCmd =
-      s"cs launch -D test.esw=true --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix"
+      s"cs launch --channel $channel esw-ocs-app:$sequencerScriptsVersion -- seqcomp -s ${prefix.subsystem} -n $compName -a $agentPrefix --simulation"
+    val spawnSeqMgrCmd = s"cs launch --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix"
     val spawnSeqMgrWithVersionCmd =
-      s"cs launch -D test.esw=true --channel $channel esw-sm-app:$version -- start -o $obsModeConf -l -a $agentPrefix"
+      s"cs launch --channel $channel esw-sm-app:$version -- start -o $obsModeConf -l -a $agentPrefix"
     val spawnSeqMgrSimulationCmd =
-      s"cs launch -D test.esw=true --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
+      s"cs launch --channel $channel esw-sm-app:$eswVersion -- start -o $obsModeConf -l -a $agentPrefix --simulation"
     val spawnContainerCmd =
-      s"cs launch -D test.esw=true ${containerConfig.orgName}:${containerConfig.deployModule}_${BuildInfo.scalaBinaryVersion}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local ${containerConfig.configFilePath}"
+      s"cs launch ${containerConfig.orgName}:${containerConfig.deployModule}_${BuildInfo.scalaBinaryVersion}:${containerConfig.version} -r jitpack -M ${containerConfig.appName} -- --local ${containerConfig.configFilePath}"
 
     "SpawnCommand.executableCommandStr" must {
       Table(

@@ -2,10 +2,9 @@ package esw.gateway.server.utils
 
 import java.net.URI
 import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.location.api.models.Connection.{HttpConnection, PekkoConnection}
-import csw.location.api.models.{ComponentId, HttpLocation, Metadata, PekkoLocation}
+import csw.location.api.models.Connection.{PekkoConnection, HttpConnection}
+import csw.location.api.models.{PekkoLocation, ComponentId, HttpLocation, Metadata}
 import csw.location.api.scaladsl.LocationService
-import esw.constants.CommonTimeouts
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
@@ -30,12 +29,10 @@ class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers w
   private val pekkoLocation = PekkoLocation(pekkoConnection, new URI("actor-path"), Metadata.empty)
   private val httpLocation  = HttpLocation(httpConnection, new URI("actor-path"), Metadata.empty)
 
-  when(locationService.resolve(pekkoConnection, CommonTimeouts.ResolveLocation))
-    .thenReturn(Future.successful(Some(pekkoLocation)))
+  when(locationService.resolve(pekkoConnection, 3.seconds)).thenReturn(Future.successful(Some(pekkoLocation)))
 
-  when(locationService.resolve(PekkoConnection(httpComponentId), CommonTimeouts.ResolveLocation))
-    .thenReturn(Future.successful(None))
-  when(locationService.resolve(httpConnection, CommonTimeouts.ResolveLocation)).thenReturn(Future.successful(Some(httpLocation)))
+  when(locationService.resolve(PekkoConnection(httpComponentId), 3.seconds)).thenReturn(Future.successful(None))
+  when(locationService.resolve(httpConnection, 3.seconds)).thenReturn(Future.successful(Some(httpLocation)))
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 

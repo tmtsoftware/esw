@@ -43,18 +43,16 @@ import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core.*
 import esw.ocs.impl.internal.*
-import esw.ocs.impl.script.{ScriptApi, ScriptContext}
+import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import io.lettuce.core.RedisClient
 import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.metrics.LabelExtractor
 import cps.compat.FutureAsync.*
-import csw.network.utils.SocketUtils.*
 
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
-import esw.commons.extensions.FutureExt.FutureOps
 
 //noinspection DuplicatedCode
 // $COVERAGE-OFF$
@@ -88,16 +86,7 @@ private[ocs] class SequencerWiring(
   // SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
-  private[ocs] lazy val script: ScriptApi = {
-    val scriptServerManager = ScriptServerManager(prefix, sequenceComponentPrefix, locationService, config, logger)
-    val scriptServerF       = scriptServerManager.spawn()
-    scriptServerF.await() match {
-      case Right(scriptApi: ScriptApi) =>
-        scriptApi
-      case Left(msg) =>
-        throw new RuntimeException(s"Failed to load script: $msg")
-    }
-  }
+  private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
@@ -109,12 +98,10 @@ private[ocs] class SequencerWiring(
   lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   private lazy val jAlarmService: IAlarmService     = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
 
-  private lazy val loggerFactory  = new LoggerFactory(prefix)
-  private lazy val logger: Logger = loggerFactory.getLogger
-  private lazy val jLoggerFactory = loggerFactory.asJava
-
-//  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
-  private lazy val jLogger: ILogger = jLoggerFactory.getLogger(getClass)
+  private lazy val loggerFactory    = new LoggerFactory(prefix)
+  private lazy val logger: Logger   = loggerFactory.getLogger
+  private lazy val jLoggerFactory   = loggerFactory.asJava
+  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
   private lazy val sequencerImplFactory =
     (_subsystem: Subsystem, _obsMode: ObsMode, _variation: Option[Variation]) => // todo: revisit timeout value
@@ -148,7 +135,7 @@ private[ocs] class SequencerWiring(
   )
 
   private lazy val metadata    = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
-  private lazy val settings    = new Settings(Some(getFreePort), Some(prefix), config, ComponentType.Sequencer)
+  private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime, NetworkType.Inside)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(metadata)
 
@@ -161,7 +148,7 @@ private[ocs] class SequencerWiring(
       await(eventualTerminated.flatMap(_ => eventualDone))
     }
 
-  private lazy val sequencerBehavior =
+  lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponentPrefix, logger, shutdownHttpService)(
       actorSystem
     )
@@ -199,8 +186,6 @@ private[ocs] class SequencerWiring(
         // This error will be logged in SequenceComponent.Do not log it here,
         // because exception caused while initialising will fail the instance creation of logger.
         case NonFatal(e) =>
-          e.printStackTrace()
-
           terminateActorSystem()
           Left(LoadingScriptFailed(e.getMessage))
       }

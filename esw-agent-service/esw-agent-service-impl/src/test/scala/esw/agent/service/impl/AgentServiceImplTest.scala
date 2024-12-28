@@ -55,7 +55,7 @@ class AgentServiceImplTest extends BaseTestSuite {
       "be able to send spawn sequence component message to given agent" in {
         when(agentClientMock.spawnSequenceComponent(componentName, version, false)).thenReturn(Future.successful(spawnRes))
         agentService.spawnSequenceComponent(agentPrefix, componentName, version).futureValue
-        verify(agentClientMock).spawnSequenceComponent(componentName, version, false)
+        verify(agentClientMock).spawnSequenceComponent(componentName, version)
       }
 
       "give Failed when agent is not there | ESW-361" in {

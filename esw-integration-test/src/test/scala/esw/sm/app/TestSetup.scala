@@ -29,9 +29,7 @@ object TestSetup extends EswTestKit {
   def startSequenceComponents(prefixes: Prefix*): Unit =
     prefixes.foreach { prefix =>
       seqCompWirings += SequencerApp.SequenceComponent.run(
-        SeqcompOptions(prefix.subsystem, Some(prefix.componentName), None, simulation = false),
-        // XXX disable logging for tests
-        enableLogging = false
+        SeqcompOptions(prefix.subsystem, Some(prefix.componentName), None)
       )
     }
 

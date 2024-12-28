@@ -3,7 +3,6 @@ package esw.ocs.app
 import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
 import csw.event.client.EventServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Completed, Error, Invalid, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -23,9 +22,7 @@ import esw.ocs.api.models.{ObsMode, SequencerState, Step, StepList}
 import esw.ocs.api.protocol.*
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
-import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 
-import java.net.InetAddress
 import scala.concurrent.Future
 
 class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
@@ -41,11 +38,6 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   private var ocsSequencer: SequencerApi = scala.compiletime.uninitialized
   private var tcsSequencer: SequencerApi = scala.compiletime.uninitialized
-
-//  // XXX Uncomment to see logging
-//  private val host        = InetAddress.getLocalHost.getHostName
-//  private val typedSystem = ActorSystem(SpawnProtocol(), "SequencerClientIntegrationTest")
-//  LoggingSystemFactory.start("SequencerClientIntegrationTest", "0.1", host, typedSystem)
 
   override protected def beforeEach(): Unit = {
     // ocs sequencer, starts with TestScript2
@@ -157,7 +149,6 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     // ESW-294: Improve error response returned to caller
     val error = submitResponseF.futureValue.asInstanceOf[Error]
     error.message should fullyMatch regex s"StepId: .*, CommandName: ${failedCmdName.name}, reason: fail-command"
-//    error.message should fullyMatch regex s"StepId: .*, CommandName: ${failedCmdName.name}, reason: Server responded with 500 Internal Server Error"
 
     compareStepList(
       ocsSequencer.getSequence.futureValue,

@@ -7,7 +7,7 @@ SCRIPT_PATH="$(
 SCRIPTS_VERSION=""
 COURSIER="$(command -v cs)" || COURSIER="$SCRIPT_PATH/coursier"
 #APPS_PATH="https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
-APPS_PATH="https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update-esw-http-api/apps.json"
+APPS_PATH="https://raw.githubusercontent.com/tmtsoftware/osw-apps/Allan/pekko-scala3-update/apps.json"
 APP_NAME="esw-ocs-app"
 
 # capture version number and store rest of the arguments to arr variable which then passed to cs launch

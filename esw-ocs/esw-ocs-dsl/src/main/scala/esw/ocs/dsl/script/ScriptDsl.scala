@@ -7,7 +7,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.dsl.script.exceptions.UnhandledCommandException
 import esw.ocs.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
-import esw.ocs.impl.core.{SequenceOperator, SequenceOperatorApi}
+import esw.ocs.impl.core.SequenceOperator
 import esw.ocs.impl.script.ScriptApi
 
 import java.util.Optional
@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param shutdownTask - a Runnable to shut down the script
  */
 private[esw] class ScriptDsl(
-    sequenceOperatorFactory: () => SequenceOperatorApi,
+    sequenceOperatorFactory: () => SequenceOperator,
     logger: ILogger,
     strandEc: StrandEc,
     shutdownTask: Runnable

@@ -60,19 +60,6 @@ object Dependencies {
     Seq(
       Libs.`case-app`,
       Libs.`dotty-cps-async`.value,
-      Libs.`play-json`,
-      PekkoHttp.`pekko-http-spray-json`,
-
-      //      Csw.`csw-params`.value,
-      //      Csw.`csw-command-client`,
-      //      Csw.`csw-logging-models`.value,
-      //      Csw.`csw-location-api`.value,
-      //      Libs.`play-json`,
-      //      Pekko.`pekko-actor-typed`,
-      //      PekkoHttp.`pekko-http`,
-      //      PekkoHttp.`pekko-http-cors`,
-      //      PekkoHttp.`pekko-http-spray-json`,
-
       MSocket.`msocket-http`,
       Libs.scalatest.value              % Test,
       Libs.`mockito`                    % Test,
@@ -210,20 +197,6 @@ object Dependencies {
       Libs.`tmt-test-reporter` % Test
     )
   )
-
-//  val OcsScriptServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
-//    Seq(
-//      Csw.`csw-params`.value,
-//      Csw.`csw-command-client`,
-//      Csw.`csw-logging-models`.value,
-//      Csw.`csw-location-api`.value,
-//      Libs.`play-json`,
-//      Pekko.`pekko-actor-typed`,
-//      PekkoHttp.`pekko-http`,
-//      PekkoHttp.`pekko-http-cors`,
-//      PekkoHttp.`pekko-http-spray-json`,
-//    )
-//  )
 
   val EswGatewayApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(

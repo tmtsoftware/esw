@@ -15,7 +15,6 @@ sealed trait GenericResponse          extends EswSequencerResponse // fixme: thi
 sealed trait PauseResponse            extends EswSequencerResponse
 sealed trait RemoveBreakpointResponse extends EswSequencerResponse
 sealed trait PullNextResponse         extends EswSequencerResponse
-sealed trait MaybeNextResponse        extends EswSequencerResponse
 sealed trait GoOnlineResponse         extends EswSequencerResponse
 sealed trait GoOfflineResponse        extends EswSequencerResponse
 sealed trait DiagnosticModeResponse   extends EswSequencerResponse
@@ -43,7 +42,6 @@ sealed trait Ok
 case object Ok extends Ok
 
 final case class PullNextResult(step: Step)                   extends PullNextResponse
-final case class MaybeNextResult(maybeStep: Option[Step])     extends MaybeNextResponse
 final case class SubmitResult(submitResponse: SubmitResponse) extends SequencerSubmitResponse
 
 final case class Unhandled private[ocs] (state: String, messageType: String, msg: String)
@@ -55,7 +53,6 @@ final case class Unhandled private[ocs] (state: String, messageType: String, msg
     with GoOfflineResponse
     with SequencerSubmitResponse
     with PullNextResponse
-    with MaybeNextResponse
 
 object Unhandled {
   def apply(state: String, messageType: String): Unhandled =

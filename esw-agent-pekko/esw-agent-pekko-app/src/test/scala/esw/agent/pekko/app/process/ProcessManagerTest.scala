@@ -41,11 +41,10 @@ class ProcessManagerTest extends BaseTestSuite {
 
   "spawn" must {
     "return failed response when component is already registered | ESW-237, ESW-367" in {
-      val probe = TestProbe[SpawnResponse]()
-      val spawnSequenceComponent =
-        SpawnSequenceComponent(probe.ref, Prefix("ESW.primary"), "darknight", None, simulation = false)
-      val connection = spawnSequenceComponent.connection
-      val location   = PekkoLocation(connection, uri, Metadata.empty)
+      val probe                  = TestProbe[SpawnResponse]()
+      val spawnSequenceComponent = SpawnSequenceComponent(probe.ref, Prefix("ESW.primary"), "darknight", None)
+      val connection             = spawnSequenceComponent.connection
+      val location               = PekkoLocation(connection, uri, Metadata.empty)
 
       when(locationService.find(connection)).thenReturn(Future.successful(Some(location)))
       val manager = new ProcessManager(locationService, versionManager, processExecutor, agentSetting)

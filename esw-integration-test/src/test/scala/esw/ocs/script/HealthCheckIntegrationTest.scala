@@ -75,10 +75,9 @@ class HealthCheckIntegrationTest extends EswTestKit {
       val sequence = Sequence(command1, command2)
       Await.result(ocsSequencer.submitAndWait(sequence), 5.seconds)
 
-      // XXX TODO FIXME Test doesn't work when script server process is used (See also LoggingDslIntegrationTest)
-//      val logs: mutable.Seq[String] = logBuffer.map(log => log.getString("message"))
-//      logs.count(_.equalsIgnoreCase(heartbeatReceivedLog)) shouldBe >=(2)
-//      logs.count(_.equalsIgnoreCase(heartbeatMissedLog)) shouldBe >=(2)
+      val logs: mutable.Seq[String] = logBuffer.map(log => log.getString("message"))
+      logs.count(_.equalsIgnoreCase(heartbeatReceivedLog)) shouldBe >=(2)
+      logs.count(_.equalsIgnoreCase(heartbeatMissedLog)) shouldBe >=(2)
     }
   }
 }

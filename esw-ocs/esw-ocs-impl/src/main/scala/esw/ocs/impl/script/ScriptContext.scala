@@ -8,7 +8,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.{ObsMode, Variation}
-import esw.ocs.impl.core.{SequenceOperator, SequenceOperatorApi}
+import esw.ocs.impl.core.SequenceOperator
 
 import java.time.Duration
 import java.util.concurrent.CompletionStage
@@ -32,7 +32,7 @@ class ScriptContext(
     val prefix: Prefix,
     val obsMode: ObsMode,
     val jLogger: ILogger,
-    val sequenceOperatorFactory: () => SequenceOperatorApi,
+    val sequenceOperatorFactory: () => SequenceOperator,
     val actorSystem: ActorSystem[SpawnProtocol.Command],
     val eventService: IEventService,
     val alarmService: IAlarmService,

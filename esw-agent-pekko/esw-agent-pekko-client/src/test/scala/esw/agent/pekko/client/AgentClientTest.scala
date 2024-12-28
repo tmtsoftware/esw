@@ -84,7 +84,7 @@ class AgentClientTest extends ActorTestSuit {
       withBehavior { case SpawnSequenceComponent(replyTo, `agentPrefix`, `componentName`, None, _) =>
         replyTo ! spawnResponse
       } check { ac =>
-        ac.spawnSequenceComponent(componentName, None, simulation = false).futureValue should ===(spawnResponse)
+        ac.spawnSequenceComponent(componentName).futureValue should ===(spawnResponse)
       }
     }
 

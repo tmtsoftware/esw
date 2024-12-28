@@ -14,14 +14,14 @@ import java.time.Duration
  * @param heartbeatInterval -  interval to health check
  * @param enableThreadMonitoring - boolean param to enable the thread monitoring
  */
-final case class SequencerConfig(
+private[ocs] final case class SequencerConfig(
     prefix: Prefix,
     scriptClass: String,
     heartbeatInterval: Duration,
     enableThreadMonitoring: Boolean
 )
 
-object SequencerConfig {
+private[ocs] object SequencerConfig {
   def from(config: Config, prefix: Prefix): SequencerConfig = {
     val scriptConfig =
       try {

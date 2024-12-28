@@ -7,7 +7,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.models.{SequencerState, Step, StepList}
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.protocol.*
 import msocket.api.Subscription
 
@@ -206,11 +206,4 @@ trait SequencerApi extends SequencerCommandService {
    * @return a [[esw.ocs.api.protocol.OperationsModeResponse]] as a Future value
    */
   def operationsMode(): Future[OperationsModeResponse]
-
-  // XXX For Script Server use
-  def pullNext: Future[PullNextResponse]
-  def maybeNext: Future[MaybeNextResponse]
-  def readyToExecuteNext: Future[OkOrUnhandledResponse]
-  def stepSuccess(): Unit
-  def stepFailure(message: String): Unit
 }

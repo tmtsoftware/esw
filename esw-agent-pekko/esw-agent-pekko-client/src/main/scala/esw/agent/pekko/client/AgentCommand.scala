@@ -38,7 +38,6 @@ object AgentCommand {
      * @param componentName - the componentName part of sequence component prefix.
      * @param version - the version of sequencer script repo.
      * @param simulation - flag for starting SequenceComponent in simulation for testing purpose.
-     * @param test - flag for starting sequencer script HTTP server in same process, so it has the test scripts in the class path
      */
     case class SpawnSequenceComponent(
         replyTo: ActorRef[SpawnResponse],
