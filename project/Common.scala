@@ -61,7 +61,18 @@ object Common {
       fork    := true,
       javaOptions += "-Xmx2G",
       Test / fork := true,
-      Test / javaOptions ++= Seq("-Dpekko.actor.serialize-messages=on", "-Dtest.esw=true"),
+      Test / javaOptions ++= Seq(
+        "-Dpekko.actor.serialize-messages=on",
+        // This option is needed to look in the esw/examples subproject for Kotlin scripts instead of in the
+        // sequencer-scripts repo (via osw-apps)
+        "-Dtest.esw=true",
+        // These are needed when using jdk 21 and Blockhound
+        "-XX:+AllowRedefinitionToAddDeleteMethods",
+        "-XX:+EnableDynamicAgentLoading",
+        // Set to true to use python scripting instead of kotlin
+        // (make sure to set environment variables CSW_PYTHON and PYTHONPATH to the top level csw-python directory)
+//        "-DenableEswPythonScripting=true"
+      ),
       Global / cancelable     := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
       scalafmtOnCompile       := true,
       unidocGenjavadocVersion := "0.18",

@@ -10,16 +10,26 @@ TMT Observatory.
 
 See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the ESW software.
 
-Note: In order to use Python for ESW sequencer scripts (instead of Kotlin), please add these system properties to the 
+Note: In order to use Python for ESW sequencer scripts (instead of Kotlin), please add the following system property to the 
 runtime command line:
 
-* -DenableEswPythonScripting=true -DCSW_PYTHON=*path to csw-python sources*
+* -DenableEswPythonScripting=true
 
-and also set this environment variable:
+and also set these environment variables:
 
-* PYTHONPATH=*path to csw-python sources*
+* CSW_PYTHON=*path to csw-python sources*
+* PYTHONPATH=$CSW_PYTHON
 
 replacing *path to csw-python sources* with the top level csw-python directory.
+
+Note: This version of esw was tested with jdk 21. 
+There is an issue with jdk-21 and the Blockhound dependency in esw:
+The workaround is to add the VM options: 
+
+* -XX:+AllowRedefinitionToAddDeleteMethods -XX:+EnableDynamicAgentLoading
+
+when running esw applications or tests.
+
 
 ## Version compatibility
 

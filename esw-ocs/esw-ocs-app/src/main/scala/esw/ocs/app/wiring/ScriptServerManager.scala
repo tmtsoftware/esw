@@ -20,6 +20,7 @@ import esw.ocs.impl.script.ScriptApi
 import esw.ocs.script.server.OcsScriptServerApp
 import org.apache.pekko.Done
 
+import java.io.File
 import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -33,7 +34,7 @@ object ScriptServerManager {
   private val enablePythonScripting: Boolean = sys.props.get("enableEswPythonScripting").contains("true")
 
   // Path to csw-python sources
-  private val cswPythonPath: String = sys.props.get("CSW_PYTHON").getOrElse("/shared/work/tmt/csw/pycsw")
+  private val cswPythonPath: String = sys.env.getOrElse("CSW_PYTHON", "/shared/work/tmt/csw/pycsw")
 
   // If true, use test scripts (in examples project)
   private val testEsw = sys.props.get("test.esw").contains("true")
@@ -75,6 +76,12 @@ class ScriptServerManager(
   private val connection: HttpConnection             = HttpConnection(ComponentId(scriptServerPrefix, ComponentType.Service))
   private val coursierChannel                        = config.getString("agent.coursier.channel")
   private val durationToWaitForComponentRegistration = 18.seconds
+
+  if (enablePythonScripting && !new File(cswPythonPath).isDirectory)
+    throw new RuntimeException(
+      "ESW Python scripting is enabled: " +
+        "Please set the CSW_PYTHON environment variable to the top level directory of the csw-python sources."
+    )
 
   /**
    * Starts the script HTTP server and returns an HTTP client for it that implements the ScriptApi trait
