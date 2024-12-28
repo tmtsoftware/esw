@@ -1,6 +1,7 @@
-import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
-import sbt.Def.{setting => dep}
-import sbt._
+import EswKeys.scalaVersion
+import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport.*
+import sbt.Def.setting as dep
+import sbt.*
 
 import java.io.FileReader
 import java.util.Properties
@@ -8,29 +9,29 @@ import scala.util.Using
 
 object Libs {
 
-  val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M26"
-  val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.3") // MIT License
+  val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M29"
+  val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.5") // MIT License
   val `mockito`           = "org.scalatestplus"            %% "mockito-3-4"       % "3.2.10.0"
-  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.21")
-  val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.18") // Apache License 2.0
+  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.23")
+  val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.19") // Apache License 2.0
   val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.1.8"
   val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
   val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "b7997a9"
 
-  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.8.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "2572711" // Apache 2.0
+  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.10.RELEASE"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "6b52e4e" // Apache 2.0
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
-  val `ammonite` = ("com.lihaoyi" % "ammonite_3.3.3" % "3.0.0-M2-6-38698450")
+  val `ammonite` = ("com.lihaoyi" % "ammonite_3.4.3" % "3.0.0-2-6342755f")
 
-  val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
-  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "2.0.7"
-
+  val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.2.2"
+//  val `slf4j-api`     = "org.slf4j"          % "slf4j-api"    % "2.0.7"
+  val `play-json`        = "org.playframework" %% "play-json"        % "3.0.3" // Apache 2.0
 }
 
 object MSocket {
   //  val Version = "0.6.0"
-  val Version = "06b7251"
+  val Version = "f35e6ea"
 
   val `msocket-api`  = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % Version)
   val `msocket-http` = "com.github.tmtsoftware.msocket" %% "msocket-http" % Version
@@ -67,7 +68,7 @@ object Csw {
 }
 
 object Pekko {
-  val Version = "1.0.2" // all pekko is Apache License 2.0
+  val Version = "1.1.2" // all pekko is Apache License 2.0
   val Org     = "org.apache.pekko"
 
   val `pekko-actor-typed`  = Org %% "pekko-actor-typed"  % Version
@@ -81,7 +82,7 @@ object Pekko {
 }
 
 object PekkoHttp {
-  val Version = "1.0.1"
+  val Version = "1.1.0"
   val Org     = "org.apache.pekko"
 
   val `pekko-http`            = Org %% "pekko-http"            % Version
@@ -92,7 +93,7 @@ object PekkoHttp {
 }
 
 object Borer {
-  val Version = "1.14.0"
+  val Version = "1.15.0"
   val Org = "io.bullet"
   //  val Org = "com.github.tmtsoftware.borer"
 
@@ -102,9 +103,10 @@ object Borer {
 }
 
 object Kotlin {
-  val CoroutinesVersion = "1.7.3"
+  val CoroutinesVersion = "1.9.0"
 
-  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % EswKeys.kotlinVersion
+  val `kotlin-stdlib`     = "org.jetbrains.kotlin"  % "kotlin-stdlib"      % EswKeys.kotlinVersion
+  val `kotlin-reflect`  = "org.jetbrains.kotlin"  % "kotlin-reflect"          % EswKeys.kotlinVersion
   val `coroutines-core` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core" % CoroutinesVersion
 
   // core/jvm — additional core features available on Kotlin/JVM:
@@ -115,8 +117,15 @@ object Kotlin {
   // JDK8 - CompletionStage.await, Guava ListenableFuture.await, and Google Play Services Task.await;
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
-  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.8.0"
-  val mockk      = "io.mockk"  % "mockk-jvm"                  % "1.13.9"
+  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.9.1"
+  val mockk      = "io.mockk"  % "mockk-jvm"                  % "1.13.13"
+}
+
+object Http4k {
+  val Version                = "5.23.0.0"
+  val `http4k-core`          = "org.http4k" % "http4k-core"          % Version
+  val `http4k-server-jetty`  = "org.http4k" % "http4k-server-jetty"  % Version
+  val `http4k-client-okhttp` = "org.http4k" % "http4k-client-okhttp" % Version
 }
 
 object BuildProperties {
