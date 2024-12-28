@@ -1,6 +1,7 @@
 import Common._
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+import kotlin.Keys._
 
 inThisBuild(
   CommonSettings
@@ -9,6 +10,7 @@ inThisBuild(
 val KotlincOptions = Seq(
   "-opt-in=kotlin.time.ExperimentalTime",
   "-Xallow-any-scripts-in-source-roots",
+  "-Xuse-fir-lt=false",
   "-jvm-target",
   "17"
 )
@@ -130,6 +132,7 @@ lazy val `esw-ocs-dsl-kt` = project
   .settings(
     Test / fork   := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
@@ -145,6 +148,9 @@ lazy val `esw-ocs-app` = project
     `esw-ocs-handler`,
     `esw-http-core`,
     `esw-ocs-impl`,
+    `esw-agent-pekko-app`,
+    `esw-ocs-dsl`,
+    `esw-commons`,
     `esw-test-commons` % Test
   )
 
@@ -299,6 +305,7 @@ lazy val examples = project
   .enablePlugins(KotlinPlugin)
   .settings(
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )
   .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
@@ -429,5 +436,6 @@ lazy val `esw-performance-test` = project
   .settings(
     libraryDependencies ++= Dependencies.PerformanceTest.value,
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )

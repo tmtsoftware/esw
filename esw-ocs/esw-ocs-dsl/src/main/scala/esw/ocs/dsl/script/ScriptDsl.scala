@@ -14,6 +14,7 @@ import java.util.Optional
 import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
 import cps.compat.FutureAsync.*
+
 import scala.jdk.FutureConverters.*
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -34,7 +34,8 @@ private[ocs] class Engine(script: ScriptApi) {
       pullNextResponse match {
         case PullNextResult(step) =>
           script.execute(step.command).onComplete {
-            case _: Success[_] => sequenceOperator.stepSuccess()
+            case _: Success[_] =>
+              sequenceOperator.stepSuccess()
             case Failure(e) =>
               val message = if (e.getCause != null) e.getCause.getMessage else e.getMessage
               sequenceOperator.stepFailure(message)

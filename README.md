@@ -10,6 +10,15 @@ TMT Observatory.
 
 See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the ESW software.
 
+Note: This version of esw was tested with jdk 21. 
+There is an issue with jdk-21 and the Blockhound dependency in esw:
+The workaround is to add the VM options: 
+
+* -XX:+AllowRedefinitionToAddDeleteMethods -XX:+EnableDynamicAgentLoading
+
+when running esw applications or tests.
+
+
 ## Version compatibility
 
 | esw        | csw        |

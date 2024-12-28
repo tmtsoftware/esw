@@ -48,7 +48,7 @@ described above, the entire package can be thoroughly tested by the implementing
 using mocks or stubs for its dependencies.
 
 In some cases, a layer is nothing more than translation or adapter layer which maps methods to some
-other protocol call to the layer below. An example of this is an Pekko client layer that maps methods
+other protocol call to the layer below. An example of this is a Pekko client layer that maps methods
 to Pekko ask or tell calls to some Actor below it. In these case, all that is needed is to
 demonstrate is that each method maps to the appropriate request or method of the layer below. This
 is done by mocking the method call of the dependency and verifying the appropriate method is called
@@ -89,7 +89,7 @@ trait SequenceManagerApi {
 ```
 
 The Sequence Manager provides both an HTTP and Pekko interface to it, so it has two implementations
-of the API: a HTTP client and an Pekko Client. The core functionality of the program is written as an
+of the API: a HTTP client and a Pekko Client. The core functionality of the program is written as an
 Pekko actor, and the HTTP service is merely an adaptive wrapper around the Pekko interface, in that
 the HTTP service contains the Pekko Client, and translates HTTP requests into Pekko calls to the
 Sequence Manager Actor Behavior.
@@ -108,7 +108,7 @@ This program has many layers to it, summarized by the following list:
 - **SequenceManagerRequestHandler**: This takes the HTTP requests and, based on the request model,
   translates them to commands in the
 
-- **SequenceManagerImpl**: an Pekko client to the SequenceManager actor, in which method calls are
+- **SequenceManagerImpl**: a Pekko client to the SequenceManager actor, in which method calls are
   translated to Pekko messages, sent to the actor, and handled in the
 
 - **SequenceManagerBehavior**: the actor behavior which receives the Pekko messages and delegates to
@@ -229,7 +229,7 @@ Here, the lower layer is the **SequenceManagerImpl**, passed in as the `sequence
 method, the `handle` method matches the request model as a **ShutdownSequencer** type, and then
 calls `shutdownSequencer(subsystem, obsMode, variation)` which is an imported method of `sequenceManager`
 object. This call is wrapped in an `sPost` method, which provides AAS security, and `complete`, is
-an Pekko-HTTP method to complete the HTTP request.
+a Pekko-HTTP method to complete the HTTP request.
 
 Again, this layer is just an adapter layer that changes HTTP requests into **SequenceManagerImpl**
 calls. All that is needed to test this class is to make sure each request calls the appropriate Pekko
@@ -362,8 +362,8 @@ class SequenceManagerImpl(location: PekkoLocation)(implicit actorSystem: ActorSy
 
 ```
 
-The code for our method simply creates an Pekko message the actor can handle (in this case,
-**SequencerShutdown**, which is a subtype of **SequenceManagerMsg**), and then performs an Pekko ask
+The code for our method simply creates a Pekko message the actor can handle (in this case,
+**SequencerShutdown**, which is a subtype of **SequenceManagerMsg**), and then performs a Pekko ask
 by sending this message to the SM actor and transforming the reply into a Future.
 
 ```scala
@@ -379,7 +379,7 @@ override def shutdownSequencer(
 ```
 
 For testing, instead of mocking the actor behavior directly, we use the [AskProxyTestKit]($github.base_url$/esw-test-commons/src/main/scala/esw/testcommons/AskProxyTestKit.scala).
-This piece of code can be used to create a custom behavior for an Pekko ask with a particular message.
+This piece of code can be used to create a custom behavior for a Pekko ask with a particular message.
 In our case, we set up the **AskProxyTestKit** expect messages to be of type **SequenceManagerMsg**
 and come from a **SequenceManagerImpl**.
 
@@ -510,7 +510,7 @@ shows bits of code from SequenceUtil pieced together to show the relevant logic:
 class SequencerUtil(
   locationServiceUtil: LocationServiceUtil,
   sequenceComponentUtil: SequenceComponentUtil
-)(implicit actorSystem: ActorSystem[_]) {
+)(implicit actorSystem: ActorSystem[?]) {
 
   def shutdownSequencer(prefix: SequencerPrefix): Future[ShutdownSequencersResponse] =
     shutdownSequencersAndHandleErrors(getSequencer(prefix))
@@ -558,7 +558,7 @@ uses the Sequence Component location to unload the script, thus destroying the S
 class SequenceComponentUtil(
   locationServiceUtil: LocationServiceUtil,
   sequenceComponentAllocator: SequenceComponentAllocator
-)(implicit actorSystem: ActorSystem[_]) {
+)(implicit actorSystem: ActorSystem[?]) {
 
   def unloadScript(seqCompLocation: SeqCompLocation): Future[Ok.type] = 
     sequenceComponentApi(seqCompLocation).unloadScript()

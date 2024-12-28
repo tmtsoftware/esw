@@ -1025,7 +1025,6 @@ class IntegrationTestWithAuth extends EswTestKit(AAS) with GatewaySetup with Age
       sequenceManager.shutdownAllSequenceComponents().futureValue
       TestSetup.cleanup()
     }
-
     "Give 403 response if request does not have ESW-user role (Unauthorised)| ESW-332" in {
       locationService.unregisterAll().futureValue
       registerKeycloak()

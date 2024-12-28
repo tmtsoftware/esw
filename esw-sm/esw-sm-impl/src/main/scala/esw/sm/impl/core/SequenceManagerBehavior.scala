@@ -39,7 +39,7 @@ import scala.util.control.NonFatal
  * agentUtil - an instance of [[esw.commons.utils.location.LocationServiceUtil]]
  * sequencerUtil - an instance of [[esw.sm.impl.utils.SequencerUtil]]
  * sequenceComponentUtil - an instance of [[esw.sm.impl.utils.SequenceComponentUtil]]
- * actorSystem - an Pekko ActorSystem
+ * actorSystem - a Pekko ActorSystem
  * logger - a logger for Logging
  */
 class SequenceManagerBehavior(

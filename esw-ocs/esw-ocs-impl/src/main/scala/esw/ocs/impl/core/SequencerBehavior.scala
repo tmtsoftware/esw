@@ -95,7 +95,8 @@ class SequencerBehavior(
       case PullNext(replyTo)      => running(data.pullNextStep(replyTo))
       case StepSuccess(_)         => running(data.stepSuccess())
       case StepFailure(reason, _) => running(data.stepFailure(reason))
-      case _: GoIdle              => idle(data) // this is received on sequence completion
+      case _: GoIdle =>
+        idle(data) // this is received on sequence completion
     }
   }
 

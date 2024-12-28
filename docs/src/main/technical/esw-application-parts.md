@@ -135,14 +135,14 @@ Examples of service API classes are:
 
 - For Sequence Manager, the API is: [SequencerManagerApi]($github.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/SequenceManagerApi.scala).
 
-Because an ESW application often provides both an Pekko-based client and an HTTP-based client, the API class may be used in 2 places.
+Because an ESW application often provides both a Pekko-based client and an HTTP-based client, the API class may be used in 2 places.
 
 ## Impl Classes (Pekko Clients)
 
 The Impl or implementation classes are one implementation of the API. In an ESW application based on Pekko, the service itself is implemented as Pekko-based actors in the `Behavior classes`.
 
 The API is written as a typical API with methods that are called and return results.  
-Most of the time, the impl classes are converting the API method to an Pekko-based message and sending the message to the Behavior actor.
+Most of the time, the impl classes are converting the API method to a Pekko-based message and sending the message to the Behavior actor.
 If it gets a response as a message, it converts it to the correct type for the API.
 
 Examples of impl or Pekko client classes are:

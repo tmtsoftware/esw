@@ -6,7 +6,7 @@ import csw.alarm.models.Key.AlarmKey
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.Major
 import esw.ocs.dsl.highlevel.models.TCS
-import io.kotest.assertions.timing.eventually
+import io.kotest.assertions.nondeterministic.eventually
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -29,7 +29,7 @@ class AlarmServiceDslTest : LoopDsl, AlarmServiceDsl {
 
     @Suppress("DANGEROUS_CHARACTERS")
     @Test
-    fun `AlarmServiceDsl should set severity of alarms and refresh it | ESW-125`() = runBlocking {
+    fun `AlarmServiceDsl_should_set_severity_of_alarms_and_refresh_it_|_ESW-125`() = runBlocking {
         val alarmKey1 = AlarmKey(Prefix(TCS, "filter_assembly1"), "temperature1")
         val alarmKey2 = AlarmKey(Prefix(TCS, "filter_assembly2"), "temperature2")
         val alarmKey3 = AlarmKey(Prefix(TCS, "filter_assembly3"), "temperature3")

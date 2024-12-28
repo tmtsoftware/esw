@@ -20,7 +20,7 @@ private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(im
   private implicit val timeout: Timeout = SequencerTimeouts.LongTimeout
 
   /**
-   * This method sends a PullNext message to sequencer if successful it return the pending step which is to be executed next
+   * This method sends a PullNext message to sequencer if successful it returns the pending step which is to be executed next
    *
    * @return a [[esw.ocs.api.protocol.PullNextResponse]] as Future value
    */

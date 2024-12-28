@@ -49,16 +49,22 @@ import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.metrics.LabelExtractor
-
 import cps.compat.FutureAsync.*
+
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
+//noinspection DuplicatedCode
 // $COVERAGE-OFF$
-private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) extends SequencerServiceCodecs {
+private[ocs] class SequencerWiring(
+    val sequencerPrefix: Prefix,
+    sequenceComponentPrefix: Prefix
+) extends SequencerServiceCodecs {
+
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
-  private[ocs] lazy val config: Config  = actorSystem.settings.config
+  private[ocs] lazy val config: Config = actorSystem.settings.config
+
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
   final lazy val sc                     = sequencerConfig
   import sc.*
@@ -154,7 +160,6 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
           s"Starting sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
         )
         new Engine(script).start(sequenceOperatorFactory())
-
         Await.result(httpServerBinding, CommonTimeouts.Wiring)
 
         val registration = PekkoRegistrationFactory.make(PekkoConnection(componentId), sequencerRef, metadata)

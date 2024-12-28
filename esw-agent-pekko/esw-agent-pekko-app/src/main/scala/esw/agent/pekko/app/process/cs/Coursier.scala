@@ -1,5 +1,6 @@
 package esw.agent.pekko.app.process.cs
 
+import csw.prefix.models.Subsystem
 import esw.agent.pekko.app.BuildInfo
 import esw.agent.pekko.client.models.ContainerConfig
 

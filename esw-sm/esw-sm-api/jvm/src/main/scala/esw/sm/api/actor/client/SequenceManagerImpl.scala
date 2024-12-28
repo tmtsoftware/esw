@@ -19,7 +19,7 @@ import scala.concurrent.Future
  * Pekko actor client for the sequence manager
  *
  * @param location - pekko Location of the sequence manager
- * @param actorSystem - an Pekko ActorSystem
+ * @param actorSystem - a Pekko ActorSystem
  */
 class SequenceManagerImpl(location: PekkoLocation)(implicit actorSystem: ActorSystem[?]) extends SequenceManagerApi {
 

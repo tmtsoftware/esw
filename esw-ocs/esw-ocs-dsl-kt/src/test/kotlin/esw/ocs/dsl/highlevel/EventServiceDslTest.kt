@@ -26,7 +26,7 @@ class EventServiceDslTest : EventServiceDsl {
     override val eventSubscriber: IEventSubscriber = mockk()
 
     @Test
-    fun `systemEvent should return a SystemEvent created with given parameters | ESW-120`() {
+    fun `systemEvent_should_return_a_SystemEvent_created_with_given_parameters_|_ESW-120`() {
         val eventName = "systemEvent1"
         val eventPrefix = "TCS.filter.wheel"
         val actualEvent = SystemEvent(eventPrefix, eventName)
@@ -43,7 +43,7 @@ class EventServiceDslTest : EventServiceDsl {
 
 
     @Test
-    fun `publish should delegate to publisher#publish | ESW-120`() = runBlocking {
+    fun `publish_should_delegate_to_publisher#publish_|_ESW-120`() = runBlocking {
         TestSetup().run {
             every { (this@EventServiceDslTest.eventPublisher.publish(event)) }.returns(CompletableFuture.completedFuture(done()))
             publishEvent(event) shouldBe done()
@@ -52,7 +52,7 @@ class EventServiceDslTest : EventServiceDsl {
     }
 
     @Test
-    fun `publishEvent should delegate to publisher#publishAsync | ESW-120`() {
+    fun `publishEvent_should_delegate_to_publisher#publishAsync_|_ESW-120`() {
         TestSetup().run {
             every { this@EventServiceDslTest.eventPublisher.publishAsync(any(), any()) }.answers { cancellable }
             publishEvent(duration) { event } shouldBe cancellable
@@ -61,7 +61,7 @@ class EventServiceDslTest : EventServiceDsl {
     }
 
     @Test
-    fun `onEvent should delegate to subscriber#subscribeAsync | ESW-120`() = runBlocking {
+    fun `onEvent_should_delegate_to_subscriber#subscribeAsync_|_ESW-120`() = runBlocking {
         TestSetup().run {
             every { this@EventServiceDslTest.eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
             every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
@@ -72,7 +72,7 @@ class EventServiceDslTest : EventServiceDsl {
     }
 
     @Test
-    fun `cancel should delegate to IEventSubscription#unsubscribe() | ESW-120`() = runBlocking {
+    fun `cancel_should_delegate_to_IEventSubscription#unsubscribe()_|_ESW-120`() = runBlocking {
         TestSetup().run {
             every { this@EventServiceDslTest.eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
             every { eventSubscription.unsubscribe() }.answers { CompletableFuture.completedFuture(done()) }
@@ -87,7 +87,7 @@ class EventServiceDslTest : EventServiceDsl {
     }
 
     @Test
-    fun `getEvent should delegate to subscriber#get | ESW-120`() = runBlocking {
+    fun `getEvent_should_delegate_to_subscriber#get_|_ESW-120`() = runBlocking {
         TestSetup().run {
             //  for single key
             every { this@EventServiceDslTest.eventSubscriber.get(eventKeys.first()) }.answers { CompletableFuture.completedFuture(event) }

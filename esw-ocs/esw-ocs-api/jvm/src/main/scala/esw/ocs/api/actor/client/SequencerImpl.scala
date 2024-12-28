@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * This client takes actor ref of the sequencer as a constructor argument
  *
  * @param sequencer - actorRef of the Sequencer Actor
- * @param system - an Pekko ActorSystem
+ * @param system - a Pekko ActorSystem
  */
 class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[?]) extends SequencerApi {
   private implicit val timeout: Timeout     = SequencerTimeouts.SequencerOperation

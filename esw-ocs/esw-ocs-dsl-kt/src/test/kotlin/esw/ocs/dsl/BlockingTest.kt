@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 class BlockingTest {
 
     @Test
-    fun `blockingCpu should use different thread than main thread and should shutdown underlying thread pool | ESW-184`() = runBlocking {
+    fun `blockingCpu_should_use_different_thread_than_main_thread_and_should_shutdown_underlying_thread_pool_|_ESW-184`() = runBlocking {
         lateinit var cpuThread: String
 
         val mainThread = Thread.currentThread().name
@@ -26,7 +26,7 @@ class BlockingTest {
     }
 
     @Test
-    fun `blockingIo should use different thread than main thread | ESW-184`() = runBlocking {
+    fun `blockingIo_should_use_different_thread_than_main_thread_|_ESW-184`() = runBlocking {
         lateinit var ioThread: String
 
         val mainThread = Thread.currentThread().name

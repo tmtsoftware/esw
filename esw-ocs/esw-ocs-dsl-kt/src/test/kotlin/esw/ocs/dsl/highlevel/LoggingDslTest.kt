@@ -14,7 +14,7 @@ class LoggingDslTest : LoggingDsl {
     val emptyMap = emptyMap<String, Any>()
 
     @Test
-    fun `trace method should call the Logger#trace with given message and a map only with prefix entry when map is not provided | ESW-127`() {
+    fun `trace_method_should_call_the_Logger#trace_with_given_message_and_a_map_only_with_prefix_entry_when_map_is_not_provided_|_ESW-127`() {
         every { logger.trace(message, emptyMap) }.answers { Unit }
 
         trace(message)
@@ -22,7 +22,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `trace method should call the Logger#trace with given message and given map inserted with prefix entry | ESW-127`() {
+    fun `trace_method_should_call_the_Logger#trace_with_given_message_and_given_map_inserted_with_prefix_entry_|_ESW-127`() {
         val map = mapOf("a" to "c", "g" to "h")
         every { logger.trace(message, map) }.answers { Unit }
 
@@ -31,7 +31,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `debug method should call the Logger#debug with given message and a map only with prefix entry when map is not provided | ESW-127`() {
+    fun `debug_method_should_call_the_Logger#debug_with_given_message_and_a_map_only_with_prefix_entry_when_map_is_not_provided_|_ESW-127`() {
         every { logger.debug(message, emptyMap) }.answers { Unit }
 
         debug(message)
@@ -39,7 +39,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `debug method should call the Logger#debug with given message and given map inserted with prefix entry | ESW-127`() {
+    fun `debug_method_should_call_the_Logger#debug_with_given_message_and_given_map_inserted_with_prefix_entry_|_ESW-127`() {
         val map = mapOf("a" to "c", "g" to "h")
         every { logger.debug(message, map) }.answers { Unit }
 
@@ -48,7 +48,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `info method should call the Logger#info with given message and a map only with prefix entry when map is not provided | ESW-127`() {
+    fun `info_method_should_call_the_Logger#info_with_given_message_and_a_map_only_with_prefix_entry_when_map_is_not_provided_|_ESW-127`() {
         every { logger.info(message, emptyMap) }.answers { Unit }
 
         info(message)
@@ -56,7 +56,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `info method should call the Logger#info with given message and given map inserted with prefix entry | ESW-127`() {
+    fun `info_method_should_call_the_Logger#info_with_given_message_and_given_map_inserted_with_prefix_entry_|_ESW-127`() {
         val map = mapOf("a" to "c", "g" to "h")
         every { logger.info(message, map) }.answers { Unit }
 
@@ -65,7 +65,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `warn method should call the Logger#warn with given message and with default value of absent argument | ESW-127`() {
+    fun `warn_method_should_call_the_Logger#warn_with_given_message_and_with_default_value_of_absent_argument_|_ESW-127`() {
         every { logger.warn(message, emptyMap) }.answers { Unit }
 
         warn(message)
@@ -73,7 +73,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `warn method should call the Logger#warn with given message, given map inserted with prefix entry and given exception | ESW-127`() {
+    fun `warn_method_should_call_the_Logger#warn_with_given_message,_given_map_inserted_with_prefix_entry_and_given_exception_|_ESW-127`() {
         val map = mapOf("a" to "c", "g" to "h")
         val ex = Exception("logging failed")
         every { logger.warn(message, map, ex) }.answers { Unit }
@@ -83,7 +83,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `error method should call the Logger#error with given message and with default value of absent argument | ESW-127`() {
+    fun `error_method_should_call_the_Logger#error_with_given_message_and_with_default_value_of_absent_argument_|_ESW-127`() {
         every { logger.error(message, emptyMap) }.answers { Unit }
 
         error(message)
@@ -91,7 +91,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `error method should call the Logger#error with given message, given map inserted with prefix entry and given exception | ESW-127`() {
+    fun `error_method_should_call_the_Logger#error_with_given_message,_given_map_inserted_with_prefix_entry_and_given_exception_|_ESW-127`() {
         val map = mapOf("a" to "c", "g" to "h")
         val ex = Exception("logging failed")
         every { logger.error(message, map, ex) }.answers { Unit }
@@ -101,7 +101,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `fatal method should call the Logger#fatal with given message and with default value of absent argument | ESW-127`() {
+    fun `fatal_method_should_call_the_Logger#fatal_with_given_message_and_with_default_value_of_absent_argument_|_ESW-127`() {
         every { logger.fatal(message, emptyMap) }.answers { Unit }
 
         fatal(message)
@@ -109,7 +109,7 @@ class LoggingDslTest : LoggingDsl {
     }
 
     @Test
-    fun `fatal method should call the Logger#fatal with given message, given map inserted with prefix entry and given exception | ESW-127`() {
+    fun `fatal_method_should_call_the_Logger#fatal_with_given_message,_given_map_inserted_with_prefix_entry_and_given_exception_|_ESW-127`() {
         val map = mapOf("a" to "c", "g" to "h")
         val ex = Exception("logging failed")
         every { logger.fatal(message, map, ex) }.answers { Unit }

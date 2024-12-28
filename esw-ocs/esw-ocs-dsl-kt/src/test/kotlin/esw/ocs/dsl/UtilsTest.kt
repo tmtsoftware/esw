@@ -12,7 +12,7 @@ import kotlin.system.measureTimeMillis
 class UtilsTest {
 
     @Test
-    fun `par should execute provided tasks concurrently and return result once all tasks finished | ESW-87`() {
+    fun `par_should_execute_provided_tasks_concurrently_and_return_result_once_all_tasks_finished_|_ESW-87`() {
         runBlocking {
             suspend fun submitCommand(): Int {
                 delay(100)
@@ -38,7 +38,7 @@ class UtilsTest {
     }
 
     @Test
-    fun `should execute provided tasks sequentially by default and return result once all tasks finished | ESW-88`() {
+    fun `should_execute_provided_tasks_sequentially_by_default_and_return_result_once_all_tasks_finished_|_ESW-88`() {
         runBlocking {
             suspend fun submitCommand(): Int {
                 delay(100)

@@ -61,7 +61,12 @@ object Common {
       fork    := true,
       javaOptions += "-Xmx2G",
       Test / fork := false,
-      Test / javaOptions ++= Seq("-Dpekko.actor.serialize-messages=on"),
+      Test / javaOptions ++= Seq(
+        "-Dpekko.actor.serialize-messages=on",
+        // These are needed when using jdk 21 and Blockhound
+        "-XX:+AllowRedefinitionToAddDeleteMethods",
+        "-XX:+EnableDynamicAgentLoading",
+      ),
       Global / cancelable     := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
       scalafmtOnCompile       := true,
       unidocGenjavadocVersion := "0.18",

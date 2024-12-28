@@ -18,7 +18,7 @@ object SequenceManagerApiFactory {
    * Creates pekkoClient for the the Sequencer Manager
    *
    * @param pekkoLocation - pekko Location of the Sequencer
-   * @param actorSystem - an Pekko ActorSystem
+   * @param actorSystem - a Pekko ActorSystem
    *
    * @return an instance of [[esw.sm.api.SequenceManagerApi]]
    */
@@ -30,7 +30,7 @@ object SequenceManagerApiFactory {
    *
    * @param httpLocation - http Location of the Sequencer
    * @param tokenFactory - a function that return the auth token
-   * @param actorSystem - an Pekko ActorSystem
+   * @param actorSystem - a Pekko ActorSystem
    *
    * @return an instance of [[esw.sm.api.SequenceManagerApi]]
    */

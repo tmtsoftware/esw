@@ -20,7 +20,7 @@ import scala.concurrent.Future
  * This client takes actor ref of the sequence component as a constructor argument
  *
  * @param sequenceComponentLocation - location of the sequence component
- * @param actorSystem - an Pekko ActorSystem
+ * @param actorSystem - a Pekko ActorSystem
  */
 class SequenceComponentImpl(sequenceComponentLocation: PekkoLocation)(implicit
     actorSystem: ActorSystem[?]
