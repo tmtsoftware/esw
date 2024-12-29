@@ -12,10 +12,10 @@ jobs:
       CSW_VERSION: "5726045"
       ESW_OCS_ENG_UI_VERSION: "0.3.1.TODO"
     steps:
-      - uses: actions/checkout@v3
-      - uses: coursier/setup-action@v1
+      - uses: actions/checkout@v4
+      - uses: coursier/setup-action@v1.2.0
         with:
-          jvm: temurin:1.17
+          jvm: temurin:1.21
           apps: sbt sbtn
       - uses: coursier/cache-action@v6
 
@@ -51,11 +51,11 @@ jobs:
           sbt -DenableFatalWarnings=true makeSite
 
       - name: Tests
-        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
-          sbt -DenableCoverage=true coverageReport
+          sbt -Dsbt.log.noformat=true -DenableCoverage=true coverageReport
           sbtn coverageAggregate
 
       - name: Upload Coverage Report
