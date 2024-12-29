@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
-          ref: branch-0.3.x
+          ref: branch-0.6.x
       - uses: coursier/setup-action@v1.2.0
         with:
           jvm: temurin:1.21
