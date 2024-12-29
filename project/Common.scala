@@ -60,7 +60,7 @@ object Common {
       version := sys.env.getOrElse("JITPACK_VERSION", "0.1.0-SNAPSHOT"),
       fork    := true,
       javaOptions += "-Xmx2G",
-      Test / fork := false,
+      Test / fork := true,
       Test / javaOptions ++= Seq(
         "-Dpekko.actor.serialize-messages=on",
         // These are needed when using jdk 21 and Blockhound
