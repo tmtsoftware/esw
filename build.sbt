@@ -12,7 +12,7 @@ val KotlincOptions = Seq(
   "-Xallow-any-scripts-in-source-roots",
   "-Xuse-fir-lt=false",
   "-jvm-target",
-  "17"
+  "21"
 )
 
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
