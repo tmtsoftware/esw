@@ -50,6 +50,7 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer, ConfigS
       val event = eventSubscriber.get(EventKey(Prefix(ESW, "IRIS_cal"), EventName("event-1"))).futureValue
       event.isInvalid shouldBe false
 
+      // XXX Note: Timed out here when running in Idea unless "Use sbt" button selected!
       sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe a[ShutdownSequencersResponse.Success.type]
     }
   }

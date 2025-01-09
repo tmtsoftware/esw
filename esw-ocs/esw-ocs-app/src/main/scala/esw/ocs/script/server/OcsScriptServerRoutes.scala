@@ -8,10 +8,9 @@ import org.apache.pekko.http.scaladsl.server.directives.{DebuggingDirectives, Lo
 import org.apache.pekko.http.scaladsl.server.{Directive0, Directives, ExceptionHandler, Route}
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.SequenceCommand
-import esw.constants.CommonTimeouts
 import esw.ocs.impl.script.ScriptApi
 
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiring: OcsScriptServerWiring)(implicit
     ec: ExecutionContext,
@@ -81,7 +80,6 @@ private[ocs] class OcsScriptServerRoutes(logger: Logger, script: ScriptApi, wiri
           ~ path("shutdownScript") {
             script.shutdownScript()
             complete(wiring.shutdownHttpService().map(_ => OK))
-//          complete(OK)
           }
         }
       }
