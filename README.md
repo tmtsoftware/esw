@@ -10,6 +10,8 @@ TMT Observatory.
 
 See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the ESW software.
 
+## Kotlin or Python based sequencer scripts supported
+
 Note: In order to use Python for ESW sequencer scripts (instead of Kotlin), please add the following system property to the 
 runtime command line:
 
@@ -21,6 +23,10 @@ and also set these environment variables:
 * PYTHONPATH=$CSW_PYTHON
 
 replacing *path to csw-python sources* with the top level csw-python directory.
+
+See the [csw-python sequencer script examples](https://github.com/tmtsoftware/csw-python/tree/branch-6.0.x/sequencer/examples/testData)
+and the [README](https://github.com/tmtsoftware/csw-python/blob/branch-6.0.x/README.md) for examples of 
+Python based ESW sequencer scripts.
 
 Note: This version of esw was tested with jdk 21. 
 There is an issue with jdk-21 and the Blockhound dependency in esw:
@@ -35,6 +41,7 @@ when running esw applications or tests.
 
 | esw        | csw        |
 |------------|------------|
+| v0.6.x     | v6.0.x     |
 | v0.5.1     | v5.0.1     |
 | v0.5.1-RC1 | v5.0.1-RC1 |
 | v0.5.0     | v5.0.0     |
