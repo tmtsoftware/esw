@@ -19,7 +19,7 @@ object Libs {
   val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "b7997a9"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.10.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "6b52e4e" // Apache 2.0
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "8285bb5" // Apache 2.0
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
   val `ammonite` = ("com.lihaoyi" % "ammonite_3.4.3" % "3.0.0-2-6342755f")
