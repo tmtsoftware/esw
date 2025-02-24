@@ -9,6 +9,7 @@ more robust and resilient and to improve its usability and performance for use a
 TMT Observatory.
 
 See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the ESW software.
+See [here](http://tmtsoftware.github.io/esw-ts/) for a detailed description of the ESW-TS.
 
 ## Kotlin or Python based sequencer scripts supported
 
