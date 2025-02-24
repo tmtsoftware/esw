@@ -20,7 +20,7 @@ import scala.concurrent.Future
 /**
  * Pekko client for the Agent
  * @param pekkoLocation - [[csw.location.api.models.PekkoLocation]] of the Agent Server.
- * @param actorSystem - [[org.apache.pekko.actor.typed.ActorSystem]] - an Pekko ActorSystem.
+ * @param actorSystem - [[org.apache.pekko.actor.typed.ActorSystem]] - a Pekko ActorSystem.
  */
 class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSystem[?]) {
   private val agentRef: ActorRef[AgentCommand] = pekkoLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
@@ -30,11 +30,12 @@ class AgentClient(pekkoLocation: PekkoLocation)(implicit actorSystem: ActorSyste
       componentName: String,
       version: Option[String] = None,
       simulation: Boolean = false
-  ): Future[SpawnResponse] =
+  ): Future[SpawnResponse] = {
     (agentRef ? (SpawnSequenceComponent(_: ActorRef[SpawnResponse], agentPrefix, componentName, version, simulation)))(
       AgentTimeouts.SpawnComponent,
       actorSystem.scheduler
     )
+  }
 
   def spawnSequenceManager(
       obsModeConfigPath: Path,

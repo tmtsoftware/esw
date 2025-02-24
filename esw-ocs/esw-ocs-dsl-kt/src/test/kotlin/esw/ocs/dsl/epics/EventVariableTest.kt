@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class EventVariableTest {
 
     @Test
-    fun `make should create EventVariable by getting event from event service`() = runBlocking {
+    fun `make_should_create_EventVariable_by_getting_event_from_event_service`() = runBlocking {
         TestSetup().run {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             val eventVariable = EventVariable.make(eventKey, cswHighLevelDsl)
@@ -34,7 +34,7 @@ class EventVariableTest {
     }
 
     @Test
-    fun `getEvent should return the latest event | ESW-291`() = runBlocking {
+    fun `getEvent_should_return_the_latest_event_|_ESW-291`() = runBlocking {
         TestSetup().run {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             val eventVariable = EventVariable.make(eventKey, cswHighLevelDsl)
@@ -47,7 +47,7 @@ class EventVariableTest {
 
     // Scenario: bind(fsm1) => bind(fsm2) => cancel1() => cancel2() => bind(fsm3)
     @Test
-    fun `bind should start subscription and add subscription entry in Fsm | ESW-132, ESW-142`() = runBlocking {
+    fun `bind_should_start_subscription_and_add_subscription_entry_in_Fsm_|_ESW-132,_ESW-142`() = runBlocking {
         TestSetup().run {
             val refreshable1 = mockk<Refreshable>()
             val refreshable2 = mockk<Refreshable>()
@@ -85,7 +85,7 @@ class EventVariableTest {
     }
 
     @Test
-    fun `bind with duration should start polling the event key and refresh Fsm on changes | ESW-142, ESW-256`() = runBlocking {
+    fun `bind_with_duration_should_start_polling_the_event_key_and_refresh_Fsm_on_changes_|_ESW-142,_ESW-256`() = runBlocking {
         val systemEvent: Event = SystemEvent(Prefix(TCS, "test"), EventName("testEvent"))
         val eventKey = systemEvent.eventKey()
         val eventKeyStr = eventKey.key()

@@ -52,7 +52,12 @@ trait SequencerUtils extends LocationUtils {
   }
 
   def spawnSequenceComponent(subsystem: Subsystem, name: Option[String], agentPrefix: Option[Prefix] = None): PekkoLocation =
-    spawnSequenceComponent(subsystem, name, agentPrefix, new SequencerWiring(_, _).sequencerServer)
+    spawnSequenceComponent(
+      subsystem,
+      name,
+      agentPrefix,
+      new SequencerWiring(_, _).sequencerServer
+    )
 
   def spawnSequenceComponentInSimulation(
       subsystem: Subsystem,

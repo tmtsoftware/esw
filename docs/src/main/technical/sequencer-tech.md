@@ -8,7 +8,7 @@ The Sequencer implementation has two main parts:
 1. Sequencer Framework
 2. Scripting Support
 
-The Sequencer Framework uses an Pekko Actor at its core and is responsible for executing the received Sequence and calling handlers in the Script.
+The Sequencer Framework uses a Pekko Actor at its core and is responsible for executing the received Sequence and calling handlers in the Script.
 Sequencer Scripting Support defines the behaviour of the Sequencer while executing a Sequence. Scripts are written using a Domain Specific Language
 provided as a part of Framework.
 
@@ -171,7 +171,7 @@ about scripting please refer @ref:[here](../scripts/scripts-index.md)
 
 Sequencer exposes its interface in three ways:
 
-1. Pekko interface - Sequencer is registered as an Pekko-based component. One can resolve Sequencer and use the Pekko client to interact with Sequencer.
+1. Pekko interface - Sequencer is registered as a Pekko-based component. One can resolve Sequencer and use the Pekko client to interact with Sequencer.
 2. HTTP direct interface - Each Sequencer also exposes an HTTP-based interface as an embedded Sequencer
 Server (direct and unprotected usage). This access provides routes that allow user to directly control the Sequencer without any auth protection.
 UI applications are supposed to use Gateway interface described below to interact with Sequencer as Gateway provided auth protection layer.

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 class ObsIdTest {
     @Suppress("DANGEROUS_CHARACTERS")
     @Test
-    fun `verify ObsId kotlin glue | ESW-421`() {
+    fun `verify_ObsId_kotlin_glue_|_ESW-421`() {
         val obsId = ObsId("2020A-001-123")
         val expectedObsId = ObsId.apply("2020A-001-123")
 

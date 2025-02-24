@@ -95,7 +95,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `validate should resolve commandService for given assembly and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `validate_should_resolve_commandService_for_given_assembly_and_call_validate_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
 
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
@@ -107,7 +107,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `oneway should resolve commandService for given assembly and call oneway method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `oneway_should_resolve_commandService_for_given_assembly_and_call_oneway_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.oneway(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
@@ -118,7 +118,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submit should resolve commandService for given assembly and call submit method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `submit_should_resolve_commandService_for_given_assembly_and_call_submit_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -129,7 +129,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submit should not throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `submit_should_not_throw_exception_on_negative_submit_response_if_resumeOnError=true_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -143,7 +143,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submit should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `submit_should_throw_exception_on_negative_submit_response_if_resumeOnError=false_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -157,7 +157,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `query should resolve commandService for given assembly and call query method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `query_should_resolve_commandService_for_given_assembly_and_call_query_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             val commandRunId: Id = mockk()
 
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
@@ -170,7 +170,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `query should not throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `query_should_not_throw_exception_on_negative_submit_response_if_resumeOnError=true_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -185,7 +185,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `query should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `query_should_throw_exception_on_negative_submit_response_if_resumeOnError=false_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -200,7 +200,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should resolve commandService and call queryFinal method | ESW-121, ESW-245 `() = runBlocking {
+        fun `queryFinal_should_resolve_commandService_and_call_queryFinal_method_|_ESW-121,_ESW-245_`() = runBlocking {
             val commandRunId: Id = mockk()
 
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
@@ -213,7 +213,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should use defaultTimeout if timeout is not provided | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `queryFinal_should_use_defaultTimeout_if_timeout_is_not_provided_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
 
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
@@ -226,7 +226,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should not throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `queryFinal_should_not_throw_exception_on_negative_submit_response_if_resumeOnError=true_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -241,7 +241,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `queryFinal_should_throw_exception_on_negative_submit_response_if_resumeOnError=false_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -256,7 +256,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should resolve commandService for given assembly and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `submitAndWait_should_resolve_commandService_for_given_assembly_and_call_submitAndWait_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -267,7 +267,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should use defaultTimeout if timeout is not provided | ESW-121, ESW-245 `() = runBlocking {
+        fun `submitAndWait_should_use_defaultTimeout_if_timeout_is_not_provided_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, defaultTimeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -278,7 +278,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should not throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `submitAndWait_should_not_throw_exception_on_negative_submit_response_if_resumeOnError=true_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -292,7 +292,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `submitAndWait_should_throw_exception_on_negative_submit_response_if_resumeOnError=false_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -306,7 +306,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `subscribeCurrentState should resolve commandService for given assembly and call subscribeCurrentState method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `subscribeCurrentState_should_resolve_commandService_for_given_assembly_and_call_subscribeCurrentState_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             val stateName = mockk<StateName>()
             val stateNames = setOf(stateName)
             val currentStateSubscription: Subscription = mockk()
@@ -321,7 +321,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `diagnosticMode should resolve actorRef for given assembly and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
+        fun `diagnosticMode_should_resolve_actorRef_for_given_assembly_and_send_DiagnosticMode_message_to_it_|_ESW-118,_ESW-245_`() = runBlocking {
             val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
 
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
@@ -333,7 +333,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `operationsMode should resolve actorRef for given assembly and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
+        fun `operationsMode_should_resolve_actorRef_for_given_assembly_and_send_OperationsMode_message_to_it_|_ESW-118,_ESW-245_`() = runBlocking {
             val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
 
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
@@ -345,7 +345,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `goOnline should resolve actorRef for given assembly and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
+        fun `goOnline_should_resolve_actorRef_for_given_assembly_and_send_GoOnline_message_to_it_|_ESW-236,_ESW-245_`() = runBlocking {
             val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
 
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
@@ -357,7 +357,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `goOffline should resolve actorRef for given assembly and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
+        fun `goOffline_should_resolve_actorRef_for_given_assembly_and_send_GoOffline_message_to_it_|_ESW-236,_ESW-245_`() = runBlocking {
             val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
 
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
@@ -369,7 +369,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `lock should resolve actorRef for given assembly and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
+        fun `lock_should_resolve_actorRef_for_given_assembly_and_send_Lock_message_to_it_|_ESW-126,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { lockUnlockUtil.lock(assemblyRef, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
@@ -379,7 +379,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `unlock should resolve actorRef for given assembly and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
+        fun `unlock_should_resolve_actorRef_for_given_assembly_and_send_Unlock_message_to_it_|_ESW-126,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { lockUnlockUtil.unlock(assemblyRef) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
@@ -415,7 +415,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `validate should resolve commandService for given hcd and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `validate_should_resolve_commandService_for_given_hcd_and_call_validate_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.validate(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
@@ -426,7 +426,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `oneway should resolve commandService for given hcd and call oneway method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `oneway_should_resolve_commandService_for_given_hcd_and_call_oneway_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.oneway(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
@@ -437,7 +437,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submit should resolve commandService for given hcd and call submit method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `submit_should_resolve_commandService_for_given_hcd_and_call_submit_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -448,7 +448,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submit should resolve commandService for given hcd, call submit method on it and should't throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `submit_should_resolve_commandService_for_given_hcd,_call_submit_method_on_it_and_should't_throw_exception_on_negative_submit_response_if_resumeOnError=true_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -462,7 +462,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submit should resolve commandService for given hcd, call submit method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `submit_should_resolve_commandService_for_given_hcd,_call_submit_method_on_it_and_should_throw_exception_on_negative_submit_response_if_resumeOnError=false_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -476,7 +476,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `query should resolve commandService for given hcd and call query method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `query_should_resolve_commandService_for_given_hcd_and_call_query_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             val commandRunId: Id = mockk()
 
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
@@ -489,7 +489,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `query should resolve commandService for given hcd, call query method on it and should't throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `query_should_resolve_commandService_for_given_hcd,_call_query_method_on_it_and_should't_throw_exception_on_negative_submit_response_if_resumeOnError=true_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -504,7 +504,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `query should resolve commandService for given hcd, call query method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `query_should_resolve_commandService_for_given_hcd,_call_query_method_on_it_and_should_throw_exception_on_negative_submit_response_if_resumeOnError=false_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -519,7 +519,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should resolve commandService for given hcd and call queryFinal method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `queryFinal_should_resolve_commandService_for_given_hcd_and_call_queryFinal_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             val commandRunId: Id = mockk()
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
@@ -531,7 +531,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should use defaultTimeout if timeout is not provided | ESW-121, ESW-245 `() = runBlocking {
+        fun `queryFinal_should_use_defaultTimeout_if_timeout_is_not_provided_|_ESW-121,_ESW-245_`() = runBlocking {
             val commandRunId: Id = mockk()
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
@@ -543,7 +543,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should not throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `queryFinal_should_not_throw_exception_on_negative_submit_response_if_resumeOnError=true_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -558,7 +558,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `queryFinal_should_throw_exception_on_negative_submit_response_if_resumeOnError=false_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -573,7 +573,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should resolve commandService for given hcd and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `submitAndWait_should_resolve_commandService_for_given_hcd_and_call_submitAndWait_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -584,7 +584,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should use defaultTimeout if timeout is not provided | ESW-121, ESW-245 `() = runBlocking {
+        fun `submitAndWait_should_use_defaultTimeout_if_timeout_is_not_provided_|_ESW-121,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolvePekkoLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, defaultTimeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -595,7 +595,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should not throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `submitAndWait_should_not_throw_exception_on_negative_submit_response_if_resumeOnError=true_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -609,7 +609,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+        fun `submitAndWait_should_throw_exception_on_negative_submit_response_if_resumeOnError=false_|_ESW-121,_ESW-245,_ESW-139,_ESW-249_`() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -623,7 +623,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `subscribeCurrentState should resolve commandService for given hcd and call subscribeCurrentState method on it | ESW-121, ESW-245 `() = runBlocking {
+        fun `subscribeCurrentState_should_resolve_commandService_for_given_hcd_and_call_subscribeCurrentState_method_on_it_|_ESW-121,_ESW-245_`() = runBlocking {
             val stateName = mockk<StateName>()
             val stateNames = setOf(stateName)
             val currentStateSubscription: Subscription = mockk()
@@ -638,7 +638,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `diagnosticMode should resolve actorRef for given hcd and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
+        fun `diagnosticMode_should_resolve_actorRef_for_given_hcd_and_send_DiagnosticMode_message_to_it_|_ESW-118,_ESW-245_`() = runBlocking {
             val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
 
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
@@ -650,7 +650,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `operationsMode should resolve actorRef for given hcd and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
+        fun `operationsMode_should_resolve_actorRef_for_given_hcd_and_send_OperationsMode_message_to_it_|_ESW-118,_ESW-245_`() = runBlocking {
             val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
 
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
@@ -662,7 +662,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `goOnline should resolve actorRef for given hcd and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
+        fun `goOnline_should_resolve_actorRef_for_given_hcd_and_send_GoOnline_message_to_it_|_ESW-236,_ESW-245_`() = runBlocking {
             val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
 
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
@@ -674,7 +674,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `goOffline should resolve actorRef for given hcd and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
+        fun `goOffline_should_resolve_actorRef_for_given_hcd_and_send_GoOffline_message_to_it_|_ESW-236,_ESW-245_`() = runBlocking {
             val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
 
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
@@ -686,7 +686,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `lock should resolve actorRef for given hcd and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
+        fun `lock_should_resolve_actorRef_for_given_hcd_and_send_Lock_message_to_it_|_ESW-126,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { lockUnlockUtil.lock(hcdRef, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
@@ -696,7 +696,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `unlock should resolve actorRef for given hcd and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
+        fun `unlock_should_resolve_actorRef_for_given_hcd_and_send_Unlock_message_to_it_|_ESW-126,_ESW-245_`() = runBlocking {
             every { commandUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { lockUnlockUtil.unlock(hcdRef) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 

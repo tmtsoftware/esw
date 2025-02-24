@@ -18,7 +18,7 @@ class LoopDslTest : LoopDsl {
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     @Test
-    fun `loop should run till condition becomes true when interval is default | ESW-89`() = runBlocking {
+    fun `loop_should_run_till_condition_becomes_true_when_interval_is_default_|_ESW-89`() = runBlocking {
         val counter = AtomicInteger(0)
 
         val loopTime = measureTimeMillis {
@@ -34,7 +34,7 @@ class LoopDslTest : LoopDsl {
     }
 
     @Test
-    fun `loop should run till condition becomes true when interval is custom | ESW-89`() = runBlocking {
+    fun `loop_should_run_till_condition_becomes_true_when_interval_is_custom_|_ESW-89`() = runBlocking {
         val counter = AtomicInteger(0)
 
         val loopTime = measureTimeMillis {
@@ -50,7 +50,7 @@ class LoopDslTest : LoopDsl {
     }
 
     @Test
-    fun `loop should allow stopWhen conditions to be specified any number of times and anywhere in the loop body | ESW-89`() =
+    fun `loop_should_allow_stopWhen_conditions_to_be_specified_any_number_of_times_and_anywhere_in_the_loop_body_|_ESW-89`() =
         runBlocking {
             val counter1 = AtomicInteger(0)
             val counter2 = AtomicInteger(0)
@@ -70,7 +70,7 @@ class LoopDslTest : LoopDsl {
         }
 
     @Test
-    fun `loopAsync should run in the background till condition becomes true when interval is default | ESW-89`() =
+    fun `loopAsync_should_run_in_the_background_till_condition_becomes_true_when_interval_is_default_|_ESW-89`() =
         runBlocking {
             val counter = AtomicInteger(0)
 
@@ -91,7 +91,7 @@ class LoopDslTest : LoopDsl {
         }
 
     @Test
-    fun `loopAsync should run in the background till condition becomes true when interval is custom | ESW-89`() =
+    fun `loopAsync_should_run_in_the_background_till_condition_becomes_true_when_interval_is_custom_|_ESW-89`() =
         runBlocking {
             val counter = AtomicInteger(0)
 
@@ -112,7 +112,7 @@ class LoopDslTest : LoopDsl {
         }
 
     @Test
-    fun `waitFor should wait for condition to become true before executing rest of the loop body | ESW-89`() =
+    fun `waitFor_should_wait_for_condition_to_become_true_before_executing_rest_of_the_loop_body_|_ESW-89`() =
         runBlocking {
             val numExposures = 5
             var exposureCount = 0

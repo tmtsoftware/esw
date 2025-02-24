@@ -68,7 +68,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
       val multiJVMEventSubscription = eventSubscriber.subscribeActorRef(Set(multiJVMCommandEventKey), testProbe.ref)
       multiJVMEventSubscription.ready().await
       testProbe.expectMessageType[SystemEvent] // discard invalid event
-      //##############
+      // ##############
       enterBarrier("submit-sequence-to-ocs")
       Thread.sleep(500)
 

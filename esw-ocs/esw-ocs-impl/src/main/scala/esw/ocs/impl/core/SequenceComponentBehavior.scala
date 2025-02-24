@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * @param log - logger
  * @param locationService - an instance of Location Service
  * @param sequencerServerFactory - an Instance of SequencerServerFactory
- * @param actorSystem - an Pekko ActorSystem
+ * @param actorSystem - a Pekko ActorSystem
  */
 class SequenceComponentBehavior(
     prefix: Prefix,

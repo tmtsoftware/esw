@@ -18,9 +18,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: coursier/setup-action@v1.2.0-M2
+      - uses: coursier/setup-action@v1.2.0
         with:
-          jvm: temurin:1.17
+          jvm: temurin:1.21
           apps: sbt
       - uses: coursier/cache-action@v6
 
@@ -31,7 +31,7 @@ jobs:
         run: |
           curl -s https://get.sdkman.io | bash
           source "/home/runner/.sdkman/bin/sdkman-init.sh"
-          sdk install kotlin 1.9.20
+          sdk install kotlin 2.1.0
           sudo ln -s $(which kotlinc) /usr/local/bin/kotlinc
 
       - name: Build
