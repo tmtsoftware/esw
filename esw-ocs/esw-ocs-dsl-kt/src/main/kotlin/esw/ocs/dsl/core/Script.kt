@@ -55,6 +55,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         error("Exception thrown in script with the message: [${exception.message}], invoking exception handler")
+        exception.printStackTrace()
         scriptDsl.executeExceptionHandlers(exception)
     }
 

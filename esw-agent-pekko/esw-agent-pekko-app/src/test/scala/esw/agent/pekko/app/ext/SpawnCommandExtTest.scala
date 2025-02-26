@@ -20,8 +20,9 @@ class SpawnCommandExtTest extends BaseTestSuite {
   private val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
   private implicit val ec: ExecutionContext              = system.executionContext
 
-  private val replyTo         = mock[ActorRef[SpawnResponse]]
-  private val compName        = "dummy"
+  private val replyTo  = mock[ActorRef[SpawnResponse]]
+  private val compName = "dummy"
+  // Note: URL Not actually used
   private val channel         = "https://github.com/apps.json"
   private val version         = "1.0.0"
   private val obsModeConf     = "obsMode.conf"
