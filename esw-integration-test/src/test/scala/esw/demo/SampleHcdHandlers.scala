@@ -47,12 +47,13 @@ import scala.jdk.DurationConverters.ScalaDurationOps
  *
  * *********************************************************
  */
-object Main extends App {
-
+object Main {
   private val wiring = new FrameworkWiring()
-  LoggingSystemFactory.forTestingOnly()(wiring.actorSystem)
 
-  Await.result(Standalone.spawn(ConfigFactory.parseResources("demoHcd.conf"), wiring), 20.seconds)
+  def main(args: Array[String]): Unit = {
+    LoggingSystemFactory.forTestingOnly()(wiring.actorSystem)
+    Await.result(Standalone.spawn(ConfigFactory.parseResources("demoHcd.conf"), wiring), 20.seconds)
+  }
 }
 
 class SampleHcdHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
