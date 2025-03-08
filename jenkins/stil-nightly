@@ -22,6 +22,7 @@ pipeline {
                 sh "cs update cs"
                 sh "cs version"
                 sh "hostnamectl"
+                sh "echo $HOME"
                 sh "echo $PATH"
                 sh "which cs"
                 sh "cs java --jvm temurin:1.21 -version"
