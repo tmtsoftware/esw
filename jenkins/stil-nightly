@@ -25,18 +25,19 @@ pipeline {
                 sh "echo $HOME"
                 sh "echo $PATH"
                 sh "which cs"
-                sh "cs java --jvm temurin:1.21 -version"
+                sh "cs java --available"
+                sh "cs java --jvm temurin:1.21.0 -version"
                 sh "sbt scalafmtCheck"
-                sh "eval \$(cs java --jvm temurin:1.21 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
-                sh "eval \$(cs java --jvm temurin:1.21 --env) && sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
-                sh "eval \$(cs java --jvm temurin:1.21 --env) && sbt -Dsbt.log.noformat=true publishLocal"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true publishLocal"
             }
         }
 
         stage('Test') {
 
             steps {
-                sh "eval \$(cs java --jvm temurin:1.21 --env) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
             }
 
             post {
@@ -69,7 +70,7 @@ pipeline {
 
         stage('Multi-Jvm Test') {
             steps {
-              sh "eval \$(cs java --jvm temurin:1.21 --env) && sbt -Dsbt.log.noformat=true -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
+              sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
             }
         }
     }
