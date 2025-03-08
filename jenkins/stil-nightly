@@ -21,6 +21,7 @@ pipeline {
                 sh "cs setup -y"
                 sh "cs update cs"
                 sh "cs version"
+                sh "hostnamectl"
                 sh "cs java --jvm temurin:1.21 -version"
                 sh "sbt scalafmtCheck"
                 sh "eval \$(cs java --jvm temurin:1.21 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
