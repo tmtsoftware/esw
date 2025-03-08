@@ -19,7 +19,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh "cs setup -y"
-                sh "cs update"
+                sh "cs update cs"
                 sh "cs version"
                 sh "cs java --jvm temurin:1.21 -version"
                 sh "sbt scalafmtCheck"
