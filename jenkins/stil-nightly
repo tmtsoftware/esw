@@ -18,7 +18,9 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh "cs update; cs java --jvm temurin:1.21.0 -version"
+                sh "uname -a"
+                sh "cs version"
+                sh "cs java --jvm temurin:1.21.0 -version"
                 sh "sbt scalafmtCheck"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
