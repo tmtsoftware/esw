@@ -252,7 +252,7 @@ Some of the examples for Actor remote message codecs are `OcsCodecs`, `Sequencer
 
 #### HTTP-based Communication
 
-HTTP based services are implemented using [msocket](https://github.com/tmtsoftware/msocket) library which usage [Pekko HTTP](https://doc.pekko.io/docs/pekko-http/current/) under the hood.
+HTTP based services are implemented using [msocket](https://github.com/tmtsoftware/msocket) library which usage [Pekko HTTP](https://pekko.apache.org/docs/pekko-http/current/) under the hood.
 
 MSocket exposes two factories, `PostRouteFactory[Req]` and `WebsocketRouteFactory[Req]` for generating HTTP and Websocket routes respectively.
 Both these factories require implicit decoder in scope, so that Pekko HTTP server can decode the incoming HTTP request.

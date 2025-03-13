@@ -41,10 +41,10 @@ jobs:
           sbt -DenableFatalWarnings=true makeSite
 
       - name: Unit Tests
-        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
+        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests Test/test
 
       - name: Integration Tests
-        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
+        run: sbt -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/Test/test
 
       - name: Coverage Report
         run: |
@@ -64,7 +64,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:b7997a9 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/branch-6.0.x/apps.json rtm:b7997a9 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
 
       - name: Upload RTM
         if: always()

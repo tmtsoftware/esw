@@ -21,7 +21,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "20.6.1"
+          node-version: "22.14.0"
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Redis
@@ -51,7 +51,7 @@ jobs:
           sbt -DenableFatalWarnings=true makeSite
 
       - name: Tests
-        run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true Test/test
 
       - name: Coverage Report
         run: |
@@ -59,10 +59,10 @@ jobs:
           sbtn coverageAggregate
 
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Coverage Report
-          path: target/scala-2.13/scoverage-report
+          path: target/scala-3.6.2/scoverage-report
 
       - name: Delete js targets
         continue-on-error: true
@@ -75,12 +75,12 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:b7997a9 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/branch-6.0.x/apps.json rtm:b7997a9 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
 
       - name: Upload RTM
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: RTM
           path: target/RTM
