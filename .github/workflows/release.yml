@@ -9,8 +9,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      CSW_VERSION: "5726045"
-      ESW_OCS_ENG_UI_VERSION: "0.3.1.TODO"
+      CSW_VERSION: "f3455fc"
+      ESW_OCS_ENG_UI_VERSION: "1cc4bac"
     steps:
       - uses: actions/checkout@v4
       - uses: coursier/setup-action@v1.2.0
@@ -62,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Coverage Report
-          path: target/scala-3.6.2/scoverage-report
+          path: target/scala-3.6.4/scoverage-report
 
       - name: Delete js targets
         continue-on-error: true

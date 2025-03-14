@@ -260,11 +260,11 @@ class AdminImplTest extends BaseTestSuite {
       val adminService: AdminImpl          = new AdminImpl(locationService)
       val lifecycleState                   = randomFrom(SupervisorLifecycleState.values.toList)
 
-      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetSupervisorLifecycleState] {
-        case GetSupervisorLifecycleState(replyTo) =>
+      val probe =
+        actorTestKit.spawn(Behaviors.receiveMessage[GetSupervisorLifecycleState] { case GetSupervisorLifecycleState(replyTo) =>
           replyTo ! lifecycleState
           Behaviors.same
-      })
+        })
 
       when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
@@ -296,11 +296,11 @@ class AdminImplTest extends BaseTestSuite {
       val adminService: AdminImpl          = new AdminImpl(locationService)
       val lifecycleState                   = randomFrom(ContainerLifecycleState.values.toList)
 
-      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetContainerLifecycleState] {
-        case GetContainerLifecycleState(replyTo) =>
+      val probe =
+        actorTestKit.spawn(Behaviors.receiveMessage[GetContainerLifecycleState] { case GetContainerLifecycleState(replyTo) =>
           replyTo ! lifecycleState
           Behaviors.same
-      })
+        })
 
       when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(

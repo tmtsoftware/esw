@@ -9,20 +9,20 @@ import scala.util.Using
 
 object Libs {
 
-  val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M29"
+  val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M30"
   val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.5") // MIT License
   val `mockito`           = "org.scalatestplus"            %% "mockito-3-4"       % "3.2.10.0"
   val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.23")
   val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.19") // Apache License 2.0
   val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.1.8"
   val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
-  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "b7997a9"
+  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "d45709a"
 
-  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.10.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "8285bb5" // Apache 2.0
+  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.11.RELEASE"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "2268e39" // Apache 2.0
 
   // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
-  val `ammonite` = ("com.lihaoyi" % "ammonite_3.4.3" % "3.0.0-2-6342755f")
+  val `ammonite` = ("com.lihaoyi" % "ammonite_3.6.3" % "3.0.2")
 
   val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.2.2"
 //  val `slf4j-api`     = "org.slf4j"          % "slf4j-api"    % "2.0.7"
@@ -30,8 +30,7 @@ object Libs {
 }
 
 object MSocket {
-  //  val Version = "0.6.0"
-  val Version = "f35e6ea"
+    val Version = "0.7.0"
 
   val `msocket-api`  = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % Version)
   val `msocket-http` = "com.github.tmtsoftware.msocket" %% "msocket-http" % Version
@@ -68,7 +67,7 @@ object Csw {
 }
 
 object Pekko {
-  val Version = "1.1.2" // all pekko is Apache License 2.0
+  val Version = "1.1.3" // all pekko is Apache License 2.0
   val Org     = "org.apache.pekko"
 
   val `pekko-actor-typed`  = Org %% "pekko-actor-typed"  % Version

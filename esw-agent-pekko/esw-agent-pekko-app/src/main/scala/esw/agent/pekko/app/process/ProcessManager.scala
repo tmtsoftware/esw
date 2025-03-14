@@ -36,9 +36,8 @@ class ProcessManager(
     verifyComponentIsNotAlreadyRegistered(command.connection)
       .flatMapE(_ => startComponent(command))
       .flatMapE(process =>
-        waitForRegistration(command.connection, AgentTimeouts.DurationToWaitForComponentRegistration).flatMapE(_ =>
-          reconcile(process, command.connection)
-        )
+        waitForRegistration(command.connection, AgentTimeouts.DurationToWaitForComponentRegistration)
+          .flatMapE(_ => reconcile(process, command.connection))
       )
 
   // un-registration is done as a part of process.onComplete callback
@@ -95,9 +94,8 @@ class ProcessManager(
   // in case process is still alive it just returns process as a Future
   private def reconcile(process: Process, connection: Connection): Future[Either[String, Process]] =
     if (!process.isAlive)
-      unregisterComponent(connection).transform(_ =>
-        Try(Left("Process terminated before registration was successful".tap(log.warn(_))))
-      )
+      unregisterComponent(connection)
+        .transform(_ => Try(Left("Process terminated before registration was successful".tap(log.warn(_)))))
     else Future.successful(Right(process))
 
   // it checks if the component of the given connection is registered in the location service within the given timeout
