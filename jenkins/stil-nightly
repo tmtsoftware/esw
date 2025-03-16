@@ -55,7 +55,7 @@ pipeline {
                     ])
 
                     // Generate RTM
-                    sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:b7997a9 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
+                    sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:d45709a -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
                     // Upload RTM
                     publishHTML(target: [
                         alwaysLinkToLastBuild: false,
