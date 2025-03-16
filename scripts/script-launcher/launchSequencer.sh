@@ -69,14 +69,15 @@ if [[ ${OBS_MODE} == "" ]]; then
 fi
 # check if channel is available in env (used in test)
 if [[ ${CS_CHANNEL} == "" ]]; then
-  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
+#  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
+  CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/osw-apps/branch-6.0.x/apps.json"
 fi
 
 # ---------------- Compiling ------------------
 echo "[INFO] Compiling the script:" $FILE_PATH
 JARNAME=$CLASSNAME.jar
 
-kotlinc -jvm-target 1.8 -Xuse-experimental=kotlin.time.ExperimentalTime -classpath "$(cs fetch --channel $CS_CHANNEL esw-ocs-app$VERSION --classpath)" $FILE_PATH -d $JARNAME
+kotlinc -Xuse-fir-lt=false -jvm-target 21 -opt-in=kotlin.time.ExperimentalTime -Xallow-any-scripts-in-source-roots -classpath "$(cs fetch --channel $CS_CHANNEL esw-ocs-app$VERSION --classpath)" $FILE_PATH -d $JARNAME
 
 if [[ $? -eq 1 ]]; then
   echo "[ERROR] Compilation failed. Fix the compiler errors and also Make sure script is .kts file"

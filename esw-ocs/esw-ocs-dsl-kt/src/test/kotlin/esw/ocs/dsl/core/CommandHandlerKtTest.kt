@@ -25,7 +25,7 @@ internal class CommandHandlerKtTest {
     @Nested
     inner class OnError {
         @Test
-        fun `should be called when command handler throws an exception | ESW-249`() = runBlocking {
+        fun `should_be_called_when_command_handler_throws_an_exception_|_ESW-249`(): Unit = runBlocking {
             var errorHandlerCounter = 0
             var commandHandlerCounter = 0
 
@@ -44,7 +44,7 @@ internal class CommandHandlerKtTest {
         }
 
         @Test
-        fun `should not be called when command handler does not throw an exception | ESW-249`() = runBlocking {
+        fun `should_not_be_called_when_command_handler_does_not_throw_an_exception_|_ESW-249`(): Unit = runBlocking {
             var errorHandlerCounter = 0
             var commandHandlerCounter = 0
 
@@ -65,7 +65,7 @@ internal class CommandHandlerKtTest {
     @Nested
     inner class Retry {
         @Test
-        fun `should retry command handler until it passes | ESW-249`() = runBlocking {
+        fun `should_retry_command_handler_until_it_passes_|_ESW-249`(): Unit = runBlocking {
             var errorHandlerCounter = 0
             var commandHandlerCounter = 0
 
@@ -94,7 +94,7 @@ internal class CommandHandlerKtTest {
         }
 
         @Test
-        fun `should retry command handler until retry count becomes 0 | ESW-249`() = runBlocking {
+        fun `should_retry_command_handler_until_retry_count_becomes_0_|_ESW-249`(): Unit = runBlocking {
             var errorHandlerCounter = 0
             var commandHandlerCounter = 0
 
@@ -114,7 +114,7 @@ internal class CommandHandlerKtTest {
         }
 
         @Test
-        fun `should retry command handler after given interval | ESW-249`() = runBlocking {
+        fun `should_retry_command_handler_after_given_interval_|_ESW-249`(): Unit = runBlocking {
             var errorHandlerCounter = 0
             var commandHandlerCounter = 0
 

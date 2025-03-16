@@ -1,6 +1,6 @@
 package esw.gateway.api
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.location.api.models.ComponentId
 import csw.logging.models.{Level, LogMetadata}

@@ -1,6 +1,6 @@
 package esw.services.apps
 
-import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
+import org.apache.pekko.actor.CoordinatedShutdown.ActorSystemTerminateReason
 import csw.network.utils.SocketUtils
 import csw.services.utils.ColoredConsole.GREEN
 import esw.commons.utils.files.FileUtils
@@ -34,7 +34,7 @@ object Gateway {
 
   // This method is for starting the Gateway and being called in the start hook for the Gateway
   private def startGateway(commandRoleConfigPath: Path): GatewayWiring =
-    GatewayMain.start(
+    GatewayMain.StartCommand.start(
       Some(SocketUtils.getFreePort),
       local = true,
       commandRoleConfigPath,

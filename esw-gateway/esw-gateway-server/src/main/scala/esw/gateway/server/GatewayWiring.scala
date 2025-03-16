@@ -1,9 +1,9 @@
 package esw.gateway.server
 
-import akka.Done
-import akka.actor.CoordinatedShutdown
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.http.scaladsl.server.Route
+import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import csw.alarm.api.scaladsl.AlarmService
 import csw.alarm.client.AlarmServiceFactory
@@ -23,7 +23,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{GatewayRequest, GatewayStreamRequest}
 import esw.gateway.api.{AdminApi, AlarmApi, EventApi, LoggingApi}
-import esw.gateway.impl._
+import esw.gateway.impl.*
 import esw.gateway.server.handlers.{GatewayPostHandler, GatewayWebsocketHandler}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{ActorRuntime, HttpService, Settings}
@@ -45,7 +45,7 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   private[server] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "gateway-system")
 
-  lazy val actorRuntime = new ActorRuntime(actorSystem)
+  final lazy val actorRuntime = new ActorRuntime(actorSystem)
   import actorRuntime.{ec, typedSystem}
 
   private lazy val config = actorSystem.settings.config

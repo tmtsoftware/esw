@@ -1,6 +1,6 @@
 package esw.ocs.core
 
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.logging.models.Level.{ERROR, FATAL, TRACE}
 import csw.logging.models.LogMetadata
@@ -13,7 +13,7 @@ import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
 class DynamicLogLevelTest extends EswTestKit(Gateway) with LoggingCodecs with GatewayCodecs {
-  private var sequencerLocation: AkkaLocation = _
+  private var sequencerLocation: PekkoLocation = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()

@@ -1,9 +1,9 @@
 package esw.services.apps
 
-import akka.actor.CoordinatedShutdown.ActorSystemTerminateReason
+import org.apache.pekko.actor.CoordinatedShutdown.ActorSystemTerminateReason
 import com.typesafe.config.Config
 import csw.prefix.models.Prefix
-import esw.agent.akka.app.{AgentApp, AgentSettings, AgentWiring}
+import esw.agent.pekko.app.{AgentApp, AgentSettings, AgentWiring}
 import esw.constants.CommonTimeouts
 import esw.services.internal.ManagedService
 
@@ -24,7 +24,7 @@ object Agent {
 
   // This method is for starting the agent and being called in the start hook for the Agent
   private def startAgent(prefix: Prefix, agentConfig: Config, hostConfigPath: Option[String]): AgentWiring =
-    AgentApp.start(AgentSettings(prefix, agentConfig), hostConfigPath, isConfigLocal = true)
+    AgentApp.StartCommand.start(AgentSettings(prefix, agentConfig), hostConfigPath, isConfigLocal = true)
 
   // This method is for stopping the agent and being called in the stop hook for the Agent
   private def stopAgent(wiring: AgentWiring): Unit =

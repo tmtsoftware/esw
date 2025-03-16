@@ -1,7 +1,7 @@
 package esw.ocs.dsl.lowlevel
 
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.SpawnProtocol
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.SpawnProtocol
 import csw.alarm.api.javadsl.IAlarmService
 import csw.config.api.javadsl.IConfigClientService
 import csw.config.client.javadsl.JConfigClientFactory

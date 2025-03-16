@@ -1,6 +1,6 @@
 package esw.performance
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.scaladsl.LocationService
@@ -68,7 +68,7 @@ object InfrastructureOverheadTest extends GatewayUtils with KeycloakUtils {
 
   private def perfTestJvmOnlyScenario(): Unit = {
     // taking location of esw-sequencer
-    val eswSequencerLocation = resolveAkkaLocation(Prefix(ESW, "perfTest"), Sequencer)
+    val eswSequencerLocation = resolvePekkoLocation(Prefix(ESW, "perfTest"), Sequencer)
     val eswSequencerClient   = SequencerApiFactory.make(eswSequencerLocation)
     val resultsFile          = "results_scenario_jvm_only.txt"
 

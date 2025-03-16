@@ -10,9 +10,9 @@ This section describes the parts of an ESW application and introduces the termin
 
 ESW applications are divided into following three major categories:
 
-1. Actor based, for example, Agent Akka Application.
+1. Actor based, for example, Agent Pekko Application.
 1. HTTP based, for example, Agent Service, Gateway Application.
-1. Embedded HTTP + Actor based - Such applications exposes two protocols for communication, one is HTTP and other is Akka. for example, ESW OCS (Sequencer) Application.
+1. Embedded HTTP + Actor based - Such applications exposes two protocols for communication, one is HTTP and other is Pekko. for example, ESW OCS (Sequencer) Application.
 
 Most if not all the ESW applications follows the following conventions for organizing the codebase:
 
@@ -78,7 +78,7 @@ This module has class [HttpService]($github.base_url$/esw-http-core/src/main/sca
 
 @@@ note
 The User Interface Gateway is only registered as an HTTP service in Location Service. Because of its role in the TMT architecture as the gateway for HTTP requests from browser-based user interfaces,
-and its role in authentication of users, it does not provide a public Akka location in the Location Service.
+and its role in authentication of users, it does not provide a public Pekko location in the Location Service.
 @@@
 
 ## Route Handlers
@@ -135,17 +135,17 @@ Examples of service API classes are:
 
 - For Sequence Manager, the API is: [SequencerManagerApi]($github.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/SequenceManagerApi.scala).
 
-Because an ESW application often provides both an Akka-based client and an HTTP-based client, the API class may be used in 2 places.
+Because an ESW application often provides both a Pekko-based client and an HTTP-based client, the API class may be used in 2 places.
 
-## Impl Classes (Akka Clients)
+## Impl Classes (Pekko Clients)
 
-The Impl or implementation classes are one implementation of the API. In an ESW application based on Akka, the service itself is implemented as Akka-based actors in the `Behavior classes`.
+The Impl or implementation classes are one implementation of the API. In an ESW application based on Pekko, the service itself is implemented as Pekko-based actors in the `Behavior classes`.
 
 The API is written as a typical API with methods that are called and return results.  
-Most of the time, the impl classes are converting the API method to an Akka-based message and sending the message to the Behavior actor.
+Most of the time, the impl classes are converting the API method to a Pekko-based message and sending the message to the Behavior actor.
 If it gets a response as a message, it converts it to the correct type for the API.
 
-Examples of impl or Akka client classes are:
+Examples of impl or Pekko client classes are:
 
 - For the Sequencer, the impl is:  [SequencerImpl]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/client/SequencerImpl.scala).
 
@@ -155,14 +155,14 @@ These impl classes can call other services to fulfill the requests or handle it 
 
 ## Behavior Classes
 
-At their core, the ESW applications are implemented as Akka Actors.
-A `behavior class` is the top level Akka implementation of the service.
-It is called a behavior because that's what Akka calls the type returned by a newly constructed typed actor.
+At their core, the ESW applications are implemented as Pekko Actors.
+A `behavior class` is the top level Pekko implementation of the service.
+It is called a behavior because that's what Pekko calls the type returned by a newly constructed typed actor.
 
-Behavior classes receive Akka messages, which are often defined in a `protocol` package such as [this]($github.dir.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/protocol/),
+Behavior classes receive Pekko messages, which are often defined in a `protocol` package such as [this]($github.dir.base_url$/esw-sm/esw-sm-api/shared/src/main/scala/esw/sm/api/protocol/),
 which includes two message files for the Sequence Manager requests and responses.
 The Impl classes are clients, and don't have logic to manage the application state; state and functionality is handled by the actor behavior classes.
-State-based functionality is often implemented using the Akka actor state machine pattern.
+State-based functionality is often implemented using the Pekko actor state machine pattern.
 
 Examples of behavior classes are:
 
@@ -170,14 +170,14 @@ Examples of behavior classes are:
 
 - For Sequence Manager, the behavior is: [SequencerManagerBehavior]($github.base_url$/esw-sm/esw-sm-impl/src/main/scala/esw/sm/impl/core/SequenceManagerBehavior.scala).
 
-- For Agent, the behavior is: [AgentActor]($github.base_url$/esw-agent-akka/esw-agent-akka-app/src/main/scala/esw/agent/akka/app/AgentActor.scala).
+- For Agent, the behavior is: [AgentActor]($github.base_url$/esw-agent-pekko/esw-agent-pekko-app/src/main/scala/esw/agent/pekko/app/AgentActor.scala).
 
 ## Codecs (Serialization/Deserialization)
 
 When a request is sent over the network to a service, it needs to be converted from the programming language model and sent over the network in some agreed upon format.
 Serialization (encoding/marshalling) is the conversion from the programming language model to the network format,
 and deserialization (decoding/unmarshalling) is the conversion back from the network format to the programming language representation.
-In CSW/ESW Akka messages between remote actors are serialized into a format called Concise Binary Object Representation or CBOR (see [CBOR RFC8949 standard](https://cbor.io)).
+In CSW/ESW Pekko messages between remote actors are serialized into a format called Concise Binary Object Representation or CBOR (see [CBOR RFC8949 standard](https://cbor.io)).
 Messages using the HTTP transport are serialized and deserialized to Javscript Object Notation or JSON (see [JSON spec](https://www.json.org/json-en.html)).
 
 For serialization, CSW/ESW applications use the open-source [Borer](https://sirthias.github.io/borer/) library to automatically generate serialization code that converts model classes to/from the JSON and CBOR formats.
@@ -205,8 +205,8 @@ Here you see `deriveAllCodecs`, which causes the generation of decoder/encoder f
 
 There are mainly two use cases when you need to serialize/deserialize a request and response:
 
-1. Remote Actor Communication (Akka actor)
-1. HTTP Communication (Akka HTTP
+1. Remote Actor Communication (Pekko actor)
+1. HTTP Communication (Pekko HTTP
 
 #### Remote Actor Communication
 
@@ -214,59 +214,59 @@ Actors registers their location with Location Service when they are created.
 Using this location, other actors or services running on different JVM's or machine can communicate by message passing.
 These messages have to undergo some form of serialization (i.e. the objects have to be converted to and from byte arrays).
 This is where de/serialization (codecs) come into play. We use [CBOR](https://cbor.io/) format uniformly for serializing/deserializing actor messages.
-For example, when a Sequencer receives requests from the User Interface Gateway via Akka actors due to a UI call, the message is serialized as CBOR.
+For example, when a Sequencer receives requests from the User Interface Gateway via Pekko actors due to a UI call, the message is serialized as CBOR.
 
-The first step for the Akka/CBOR case is to add Borer codecs for message model classes so that encoder/decoders can be derived as described above.
+The first step for the Pekko/CBOR case is to add Borer codecs for message model classes so that encoder/decoders can be derived as described above.
 An example is: [OcsMsgCodecs]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/OcsMsgCodecs.scala) that extends `OcsCodecs` used above.
 This example shows the Borer Codec type parameterized with the message class model classes that are sent to Sequencer in requests and responses.
 
-In order for the Akka infrastructure to see and use the Borer serializing code,
-a class is created that inherits from the abstract Akka serializer infrastructure class: `CborAkkaSerializer` that is part of the CSW code and `register` each of the service message classes.
+In order for the Pekko infrastructure to see and use the Borer serializing code,
+a class is created that inherits from the abstract Pekko serializer infrastructure class: `CborPekkoSerializer` that is part of the CSW code and `register` each of the service message classes.
 
-For the Sequencer messages, this class is called [OcsAkkaSerializer]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/OcsAkkaSerializer.scala).
-The message classes must also be marked as Serializable, which in this case is done with the [OcsAkkaSerializable]($github.base_url$/esw-ocs/esw-ocs-api/shared/src/main/scala/esw/ocs/api/codecs/OcsAkkaSerializable.scala) trait.
-Both the serializer and the serializable class are present in the configuration of application (through the classpath) so that Akka actors can use them for
+For the Sequencer messages, this class is called [OcsPekkoSerializer]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/OcsPekkoSerializer.scala).
+The message classes must also be marked as Serializable, which in this case is done with the [OcsPekkoSerializable]($github.base_url$/esw-ocs/esw-ocs-api/shared/src/main/scala/esw/ocs/api/codecs/OcsPekkoSerializable.scala) trait.
+Both the serializer and the serializable class are present in the configuration of application (through the classpath) so that Pekko actors can use them for
 serialization/deserialization.
 
-The final step needed is configuration to make sure Akka is aware of the special serialization by hooking OcsAkkaSerializer into the Akka infrastructure.
-For the Sequencer (and any Akka-based app), this is done in the [reference.conf]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/resources/reference.conf) file of the clients of Sequencer.
-As shown below, the `ocs-framework-cbor` property is set to the class name of `OcsAkkaSerializer`, and whenever a class is marked with `OcsAkkaSerializable` Akka will use the `ocs-framework-cbor` serializer.
+The final step needed is configuration to make sure Pekko is aware of the special serialization by hooking OcsPekkoSerializer into the Pekko infrastructure.
+For the Sequencer (and any Pekko-based app), this is done in the [reference.conf]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/resources/reference.conf) file of the clients of Sequencer.
+As shown below, the `ocs-framework-cbor` property is set to the class name of `OcsPekkoSerializer`, and whenever a class is marked with `OcsPekkoSerializable` Pekko will use the `ocs-framework-cbor` serializer.
 
 ```scala
-akka.actor {
+pekko.actor {
   serializers {
-    ocs-framework-cbor = "esw.ocs.api.actor.OcsAkkaSerializer"
+    ocs-framework-cbor = "esw.ocs.api.actor.OcsPekkoSerializer"
   }
   serialization-bindings {
-    "esw.ocs.api.codecs.OcsAkkaSerializable" = ocs-framework-cbor
+    "esw.ocs.api.codecs.OcsPekkoSerializable" = ocs-framework-cbor
   }
   provider = remote
 }
 ```
 
-This resource file is part of the **esw-ocs-api** package, so any client or service that depends on this api jar file will be configured to serialize and deserialize Akka CBOR-based messages.
+This resource file is part of the **esw-ocs-api** package, so any client or service that depends on this api jar file will be configured to serialize and deserialize Pekko CBOR-based messages.
 
-Refer [Akka Serialization](https://doc.akka.io/libraries/akka-core/current/serialization.html) documentation for more details on how to wire up custom CBOR based serializer up with Akka.
+Refer [Pekko Serialization](https://doc.pekko.io/docs/pekko/current/serialization.html) documentation for more details on how to wire up custom CBOR based serializer up with Pekko.
 
 Some of the examples for Actor remote message codecs are `OcsCodecs`, `SequencerServiceCodecs` etc
 
 #### HTTP-based Communication
 
-HTTP based services are implemented using [msocket](https://github.com/tmtsoftware/msocket) library which usage [Akka HTTP](https://doc.akka.io/libraries/akka-http/current/) under the hood.
+HTTP based services are implemented using [msocket](https://github.com/tmtsoftware/msocket) library which usage [Pekko HTTP](https://pekko.apache.org/docs/pekko-http/current/) under the hood.
 
 MSocket exposes two factories, `PostRouteFactory[Req]` and `WebsocketRouteFactory[Req]` for generating HTTP and Websocket routes respectively.
-Both these factories require implicit decoder in scope, so that Akka HTTP server can decode the incoming HTTP request.
-This mechanism is called `Unmarshalling` in Akka HTTPs terminology.
+Both these factories require implicit decoder in scope, so that Pekko HTTP server can decode the incoming HTTP request.
+This mechanism is called `Unmarshalling` in Pekko HTTPs terminology.
 These decoders are brought into scope by [SequencerWiring]($github.base_url$/esw-ocs/esw-ocs-app/src/main/scala/esw/ocs/app/wiring/SequencerWiring.scala) extending from [SequencerServiceCodecs]($github.base_url$/esw-ocs/esw-ocs-api/shared/src/main/scala/esw/ocs/api/codecs/SequencerServiceCodecs.scala).
 
 Similarly, `PostHandler` and `WebsocketHandler` are responsible for processing incoming HTTP requests and returning HTTP response.
-Hence, it requires implicit encoders in scope. This mechanism is called `Marshalling` in Akka HTTPs terminology.
+Hence, it requires implicit encoders in scope. This mechanism is called `Marshalling` in Pekko HTTPs terminology.
 In case of `SequencerPostHandler` and `SequencerWebsocketHandler`, these encoders are brought into scope using following import `import esw.ocs.api.codecs.SequencerServiceCodecs.*`
 
 Another place where de/serialization required is while creating HTTP `postClient` using `msocket` library.
 The critical part of this is that the request must be serialized to JSON to be included as the payload to an HTTP POST method and deserialize the JSON response coming from HTTP service.
 
-An example of this is the HTTP client for Sequencer: [SequencerClient]($github.base_url$/esw-ocs/esw-ocs-api/shared/src/main/scala/esw/ocs/api/client/SequencerClient.scala), which is created in the [SequencerApiFactory]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/client/SequencerApiFactory.scala) (which also creates the Akka client).
+An example of this is the HTTP client for Sequencer: [SequencerClient]($github.base_url$/esw-ocs/esw-ocs-api/shared/src/main/scala/esw/ocs/api/client/SequencerClient.scala), which is created in the [SequencerApiFactory]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/client/SequencerApiFactory.scala) (which also creates the Pekko client).
 
 The client code must be constructed with the serialization codecs for the HTTP-based requests and responses.
 For example, [SequencerServiceCodecs]($github.base_url$/esw-ocs/esw-ocs-api/shared/src/main/scala/esw/ocs/api/codecs/SequencerServiceCodecs.scala) extends `OcsCodecs` mentioned above.

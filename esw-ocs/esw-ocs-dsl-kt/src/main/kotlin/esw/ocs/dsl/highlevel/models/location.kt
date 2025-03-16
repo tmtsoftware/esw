@@ -16,7 +16,7 @@ val SequenceComponent: ComponentType = JComponentType.SequenceComponent
 val Service: ComponentType = JComponentType.Service
 
 /* ******** Helpers to create ConnectionType ******** */
-val AkkaType: ConnectionType = JConnectionType.AkkaType
+val PekkoType: ConnectionType = JConnectionType.PekkoType
 val TcpType: ConnectionType = JConnectionType.TcpType
 val HttpType: ConnectionType = JConnectionType.HttpType
 

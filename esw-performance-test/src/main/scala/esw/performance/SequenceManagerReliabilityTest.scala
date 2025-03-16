@@ -1,6 +1,6 @@
 package esw.performance
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
@@ -33,10 +33,10 @@ object SequenceManagerReliabilityTest extends LocationUtils {
   LocationServerStatus.requireUpLocally()
 
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
-  private val smLocation            = resolveAkkaLocation(sequenceManagerPrefix, Service)
+  private val smLocation            = resolvePekkoLocation(sequenceManagerPrefix, Service)
   LoggingSystemFactory.start("SMReliabilityTest", "0.1.0-SNAPSHOT", Networks().hostname, actorSystem)
 
-  private val smClient      = SequenceManagerApiFactory.makeAkkaClient(smLocation)
+  private val smClient      = SequenceManagerApiFactory.makePekkoClient(smLocation)
   private val loggerFactory = new LoggerFactory(Prefix(ESW, "reliability.perf.test"))
   private val log           = loggerFactory.getLogger
 

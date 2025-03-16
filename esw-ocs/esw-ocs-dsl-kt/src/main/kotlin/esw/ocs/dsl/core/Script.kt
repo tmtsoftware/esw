@@ -1,7 +1,7 @@
 package esw.ocs.dsl.core
 
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.SpawnProtocol
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.SpawnProtocol
 import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
@@ -55,6 +55,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         error("Exception thrown in script with the message: [${exception.message}], invoking exception handler")
+        exception.printStackTrace()
         scriptDsl.executeExceptionHandlers(exception)
     }
 

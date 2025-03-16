@@ -1,8 +1,8 @@
 package esw.contract.data.agentservice
 
 import csw.contract.ResourceFetcher
-import csw.contract.generator.ClassNameHelpers._
-import csw.contract.generator._
+import csw.contract.generator.ClassNameHelpers.*
+import csw.contract.generator.*
 import esw.agent.service.api.codecs.AgentServiceCodecs
 import esw.agent.service.api.models.{AgentStatusResponse, KillResponse, SpawnResponse}
 import esw.agent.service.api.protocol.AgentServiceRequest

@@ -27,7 +27,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
     "return observation modes with status for obsModesDetails request | ESW-466" in {
       val obsModesDetailsResponse = mock[ObsModesDetailsResponse]
       when(
-        postClient.requestResponse[ObsModesDetailsResponse](argsEq(GetObsModesDetails))(
+        postClient.requestResponse[ObsModesDetailsResponse](argsEq(GetObsModesDetails))(using
           any[Decoder[ObsModesDetailsResponse]](),
           any[Encoder[ObsModesDetailsResponse]]()
         )
@@ -40,7 +40,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       val provisionResponse = mock[ProvisionResponse]
       val provisionConfig   = ProvisionConfig(Prefix(ESW, "primary") -> 1)
       when(
-        postClient.requestResponse[ProvisionResponse](argsEq(Provision(provisionConfig)))(
+        postClient.requestResponse[ProvisionResponse](argsEq(Provision(provisionConfig)))(using
           any[Decoder[ProvisionResponse]](),
           any[Encoder[ProvisionResponse]]()
         )
@@ -52,7 +52,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
     "return configure response for configure request | ESW-362" in {
       val configureResponse = mock[ConfigureResponse]
       when(
-        postClient.requestResponse[ConfigureResponse](argsEq(Configure(obsMode)))(
+        postClient.requestResponse[ConfigureResponse](argsEq(Configure(obsMode)))(using
           any[Decoder[ConfigureResponse]](),
           any[Encoder[ConfigureResponse]]()
         )
@@ -65,7 +65,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       val restartSequencerResponse = mock[RestartSequencerResponse]
       val restartSequencerMsg      = RestartSequencer(ESW, obsMode, None)
       when(
-        postClient.requestResponse[RestartSequencerResponse](argsEq(restartSequencerMsg))(
+        postClient.requestResponse[RestartSequencerResponse](argsEq(restartSequencerMsg))(using
           any[Decoder[RestartSequencerResponse]](),
           any[Encoder[RestartSequencerResponse]]()
         )
@@ -79,7 +79,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
 
       val restartSequencerMsg = RestartSequencer(ESW, obsMode, variation)
       when(
-        postClient.requestResponse[RestartSequencerResponse](argsEq(restartSequencerMsg))(
+        postClient.requestResponse[RestartSequencerResponse](argsEq(restartSequencerMsg))(using
           any[Decoder[RestartSequencerResponse]](),
           any[Encoder[RestartSequencerResponse]]()
         )
@@ -92,7 +92,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
       val shutdownSequencerMsg       = ShutdownSequencer(ESW, obsMode, None)
       when(
-        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
+        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(using
           any[Decoder[ShutdownSequencersResponse]](),
           any[Encoder[ShutdownSequencersResponse]]()
         )
@@ -105,7 +105,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       val shutdownSequencersResponse = mock[ShutdownSequencersResponse]
       val shutdownSequencerMsg       = ShutdownSequencer(ESW, obsMode, variation)
       when(
-        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
+        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(using
           any[Decoder[ShutdownSequencersResponse]](),
           any[Encoder[ShutdownSequencersResponse]]()
         )
@@ -117,7 +117,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       val shutdownSequencersResponse     = mock[ShutdownSequencersResponse]
       val shutdownSubsystemSequencersMsg = ShutdownSubsystemSequencers(ESW)
       when(
-        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSubsystemSequencersMsg))(
+        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSubsystemSequencersMsg))(using
           any[Decoder[ShutdownSequencersResponse]](),
           any[Encoder[ShutdownSequencersResponse]]()
         )
@@ -130,7 +130,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       val shutdownSequencersResponse   = mock[ShutdownSequencersResponse]
       val shutdownObsModeSequencersMsg = ShutdownObsModeSequencers(obsMode)
       when(
-        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownObsModeSequencersMsg))(
+        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownObsModeSequencersMsg))(using
           any[Decoder[ShutdownSequencersResponse]](),
           any[Encoder[ShutdownSequencersResponse]]()
         )
@@ -144,7 +144,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       when(
         postClient.requestResponse[ShutdownSequencersResponse](
           argsEq(ShutdownAllSequencers)
-        )(
+        )(using
           any[Decoder[ShutdownSequencersResponse]](),
           any[Encoder[ShutdownSequencersResponse]]()
         )
@@ -157,7 +157,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       val startSequencerResponse = mock[StartSequencerResponse]
       val startSequencerMsg      = StartSequencer(ESW, obsMode, None)
       when(
-        postClient.requestResponse[StartSequencerResponse](argsEq(startSequencerMsg))(
+        postClient.requestResponse[StartSequencerResponse](argsEq(startSequencerMsg))(using
           any[Decoder[StartSequencerResponse]](),
           any[Encoder[StartSequencerResponse]]()
         )
@@ -170,7 +170,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
       val startSequencerResponse = mock[StartSequencerResponse]
       val startSequencerMsg      = StartSequencer(ESW, obsMode, variation)
       when(
-        postClient.requestResponse[StartSequencerResponse](argsEq(startSequencerMsg))(
+        postClient.requestResponse[StartSequencerResponse](argsEq(startSequencerMsg))(using
           any[Decoder[StartSequencerResponse]](),
           any[Encoder[StartSequencerResponse]]()
         )
@@ -182,7 +182,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
     "return ShutdownSequenceComponentResponse for shutdown sequence component request | ESW-338, ESW-362" in {
       val shutdownSequenceComponentResponse = mock[ShutdownSequenceComponentResponse]
       when(
-        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownSequenceComponent(seqCompPrefix)))(
+        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownSequenceComponent(seqCompPrefix)))(using
           any[Decoder[ShutdownSequenceComponentResponse]](),
           any[Encoder[ShutdownSequenceComponentResponse]]()
         )
@@ -194,7 +194,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerServic
     "return ShutdownSequenceComponentResponse for shutdown all sequence component request | ESW-346, ESW-362" in {
       val shutdownSequenceComponentResponse = mock[ShutdownSequenceComponentResponse]
       when(
-        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownAllSequenceComponents))(
+        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownAllSequenceComponents))(using
           any[Decoder[ShutdownSequenceComponentResponse]](),
           any[Encoder[ShutdownSequenceComponentResponse]]()
         )

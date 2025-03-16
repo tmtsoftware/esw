@@ -1,6 +1,6 @@
 package esw.ocs.api.protocol
 
-import akka.util.Timeout
+import org.apache.pekko.util.Timeout
 import csw.params.core.models.Id
 
 /**

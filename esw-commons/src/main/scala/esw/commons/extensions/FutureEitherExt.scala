@@ -2,7 +2,7 @@ package esw.commons.extensions
 
 import java.util.concurrent.CompletionStage
 
-import scala.compat.java8.FutureConverters.FutureOps
+import scala.jdk.FutureConverters.*
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -42,9 +42,9 @@ object FutureEitherExt {
   }
 
   implicit class FutureEitherJavaOps[+L <: Throwable, R](private val futureEither: Future[Either[L, R]]) extends AnyVal {
-    def toJava(implicit executor: ExecutionContext): CompletionStage[R] = toJava(onSuccess = identity)
+    def toJava(implicit executor: ExecutionContext): CompletionStage[R] = toJava(onSuccess = identity[R])
     def toJava[S](onSuccess: R => S)(implicit executor: ExecutionContext): CompletionStage[S] =
-      futureEither.mapToAdt(onSuccess, throw _).toJava
+      futureEither.mapToAdt(onSuccess, throw _).asJava
   }
 
 }

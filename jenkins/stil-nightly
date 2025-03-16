@@ -18,18 +18,26 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh "cs java --jvm temurin:1.17.0 -version"
+                sh "cs setup -y"
+                sh "cs update cs"
+                sh "cs version"
+                sh "hostnamectl"
+                sh "echo $HOME"
+                sh "echo $PATH"
+                sh "which cs"
+                sh "cs java --available"
+                sh "cs java --jvm temurin:1.21.0 -version"
                 sh "sbt scalafmtCheck"
-                sh "eval \$(cs java --jvm temurin:1.17.0 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
-                sh "eval \$(cs java --jvm temurin:1.17.0 --env) && sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
-                sh "eval \$(cs java --jvm temurin:1.17.0 --env) && sbt -Dsbt.log.noformat=true publishLocal"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true publishLocal"
             }
         }
 
         stage('Test') {
 
             steps {
-                sh "eval \$(cs java --jvm temurin:1.17.0 --env) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
             }
 
             post {
@@ -41,13 +49,13 @@ pipeline {
                             allowMissing         : true,
                             alwaysLinkToLastBuild: false,
                             keepAll              : true,
-                            reportDir            : './target/scala-2.13/scoverage-report',
+                            reportDir            : './target/scala-3.6.4/scoverage-report',
                             reportFiles          : 'index.html',
                             reportName           : "Scoverage Report"
                     ])
 
                     // Generate RTM
-                    sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:0.3.0 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
+                    sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:b7997a9 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
                     // Upload RTM
                     publishHTML(target: [
                         alwaysLinkToLastBuild: false,
@@ -62,7 +70,7 @@ pipeline {
 
         stage('Multi-Jvm Test') {
             steps {
-              sh "eval \$(cs java --jvm temurin:1.17.0 --env) && sbt -Dsbt.log.noformat=true -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
+              sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DgenerateStoryReport=true esw-integration-test/multi-jvm:test"
             }
         }
     }

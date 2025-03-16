@@ -1,6 +1,6 @@
 package esw.shell
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
 import csw.config.api.TokenFactory
 import csw.config.api.scaladsl.ConfigService
@@ -16,16 +16,16 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.constants.CommonTimeouts
 
 class EswWiring {
-  lazy val cswWiring = new CswWiring
+  val cswWiring = new CswWiring
 
-  private implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = cswWiring.wiring.actorSystem
+  private implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = cswWiring.actorSystem
 
   private lazy val locationService: LocationService   = cswWiring.cswContext.locationService
   private lazy val locationUtils: LocationServiceUtil = new LocationServiceUtil(locationService)
   private lazy val configService: ConfigService       = ConfigClientFactory.adminApi(typedSystem, locationService, tokenFactory)
   private lazy val configServiceExt: ConfigServiceExt = new ConfigServiceExt(configService)
 
-  lazy val factories = new Factories(locationUtils, configServiceExt)
+  val factories = new Factories(locationUtils, configServiceExt)
 
   private lazy val config                      = ConfigFactory.load().getConfig("csw")
   private lazy val configAdminUsername: String = config.getString("configAdminUsername")

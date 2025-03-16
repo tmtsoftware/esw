@@ -1,11 +1,11 @@
 package esw.commons.utils.location
 
-import akka.actor.CoordinatedShutdown
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.*
@@ -20,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param actorSystem - an implicit actor system
  */
 private[esw] class LocationServiceUtil(val locationService: LocationService)(implicit
-    val actorSystem: ActorSystem[_]
+    val actorSystem: ActorSystem[?]
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
@@ -36,46 +36,48 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       s"unregistering-${registrationResult.location}"
     )(() => registrationResult.unregister())
 
-  private[esw] def register(akkaRegistration: AkkaRegistration): Future[Either[RegistrationError, AkkaLocation]] =
+  private[esw] def register(pekkoRegistration: PekkoRegistration): Future[Either[RegistrationError, PekkoLocation]] = {
     locationService
-      .register(akkaRegistration)
+      .register(pekkoRegistration)
       .map { result =>
         addCoordinatedShutdownTask(CoordinatedShutdown(actorSystem), result)
-        Right(result.location.asInstanceOf[AkkaLocation])
+        Right(result.location.asInstanceOf[PekkoLocation])
       }
       .mapError {
         case e: RegistrationFailed        => EswLocationError.RegistrationFailed(e.msg)
         case e: OtherLocationIsRegistered => EswLocationError.OtherLocationIsRegistered(e.msg)
         case x                            => throw new MatchError(x)
       }
+  }
+
   def list(componentId: ComponentId): Future[List[Location]] = {
     locationService.list.map(_.filter(loc => loc.connection.componentId == componentId))
   }
 
-  def listAkkaLocationsBy(
+  def listPekkoLocationsBy(
       subsystem: Subsystem,
       componentType: ComponentType
-  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
-    listAkkaLocationsBy(componentType, _.prefix.subsystem == subsystem)
+  ): Future[Either[RegistrationListingFailed, List[PekkoLocation]]] =
+    listPekkoLocationsBy(componentType, _.prefix.subsystem == subsystem)
 
-  def listAkkaLocationsBy(
+  def listPekkoLocationsBy(
       componentName: String,
       componentType: ComponentType
-  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
-    listAkkaLocationsBy(componentType, _.prefix.componentName == componentName)
+  ): Future[Either[RegistrationListingFailed, List[PekkoLocation]]] =
+    listPekkoLocationsBy(componentType, _.prefix.componentName == componentName)
 
-  def listSequencersAkkaLocationsBy(
+  def listSequencersPekkoLocationsBy(
       obsMode: String
-  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
-    listAkkaLocationsBy(Sequencer, getObsModeString(_) == obsMode)
+  ): Future[Either[RegistrationListingFailed, List[PekkoLocation]]] =
+    listPekkoLocationsBy(Sequencer, getObsModeString(_) == obsMode)
 
-  def listAkkaLocationsBy(
+  def listPekkoLocationsBy(
       componentType: ComponentType,
-      withFilter: AkkaLocation => Boolean = _ => true
-  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
+      withFilter: PekkoLocation => Boolean = _ => true
+  ): Future[Either[RegistrationListingFailed, List[PekkoLocation]]] =
     list(componentType)
       .mapRight(_.collect {
-        case akkaLocation: AkkaLocation if withFilter(akkaLocation) => akkaLocation
+        case pekkoLocation: PekkoLocation if withFilter(pekkoLocation) => pekkoLocation
       })
 
   def find[L <: Location](connection: TypedConnection[L]): Future[Either[FindLocationError, L]] =
@@ -103,19 +105,19 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
           )
       }
 
-  def findAgentByHostname(hostName: String): Future[Either[FindLocationError, AkkaLocation]] =
+  def findAgentByHostname(hostName: String): Future[Either[FindLocationError, PekkoLocation]] =
     locationService
       .list(hostName)
       .map { locations =>
         locations
           .find(_.connection.componentId.componentType == ComponentType.Machine)
-          .collect { case a: AkkaLocation => a }
+          .collect { case a: PekkoLocation => a }
           .toRight(LocationNotFound(s"No agent running on host: $hostName"))
       }
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
-  def findAkkaLocation(prefix: String, componentType: ComponentType): Future[Either[FindLocationError, AkkaLocation]] =
-    find(AkkaConnection(ComponentId(Prefix(prefix), componentType)))
+  def findPekkoLocation(prefix: String, componentType: ComponentType): Future[Either[FindLocationError, PekkoLocation]] =
+    find(PekkoConnection(ComponentId(Prefix(prefix), componentType)))
 
   def resolve[L <: Location](connection: TypedConnection[L], within: FiniteDuration): Future[Either[FindLocationError, L]] =
     locationService
@@ -127,12 +129,12 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
   private[esw] def resolveSequencer(prefix: Prefix, within: FiniteDuration) =
-    resolve(AkkaConnection(ComponentId(prefix, Sequencer)), within)
+    resolve(PekkoConnection(ComponentId(prefix, Sequencer)), within)
 
   private[esw] def findSequencer(prefix: Prefix) =
-    find(AkkaConnection(ComponentId(prefix, Sequencer)))
+    find(PekkoConnection(ComponentId(prefix, Sequencer)))
 
-  private def getObsModeString(location: AkkaLocation): String = {
+  private def getObsModeString(location: PekkoLocation): String = {
     location.prefix.componentName.split('.').toList match {
       case Nil => throw new RuntimeException("empty component name") // Not Applicable. Prefix always has non-empty component name
       case obsMode :: _ => obsMode

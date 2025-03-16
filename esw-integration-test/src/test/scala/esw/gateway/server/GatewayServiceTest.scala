@@ -1,6 +1,6 @@
 package esw.gateway.server
 
-import akka.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
 import csw.aas.http.SecurityDirectives
 import csw.network.utils.Networks
 import esw.ocs.testkit.EswTestKit

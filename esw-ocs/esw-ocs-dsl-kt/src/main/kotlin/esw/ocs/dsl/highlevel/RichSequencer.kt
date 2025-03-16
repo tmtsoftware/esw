@@ -1,6 +1,6 @@
 package esw.ocs.dsl.highlevel
 
-import akka.util.Timeout
+import org.apache.pekko.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
@@ -71,8 +71,8 @@ class RichSequencer(
      * @return a [[csw.params.commands.CommandResponse.SubmitResponse]] response
      */
     suspend fun queryFinal(runId: Id, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
-        val akkaTimeout = Timeout(timeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
-        val submitResponse: SubmitResponse = sequencerService().queryFinal(runId, akkaTimeout).toJava().await()
+        val pekkoTimeout = Timeout(timeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
+        val submitResponse: SubmitResponse = sequencerService().queryFinal(runId, pekkoTimeout).toJava().await()
         if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
         return submitResponse
     }
@@ -88,8 +88,8 @@ class RichSequencer(
      * @return a [[csw.params.commands.CommandResponse.SubmitResponse]] response
      */
     suspend fun submitAndWait(sequence: Sequence, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
-        val akkaTimeout = Timeout(timeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
-        val submitResponse: SubmitResponse = sequencerService().submitAndWait(sequence, akkaTimeout).toJava().await()
+        val pekkoTimeout = Timeout(timeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
+        val submitResponse: SubmitResponse = sequencerService().submitAndWait(sequence, pekkoTimeout).toJava().await()
         if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
         return submitResponse
     }

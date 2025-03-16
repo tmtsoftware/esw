@@ -1,8 +1,8 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.SpawnProtocol
-import akka.actor.typed.javadsl.Behaviors
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.SpawnProtocol
+import org.apache.pekko.actor.typed.javadsl.Behaviors
 import com.typesafe.config.ConfigFactory
 import csw.config.api.ConfigData
 import csw.config.api.javadsl.IConfigClientService
@@ -28,21 +28,21 @@ class ConfigServiceDslTest : ConfigServiceDsl {
     private val path = "/test/config1.conf"
 
     @Test
-    fun `existsConfig should delegate to configClientService#exists | ESW-123`() = runBlocking {
+    fun `existsConfig_should_delegate_to_configClientService#exists_|_ESW-123`() = runBlocking {
         every { configService.exists(any()) }.returns(CompletableFuture.completedFuture(true))
         existsConfig(path)
         verify { configService.exists(any()) }
     }
 
     @Test
-    fun `getConfig should delegate to configClientService#getActive and return null if ConfigData is empty | ESW-123`() = runBlocking {
+    fun `getConfig_should_delegate_to_configClientService#getActive_and_return_null_if_ConfigData_is_empty_|_ESW-123`() = runBlocking {
         every { configService.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.empty()))
         getConfig(path) shouldBe null
         verify { configService.getActive(any()) }
     }
 
     @Test
-    fun `getConfig should delegate to configClientService#getActive and return ConfigData | ESW-123`() = runBlocking {
+    fun `getConfig_should_delegate_to_configClientService#getActive_and_return_ConfigData_|_ESW-123`() = runBlocking {
         val defaultStrConf = "foo { bar { baz : 1234 } }"
         val configData = ConfigData.fromString(defaultStrConf)
         every { configService.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.of(configData)))

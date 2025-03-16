@@ -1,6 +1,6 @@
 package esw.ocs.script
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.events.EventKey
@@ -13,7 +13,7 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 
 class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
-  private var ocsSequencer: SequencerApi = _
+  private var ocsSequencer: SequencerApi = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()

@@ -1,6 +1,6 @@
 package esw.gateway.api.clients
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.command.client.cbor.MessageCodecs
 import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.location.api.models.ComponentId
@@ -9,7 +9,7 @@ import csw.logging.models.{Level, LogMetadata}
 import csw.prefix.models.Prefix
 import esw.gateway.api.AdminApi
 import esw.gateway.api.protocol.GatewayRequest
-import esw.gateway.api.protocol.GatewayRequest._
+import esw.gateway.api.protocol.GatewayRequest.*
 import msocket.api.Transport
 import msocket.api.codecs.BasicCodecs
 

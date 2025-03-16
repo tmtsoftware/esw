@@ -1,8 +1,8 @@
 package esw.ocs.api
 
-import akka.stream.scaladsl.Source
+import org.apache.pekko.stream.scaladsl.Source
 import csw.command.api.scaladsl.SequencerCommandService
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -129,11 +129,11 @@ trait SequencerApi extends SequencerCommandService {
   def resume: Future[OkOrUnhandledResponse]
 
   /**
-   * Return the akka location of sequence component where sequencer is running
+   * Return the pekko location of sequence component where sequencer is running
    *
-   * @return [[csw.location.api.models.AkkaLocation]] as a Future value
+   * @return [[csw.location.api.models.PekkoLocation]] as a Future value
    */
-  def getSequenceComponent: Future[AkkaLocation]
+  def getSequenceComponent: Future[PekkoLocation]
 
   /**
    * Checks if sequencer is in Idle state

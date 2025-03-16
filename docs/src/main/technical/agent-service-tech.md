@@ -32,7 +32,7 @@ The Agent Service has the following layers and modules:
 
 The figure shows a browser contacting the Agent Service executing on an ESW machine. It is registered in the Location
 Service. The browser makes an authorized HTTP call to the Agent Server. The server locates an Agent on the desired
-host using the CSW Location Service. It then uses the Agent's Akka-based API to execute the request on the remote
+host using the CSW Location Service. It then uses the Agent's Pekko-based API to execute the request on the remote
 host. The Agent returns a response that is serialized by the Agent Server and returned as an AgentServiceResponse.
 
 The following sections describe the major modules of the Agent Service. The Agent itself is described below.
@@ -47,7 +47,7 @@ Implementation of Agent Service is distributed within the following submodules:
 
 All the request models and APIs related to `AgentService` reside within this module.
 This module also contains the codecs for the models.
-This module depends on `esw-agent-akka-api` module which provides all the response models.
+This module depends on `esw-agent-pekko-api` module which provides all the response models.
 
 This module is a cross-compiled project which has following parts:
 
@@ -69,7 +69,7 @@ This module contains all the HTTP handlers, server wiring, and the CLI app to st
 
 ## Agent Introduction
 
-Agent is an Akka-based actor which is used to spawn or kill a component on the machine where the Agent is running.
+Agent is a Pekko-based actor which is used to spawn or kill a component on the machine where the Agent is running.
 The Agent must be started on each machine that is available to spawn components. At this time, we anticipate this
 will be primarily ESW machines, but any subsystem that needs to run a Sequencer on their machine (rather than on ESW
 machines) will also start an Agent.
@@ -81,7 +81,7 @@ Currently, Agent is able to spawn or kill the following components:
 
 ## Agent Implementation
 
-Agent is an Akka actor which can spawn or kill a JVM process (at this time) depending on the received message.
+Agent is a Pekko actor which can spawn or kill a JVM process (at this time) depending on the received message.
 If actor receives a spawn message(e.g., `SpawnSequenceManager` etc),
 it will first check if the given component is already registered in the Location Service. If yes, it replies with a
 failure response indicating the component already exists; otherwise,  it tries to spawn the component.
@@ -100,19 +100,19 @@ On any spawn message Agent follows following steps:
 
 The following modules are part of the Agent implementation.
 
-## Agent Module (esw-agent-akka)
+## Agent Module (esw-agent-pekko)
 The Agent is not a relatively simple module with only a few modules.
 Implementation of Agent is distributed within the following submodules:
 
-### esw-agent-akka-app
+### esw-agent-pekko-app
 
-This module contains Agent actor's implementation. The Akka-based API is implemented here. This module depends
+This module contains Agent actor's implementation. The Pekko-based API is implemented here. This module depends
 on @ref:[Agent Client](#agent-client) for the Agent actor's messages and codecs.
 
 There is also a CLI-based application for starting an Agent, and it is also implemented in this module.
 
 ## Agent Client
-A formal Akka-based client is provided for applications that need to send and receive messages to/from the Agent.
+A formal Pekko-based client is provided for applications that need to send and receive messages to/from the Agent.
 This module defines the Agent actor messages and codecs.
 
 Agent Client is an actor proxy to the Agent actor.

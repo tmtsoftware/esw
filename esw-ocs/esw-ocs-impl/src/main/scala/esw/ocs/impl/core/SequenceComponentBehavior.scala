@@ -1,10 +1,10 @@
 package esw.ocs.impl.core
 
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
+import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors}
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * @param log - logger
  * @param locationService - an instance of Location Service
  * @param sequencerServerFactory - an Instance of SequencerServerFactory
- * @param actorSystem - an Akka ActorSystem
+ * @param actorSystem - a Pekko ActorSystem
  */
 class SequenceComponentBehavior(
     prefix: Prefix,
@@ -35,12 +35,12 @@ class SequenceComponentBehavior(
     locationService: LocationService,
     sequencerServerFactory: SequencerServerFactory
 )(implicit actorSystem: ActorSystem[SpawnProtocol.Command]) {
-  private val akkaConnection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
-  implicit val ec: ExecutionContext          = actorSystem.executionContext
+  private val pekkoConnection: PekkoConnection = PekkoConnection(ComponentId(prefix, SequenceComponent))
+  implicit val ec: ExecutionContext            = actorSystem.executionContext
 
   /*
    * Sequence Component Behaviour when it is in Idle state means there are no Sequencer running
-   * @return an typed actor [[akka.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
+   * @return an typed actor [[org.apache.pekko.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
    */
   def idle: Behavior[SequenceComponentMsg] =
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (_, msg) =>
@@ -67,7 +67,7 @@ class SequenceComponentBehavior(
    */
   private def load(sequencerPrefix: Prefix, replyTo: ActorRef[ScriptResponseOrUnhandled]): Behavior[SequenceComponentMsg] = {
     val sequencerServer    = sequencerServerFactory.make(sequencerPrefix, prefix)
-    val registrationResult = sequencerServer.start().fold(identity, SequencerLocation)
+    val registrationResult = sequencerServer.start().fold(identity, SequencerLocation.apply)
     replyTo ! registrationResult
 
     registrationResult match {
@@ -84,9 +84,9 @@ class SequenceComponentBehavior(
 
   /*
    * Sequence Component Behaviour when it is in Running state means there is a Sequencer running
-   * @return an typed actor [[akka.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
+   * @return an typed actor [[org.apache.pekko.actor.typed.Behavior]] which only supports [[esw.ocs.api.actor.messages.SequenceComponentMsg]]
    */
-  private def running(sequencerPrefix: Prefix, sequencerServer: SequencerServer, location: AkkaLocation) =
+  private def running(sequencerPrefix: Prefix, sequencerServer: SequencerServer, location: PekkoLocation) =
     receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (_, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
 
@@ -120,7 +120,7 @@ class SequenceComponentBehavior(
     sequencerServer.foreach(_.shutDown())
 
     locationService
-      .unregister(akkaConnection)
+      .unregister(pekkoConnection)
       .onComplete { _ =>
         replyTo ! Ok
         actorSystem.terminate()

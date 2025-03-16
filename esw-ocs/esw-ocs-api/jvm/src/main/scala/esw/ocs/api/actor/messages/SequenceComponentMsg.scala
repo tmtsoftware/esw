@@ -1,8 +1,8 @@
 package esw.ocs.api.actor.messages
 
-import akka.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.ActorRef
 import csw.prefix.models.Subsystem
-import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsPekkoSerializable
 import esw.ocs.api.models.{ObsMode, Variation}
 import esw.ocs.api.protocol.SequenceComponentResponse.*
 
@@ -12,7 +12,7 @@ import esw.ocs.api.protocol.SequenceComponentResponse.*
  * and in the implementation of it.
  */
 sealed trait SequenceComponentMsg
-sealed trait SequenceComponentRemoteMsg extends SequenceComponentMsg with OcsAkkaSerializable
+sealed trait SequenceComponentRemoteMsg extends SequenceComponentMsg with OcsPekkoSerializable
 
 sealed trait UnhandleableSequenceComponentMsg extends SequenceComponentMsg {
   def replyTo: ActorRef[Unhandled]
@@ -43,5 +43,5 @@ object SequenceComponentMsg {
       with UnhandleableSequenceComponentMsg
       with RunningStateSequenceComponentMsg
 
-  private[ocs] final case object Stop extends SequenceComponentMsg with CommonMsg
+  private[ocs] case object Stop extends SequenceComponentMsg with CommonMsg
 }

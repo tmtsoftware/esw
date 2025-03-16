@@ -1,6 +1,6 @@
 package esw.gateway.server.admin.components
 
-import akka.actor.typed.scaladsl.ActorContext
+import org.apache.pekko.actor.typed.scaladsl.ActorContext
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
@@ -16,7 +16,7 @@ class FilterAssemblyComponentHandlers(ctx: ActorContext[TopLevelActorMessage], c
 
   val log: Logger = cswCtx.loggerFactory.getLogger
 
-  import esw.gateway.server.admin.SampleContainerState._
+  import esw.gateway.server.admin.SampleContainerState.*
 
   override def initialize(): Unit = {
     cswCtx.currentStatePublisher.publish(assemblyInitializeCurrentState)

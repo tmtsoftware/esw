@@ -1,6 +1,6 @@
 package esw.ocs.app.wiring
 
-import akka.Done
+import org.apache.pekko.Done
 import com.typesafe.config.{Config, ConfigException, ConfigFactory}
 import csw.params.commands.SequenceCommand
 import csw.prefix.models.Subsystem.{APS, IRIS, TCS}

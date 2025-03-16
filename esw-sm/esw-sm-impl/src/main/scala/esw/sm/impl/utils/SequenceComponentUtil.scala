@@ -1,9 +1,9 @@
 package esw.sm.impl.utils
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId}
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
@@ -20,11 +20,11 @@ import esw.sm.api.protocol.{ConfigureResponse, ShutdownSequenceComponentResponse
 import esw.sm.impl.utils.SequenceComponentAllocator.SequencerToSequenceComponentMap
 import esw.sm.impl.utils.Types.*
 
-import scala.async.Async.*
+import cps.compat.FutureAsync.*
 import scala.concurrent.Future
 
 class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequenceComponentAllocator: SequenceComponentAllocator)(
-    implicit actorSystem: ActorSystem[_]
+    implicit actorSystem: ActorSystem[?]
 ) {
   import actorSystem.executionContext
 
@@ -37,7 +37,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
 
   def getAllIdleSequenceComponents: Future[Either[LocationServiceError, List[SeqCompLocation]]] =
     locationServiceUtil
-      .listAkkaLocationsBy(SequenceComponent)
+      .listPekkoLocationsBy(SequenceComponent)
       .flatMapRight(filterIdleSequenceComponents)
       .mapLeft(error => LocationServiceError(error.msg))
 
@@ -82,19 +82,19 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
       .mapRight(_ => SequenceComponentResponse.Ok)
       .mapToAdt(_ => ShutdownSequenceComponentResponse.Success, error => LocationServiceError(error.msg))
 
-  def restartScript(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = sequenceComponentApi(loc).restartScript()
+  def restartScript(loc: PekkoLocation): Future[ScriptResponseOrUnhandled] = sequenceComponentApi(loc).restartScript()
 
   private def shutdown(
       prefix: SeqCompPrefix
   ): Future[Either[EswLocationError.FindLocationError, SequenceComponentResponse.Ok.type]] =
     locationServiceUtil
-      .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
+      .find(PekkoConnection(ComponentId(prefix, SequenceComponent)))
       .flatMapRight(shutdown)
 
   // shuts down all the running sequence components
   private def shutdownAll(): Future[Either[EswLocationError.RegistrationListingFailed, List[SequenceComponentResponse.Ok.type]]] =
     locationServiceUtil
-      .listAkkaLocationsBy(SequenceComponent)
+      .listPekkoLocationsBy(SequenceComponent)
       .flatMapRight(Future.traverse(_)(shutdown))
 
   // shuts down the sequence component of given location
@@ -105,10 +105,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, val sequen
       .traverse(seqCompLocations)(idleSequenceComponent)
       .map(_.collect { case Some(location) => location })
 
-  private[sm] def idleSequenceComponent(seqCompLocation: SeqCompLocation): Future[Option[AkkaLocation]] =
+  private[sm] def idleSequenceComponent(seqCompLocation: SeqCompLocation): Future[Option[PekkoLocation]] =
     async {
-      val isIdle = await(sequenceComponentApi(seqCompLocation).status).response.isEmpty
-      if (isIdle) Some(seqCompLocation) else None
+      val response = await(sequenceComponentApi(seqCompLocation).status)
+      if (response.response.isEmpty) Some(seqCompLocation) else None
     }
 
   private[sm] def sequenceComponentApi(seqCompLocation: SeqCompLocation): SequenceComponentApi =

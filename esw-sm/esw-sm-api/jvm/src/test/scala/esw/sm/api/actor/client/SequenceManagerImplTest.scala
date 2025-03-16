@@ -1,10 +1,10 @@
 package esw.sm.api.actor.client
 
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension.*
 import csw.location.api.models.ComponentType.Service
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.{ObsMode, Variation}
@@ -14,12 +14,12 @@ import esw.sm.api.protocol.*
 import esw.testcommons.{ActorTestSuit, AskProxyTestKit}
 
 class SequenceManagerImplTest extends ActorTestSuit {
-  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmPekkoSerializerTest")
 
   private val askProxyTestKit = new AskProxyTestKit[SequenceManagerMsg, SequenceManagerImpl] {
     override def make(actorRef: ActorRef[SequenceManagerMsg]): SequenceManagerImpl = {
       val location =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), actorRef.toURI, Metadata.empty)
+        PekkoLocation(PekkoConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), actorRef.toURI, Metadata.empty)
       new SequenceManagerImpl(location)
     }
   }

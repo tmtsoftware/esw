@@ -1,18 +1,18 @@
 package esw.contract.data.sequencer
 
 import csw.contract.ResourceFetcher
-import csw.contract.generator.ClassNameHelpers._
-import csw.contract.generator._
-import csw.location.api.models.AkkaLocation
+import csw.contract.generator.ClassNameHelpers.*
+import csw.contract.generator.*
+import csw.location.api.models.PekkoLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import esw.ocs.api.actor.messages.SequencerMessages.SubscribeSequencerState
 import esw.ocs.api.codecs.SequencerServiceCodecs
-import esw.ocs.api.models.SequencerState._
+import esw.ocs.api.models.SequencerState.*
 import esw.ocs.api.models.{SequencerState, Step, StepList, StepStatus}
-import esw.ocs.api.protocol.SequencerRequest._
+import esw.ocs.api.protocol.SequencerRequest.*
 import esw.ocs.api.protocol.SequencerStreamRequest.QueryFinal
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 
 // ESW-278 Contract samples for sequencer service. These samples are also used in `RoundTripTest`
 object SequencerContract extends SequencerData with SequencerServiceCodecs {
@@ -32,7 +32,7 @@ object SequencerContract extends SequencerData with SequencerServiceCodecs {
     ModelType[GoOfflineResponse](ok, unhandled, goOfflineHookFailed),
     ModelType[DiagnosticModeResponse](ok, diagnosticHookFailed),
     ModelType[OperationsModeResponse](ok, operationsHookFailed),
-    ModelType(akkaLocation),
+    ModelType(pekkoLocation),
     ModelType[StepList](stepList),
     ModelType[Step](step),
     ModelType[StepStatus](pendingStepStatus, inFlightStepStatus, successStepStatus, failureStepStatus),
@@ -90,7 +90,7 @@ object SequencerContract extends SequencerData with SequencerServiceCodecs {
     Endpoint(objectName(GoOffline), name[GoOfflineResponse]),
     Endpoint(name[DiagnosticMode], name[DiagnosticModeResponse]),
     Endpoint(objectName(OperationsMode), name[OperationsModeResponse]),
-    Endpoint(objectName(GetSequenceComponent), name[AkkaLocation]),
+    Endpoint(objectName(GetSequenceComponent), name[PekkoLocation]),
     Endpoint(objectName(GetSequencerState), name[SequencerState])
   )
 

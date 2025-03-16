@@ -2,8 +2,8 @@ package esw.commons.utils.config
 
 import java.nio.file.Path
 
-import akka.actor.testkit.typed.scaladsl.ActorTestKit
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.testkit.typed.scaladsl.ActorTestKit
+import org.apache.pekko.actor.typed.ActorSystem
 import com.typesafe.config.{Config, ConfigException, ConfigOrigin}
 import csw.config.api.exceptions.FileNotFound
 import csw.config.client.commons.ConfigUtils
@@ -15,7 +15,7 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import org.mockito.Mockito.when
 class VersionManagerTest extends BaseTestSuite {
   val actorTestKit: ActorTestKit            = ActorTestKit()
-  val actorSystem: ActorSystem[_]           = actorTestKit.system
+  val actorSystem: ActorSystem[?]           = actorTestKit.system
   implicit val ec: ExecutionContextExecutor = actorSystem.executionContext
 
   private val runtimeErrorStr = randomString(20)

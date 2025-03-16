@@ -1,9 +1,9 @@
 package esw.ocs.app
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.remote.testkit.MultiNodeSpec
-import akka.testkit.ImplicitSender
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.remote.testkit.MultiNodeSpec
+import org.apache.pekko.testkit.ImplicitSender
 import com.typesafe.config.ConfigFactory
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{ComponentId, ComponentType}
@@ -68,7 +68,7 @@ class SequencerTest extends MultiNodeSpec(MultiNodeSampleConfig) with STMultiNod
       val multiJVMEventSubscription = eventSubscriber.subscribeActorRef(Set(multiJVMCommandEventKey), testProbe.ref)
       multiJVMEventSubscription.ready().await
       testProbe.expectMessageType[SystemEvent] // discard invalid event
-      //##############
+      // ##############
       enterBarrier("submit-sequence-to-ocs")
       Thread.sleep(500)
 

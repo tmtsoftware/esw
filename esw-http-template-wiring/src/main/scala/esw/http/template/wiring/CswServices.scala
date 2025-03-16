@@ -1,6 +1,6 @@
 package esw.http.template.wiring
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.api.scaladsl.AlarmService
 import csw.alarm.client.internal.extensions.AlarmServiceExt.RichAlarmService
@@ -34,7 +34,7 @@ case class CswServices(
     loggerFactory: LoggerFactory,
     configClientService: ConfigClientService
 ) {
-  def asJava(implicit actorSystem: ActorSystem[_]): JCswServices = {
+  def asJava(implicit actorSystem: ActorSystem[?]): JCswServices = {
     import actorSystem.executionContext
     val iLocationService = locationService.asJava
     JCswServices(

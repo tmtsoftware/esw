@@ -1,7 +1,7 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.SpawnProtocol
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.SpawnProtocol
 import com.typesafe.config.Config
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.scaladsl.LocationService
@@ -61,7 +61,7 @@ class CswHighLevelDslTest {
         private val defaultTimeoutDuration: Duration = 5.seconds
 
         @Test
-        fun `Assembly should resolve the RichComponent with given name and assembly component type | ESW-245`() = runBlocking {
+        fun `Assembly_should_resolve_the_RichComponent_with_given_name_and_assembly_component_type_|_ESW-245`() = runBlocking {
             val sampleAssembly = Assembly(TCS, "sampleAssembly", defaultTimeoutDuration)
 
             sampleAssembly.componentType shouldBe Assembly
@@ -69,7 +69,7 @@ class CswHighLevelDslTest {
         }
 
         @Test
-        fun `HCD should resolve the RichComponent with given name and hcd component type | ESW-245`() = runBlocking {
+        fun `HCD_should_resolve_the_RichComponent_with_given_name_and_hcd_component_type_|_ESW-245`() = runBlocking {
             val sampleHcd = Hcd(TCS, "sampleHcd", defaultTimeoutDuration)
 
             sampleHcd.componentType shouldBe HCD

@@ -1,10 +1,10 @@
 package esw.http.core.wiring
 
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import akka.http.scaladsl.server.Directives.{complete, get, path}
-import akka.http.scaladsl.server.Route
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity}
+import org.apache.pekko.http.scaladsl.server.Directives.{complete, get, path}
+import org.apache.pekko.http.scaladsl.server.Route
 import com.typesafe.config.Config
 import csw.location.api.CswVersionJvm
 import csw.location.api.exceptions.OtherLocationIsRegistered
@@ -24,12 +24,12 @@ class HttpServiceTest extends EswTestKit {
   private val route: Route =
     path("hello") {
       get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to pekko-http</h1>"))
       }
     }
   private val hostname                                 = Networks(NetworkType.Outside.envKey).hostname
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
-  var actorRuntime: ActorRuntime                       = _
+  var actorRuntime: ActorRuntime                       = scala.compiletime.uninitialized
 
   override protected def afterEach(): Unit = {
     cleanup(actorRuntime)
@@ -50,7 +50,7 @@ class HttpServiceTest extends EswTestKit {
     "start the http server and register with location service with metadata | ESW-86, CSW-96, ESW-366" in {
       val _servicePort = 4005
       val testSetup    = new TestSetup(_servicePort)
-      import testSetup._
+      import testSetup.*
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
       val metadata    = Metadata().withCSWVersion(new CswVersionJvm().get).add("key1", "value")
@@ -72,7 +72,7 @@ class HttpServiceTest extends EswTestKit {
     "start the http server and register with location service with empty metadata if not provided while registration | ESW-366" in {
       val _servicePort = 4005
       val testSetup    = new TestSetup(_servicePort)
-      import testSetup._
+      import testSetup.*
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
@@ -88,7 +88,7 @@ class HttpServiceTest extends EswTestKit {
     "not register with location service if server binding fails | ESW-86, CSW-96" in {
       val _servicePort = 4452 // Location Service runs on this port
       val testSetup    = new TestSetup(_servicePort)
-      import testSetup._
+      import testSetup.*
 
       val httpService     = new HttpService(logger, locationService, route, settings, actorRuntime)
       val address         = s"[/$hostname:${_servicePort}]"
@@ -104,7 +104,7 @@ class HttpServiceTest extends EswTestKit {
       val _existingServicePort = 21212
       val _servicePort         = 4007
       val testSetup            = new TestSetup(_servicePort)
-      import testSetup._
+      import testSetup.*
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
       locationService
@@ -124,7 +124,7 @@ class HttpServiceTest extends EswTestKit {
       val insideHostname = Networks(NetworkType.Inside.envKey).hostname
       val _servicePort   = 4008
       val testSetup      = new TestSetup(_servicePort, Some(getRandomAgentPrefix(ESW)))
-      import testSetup._
+      import testSetup.*
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime, NetworkType.Outside)
       val metadata    = Metadata().withCSWVersion(new CswVersionJvm().get).add("key1", "value")

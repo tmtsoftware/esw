@@ -1,9 +1,9 @@
 package esw.gateway.server.metrics
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
-import akka.http.scaladsl.marshalling.ToEntityMarshaller
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.scaladsl.adapter.ClassicActorSystemOps
+import org.apache.pekko.http.scaladsl.marshalling.ToEntityMarshaller
+import org.apache.pekko.http.scaladsl.model.HttpRequest
+import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import csw.aas.http.SecurityDirectives
 import csw.command.api.messages.CommandServiceRequest.Submit
 import csw.command.client.auth.CommandRoles
@@ -35,9 +35,9 @@ class PostMetricsTest
     with GatewayRequestLabels {
 
   override def clientContentType: ContentType = ContentType.Json
-  implicit val typedSystem: ActorSystem[_]    = system.toTyped
+  implicit val typedSystem: ActorSystem[?]    = system.toTyped
   private val cswCtxMocks                     = new CswTestMocks()
-  import cswCtxMocks._
+  import cswCtxMocks.*
 
   private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
   private val commandRoles       = CommandRoles.empty

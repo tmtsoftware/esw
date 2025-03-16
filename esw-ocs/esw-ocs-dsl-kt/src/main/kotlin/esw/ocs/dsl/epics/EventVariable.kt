@@ -1,6 +1,6 @@
 package esw.ocs.dsl.epics
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.params.core.generics.Key
 import csw.params.core.generics.Parameter
 import csw.params.events.Event

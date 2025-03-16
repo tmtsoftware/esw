@@ -1,6 +1,6 @@
 package esw.gateway.api.clients
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import esw.gateway.api.AlarmApi

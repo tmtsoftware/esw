@@ -15,6 +15,12 @@ pipeline {
                 sh "git pull"
             }
         }
+
+        stage('Paradox Validate Links') {
+            steps {
+                sh "sbt -Dsbt.log.noformat=true docs/paradoxValidateLinks"
+            }
+        }
     }
 
     post {

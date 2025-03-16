@@ -3,7 +3,7 @@
 // #submit-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 06:36:10 GMT
 Content-Type: application/json
 Content-Length: 60
@@ -20,7 +20,7 @@ Content-Length: 60
 // #re-submit-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 06:44:23 GMT
 Content-Type: application/json
 Content-Length: 174
@@ -39,7 +39,7 @@ Content-Length: 174
 
 // #malformed-submit-response
 HTTP/1.1 400 Bad Request
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 06:48:15 GMT
 Content-Type: text/plain; charset=UTF-8
 Content-Length: 122
@@ -53,7 +53,7 @@ Cannot decode `Setup` instance due to missing map key "maybeObsId" (input positi
 // #query-response-started
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 07:12:34 GMT
 Content-Type: application/json
 Content-Length: 60
@@ -68,7 +68,7 @@ Content-Length: 60
 // #query-response-completed
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 07:13:21 GMT
 Content-Type: application/json
 Content-Length: 62
@@ -86,7 +86,7 @@ Content-Length: 62
 // #loadSequence-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:22:58 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -101,7 +101,7 @@ Content-Length: 9
 // #startSequence-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:23:28 GMT
 Content-Type: application/json
 Content-Length: 60
@@ -116,7 +116,7 @@ Content-Length: 60
 // #getSequence-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:23:49 GMT
 Content-Type: application/json
 Content-Length: 216
@@ -163,7 +163,7 @@ Content-Length: 216
 // #add-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:24:50 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -179,7 +179,7 @@ Content-Length: 9
 // #prepend-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -195,7 +195,7 @@ Content-Length: 9
 // #replace-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -211,7 +211,7 @@ Content-Length: 9
 // #insertAfter-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -227,7 +227,7 @@ Content-Length: 9
 // #delete-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -243,7 +243,7 @@ Content-Length: 9
 // #addBreakpoint-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -259,7 +259,7 @@ Content-Length: 9
 // #removeBreakpoint-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -275,7 +275,7 @@ Content-Length: 9
 // #reset-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -291,7 +291,7 @@ Content-Length: 9
 // #pause-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -307,7 +307,7 @@ Content-Length: 9
 // #resume-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:25:23 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -323,19 +323,19 @@ Content-Length: 9
 // #getSequenceComponent-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:29:29 GMT
 Content-Type: application/json
 Content-Length: 191
 
 {
-  "AkkaLocation": {
+  "PekkoLocation": {
     "connection": {
       "prefix": "esw.primary",
       "componentType": "SequenceComponent",
-      "connectionType": "akka"
+      "connectionType": "pekko"
     },
-    "uri": "akka://esw-system@10.131.20.138:58492/user/esw.primary#-1731655948"
+    "uri": "pekko://esw-system@10.131.20.138:58492/user/esw.primary#-1731655948"
   }
 }
 
@@ -346,7 +346,7 @@ Content-Length: 191
 // #isAvailable-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:30:01 GMT
 Content-Type: application/json
 Content-Length: 5
@@ -360,7 +360,7 @@ false
 // #isOnline-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 09:30:23 GMT
 Content-Type: application/json
 Content-Length: 4
@@ -374,7 +374,7 @@ true
 // #goOnline-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 10:17:21 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -390,7 +390,7 @@ Content-Length: 9
 // #goOffline-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 10:16:57 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -406,7 +406,7 @@ Content-Length: 9
 // #abortSequence-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 10:13:31 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -422,7 +422,7 @@ Content-Length: 9
 // #stop-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 10:06:29 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -438,7 +438,7 @@ Content-Length: 9
 // #diagnosticMode-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 10:06:29 GMT
 Content-Type: application/json
 Content-Length: 9
@@ -454,7 +454,7 @@ Content-Length: 9
 // #operationsMode-response
 
 HTTP/1.1 200 OK
-Server: akka-http/10.1.11
+Server: pekko-http/10.1.11
 Date: Thu, 02 Jan 2020 10:06:29 GMT
 Content-Type: application/json
 Content-Length: 9

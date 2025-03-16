@@ -1,4 +1,4 @@
-import sbt.{Def, _}
+import sbt._
 
 object Dependencies {
 
@@ -8,8 +8,7 @@ object Dependencies {
       Csw.`csw-command-api`.value,
       Csw.`csw-location-api`.value,
       Csw.`csw-database`,
-      Libs.`scala-java8-compat`,
-      Libs.`msocket-api`.value,
+      MSocket.`msocket-api`.value,
       Libs.scalatest.value % Test,
       Libs.`mockito`       % Test
     )
@@ -18,22 +17,24 @@ object Dependencies {
   val OcsApiJvm: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-command-client`,
-      AkkaHttp.`akka-http`,
-      Libs.`msocket-http`,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      PekkoHttp.`pekko-http`,
+      Pekko.`pekko-stream`,
+      MSocket.`msocket-http`,
+      Libs.`tmt-test-reporter`          % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test
     )
   )
 
   val OcsHandler: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-aas-http`,
-      AkkaHttp.`akka-http`,
-      Libs.`msocket-http`,
-      Libs.scalatest.value         % Test,
-      AkkaHttp.`akka-http-testkit` % Test,
-      Akka.`akka-stream-testkit`   % Test,
-      Libs.`mockito`               % Test
+      PekkoHttp.`pekko-http`,
+      Pekko.`pekko-stream`,
+      MSocket.`msocket-http`,
+      Libs.scalatest.value           % Test,
+      PekkoHttp.`pekko-http-testkit` % Test,
+      Pekko.`pekko-stream-testkit`   % Test,
+      Libs.`mockito`                 % Test
     )
   )
 
@@ -42,27 +43,28 @@ object Dependencies {
       Csw.`csw-command-client`,
       Csw.`csw-event-client`,
       Csw.`csw-alarm-client`,
-      Akka.`akka-actor-typed`,
-      Akka.`akka-stream-typed`,
-      Libs.`scala-async`,
+      Pekko.`pekko-actor-typed`,
+      Pekko.`pekko-stream-typed`,
+      Libs.`dotty-cps-async`.value,
       Libs.enumeratum.value,
-      Libs.`msocket-http`,
+      MSocket.`msocket-http`,
       Libs.blockhound,
-      Libs.scalatest.value            % Test,
-      Akka.`akka-actor-testkit-typed` % Test,
-      Libs.`tmt-test-reporter`        % Test,
-      Libs.`mockito`                  % Test
+      Libs.scalatest.value              % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test,
+      Libs.`tmt-test-reporter`          % Test,
+      Libs.`mockito`                    % Test
     )
   )
 
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
-      Libs.`msocket-http`,
-      Libs.scalatest.value            % Test,
-      Libs.`mockito`                  % Test,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Libs.`dotty-cps-async`.value,
+      MSocket.`msocket-http`,
+      Libs.scalatest.value              % Test,
+      Libs.`mockito`                    % Test,
+      Libs.`tmt-test-reporter`          % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test
     )
   )
 
@@ -70,13 +72,14 @@ object Dependencies {
     Seq(
       Borer.`borer-core`.value,
       Borer.`borer-derivation`.value,
+      Borer.`borer-compat-pekko`,
       Csw.`csw-location-api`.value,
-      Libs.`msocket-api`.value
+      MSocket.`msocket-api`.value
     )
   )
 
   val AgentServiceApiJvm: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Libs.`msocket-http`)
+    Seq(MSocket.`msocket-http`)
   )
 
   val AgentServiceImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
@@ -91,35 +94,35 @@ object Dependencies {
   val AgentServiceApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
-      Libs.`msocket-http`,
-      Libs.scalatest.value         % Test,
-      Libs.`mockito`               % Test,
-      Libs.`tmt-test-reporter`     % Test,
-      AkkaHttp.`akka-http-testkit` % Test
+      MSocket.`msocket-http`,
+      Libs.scalatest.value           % Test,
+      Libs.`mockito`                 % Test,
+      Libs.`tmt-test-reporter`       % Test,
+      PekkoHttp.`pekko-http-testkit` % Test
     )
   )
 
-  val AgentAkkaApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AgentPekkoApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
       Csw.`csw-location-client`,
       Csw.`csw-config-client`,
-      Akka.`akka-actor-typed`,
-      Akka.`akka-stream`,
-      Libs.scalatest.value            % Test,
-      Libs.`mockito`                  % Test,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Pekko.`pekko-actor-typed`,
+      Pekko.`pekko-stream`,
+      Libs.scalatest.value              % Test,
+      Libs.`mockito`                    % Test,
+      Libs.`tmt-test-reporter`          % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test
     )
   )
 
-  val AgentAkkaClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AgentPekkoClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-prefix`.value,
-      Akka.`akka-actor-typed`,
-      Libs.`mockito`                  % Test,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Pekko.`pekko-actor-typed`,
+      Libs.`mockito`                    % Test,
+      Libs.`tmt-test-reporter`          % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test
     )
   )
 
@@ -128,10 +131,12 @@ object Dependencies {
       Csw.`csw-commons`,
       Csw.`csw-network-utils`,
       Csw.`csw-location-client`,
-      Akka.`akka-actor-typed`,
-      AkkaHttp.`akka-http`,
-      AkkaHttp.`akka-http-cors`,
-      Libs.`scala-async`,
+      Pekko.`pekko-actor-typed`,
+      PekkoHttp.`pekko-http`,
+      Borer.`borer-compat-pekko`,
+      Pekko.`pekko-stream`,
+      PekkoHttp.`pekko-http-cors`,
+      Libs.`dotty-cps-async`.value,
       Libs.scalatest.value     % Test,
       Libs.`mockito`           % Test,
       Libs.`tmt-test-reporter` % Test
@@ -156,11 +161,11 @@ object Dependencies {
 
   val IntegrationTest = Def.setting(
     Seq(
-      Akka.`akka-multi-node-testkit` % Test,
-      Csw.`csw-logging-client`       % Test,
-      Csw.`csw-logging-models`.value % Test,
-      Libs.scalatest.value           % Test,
-      Libs.`tmt-test-reporter`       % Test
+      Pekko.`pekko-multi-node-testkit` % Test,
+      Csw.`csw-logging-client`         % Test,
+      Csw.`csw-logging-models`.value   % Test,
+      Libs.scalatest.value             % Test,
+      Libs.`tmt-test-reporter`         % Test
     )
   )
 
@@ -173,15 +178,16 @@ object Dependencies {
       Csw.`csw-command-client`,
       Csw.`csw-alarm-client`,
       Csw.`csw-config-client`,
-      Libs.`mockito`                  % Test,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Libs.`mockito`                    % Test,
+      Libs.`tmt-test-reporter`          % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test
     )
   )
 
   val OcsDslKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Kotlin.`stdlib-jdk8`,
+      Kotlin.`kotlin-stdlib`,
+      Kotlin.`kotlin-reflect`,
       Kotlin.`coroutines-core`,
       Kotlin.`coroutines-core-jvm`,
       Kotlin.`coroutines-jdk8`,
@@ -194,7 +200,7 @@ object Dependencies {
 
   val EswGatewayApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`msocket-api`.value,
+      MSocket.`msocket-api`.value,
       Csw.`csw-alarm-api`,
       Csw.`csw-command-api`.value,
       Csw.`csw-command-client`,
@@ -205,15 +211,15 @@ object Dependencies {
 
   val EswGatewayImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Akka.`akka-actor-typed`,
+      Pekko.`pekko-actor-typed`,
       Csw.`csw-event-client`,
       Libs.caffeine,
       Csw.`csw-location-api`.value,
-      Libs.`mockito`                  % Test,
-      Libs.scalatest.value            % Test,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-remote`              % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Libs.`mockito`                    % Test,
+      Libs.scalatest.value              % Test,
+      Libs.`tmt-test-reporter`          % Test,
+      Pekko.`pekko-remote`              % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test
     )
   )
 
@@ -223,13 +229,13 @@ object Dependencies {
       Csw.`csw-command-client`,
       Csw.`csw-config-client`,
       Libs.`case-app`,
-      Libs.`msocket-http`,
-      Libs.`tmt-test-reporter`        % Test,
-      Libs.`mockito`                  % Test,
-      Libs.scalatest.value            % Test,
-      Akka.`akka-actor-testkit-typed` % Test,
-      AkkaHttp.`akka-http-testkit`    % Test,
-      Akka.`akka-stream-testkit`      % Test
+      MSocket.`msocket-http`,
+      Libs.`tmt-test-reporter`          % Test,
+      Libs.`mockito`                    % Test,
+      Libs.scalatest.value              % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test,
+      PekkoHttp.`pekko-http-testkit`    % Test,
+      Pekko.`pekko-stream-testkit`      % Test
     )
   )
 
@@ -246,7 +252,7 @@ object Dependencies {
     Seq(
       Csw.`csw-location-api`.value,
       Csw.`csw-config-client`,
-      Akka.`akka-actor-typed`,
+      Pekko.`pekko-actor-typed`,
       Libs.`mockito`           % Test,
       Libs.scalatest.value     % Test,
       Libs.`tmt-test-reporter` % Test
@@ -265,28 +271,29 @@ object Dependencies {
 
   val SmApiJvm: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Akka.`akka-actor-typed`,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Pekko.`pekko-actor-typed`,
+      Libs.`tmt-test-reporter`          % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test
     )
   )
 
   val EswSmApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
-      Libs.scalatest.value            % Test,
-      Libs.`mockito`                  % Test,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Libs.scalatest.value              % Test,
+      Libs.`mockito`                    % Test,
+      Libs.`tmt-test-reporter`          % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test
     )
   )
 
   val EswSmHandlers: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`msocket-http`,
-      AkkaHttp.`akka-http`,
-      AkkaHttp.`akka-http-testkit` % Test,
-      Akka.`akka-stream-testkit`   % Test
+      MSocket.`msocket-http`,
+      PekkoHttp.`pekko-http`,
+      Pekko.`pekko-stream`,
+      PekkoHttp.`pekko-http-testkit` % Test,
+      Pekko.`pekko-stream-testkit`   % Test
     )
   )
 
@@ -296,12 +303,13 @@ object Dependencies {
       Csw.`csw-aas-http`,
       Csw.`csw-location-api`.value,
       Libs.`embedded-keycloak`,
-      Akka.`akka-stream-typed`        % Provided,
-      Libs.`case-app`                 % Provided,
-      Akka.`akka-remote`              % Test,
-      Akka.`akka-actor-testkit-typed` % Test,
-      Libs.`mockito`                  % Test,
-      Libs.scalatest.value            % Test
+      Kotlin.`kotlin-reflect`,
+      Pekko.`pekko-stream-typed`        % Provided,
+      Libs.`case-app`                   % Provided,
+      Pekko.`pekko-remote`              % Test,
+      Pekko.`pekko-actor-testkit-typed` % Test,
+      Libs.`mockito`                    % Test,
+      Libs.scalatest.value              % Test
     )
   )
 
@@ -317,8 +325,8 @@ object Dependencies {
 
   val EswTestCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Akka.`akka-actor-testkit-typed`,
-      Akka.`akka-remote`,
+      Pekko.`pekko-actor-testkit-typed`,
+      Pekko.`pekko-remote`,
       Csw.`csw-prefix`.value,
       Libs.scalatest.value,
       Libs.`mockito`,
@@ -328,7 +336,7 @@ object Dependencies {
 
   val EswTestkit = Def.setting(
     Seq(
-      Akka.`akka-actor-testkit-typed`,
+      Pekko.`pekko-actor-testkit-typed`,
       Csw.`csw-testkit`,
       Libs.scalatest.value,
       Libs.`embedded-keycloak`,

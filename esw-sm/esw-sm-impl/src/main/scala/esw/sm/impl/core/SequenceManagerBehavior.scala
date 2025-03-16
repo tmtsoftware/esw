@@ -1,10 +1,10 @@
 package esw.sm.impl.core
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{PekkoLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
@@ -25,7 +25,7 @@ import esw.sm.impl.config.{ObsModeConfig, SequenceManagerConfig}
 import esw.sm.impl.utils.Types.AgentLocation
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
-import scala.async.Async.{async, await}
+import cps.compat.FutureAsync.*
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.chaining.scalaUtilChainingOps
@@ -39,7 +39,7 @@ import scala.util.control.NonFatal
  * agentUtil - an instance of [[esw.commons.utils.location.LocationServiceUtil]]
  * sequencerUtil - an instance of [[esw.sm.impl.utils.SequencerUtil]]
  * sequenceComponentUtil - an instance of [[esw.sm.impl.utils.SequenceComponentUtil]]
- * actorSystem - an Akka ActorSystem
+ * actorSystem - a Pekko ActorSystem
  * logger - a logger for Logging
  */
 class SequenceManagerBehavior(
@@ -48,7 +48,7 @@ class SequenceManagerBehavior(
     agentUtil: AgentUtil,
     sequencerUtil: SequencerUtil,
     sequenceComponentUtil: SequenceComponentUtil
-)(implicit val actorSystem: ActorSystem[_], implicit val logger: Logger) {
+)(implicit val actorSystem: ActorSystem[?], val logger: Logger) {
 
   import SequenceManagerBehavior.*
   import actorSystem.executionContext
@@ -342,10 +342,10 @@ class SequenceManagerBehavior(
 
   // get the component name of all the top level sequencers i.e. ESW sequencers
   private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[ObsMode]]] =
-    locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer).mapRight(_.map(getObsMode).toSet)
+    locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer).mapRight(_.map(getObsMode).toSet)
 
   // componentName = obsMode, as per convention, sequencer uses obs mode to form component name
-  private def getObsMode(akkaLocation: AkkaLocation): ObsMode = ObsMode(akkaLocation.prefix.componentName)
+  private def getObsMode(pekkoLocation: PekkoLocation): ObsMode = ObsMode(pekkoLocation.prefix.componentName)
 
   private implicit class FutureOps[T](private val future: Future[T]) {
 

@@ -1,6 +1,6 @@
 package esw.services
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
@@ -10,7 +10,7 @@ import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.*
-import esw.agent.akka.app.AgentWiring
+import esw.agent.pekko.app.AgentWiring
 import esw.agent.service.api.models.SpawnResponse
 import esw.agent.service.app.AgentServiceWiring
 import esw.commons.extensions.FutureExt.FutureOps
@@ -22,7 +22,7 @@ import esw.gateway.server.GatewayWiring
 import esw.http.core.wiring.HttpService
 import esw.services.apps.{Agent, AgentService, Gateway, SequenceManager}
 import esw.services.cli.Command
-import esw.services.cli.Command.{Start, StartEngUIServices}
+import esw.services.cli.Command.{StartOptions, StartEngUIServicesOptions}
 import esw.services.internal.ManagedService
 
 import java.nio.file.Path
@@ -36,9 +36,9 @@ class Wiring(cmd: Command) {
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
-  private lazy val serviceList: List[ManagedService[_]] = cmd match {
-    case s: Start              => getServiceListForStart(s)
-    case s: StartEngUIServices => getServiceListForEngUIBackend(s)
+  private lazy val serviceList: List[ManagedService[?]] = cmd match {
+    case s: StartOptions              => getServiceListForStart(s)
+    case s: StartEngUIServicesOptions => getServiceListForEngUIBackend(s)
   }
 
   private lazy val configService: ConfigService = ConfigClientFactory.adminApi(actorSystem, locationService, tokenFactory)
@@ -63,8 +63,9 @@ class Wiring(cmd: Command) {
     Option(classOf[HttpService].getPackage.getSpecificationVersion).getOrElse("0.1.0-SNAPSHOT")
 
   private lazy val (scriptVersion, eswVersion) = cmd match {
-    case _: Start              => (sequencerScriptsSha, eswVersionDefault)
-    case s: StartEngUIServices => (s.scriptsVersion.getOrElse(sequencerScriptsSha), s.eswVersion.getOrElse(eswVersionDefault))
+    case _: StartOptions => (sequencerScriptsSha, eswVersionDefault)
+    case s: StartEngUIServicesOptions =>
+      (s.scriptsVersion.getOrElse(sequencerScriptsSha), s.eswVersion.getOrElse(eswVersionDefault))
   }
 
   private lazy val VersionConf = {
@@ -86,7 +87,7 @@ class Wiring(cmd: Command) {
 
   def stop(): Unit = serviceList.foreach(_.stop())
 
-  private def getServiceListForStart(cmd: Start) = {
+  private def getServiceListForStart(cmd: StartOptions) = {
     val agentPrefix: Prefix                              = cmd.agentPrefix.getOrElse(Prefix(ESW, "primary"))
     val agentApp: ManagedService[AgentWiring]            = Agent.service(cmd.agent, agentPrefix, systemConfig, cmd.hostConfigPath)
     val agentService: ManagedService[AgentServiceWiring] = AgentService.service(cmd.agentService)
@@ -98,7 +99,7 @@ class Wiring(cmd: Command) {
     serviceList
   }
 
-  private def getServiceListForEngUIBackend(command: StartEngUIServices): List[ManagedService[_]] = {
+  private def getServiceListForEngUIBackend(command: StartEngUIServicesOptions): List[ManagedService[?]] = {
     // start agents as per provision config
     val agentApp1 = Agent.service(enable = true, Prefix(ESW, "machine1"), systemConfig)
     val agentApp2 = Agent.service(enable = true, Prefix(AOESW, "machine1"), systemConfig)

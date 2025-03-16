@@ -1,11 +1,11 @@
 package esw.gateway.server.metrics
 
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
-import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
-import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
-import akka.stream.testkit.scaladsl.TestSource
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.scaladsl.adapter.ClassicActorSystemOps
+import org.apache.pekko.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
+import org.apache.pekko.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
+import org.apache.pekko.stream.testkit.scaladsl.TestSource
+import org.apache.pekko.util.Timeout
 import csw.command.api.messages.CommandServiceStreamRequest.QueryFinal
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
@@ -45,9 +45,9 @@ class WebsocketMetricsTest
     with ClientHttpCodecs
     with GatewayStreamRequestLabels {
 
-  implicit val typedSystem: ActorSystem[_] = system.toTyped
+  implicit val typedSystem: ActorSystem[?] = system.toTyped
   private val cswCtxMocks                  = new CswTestMocks()
-  import cswCtxMocks._
+  import cswCtxMocks.*
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 

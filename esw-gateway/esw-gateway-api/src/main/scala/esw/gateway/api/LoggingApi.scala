@@ -1,6 +1,6 @@
 package esw.gateway.api
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.logging.models.Level
 import csw.prefix.models.Prefix
 

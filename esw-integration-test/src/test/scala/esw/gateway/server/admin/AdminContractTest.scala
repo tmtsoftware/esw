@@ -2,13 +2,13 @@ package esw.gateway.server.admin
 
 import java.net.InetAddress
 
-import akka.Done
-import akka.actor.testkit.typed.TestKitSettings
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.testkit.typed.TestKitSettings
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.client.RequestBuilding
+import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import com.typesafe.config.ConfigFactory
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.CommandMessage.Oneway
@@ -16,11 +16,11 @@ import csw.command.client.messages.ContainerCommonMessage.GetComponents
 import csw.command.client.messages.ContainerMessage
 import csw.command.client.models.framework.{Component, Components, ContainerLifecycleState, SupervisorLifecycleState}
 import csw.location.api.models.ComponentType.{Assembly, HCD}
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.location.client.ActorSystemFactory
-import csw.logging.client.internal.JsonExtensions._
-import csw.logging.client.internal._
+import csw.logging.client.internal.JsonExtensions.*
+import csw.logging.client.internal.*
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.logging.models.Level.{ERROR, INFO, WARN}
 import csw.logging.models.{Level, LogMetadata}
@@ -34,7 +34,7 @@ import esw.gateway.api.clients.AdminClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.InvalidComponent
 import esw.gateway.server.TestAppender
-import esw.gateway.server.admin.FrameworkAssertions._
+import esw.gateway.server.admin.FrameworkAssertions.*
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.AAS
 import play.api.libs.json.{JsObject, Json}
@@ -53,16 +53,16 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
 
   implicit val testKitSettings: TestKitSettings = TestKitSettings(typedSystem)
 
-  private val laserConnection            = AkkaConnection(ComponentId(Prefix(Subsystem.TCS, "Laser"), Assembly))
-  private val motionControllerConnection = AkkaConnection(ComponentId(Prefix(Subsystem.TCS, "Motion_Controller"), HCD))
-  private val galilConnection            = AkkaConnection(ComponentId(Prefix(Subsystem.TCS, "Galil"), Assembly))
+  private val laserConnection            = PekkoConnection(ComponentId(Prefix(Subsystem.TCS, "Laser"), Assembly))
+  private val motionControllerConnection = PekkoConnection(ComponentId(Prefix(Subsystem.TCS, "Motion_Controller"), HCD))
+  private val galilConnection            = PekkoConnection(ComponentId(Prefix(Subsystem.TCS, "Galil"), Assembly))
   private val probe                      = TestProbe[OnewayResponse]()
   private val startLoggingCmd            = CommandName("StartLogging")
   private val prefix                     = Prefix("iris.command")
-  private var containerActorSystem: ActorSystem[SpawnProtocol.Command] = _
-  private var laserComponent: Component                                = _
-  private var galilComponent: Component                                = _
-  private var loggingSystem: LoggingSystem                             = _
+  private var containerActorSystem: ActorSystem[SpawnProtocol.Command] = scala.compiletime.uninitialized
+  private var laserComponent: Component                                = scala.compiletime.uninitialized
+  private var galilComponent: Component                                = scala.compiletime.uninitialized
+  private var loggingSystem: LoggingSystem                             = scala.compiletime.uninitialized
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -98,18 +98,18 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
 
       val config     = ConfigFactory.load().getConfig("csw-logging")
       val logLevel   = Level(config.getString("logLevel"))
-      val akkaLevel  = Level(config.getString("akkaLogLevel"))
+      val pekkoLevel = Level(config.getString("pekkoLogLevel"))
       val slf4jLevel = Level(config.getString("slf4jLogLevel"))
       val componentLogLevel = Level(
         config
           .getConfig("component-log-levels")
           .getString(motionControllerConnection.prefix.toString)
       )
-      logMetadata1 shouldBe LogMetadata(logLevel, akkaLevel, slf4jLevel, componentLogLevel)
+      logMetadata1 shouldBe LogMetadata(logLevel, pekkoLevel, slf4jLevel, componentLogLevel)
 
-      // updating default and akka log level
+      // updating default and pekko log level
       loggingSystem.setDefaultLogLevel(ERROR)
-      loggingSystem.setAkkaLevel(WARN)
+      loggingSystem.setPekkoLevel(WARN)
 
       val logMetadata2 = adminClient.getLogMetadata(motionControllerConnection.componentId).futureValue
 
@@ -117,7 +117,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
 
       // reset log levels to default
       loggingSystem.setDefaultLogLevel(logLevel)
-      loggingSystem.setAkkaLevel(akkaLevel)
+      loggingSystem.setPekkoLevel(pekkoLevel)
     }
 
     "set log level of the component dynamically through http end point | ESW-254, CSW-81, ESW-279" in {
@@ -135,7 +135,8 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
 
       laserComponentLogs.exists(log => log.getString("@severity").toLowerCase.equalsIgnoreCase("info")) shouldBe true
       laserComponentLogs.foreach { log =>
-        val currentLogLevel = log.getString("@severity").toLowerCase
+        val severity        = log.getString("@severity")
+        val currentLogLevel = log.getString(severity).toLowerCase
         Level(currentLogLevel) >= INFO shouldBe true
       }
 
@@ -171,7 +172,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       }
     }
 
-    "return appropriate error when component is not resolved for akka connection while getting log metadata | ESW-254, CSW-81, ESW-279, ESW-372" in {
+    "return appropriate error when component is not resolved for pekko connection while getting log metadata | ESW-254, CSW-81, ESW-279, ESW-372" in {
       val adminClient         = new AdminClient(gatewayPostClient)
       val nonRegisteredCompId = ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)
 
@@ -182,7 +183,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       serviceError should ===(InvalidComponent("Could not find component : ComponentId(TCS.abc,HCD)"))
     }
 
-    "return appropriate error when component is not resolved for akka connection while setting log level | ESW-254, CSW-81, ESW-279, ESW-372" in {
+    "return appropriate error when component is not resolved for pekko connection while setting log level | ESW-254, CSW-81, ESW-279, ESW-372" in {
       val gatewayPostClient   = gatewayHTTPClient(tokenWithEswUserRole)
       val adminClient         = new AdminClient(gatewayPostClient)
       val nonRegisteredCompId = ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)
@@ -212,7 +213,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       // start container
       startContainerAndWaitForRunning("sample_container.conf")(actorSystem)
 
-      import esw.gateway.server.admin.SampleContainerState._
+      import esw.gateway.server.admin.SampleContainerState.*
 
       // test AdminApi.goOffline Api for container
       adminClient.goOffline(eswContainerCompId).futureValue shouldBe Done
@@ -250,7 +251,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       actorSystem.whenTerminated.futureValue
 
       eventually {
-        locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
+        locationService.resolve(PekkoConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
       }
     }
 
@@ -260,11 +261,11 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
 
       val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sample-container-system")
 
-      import esw.gateway.server.admin.SampleContainerState._
+      import esw.gateway.server.admin.SampleContainerState.*
       startContainerAndWaitForRunning("sample_container.conf")(actorSystem)
 
-      val filterAssemblyLocation = locationService.resolve(AkkaConnection(eswAssemblyCompId), 5.seconds).futureValue.get
-      val galilHcdLocation       = locationService.resolve(AkkaConnection(eswGalilHcdCompId), 5.seconds).futureValue.get
+      val filterAssemblyLocation = locationService.resolve(PekkoConnection(eswAssemblyCompId), 5.seconds).futureValue.get
+      val galilHcdLocation       = locationService.resolve(PekkoConnection(eswGalilHcdCompId), 5.seconds).futureValue.get
 
       val assemblyCommandService = CommandServiceFactory.make(filterAssemblyLocation)(actorSystem)
       val galilHcdCommandService = CommandServiceFactory.make(galilHcdLocation)(actorSystem)
@@ -318,7 +319,7 @@ class AdminContractTest extends EswTestKit(AAS) with GatewayCodecs {
       actorSystem.whenTerminated.futureValue
 
       eventually {
-        locationService.resolve(AkkaConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
+        locationService.resolve(PekkoConnection(eswContainerCompId), 5.seconds).futureValue shouldBe None
       }
     }
   }

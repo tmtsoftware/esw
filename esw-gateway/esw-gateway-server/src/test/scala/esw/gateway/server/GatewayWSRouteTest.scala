@@ -1,12 +1,12 @@
 package esw.gateway.server
 
-import akka.Done
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
-import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
-import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
-import akka.stream.scaladsl.Source
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.scaladsl.adapter.ClassicActorSystemOps
+import org.apache.pekko.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
+import org.apache.pekko.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.Timeout
 import csw.command.api.messages.CommandServiceStreamRequest.{QueryFinal, SubscribeCurrentState}
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
@@ -43,11 +43,11 @@ class GatewayWSRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   override def clientContentType: ContentType = ContentType.Json
 
-  implicit val typedSystem: ActorSystem[_] = system.toTyped
+  implicit val typedSystem: ActorSystem[?] = system.toTyped
   private val cswCtxMocks                  = new CswTestMocks()
   import cswCtxMocks.*
 
-  private var wsClient: WSProbe                        = _
+  private var wsClient: WSProbe                        = scala.compiletime.uninitialized
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   private val eventApi: EventApi   = new EventImpl(eventService, eventSubscriberUtil)

@@ -2,7 +2,7 @@ package esw.sm.app
 
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.actor.client.SequenceComponentImpl
@@ -17,7 +17,7 @@ trait SequenceManagerSetup extends LocationUtils {
   val sequenceManagerPrefix: Prefix = Prefix(ESW, "sequence_manager")
   val ocsVersionOpt: Option[String] = Some("0.1.0-SNAPSHOT")
 
-  def sequencerConnection(prefix: Prefix): AkkaConnection = AkkaConnection(ComponentId(prefix, Sequencer))
+  def sequencerConnection(prefix: Prefix): PekkoConnection = PekkoConnection(ComponentId(prefix, Sequencer))
 
   def assertThatSeqCompIsAvailable(prefix: Prefix): Unit = assertSeqCompAvailability(isSeqCompAvailable = true, prefix)
 

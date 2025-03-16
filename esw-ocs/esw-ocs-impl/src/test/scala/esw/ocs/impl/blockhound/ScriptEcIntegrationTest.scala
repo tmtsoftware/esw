@@ -34,7 +34,7 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
 
       Await.result(Future { Thread.sleep(1000) }(testEc), 10.seconds)
 
-      assertString.contains("java.lang.Thread.sleep") shouldBe true
+      assertString.contains("java.lang.Thread.sleep0") shouldBe true
     }
 
     "ignore allowed blocking println calls for script thread | ESW-290" in {

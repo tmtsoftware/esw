@@ -2,14 +2,14 @@ package esw.ocs.api.actor.messages
 
 import csw.command.client.messages.sequencer.SequencerMsg
 import esw.ocs.api.actor.messages.SequencerMessages.*
-import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsPekkoSerializable
 import esw.ocs.api.models.SequencerState
 
 /*
  * These models represents the internal state(which is used in the implementation) of the sequencer.
  * They are here only for the internal use case not for public.
  */
-sealed trait InternalSequencerState[+T <: SequencerMsg] extends OcsAkkaSerializable {
+sealed trait InternalSequencerState[+T <: SequencerMsg] extends OcsPekkoSerializable {
 
   def name: String = this.getClass.getSimpleName.dropRight(1) // remove $ from class name
 

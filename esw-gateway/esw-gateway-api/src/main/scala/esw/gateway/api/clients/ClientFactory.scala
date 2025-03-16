@@ -1,6 +1,6 @@
 package esw.gateway.api.clients
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.command.api.client.CommandServiceClient
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.models.ComponentId
@@ -16,10 +16,10 @@ import msocket.api.Transport
  * @param actorSystem - An implicit actor system.
  */
 class ClientFactory(postTransport: Transport[GatewayRequest], websocketTransport: Transport[GatewayStreamRequest])(implicit
-    actorSystem: ActorSystem[_]
+    actorSystem: ActorSystem[?]
 ) {
 
-  import esw.gateway.api.codecs.GatewayCodecs._
+  import esw.gateway.api.codecs.GatewayCodecs.*
   import actorSystem.executionContext
 
   def component(componentId: ComponentId): CommandService =

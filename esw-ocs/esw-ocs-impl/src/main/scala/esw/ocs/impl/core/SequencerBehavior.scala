@@ -1,16 +1,16 @@
 package esw.ocs.impl.core
 
-import akka.Done
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior}
+import org.apache.pekko.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal, SubmitSequence}
 import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.commons.LogAdminUtil
@@ -38,13 +38,13 @@ class SequencerBehavior(
     sequenceComponentPrefix: Prefix,
     logger: Logger,
     shutdownHttpService: () => Future[Done]
-)(implicit val actorSystem: ActorSystem[_])
+)(implicit val actorSystem: ActorSystem[?])
     extends OcsCodecs {
   import actorSystem.executionContext
   import logger.*
 
   // Mapping of Sequencer state against corresponding state's behavior
-  private def stateMachine(state: InternalSequencerState[_]): SequencerData => Behavior[SequencerMsg] =
+  private def stateMachine(state: InternalSequencerState[?]): SequencerData => Behavior[SequencerMsg] =
     state match {
       case Idle             => idle
       case Loaded           => loaded
@@ -95,7 +95,8 @@ class SequencerBehavior(
       case PullNext(replyTo)      => running(data.pullNextStep(replyTo))
       case StepSuccess(_)         => running(data.stepSuccess())
       case StepFailure(reason, _) => running(data.stepFailure(reason))
-      case _: GoIdle              => idle(data) // this is received on sequence completion
+      case _: GoIdle =>
+        idle(data) // this is received on sequence completion
     }
   }
 
@@ -204,7 +205,7 @@ class SequencerBehavior(
     // run the futures in parallel and wait for all of them to complete
     // once all finished, send ShutdownComplete self message irrespective of any failures
 
-    val f1 = locationService.unregister(AkkaConnection(componentId))
+    val f1 = locationService.unregister(PekkoConnection(componentId))
     val f2 = script.executeShutdown() // execute shutdown handlers of script
     val f3 = shutdownHttpService()
     f1.onComplete(_ =>
@@ -306,7 +307,7 @@ class SequencerBehavior(
       case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
       case GetSequenceComponent(replyTo) =>
         locationService
-          .find(AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent)))
+          .find(PekkoConnection(ComponentId(sequenceComponentPrefix, SequenceComponent)))
           .map(replyTo ! _.get)
         Behaviors.same
 

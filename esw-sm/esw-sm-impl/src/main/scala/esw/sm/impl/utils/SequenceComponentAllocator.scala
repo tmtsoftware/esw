@@ -1,6 +1,6 @@
 package esw.sm.impl.utils
 
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.{ObsMode, VariationInfo}
@@ -35,7 +35,7 @@ class SequenceComponentAllocator() {
   }
 
   // find sequence component for provided subsystem or ESW (fallback)
-  private def findSeqComp(subsystem: Subsystem, seqCompLocations: List[SeqCompLocation]): Option[AkkaLocation] =
+  private def findSeqComp(subsystem: Subsystem, seqCompLocations: List[SeqCompLocation]): Option[PekkoLocation] =
     seqCompLocations.find(_.prefix.subsystem == subsystem).orElse(seqCompLocations.find(_.prefix.subsystem == ESW))
 
 }

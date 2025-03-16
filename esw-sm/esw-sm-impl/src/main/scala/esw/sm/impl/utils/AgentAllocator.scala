@@ -1,6 +1,6 @@
 package esw.sm.impl.utils
 
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.sm.api.models.ProvisionConfig
 import esw.sm.api.protocol.ProvisionResponse.CouldNotFindMachines
@@ -11,7 +11,7 @@ class AgentAllocator {
   // agent prefix to sequence component prefix mapping is input over here. This method's responsibility is to allocate
   // actual agent locations to sequence components prefix as per mapping.
   // In case of success it return mapping of agent location to sequence component prefix else error of CouldNotFindMachines
-  def allocate(provisionConfig: ProvisionConfig, machines: List[AkkaLocation]): AllocationResponse = {
+  def allocate(provisionConfig: ProvisionConfig, machines: List[PekkoLocation]): AllocationResponse = {
     val allocationResult = provisionConfig.agentToSeqCompMapping.map { case (agentPrefix, seqCompPrefix) =>
       machines.find(_.prefix == agentPrefix).map((_, seqCompPrefix)).toRight(agentPrefix)
     }.sequence

@@ -1,15 +1,15 @@
 package esw.ocs.app
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.util.Timeout
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.util.Timeout
 import csw.command.client.SequencerCommandServiceImpl
 import csw.location.api.CswVersionJvm
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.*
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -43,14 +43,14 @@ class SequencerAppIntegrationTest extends EswTestKit {
       SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name, "-a", agentPrefix.toString()))
 
       // verify Sequence component is started and registered with location service
-      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
+      val sequenceCompLocation: PekkoLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
 
-      sequenceCompLocation.connection shouldEqual AkkaConnection(
+      sequenceCompLocation.connection shouldEqual PekkoConnection(
         ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)
       )
       sequenceCompLocation.prefix should ===(Prefix("ESW.primary"))
 
-      // ESW-366 verify agent prefix and pid metadata is present in Sequence component akka location
+      // ESW-366 verify agent prefix and pid metadata is present in Sequence component pekko location
       sequenceCompLocation.metadata.getAgentPrefix.get should ===(agentPrefix)
       // As SequencerApp is used directly, no new process is spawned. test Pid should be equal to seqComp pid
       sequenceCompLocation.metadata.getPid.get shouldBe ProcessHandle.current().pid()
@@ -71,10 +71,10 @@ class SequencerAppIntegrationTest extends EswTestKit {
       actualSequencerPrefix shouldEqual expectedSequencerPrefix
 
       // verify Sequencer is started and registered with location service with expected prefix
-      val sequencerLocationCheck: AkkaLocation = resolveSequencerLocation(expectedSequencerPrefix)
+      val sequencerLocationCheck: PekkoLocation = resolveSequencerLocation(expectedSequencerPrefix)
       sequencerLocationCheck shouldEqual sequencerLocation
 
-      // ESW-481: verify sequencer AkkaLocation has sequence component prefix in metadata
+      // ESW-481: verify sequencer PekkoLocation has sequence component prefix in metadata
       sequencerLocation.metadata should ===(expectedMetadata)
 
       // ESW-481: verify sequencer HTTPLocation has sequence component prefix in metadata
@@ -135,9 +135,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
       SequencerApp.main(Array("seqcomp", "-s", subsystem, "-n", name))
 
       // verify Sequence component is started and registered with location service
-      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
+      val sequenceCompLocation: PekkoLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
 
-      sequenceCompLocation.connection shouldEqual AkkaConnection(ComponentId(Prefix(ESW, name), ComponentType.SequenceComponent))
+      sequenceCompLocation.connection shouldEqual PekkoConnection(ComponentId(Prefix(ESW, name), ComponentType.SequenceComponent))
 
       val timeout = Timeout(10.seconds)
       // LoadScript
@@ -167,7 +167,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name))
 
       // verify Sequence component is started and registered with location service
-      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
+      val sequenceCompLocation: PekkoLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
       sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
 
       // assert that exception is thrown when start Sequence Component with same name
@@ -190,7 +190,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       resolveSequenceComponentLocation(sequenceComponentPrefix)
 
       // verify that sequencer is started and able to process sequence command
-      val connection        = AkkaConnection(ComponentId(Prefix(ESW, obsMode), ComponentType.Sequencer))
+      val connection        = PekkoConnection(ComponentId(Prefix(ESW, obsMode), ComponentType.Sequencer))
       val sequencerLocation = locationService.resolve(connection, 5.seconds).futureValue.value
 
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)

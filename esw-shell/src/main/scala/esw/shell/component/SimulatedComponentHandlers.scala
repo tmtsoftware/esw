@@ -1,13 +1,13 @@
 package esw.shell.component
 
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
+import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors}
 import csw.command.client.messages.TopLevelActorMessage
 import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
 import csw.location.api.models.TrackingEvent
 import csw.params.commands.CommandIssue.UnsupportedCommandIssue
-import csw.params.commands.CommandResponse._
-import csw.params.commands._
+import csw.params.commands.CommandResponse.*
+import csw.params.commands.*
 import csw.params.core.generics.KeyType
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -19,7 +19,7 @@ import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
 class SimulatedComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
     extends ComponentHandlers(ctx, cswCtx) {
 
-  import cswCtx._
+  import cswCtx.*
   implicit val ec: ExecutionContextExecutor = ctx.executionContext
   private val log                           = loggerFactory.getLogger
 
@@ -37,7 +37,7 @@ class SimulatedComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx
             timeServiceScheduler.scheduleOnce(when) {
               commandResponseManager.updateCommand(CommandResponse.Completed(sleep.runId))
             }
-          case _ => log.error("Unsupported message type")
+          case null => log.error("Unsupported message type")
         }
         Behaviors.same
       }),

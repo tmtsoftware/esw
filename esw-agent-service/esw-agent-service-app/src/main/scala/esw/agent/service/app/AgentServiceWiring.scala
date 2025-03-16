@@ -1,10 +1,10 @@
 package esw.agent.service.app
 
-import akka.Done
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
+import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.server.Route
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.ComponentType
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
@@ -29,8 +29,8 @@ import scala.concurrent.Future
 class AgentServiceWiring(_port: Option[Int] = None) extends AgentServiceCodecs {
 
   lazy val agentActorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
-  lazy val actorRuntime                                         = new ActorRuntime(agentActorSystem)
-  import actorRuntime._
+  final lazy val actorRuntime                                   = new ActorRuntime(agentActorSystem)
+  import actorRuntime.*
 
   private lazy val config = agentActorSystem.settings.config
   lazy val prefix: Prefix = Prefix(ESW, "agent_service")

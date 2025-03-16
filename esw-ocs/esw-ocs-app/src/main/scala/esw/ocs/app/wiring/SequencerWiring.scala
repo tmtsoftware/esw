@@ -1,12 +1,12 @@
 package esw.ocs.app.wiring
 
-import akka.Done
-import akka.actor.CoordinatedShutdown
-import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
-import akka.http.scaladsl.server.Route
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
+import org.apache.pekko.http.scaladsl.server.Route
+import org.apache.pekko.util.Timeout
 import com.typesafe.config.Config
 import csw.aas.http.SecurityDirectives
 import csw.alarm.api.javadsl.IAlarmService
@@ -16,10 +16,10 @@ import csw.event.api.scaladsl.EventService
 import csw.event.client.EventServiceFactory
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.event.client.models.EventStores.RedisStore
-import csw.location.api.AkkaRegistrationFactory
+import csw.location.api.PekkoRegistrationFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.models.*
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.PekkoConnection
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
@@ -49,27 +49,34 @@ import msocket.http.RouteFactory
 import msocket.http.post.PostRouteFactory
 import msocket.http.ws.WebsocketRouteFactory
 import msocket.jvm.metrics.LabelExtractor
+import cps.compat.FutureAsync.*
 
-import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
+//noinspection DuplicatedCode
 // $COVERAGE-OFF$
-private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponentPrefix: Prefix) extends SequencerServiceCodecs {
+private[ocs] class SequencerWiring(
+    val sequencerPrefix: Prefix,
+    sequenceComponentPrefix: Prefix
+) extends SequencerServiceCodecs {
+
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
-  private[ocs] lazy val config: Config  = actorSystem.settings.config
+  private[ocs] lazy val config: Config = actorSystem.settings.config
+
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, sequencerPrefix)
-  import sequencerConfig.*
+  final lazy val sc                     = sequencerConfig
+  import sc.*
 
   implicit lazy val timeout: Timeout = CommonTimeouts.Wiring
-  lazy val actorRuntime              = new ActorRuntime(actorSystem)
+  final lazy val actorRuntime        = new ActorRuntime(actorSystem)
   import actorRuntime.{coordinatedShutdown, ec, typedSystem}
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
-    actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
+    actorSystem ? { (x: ActorRef[ActorRef[SequencerMsg]]) =>
       Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
     },
     CommonTimeouts.Wiring
@@ -147,16 +154,15 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
     )
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
-    override def start(): Either[ScriptError, AkkaLocation] = {
+    override def start(): Either[ScriptError, PekkoLocation] = {
       try {
         logger.info(
           s"Starting sequencer for subsystem: ${sequencerPrefix.subsystem} with observing mode: ${sequencerPrefix.componentName}"
         )
         new Engine(script).start(sequenceOperatorFactory())
-
         Await.result(httpServerBinding, CommonTimeouts.Wiring)
 
-        val registration = AkkaRegistrationFactory.make(AkkaConnection(componentId), sequencerRef, metadata)
+        val registration = PekkoRegistrationFactory.make(PekkoConnection(componentId), sequencerRef, metadata)
         val loc = Await.result(
           locationServiceUtil.register(registration).mapLeft(e => LocationServiceError(e.msg)),
           CommonTimeouts.Wiring
@@ -191,7 +197,7 @@ private[ocs] class SequencerWiring(val sequencerPrefix: Prefix, sequenceComponen
 
     private def cleanupResources() = {
       redisClient.shutdown()
-      (sequencerRef ? Shutdown).map(_ => Done)
+      (sequencerRef ? Shutdown.apply).map(_ => Done)
     }
   }
 

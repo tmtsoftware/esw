@@ -1,6 +1,6 @@
 package esw.performance
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
@@ -11,13 +11,13 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.utils.LocationUtils
-import esw.performance.constants.ObsModes._
+import esw.performance.constants.ObsModes.*
 import esw.performance.constants.SMLatencyConstants
 import esw.performance.utils.PerfUtils.{printResults, recordResults}
 import esw.performance.utils.Timing
 import esw.sm.api.actor.client.SequenceManagerApiFactory
 import esw.sm.api.protocol.ConfigureResponse.Failure
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.*
 import org.HdrHistogram.Histogram
 
 import scala.concurrent.duration.DurationInt
@@ -32,8 +32,8 @@ object SequenceManagerLatencyTest extends LocationUtils {
 
   private val loggerFactory         = new LoggerFactory(Prefix(ESW, "perf.test"))
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
-  private val smLocation            = resolveAkkaLocation(sequenceManagerPrefix, Service)
-  private val smClient              = SequenceManagerApiFactory.makeAkkaClient(smLocation)
+  private val smLocation            = resolvePekkoLocation(sequenceManagerPrefix, Service)
+  private val smClient              = SequenceManagerApiFactory.makePekkoClient(smLocation)
 
   private val log = loggerFactory.getLogger
 

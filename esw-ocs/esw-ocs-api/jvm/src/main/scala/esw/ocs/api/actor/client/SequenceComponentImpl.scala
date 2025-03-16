@@ -1,9 +1,9 @@
 package esw.ocs.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.prefix.models.Subsystem
 import esw.constants.SequenceComponentTimeouts
 import esw.ocs.api.SequenceComponentApi
@@ -20,10 +20,10 @@ import scala.concurrent.Future
  * This client takes actor ref of the sequence component as a constructor argument
  *
  * @param sequenceComponentLocation - location of the sequence component
- * @param actorSystem - an Akka ActorSystem
+ * @param actorSystem - a Pekko ActorSystem
  */
-class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
-    actorSystem: ActorSystem[_]
+class SequenceComponentImpl(sequenceComponentLocation: PekkoLocation)(implicit
+    actorSystem: ActorSystem[?]
 ) extends SequenceComponentApi {
 
   private val sequenceComponentRef = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
@@ -33,20 +33,20 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
       obsMode: ObsMode,
       variation: Option[Variation]
   ): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(x, subsystem, obsMode, variation) })(
+    (sequenceComponentRef ? { (x: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(x, subsystem, obsMode, variation) })(
       SequenceComponentTimeouts.LoadScript,
       actorSystem.scheduler
     )
 
   override def restartScript(): Future[ScriptResponseOrUnhandled] =
-    (sequenceComponentRef ? RestartScript)(SequenceComponentTimeouts.RestartScript, actorSystem.scheduler)
+    (sequenceComponentRef ? RestartScript.apply)(SequenceComponentTimeouts.RestartScript, actorSystem.scheduler)
 
   override def status: Future[GetStatusResponse] =
-    (sequenceComponentRef ? GetStatus)(SequenceComponentTimeouts.Status, actorSystem.scheduler)
+    (sequenceComponentRef ? GetStatus.apply)(SequenceComponentTimeouts.Status, actorSystem.scheduler)
 
   override def unloadScript(): Future[Ok.type] =
-    (sequenceComponentRef ? UnloadScript)(SequenceComponentTimeouts.UnloadScript, actorSystem.scheduler)
+    (sequenceComponentRef ? UnloadScript.apply)(SequenceComponentTimeouts.UnloadScript, actorSystem.scheduler)
 
   override def shutdown(): Future[Ok.type] =
-    (sequenceComponentRef ? Shutdown)(SequenceComponentTimeouts.Shutdown, actorSystem.scheduler)
+    (sequenceComponentRef ? Shutdown.apply)(SequenceComponentTimeouts.Shutdown, actorSystem.scheduler)
 }

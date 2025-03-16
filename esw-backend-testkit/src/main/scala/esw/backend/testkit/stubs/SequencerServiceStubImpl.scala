@@ -1,9 +1,9 @@
 package esw.backend.testkit.stubs
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.scaladsl.Source
-import akka.util.Timeout
-import csw.location.api.models.AkkaLocation
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.Timeout
+import csw.location.api.models.PekkoLocation
 import csw.location.api.scaladsl.LocationService
 import csw.params.commands.CommandResponse.{Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, SequenceCommand, Setup}
@@ -12,7 +12,7 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.{SequencerState, StepList}
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.*
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription
 import msocket.jvm.SourceExtension.RichSource
@@ -56,7 +56,7 @@ class SequencerServiceStubImpl(val locationService: LocationService, _actorSyste
 
   override def resume: Future[OkOrUnhandledResponse] = Future.successful(Ok)
 
-  override def getSequenceComponent: Future[AkkaLocation] = ???
+  override def getSequenceComponent: Future[PekkoLocation] = ???
 
   override def isAvailable: Future[Boolean] = Future.successful(true)
 

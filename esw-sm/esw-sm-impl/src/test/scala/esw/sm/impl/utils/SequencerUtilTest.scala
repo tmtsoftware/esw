@@ -1,10 +1,10 @@
 package esw.sm.impl.utils
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.util.Timeout
 import csw.location.api.models.*
 import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.Connection.{PekkoConnection, HttpConnection}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
@@ -202,7 +202,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "shutdownSubsystemSequencers" must {
     "stop all the sequencers running for specified subsystem | ESW-345, ESW-351" in {
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, eswClearSkiesSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent)
         .thenReturn(Future.successful(eswPrimarySeqCompLoc), Future.successful(eswSecondarySeqCompLoc))
@@ -218,7 +218,7 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-345, ESW-351" in {
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(ESW, Sequencer))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
       sequencerUtil.shutdownSubsystemSequencers(ESW).futureValue should ===(
@@ -229,7 +229,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "shutdownObsModeSequencers" must {
     "stop all the sequencers running for specified Obs Mode | ESW-166, ESW-351" in {
-      when(locationServiceUtil.listSequencersAkkaLocationsBy(darkNightObsMode.name))
+      when(locationServiceUtil.listSequencersPekkoLocationsBy(darkNightObsMode.name))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, tcsDarkNightSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswPrimarySeqCompLoc)).thenReturn(Future.successful(Ok))
@@ -245,7 +245,7 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-166, ESW-351" in {
-      when(locationServiceUtil.listSequencersAkkaLocationsBy(darkNightObsMode.name))
+      when(locationServiceUtil.listSequencersPekkoLocationsBy(darkNightObsMode.name))
         .thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
       sequencerUtil.shutdownObsModeSequencers(darkNightObsMode).futureValue should ===(
@@ -257,7 +257,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
   "shutdownAllSequencers" must {
     "stop all the sequencers running | ESW-324, ESW-351" in {
-      when(locationServiceUtil.listAkkaLocationsBy(Sequencer))
+      when(locationServiceUtil.listPekkoLocationsBy(Sequencer))
         .thenReturn(futureRight(List(eswDarkNightSequencerLoc, tcsDarkNightSequencerLoc)))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswPrimarySeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswPrimarySeqCompLoc)).thenReturn(Future.successful(Ok))
@@ -271,7 +271,7 @@ class SequencerUtilTest extends BaseTestSuite {
     }
 
     "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-324, ESW-351" in {
-      when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureLeft(RegistrationListingFailed("Error")))
+      when(locationServiceUtil.listPekkoLocationsBy(Sequencer)).thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
       sequencerUtil.shutdownAllSequencers().futureValue should ===(LocationServiceError("Error"))
     }
@@ -380,14 +380,14 @@ class SequencerUtilTest extends BaseTestSuite {
     val tcsDarkNightSequencer: ComponentId  = ComponentId(Prefix(TCS, darkNightObsMode.name), Sequencer)
     val irisDarkNightSequencer: ComponentId = ComponentId(Prefix(IRIS, darkNightObsMode.name), Sequencer)
 
-    val eswDarkNightSequencerLoc: AkkaLocation  = akkaLocation(eswDarkNightSequencer)
-    val eswClearSkiesSequencerLoc: AkkaLocation = akkaLocation(eswClearSkiesSequencer)
-    val tcsDarkNightSequencerLoc: AkkaLocation  = akkaLocation(tcsDarkNightSequencer)
+    val eswDarkNightSequencerLoc: PekkoLocation  = pekkoLocation(eswDarkNightSequencer)
+    val eswClearSkiesSequencerLoc: PekkoLocation = pekkoLocation(eswClearSkiesSequencer)
+    val tcsDarkNightSequencerLoc: PekkoLocation  = pekkoLocation(tcsDarkNightSequencer)
 
-    val eswPrimarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(ESW, "primary"), SequenceComponent))
-    val eswSecondarySeqCompLoc: AkkaLocation = akkaLocation(ComponentId(Prefix(ESW, "secondary"), SequenceComponent))
-    val tcsPrimarySeqCompLoc: AkkaLocation   = akkaLocation(ComponentId(Prefix(TCS, "primary"), SequenceComponent))
-    val irisPrimarySeqCompLoc: AkkaLocation  = akkaLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
+    val eswPrimarySeqCompLoc: PekkoLocation   = pekkoLocation(ComponentId(Prefix(ESW, "primary"), SequenceComponent))
+    val eswSecondarySeqCompLoc: PekkoLocation = pekkoLocation(ComponentId(Prefix(ESW, "secondary"), SequenceComponent))
+    val tcsPrimarySeqCompLoc: PekkoLocation   = pekkoLocation(ComponentId(Prefix(TCS, "primary"), SequenceComponent))
+    val irisPrimarySeqCompLoc: PekkoLocation  = pekkoLocation(ComponentId(Prefix(IRIS, "primary"), SequenceComponent))
 
     val masterSeqConnection: HttpConnection = HttpConnection(eswDarkNightSequencer)
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""), Metadata.empty)
@@ -403,7 +403,7 @@ class SequencerUtilTest extends BaseTestSuite {
         }
     }
 
-    private def akkaLocation(componentId: ComponentId): AkkaLocation =
-      AkkaLocation(AkkaConnection(componentId), URI.create(""), Metadata.empty)
+    private def pekkoLocation(componentId: ComponentId): PekkoLocation =
+      PekkoLocation(PekkoConnection(componentId), URI.create(""), Metadata.empty)
   }
 }

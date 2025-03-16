@@ -2,18 +2,18 @@ package esw.sm.app
 
 import java.nio.file.{Path, Paths}
 
-import akka.Done
-import akka.actor.CoordinatedShutdown
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Service
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.Connection.{PekkoConnection, HttpConnection}
 import csw.location.client.ActorSystemFactory
 import csw.prefix.models.Prefix
 import esw.ocs.app.SequencerApp
-import esw.ocs.app.SequencerAppCommand.SequenceComponent
+import esw.ocs.app.SequencerAppCommand.SeqcompOptions
 import esw.ocs.app.wiring.SequenceComponentWiring
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
@@ -28,7 +28,9 @@ object TestSetup extends EswTestKit {
   // Setup Sequence components for subsystems
   def startSequenceComponents(prefixes: Prefix*): Unit =
     prefixes.foreach { prefix =>
-      seqCompWirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName), None))
+      seqCompWirings += SequencerApp.SequenceComponent.run(
+        SeqcompOptions(prefix.subsystem, Some(prefix.componentName), None)
+      )
     }
 
   val obsModeConfigPath: Path = Paths.get(ClassLoader.getSystemResource("smObsModeConfig.conf").toURI)
@@ -86,7 +88,7 @@ object TestSetup extends EswTestKit {
 
   def unregisterSequenceManager(prefix: Prefix): Done = {
     seqManagerWirings.clear()
-    locationService.unregister(AkkaConnection(ComponentId(prefix, Service))).futureValue
+    locationService.unregister(PekkoConnection(ComponentId(prefix, Service))).futureValue
     locationService.unregister(HttpConnection(ComponentId(prefix, Service))).futureValue
   }
 

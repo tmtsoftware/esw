@@ -1,8 +1,8 @@
 package esw.ocs.impl.core
 
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.{ActorSystem, CoordinatedShutdown}
-import akka.stream.Materializer
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.{ActorSystem, CoordinatedShutdown}
+import org.apache.pekko.stream.Materializer
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.models.Step
@@ -31,7 +31,7 @@ class EngineTest extends BaseTestSuite {
   "Engine" must {
     "execute script with available commands" in {
       val mocks = new Mocks
-      import mocks._
+      import mocks.*
 
       val step1 = mock[Step]
       when(step1.command).thenReturn(cmd)
@@ -52,7 +52,7 @@ class EngineTest extends BaseTestSuite {
 
     "update command response with Error when script's execute call throws exception" in {
       val mocks = new Mocks
-      import mocks._
+      import mocks.*
 
       val errorMsg = "error message"
       val step     = mock[Step]

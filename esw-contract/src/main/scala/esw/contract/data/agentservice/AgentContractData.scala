@@ -4,12 +4,12 @@ import java.net.URI
 import java.nio.file.Path
 
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.service.api.models.AgentStatusResponse.LocationServiceError
-import esw.agent.service.api.models._
+import esw.agent.service.api.models.*
 import esw.agent.service.api.protocol.AgentServiceRequest.{
   GetAgentStatus,
   KillComponent,
@@ -28,10 +28,10 @@ trait AgentContractData {
   private val seqCompPrefix: Prefix    = Prefix(ESW, "comp")
   private val componentId: ComponentId = ComponentId(seqCompPrefix, SequenceComponent)
   val seqCompComponentId: ComponentId  = ComponentId(seqCompPrefix, SequenceComponent)
-  val akkaLocation: AkkaLocation =
-    AkkaLocation(AkkaConnection(seqCompComponentId), new URI("uri"), Metadata().add("key1", "value"))
+  val pekkoLocation: PekkoLocation =
+    PekkoLocation(PekkoConnection(seqCompComponentId), new URI("uri"), Metadata().add("key1", "value"))
   val agentComponentId: ComponentId                    = ComponentId(agentPrefix, Machine)
-  val sequenceComponentStatus: SequenceComponentStatus = SequenceComponentStatus(seqCompComponentId, Some(akkaLocation))
+  val sequenceComponentStatus: SequenceComponentStatus = SequenceComponentStatus(seqCompComponentId, Some(pekkoLocation))
   val agentSeqCompsStatus: AgentStatus                 = AgentStatus(agentComponentId, List(sequenceComponentStatus))
   val agentStatusSuccess: AgentStatusResponse.Success =
     AgentStatusResponse.Success(List(agentSeqCompsStatus), List(sequenceComponentStatus))

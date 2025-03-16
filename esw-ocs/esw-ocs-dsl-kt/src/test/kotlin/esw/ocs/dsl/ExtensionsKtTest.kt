@@ -23,7 +23,7 @@ class ExtensionsKtTest {
     private val completed = Completed(id)
 
     @Test
-    fun `isFailed should return true if submit response is negative and false for other | ESW-249`() {
+    fun `isFailed_should_return_true_if_submit_response_is_negative_and_false_for_other_|_ESW-249`() {
         error.isFailed shouldBe true
         locked.isFailed shouldBe true
         cancelled.isFailed shouldBe true
@@ -34,7 +34,7 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `isStarted should return true if submit response is Started and false for other | ESW-249`() {
+    fun `isStarted_should_return_true_if_submit_response_is_Started_and_false_for_other_|_ESW-249`() {
         started.isStarted shouldBe true
 
         completed.isStarted shouldBe false
@@ -45,7 +45,7 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `isCompleted should return true if submit response is Completed and false for other | ESW-249`() {
+    fun `isCompleted_should_return_true_if_submit_response_is_Completed_and_false_for_other_|_ESW-249`() {
         completed.isCompleted shouldBe true
 
         started.isCompleted shouldBe false
@@ -57,7 +57,7 @@ class ExtensionsKtTest {
 
 
     @Test
-    fun `onStarted should execute given block if response is Started`() = runBlocking {
+    fun `onStarted_should_execute_given_block_if_response_is_Started`() = runBlocking {
         var isCalled = false
 
         started.onStarted { isCalled = true }
@@ -65,7 +65,7 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `onStarted should not execute given block if response is not Started`() = runBlocking {
+    fun `onStarted_should_not_execute_given_block_if_response_is_not_Started`() = runBlocking {
         var isCalled = false
 
         error.onStarted { isCalled = true }
@@ -74,7 +74,7 @@ class ExtensionsKtTest {
 
 
     @Test
-    fun `onCompleted should execute given block if response is Completed`() = runBlocking {
+    fun `onCompleted_should_execute_given_block_if_response_is_Completed`() = runBlocking {
         var isCalled = false
 
         completed.onCompleted { isCalled = true }
@@ -82,7 +82,7 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `onCompleted should not execute given block if response is not Completed`() = runBlocking {
+    fun `onCompleted_should_not_execute_given_block_if_response_is_not_Completed`() = runBlocking {
         var isCalled = false
 
         error.onCompleted { isCalled = true }
@@ -91,7 +91,7 @@ class ExtensionsKtTest {
 
 
     @Test
-    fun `onFailed should execute given block if response is negative`() = runBlocking {
+    fun `onFailed_should_execute_given_block_if_response_is_negative`() = runBlocking {
         var isCalled = false
 
         error.onFailed { isCalled = true }
@@ -99,7 +99,7 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `onFailed should not execute given block if response is not negative`() = runBlocking {
+    fun `onFailed_should_not_execute_given_block_if_response_is_not_negative`() = runBlocking {
         var isCalled = false
 
         started.onFailed { isCalled = true }
@@ -107,7 +107,7 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `onFailedTerminate should throw exception for negative responses`() = runBlocking<Unit> {
+    fun `onFailedTerminate_should_throw_exception_for_negative_responses`() = runBlocking<Unit> {
         shouldThrow<CommandError> { error.onFailedTerminate() }
         shouldThrow<CommandError> { locked.onFailedTerminate() }
         shouldThrow<CommandError> { cancelled.onFailedTerminate() }
@@ -115,19 +115,19 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `onFailedTerminate should not throw exception for positive responses`() = runBlocking {
+    fun `onFailedTerminate_should_not_throw_exception_for_positive_responses`() = runBlocking {
         shouldNotThrow<CommandError> { started.onFailedTerminate() }
         shouldNotThrow<CommandError> { completed.onFailedTerminate() }
     }
 
     @Test
-    fun `completed should throw exception if called on any other submit response than completed`() = runBlocking<Unit> {
+    fun `completed_should_throw_exception_if_called_on_any_other_submit_response_than_completed`() = runBlocking<Unit> {
         shouldNotThrow<CommandError> { completed.completed }
         shouldThrow<CommandError> { started.completed }
     }
 
     @Test
-    fun `result should return result from Completed response if called on Completed response and throw for others`() = runBlocking<Unit> {
+    fun `result_should_return_result_from_Completed_response_if_called_on_Completed_response_and_throw_for_others`() = runBlocking<Unit> {
         val result = Result()
         Completed(id, result).result shouldBe result
         shouldThrow<CommandError> { started.completed }

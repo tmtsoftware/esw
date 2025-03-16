@@ -1,11 +1,11 @@
 package esw.http.core.wiring
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{HttpOrigin, Origin}
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.*
+import org.apache.pekko.http.scaladsl.model.headers.{HttpOrigin, Origin}
+import org.apache.pekko.http.scaladsl.server.Directives.*
+import org.apache.pekko.http.scaladsl.server.Route
 import csw.location.api.models.{ComponentType, NetworkType}
 import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
@@ -20,7 +20,7 @@ class HTTPServiceCorsTest extends EswTestKit {
   lazy val route: Route = {
     pathPrefix("hello") {
       get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to pekko-http</h1>"))
       }
     }
   }
@@ -32,9 +32,9 @@ class HTTPServiceCorsTest extends EswTestKit {
 
   // todo ask about overriding the actor system
 //  lazy val wiring: ServerWiring = ServerWiring.make(Some(gatewayPort))
-//  import wiring._
+//  import wiring.*
 
-  lazy val actorRuntime = new ActorRuntime(actorSystem)
+  final lazy val actorRuntime = new ActorRuntime(actorSystem)
   import actorRuntime.typedSystem
 
   private lazy val config = actorSystem.settings.config

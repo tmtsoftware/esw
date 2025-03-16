@@ -30,7 +30,7 @@ object TSServicesCommands {
     }
 
   @CommandName("start")
-  final case class Start(
+  final case class StartOptions(
       @HelpMessage("Service name e.g., Location, Gateway etc")
       @ExtraName("s")
       services: List[Service],

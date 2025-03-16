@@ -1,9 +1,9 @@
 package esw.ocs.api.client
 
-import akka.stream.scaladsl.Source
-import akka.util.Timeout
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -102,7 +102,7 @@ class SequencerClient(
   override def operationsMode(): Future[OperationsModeResponse] =
     postClient.requestResponse[OperationsModeResponse](OperationsMode)
 
-  override def getSequenceComponent: Future[AkkaLocation] = postClient.requestResponse[AkkaLocation](GetSequenceComponent)
+  override def getSequenceComponent: Future[PekkoLocation] = postClient.requestResponse[PekkoLocation](GetSequenceComponent)
 
   override def getSequencerState: Future[SequencerState] =
     postClient.requestResponse[SequencerState](GetSequencerState)

@@ -1,6 +1,6 @@
 package esw.ocs.impl.script
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 
@@ -22,70 +22,70 @@ trait ScriptApi {
   /**
    * Executes the script's onGoOnline handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeGoOnline(): Future[Done]
 
   /**
    * Executes the script's onGoOffline handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeGoOffline(): Future[Done]
 
   /**
    * Executes the script's onShutdown handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeShutdown(): Future[Done]
 
   /**
    * Executes the script's onAbortSequence handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeAbort(): Future[Done]
 
   /**
    * Executes the script's onNewSequence handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeNewSequenceHandler(): Future[Done]
 
   /**
    * Executes the script's onStop handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeStop(): Future[Done]
 
   /**
    * Executes the script's onDiagnosticMode handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done]
 
   /**
    * Executes the script's onOperationsMode handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeOperationsMode(): Future[Done]
 
   /**
    * Executes the script's onException handler
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def executeExceptionHandlers(ex: Throwable): Future[Done]
 
   /**
    * Runs the shutdown runnable(some extra tasks while unloading the script)
    *
-   * @return a [[akka.Done]] as Future value
+   * @return a [[org.apache.pekko.Done]] as Future value
    */
   def shutdownScript(): Unit
 }

@@ -1,15 +1,15 @@
 package esw.ocs.api.actor.client
 
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.Source
-import akka.stream.typed.scaladsl.ActorSource
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
+import org.apache.pekko.stream.OverflowStrategy
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.stream.typed.scaladsl.ActorSource
+import org.apache.pekko.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal}
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -33,15 +33,15 @@ import scala.concurrent.{ExecutionContext, Future}
  * This client takes actor ref of the sequencer as a constructor argument
  *
  * @param sequencer - actorRef of the Sequencer Actor
- * @param system - an Akka ActorSystem
+ * @param system - a Pekko ActorSystem
  */
-class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_]) extends SequencerApi {
+class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[?]) extends SequencerApi {
   private implicit val timeout: Timeout     = SequencerTimeouts.SequencerOperation
   private implicit val ec: ExecutionContext = system.executionContext
 
   private val extensions = new SequencerCommandServiceExtension(this)
 
-  override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence
+  override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence.apply
 
   override def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]       = sequencer ? (Add(commands, _))
   override def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]   = sequencer ? (Prepend(commands, _))
@@ -51,26 +51,26 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
     sequencer ? (InsertAfter(id, commands, _))
 
   override def delete(id: Id): Future[GenericResponse]                    = sequencer ? (Delete(id, _))
-  override def pause: Future[PauseResponse]                               = sequencer ? Pause
-  override def resume: Future[OkOrUnhandledResponse]                      = sequencer ? Resume
+  override def pause: Future[PauseResponse]                               = sequencer ? Pause.apply
+  override def resume: Future[OkOrUnhandledResponse]                      = sequencer ? Resume.apply
   override def addBreakpoint(id: Id): Future[GenericResponse]             = sequencer ? (AddBreakpoint(id, _))
   override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
-  override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
+  override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset.apply
   override def abortSequence(): Future[OkOrUnhandledResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? AbortSequence
+    sequencer ? AbortSequence.apply
   }
 
   override def stop(): Future[OkOrUnhandledResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? Stop
+    sequencer ? Stop.apply
   }
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
 
   override def isOnline: Future[Boolean] = getState.map(_ != Offline)
 
-  private def getState: Future[InternalSequencerState[SequencerMsg]] = sequencer ? GetSequencerState
+  private def getState: Future[InternalSequencerState[SequencerMsg]] = sequencer ? GetSequencerState.apply
 
   def getSequencerState: Future[SequencerState] =
     getState.map {
@@ -105,7 +105,7 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def startSequence(): Future[SubmitResponse] = {
     implicit val timeout: Timeout                         = SequencerTimeouts.ScriptHandlerExecution
-    val sequenceResponse: Future[SequencerSubmitResponse] = sequencer ? StartSequence
+    val sequenceResponse: Future[SequencerSubmitResponse] = sequencer ? StartSequence.apply
     sequenceResponse.map(_.toSubmitResponse())
   }
 
@@ -124,12 +124,12 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def goOnline(): Future[GoOnlineResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? GoOnline
+    sequencer ? GoOnline.apply
   }
 
   override def goOffline(): Future[GoOfflineResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? GoOffline
+    sequencer ? GoOffline.apply
   }
 
   override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = {
@@ -139,8 +139,8 @@ class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSys
 
   override def operationsMode(): Future[OperationsModeResponse] = {
     implicit val timeout: Timeout = SequencerTimeouts.ScriptHandlerExecution
-    sequencer ? OperationsMode
+    sequencer ? OperationsMode.apply
   }
 
-  override def getSequenceComponent: Future[AkkaLocation] = sequencer ? GetSequenceComponent
+  override def getSequenceComponent: Future[PekkoLocation] = sequencer ? GetSequenceComponent.apply
 }

@@ -1,9 +1,9 @@
 package esw.gateway.impl
 
 import java.net.URI
-import akka.actor.testkit.typed.scaladsl.ActorTestKit
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.testkit.typed.scaladsl.ActorTestKit
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.ComponentCommonMessage.GetSupervisorLifecycleState
 import csw.command.client.messages.ContainerCommonMessage.GetContainerLifecycleState
 import csw.command.client.messages.RunningMessage.Lifecycle
@@ -12,8 +12,8 @@ import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLeve
 import csw.command.client.models.framework.ToComponentLifecycleMessage.{GoOffline, GoOnline}
 import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
 import csw.location.api.models
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.models.{Level, LogMetadata}
 import csw.prefix.models.{Prefix, Subsystem}
@@ -26,7 +26,7 @@ import scala.concurrent.{Await, Future}
 
 class AdminImplTest extends BaseTestSuite {
   lazy val actorTestKit: ActorTestKit      = ActorTestKit()
-  lazy implicit val system: ActorSystem[_] = actorTestKit.system
+  lazy implicit val system: ActorSystem[?] = actorTestKit.system
 
   override def afterAll(): Unit = {
     super.afterAll()
@@ -44,8 +44,8 @@ class AdminImplTest extends BaseTestSuite {
       })
       val adminService: AdminImpl = new AdminImpl(locationService)
       val componentId             = ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Assembly)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
-        Future.successful(Some(AkkaLocation(AkkaConnection(componentId), new URI(probe.path.toString), Metadata.empty)))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
+        Future.successful(Some(PekkoLocation(PekkoConnection(componentId), new URI(probe.path.toString), Metadata.empty)))
       )
       val actualLogMetadata = adminService.getLogMetadata(componentId).futureValue
       actualLogMetadata shouldBe expectedLogMetadata
@@ -60,9 +60,11 @@ class AdminImplTest extends BaseTestSuite {
       })
       val adminService: AdminImpl = new AdminImpl(locationService)
       val componentId             = models.ComponentId(Prefix(Subsystem.AOESW, "test_sequencer"), ComponentType.Sequencer)
-      when(locationService.find(AkkaConnection(componentId)))
+      when(locationService.find(PekkoConnection(componentId)))
         .thenReturn(
-          Future.successful(Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.path.toString), Metadata.empty)))
+          Future.successful(
+            Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.path.toString), Metadata.empty))
+          )
         )
       val actualLogMetadata = adminService.getLogMetadata(componentId).futureValue
       actualLogMetadata shouldBe expectedLogMetadata
@@ -72,7 +74,7 @@ class AdminImplTest extends BaseTestSuite {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
       val componentId = models.ComponentId(Prefix(Subsystem.AOESW, "test_sequencer"), ComponentType.Sequencer)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.getLogMetadata(componentId), 100.millis)
       }
@@ -88,9 +90,9 @@ class AdminImplTest extends BaseTestSuite {
       val probe                            = actorTestKit.createTestProbe[SetComponentLogLevel]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
       val componentId                      = models.ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Assembly)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
-          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+          Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
         )
       )
       adminService.setLogLevel(componentId, Level.FATAL)
@@ -102,9 +104,9 @@ class AdminImplTest extends BaseTestSuite {
       val probe                            = actorTestKit.createTestProbe[SetComponentLogLevel]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
       val componentId = models.ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Sequencer)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
-          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+          Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
         )
       )
       adminService.setLogLevel(componentId, Level.FATAL)
@@ -115,7 +117,7 @@ class AdminImplTest extends BaseTestSuite {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
       val componentId = models.ComponentId(Prefix(Subsystem.AOESW, "test_component"), ComponentType.Sequencer)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.setLogLevel(componentId, Level.FATAL), 100.millis)
       }
@@ -134,9 +136,9 @@ class AdminImplTest extends BaseTestSuite {
       val probe                            = actorTestKit.createTestProbe[Shutdown.type]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
 
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
-          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+          Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
         )
       )
 
@@ -147,7 +149,7 @@ class AdminImplTest extends BaseTestSuite {
     "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.shutdown(componentId), 100.millis)
       }
@@ -165,9 +167,9 @@ class AdminImplTest extends BaseTestSuite {
       val probe                            = actorTestKit.createTestProbe[Restart.type]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
 
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
-          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+          Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
         )
       )
 
@@ -178,7 +180,7 @@ class AdminImplTest extends BaseTestSuite {
     "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.restart(componentId), 100.millis)
       }
@@ -196,9 +198,9 @@ class AdminImplTest extends BaseTestSuite {
       val probe                            = actorTestKit.createTestProbe[Lifecycle]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
 
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
-          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+          Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
         )
       )
 
@@ -209,7 +211,7 @@ class AdminImplTest extends BaseTestSuite {
     "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.goOffline(componentId), 100.millis)
       }
@@ -227,9 +229,9 @@ class AdminImplTest extends BaseTestSuite {
       val probe                            = actorTestKit.createTestProbe[Lifecycle]()
       val adminService: AdminImpl          = new AdminImpl(locationService)
 
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
-          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+          Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
         )
       )
 
@@ -240,7 +242,7 @@ class AdminImplTest extends BaseTestSuite {
     "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.goOnline(componentId), 100.millis)
       }
@@ -258,15 +260,15 @@ class AdminImplTest extends BaseTestSuite {
       val adminService: AdminImpl          = new AdminImpl(locationService)
       val lifecycleState                   = randomFrom(SupervisorLifecycleState.values.toList)
 
-      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetSupervisorLifecycleState] {
-        case GetSupervisorLifecycleState(replyTo) =>
+      val probe =
+        actorTestKit.spawn(Behaviors.receiveMessage[GetSupervisorLifecycleState] { case GetSupervisorLifecycleState(replyTo) =>
           replyTo ! lifecycleState
           Behaviors.same
-      })
+        })
 
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
-          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+          Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
         )
       )
 
@@ -276,7 +278,7 @@ class AdminImplTest extends BaseTestSuite {
     "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.getComponentLifecycleState(componentId), 100.millis)
       }
@@ -294,15 +296,15 @@ class AdminImplTest extends BaseTestSuite {
       val adminService: AdminImpl          = new AdminImpl(locationService)
       val lifecycleState                   = randomFrom(ContainerLifecycleState.values.toList)
 
-      val probe = actorTestKit.spawn(Behaviors.receiveMessage[GetContainerLifecycleState] {
-        case GetContainerLifecycleState(replyTo) =>
+      val probe =
+        actorTestKit.spawn(Behaviors.receiveMessage[GetContainerLifecycleState] { case GetContainerLifecycleState(replyTo) =>
           replyTo ! lifecycleState
           Behaviors.same
-      })
+        })
 
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(
         Future.successful(
-          Some(models.AkkaLocation(AkkaConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
+          Some(models.PekkoLocation(PekkoConnection(componentId), new URI(probe.ref.path.toString), Metadata.empty))
         )
       )
 
@@ -312,7 +314,7 @@ class AdminImplTest extends BaseTestSuite {
     "fail with InvalidComponent when componentId is not not resolved | ESW-378" in {
       val locationService: LocationService = mock[LocationService]
       val adminService: AdminImpl          = new AdminImpl(locationService)
-      when(locationService.find(AkkaConnection(componentId))).thenReturn(Future.successful(None))
+      when(locationService.find(PekkoConnection(componentId))).thenReturn(Future.successful(None))
       val invalidComponent = intercept[InvalidComponent] {
         Await.result(adminService.getContainerLifecycleState(prefix), 100.millis)
       }

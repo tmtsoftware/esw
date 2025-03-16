@@ -1,8 +1,8 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorRef
-import akka.actor.typed.ActorSystem
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.util.Timeout
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ComponentMessage
@@ -174,6 +174,6 @@ class RichComponent(
 
     private fun Duration.toTimeout(): Timeout = Timeout(inWholeNanoseconds, TimeUnit.NANOSECONDS)
 
-    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(commandUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
+    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(commandUtil.jResolvePekkoLocation(prefix, componentType).await(), actorSystem)
     private suspend fun componentRef(): ActorRef<ComponentMessage> = commandUtil.jResolveComponentRef(prefix, componentType).await()
 }

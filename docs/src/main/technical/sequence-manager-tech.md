@@ -20,13 +20,13 @@ The following sections provide details on the Sequence Manager.
 Sequence Manager is an ESW component that takes care of provisioning Sequence Components needed for an observation, and the configuration of
 Sequencer scripts as per observing mode. It has capabilities to start, re-start, shutdown Sequencer/s, shutdown Sequence Components
 as well as to know status of TMT components such as which script is loaded on which Sequence Component or which Sequence Component/s
-are running on which agent/host. Sequence Manager is implemented using Akka actors. Sequence Manager provides two communication interfaces
+are running on which agent/host. Sequence Manager is implemented using Pekko actors. Sequence Manager provides two communication interfaces
 that are registered with Location Service.
 
-1. Akka-based interface
+1. Pekko-based interface
 2. HTTP interface
 
-The Akka interface will be used by JVM-based applications to interact with Sequence Manager. The HTTP interface is provided so UI applications
+The Pekko interface will be used by JVM-based applications to interact with Sequence Manager. The HTTP interface is provided so UI applications
 can be built which will interact directly with the Sequence Manager (as opposed to using the User Interface Application Gateway).
 
 The Sequence Manager uses the Agent Service and Agents to provision Sequence Components. See: @ref:[Agent Service](agent-service-tech.md)
@@ -44,7 +44,7 @@ This Sequence Manager API module code supports the following responsibilities:
 | :---: | :--- |
 |  shared | API which is cross compiled to JVM as well JavaScript |
 | shared | HTTP client which can be used by JVM as well as scala-js applications |
-| jvm | Akka client for JVM applications, Akka actor messages, Akka message serializer |
+| jvm | Pekko client for JVM applications, Pekko actor messages, Pekko message serializer |
 
 ### esw-sm-handler
 
@@ -52,7 +52,7 @@ This Sequence Manager handler module is responsible for providing HTTP routes fo
 
 ### esw-sm-impl
 
-This module contains core logic for the Sequence Manager Akka Actor.
+This module contains core logic for the Sequence Manager Pekko Actor.
 
 ### esw-sm-app
 

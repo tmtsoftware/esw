@@ -2,9 +2,10 @@ package esw.ocs.impl.script
 
 import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 
-import scala.language.reflectiveCalls
+import java.lang.reflect.InvocationTargetException
+import scala.reflect.Selectable.reflectiveSelectable
 
-private[esw] object ScriptLoader {
+object ScriptLoader {
 
   // this loads .kts script
   def loadKotlinScript(scriptClass: String, scriptContext: ScriptContext): ScriptApi =
@@ -15,12 +16,18 @@ private[esw] object ScriptLoader {
       val $$resultField = clazz.getDeclaredField("$$result")
       $$resultField.setAccessible(true)
 
+      // See DslSupport.kt: fun invoke()
       type Result = { def invoke(context: ScriptContext): ScriptApi }
       val result = $$resultField.get(script).asInstanceOf[Result]
-      result.invoke(scriptContext)
+      try {
+        result.invoke(scriptContext)
+      }
+      catch {
+        case ex: InvocationTargetException => throw ex.getCause
+      }
     }
 
-  def withScript[T](scriptClass: String)(block: Class[_] => T): T =
+  def withScript[T](scriptClass: String)(block: Class[?] => T): T =
     try {
       val clazz = Class.forName(scriptClass)
       block(clazz)

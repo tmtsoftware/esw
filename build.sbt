@@ -1,19 +1,26 @@
 import Common._
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+import kotlin.Keys._
 
 inThisBuild(
   CommonSettings
 )
 
-val KotlincOptions = Seq("-Xopt-in=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+val KotlincOptions = Seq(
+  "-opt-in=kotlin.time.ExperimentalTime",
+  "-Xallow-any-scripts-in-source-roots",
+  "-Xuse-fir-lt=false",
+  "-jvm-target",
+  "21"
+)
 
 lazy val aggregateProjects: Seq[ProjectReference] = Seq(
   `esw-ocs`,
   `esw-ocs-handler`,
   `esw-http-core`,
   `esw-gateway`,
-  `esw-agent-akka`,
+  `esw-agent-pekko`,
   `esw-agent-service`,
   `esw-contract`,
   examples,
@@ -52,7 +59,7 @@ lazy val esw = (project in file("."))
     generateContract := ContractPlugin.generate(`esw-contract`).value
   )
   .settings(
-    ghreleaseRepoOrg := "tmtsoftware",
+    ghreleaseRepoOrg  := "tmtsoftware",
     ghreleaseRepoName := EswKeys.projectName
   )
 
@@ -75,7 +82,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
       .settings(libraryDependencies ++= Dependencies.OcsApiJvm.value)
       .dependsOn(`esw-constants`, `esw-test-commons` % Test)
   )
-  //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
+  //  the following setting is required by IntelliJ which could not handle cross-compiled Pekko types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
   .settings(fork := false)
   .settings(
@@ -123,8 +130,9 @@ lazy val `esw-ocs-dsl-kt` = project
   .in(file("esw-ocs/esw-ocs-dsl-kt"))
   .enablePlugins(KotlinPlugin, MaybeCoverage)
   .settings(
-    Test / fork := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
+    Test / fork   := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
@@ -140,25 +148,28 @@ lazy val `esw-ocs-app` = project
     `esw-ocs-handler`,
     `esw-http-core`,
     `esw-ocs-impl`,
+    `esw-agent-pekko-app`,
+    `esw-ocs-dsl`,
+    `esw-commons`,
     `esw-test-commons` % Test
   )
 
-lazy val `esw-agent-akka` = project
-  .in(file("esw-agent-akka"))
-  .aggregate(`esw-agent-akka-client`, `esw-agent-akka-app`)
+lazy val `esw-agent-pekko` = project
+  .in(file("esw-agent-pekko"))
+  .aggregate(`esw-agent-pekko-client`, `esw-agent-pekko-app`)
 
-lazy val `esw-agent-akka-client` = project
-  .in(file("esw-agent-akka/esw-agent-akka-client"))
+lazy val `esw-agent-pekko-client` = project
+  .in(file("esw-agent-pekko/esw-agent-pekko-client"))
   .enablePlugins(MaybeCoverage)
-  .settings(libraryDependencies ++= Dependencies.AgentAkkaClient.value)
+  .settings(libraryDependencies ++= Dependencies.AgentPekkoClient.value)
   .dependsOn(`esw-constants`, `esw-agent-service-api`.jvm, `esw-test-commons` % Test)
 
-lazy val `esw-agent-akka-app` = project
-  .in(file("esw-agent-akka/esw-agent-akka-app"))
+lazy val `esw-agent-pekko-app` = project
+  .in(file("esw-agent-pekko/esw-agent-pekko-app"))
   .enablePlugins(EswBuildInfo, MaybeCoverage)
-  .settings(libraryDependencies ++= Dependencies.AgentAkkaApp.value)
+  .settings(libraryDependencies ++= Dependencies.AgentPekkoApp.value)
   .dependsOn(
-    `esw-agent-akka-client`,
+    `esw-agent-pekko-client`,
     `esw-commons`,
     `esw-test-commons` % Test
   )
@@ -185,7 +196,7 @@ lazy val `esw-agent-service-impl` = project
   .in(file("esw-agent-service/esw-agent-service-impl"))
   .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentServiceImpl.value)
-  .dependsOn(`esw-agent-service-api`.jvm, `esw-agent-akka-client`, `esw-test-commons` % Test)
+  .dependsOn(`esw-agent-service-api`.jvm, `esw-agent-pekko-client`, `esw-test-commons` % Test)
 
 lazy val `esw-agent-service-app` = project
   .in(file("esw-agent-service/esw-agent-service-app"))
@@ -209,8 +220,8 @@ lazy val `esw-integration-test` = project
     `esw-ocs-impl`,
     examples,
     `esw-ocs-app`,
-    `esw-agent-akka-app`,
-    `esw-agent-akka-client`,
+    `esw-agent-pekko-app`,
+    `esw-agent-pekko-client`,
     `esw-sm-app`,
     `esw-testkit`,
     `esw-agent-service-app`,
@@ -242,7 +253,7 @@ lazy val `esw-gateway-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("esw-gateway/esw-gateway-api"))
   .jvmConfigure(_.enablePlugins(MaybeCoverage).settings(libraryDependencies += (Libs.`tmt-test-reporter` % Test)))
-  //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
+  //  the following setting is required by IntelliJ which could not handle cross-compiled Pekko types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
   .settings(fork := false)
   .settings(
@@ -294,6 +305,7 @@ lazy val examples = project
   .enablePlugins(KotlinPlugin)
   .settings(
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )
   .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
@@ -315,7 +327,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
       .settings(libraryDependencies ++= Dependencies.SmApiJvm.value)
       .dependsOn(`esw-constants`, `esw-commons`, `esw-test-commons` % Test, `esw-ocs-api`.jvm)
   )
-  //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
+  //  the following setting is required by IntelliJ which could not handle cross-compiled Pekko types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
   .settings(fork := false)
   .settings(
@@ -328,7 +340,7 @@ lazy val `esw-sm-impl` = project
   .in(file("esw-sm/esw-sm-impl"))
   .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
-  .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-akka-client`, `esw-commons`, `esw-test-commons` % Test)
+  .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-pekko-client`, `esw-commons`, `esw-test-commons` % Test)
 
 lazy val `esw-sm-handler` = project
   .in(file("esw-sm/esw-sm-handler"))
@@ -358,7 +370,7 @@ lazy val `esw-services` = project
   )
   .dependsOn(
     `esw-commons`,
-    `esw-agent-akka-app`,
+    `esw-agent-pekko-app`,
     `esw-agent-service-app`,
     `esw-gateway-server`,
     `esw-sm-app`
@@ -385,7 +397,7 @@ lazy val `esw-testkit` = project
   .dependsOn(
     `esw-gateway-server`,
     `esw-ocs-app`,
-    `esw-agent-akka-app`,
+    `esw-agent-pekko-app`,
     `esw-sm-app`,
     `esw-agent-service-app`
   )
@@ -404,7 +416,7 @@ lazy val `esw-shell` = project
     libraryDependencies ++= Dependencies.EswShell.value,
     fork := false // this is needed for the ammonite shell to run
   )
-  .dependsOn(`esw-ocs-impl`, `esw-sm-api`.jvm, `esw-agent-akka-client`, `esw-gateway-impl`, `esw-testkit`)
+  .dependsOn(`esw-ocs-impl`, `esw-sm-api`.jvm, `esw-agent-pekko-client`, `esw-gateway-impl`, `esw-testkit`)
 
 lazy val `esw-http-template-wiring` = project
   .dependsOn(`esw-constants`, `esw-http-core`)
@@ -424,5 +436,6 @@ lazy val `esw-performance-test` = project
   .settings(
     libraryDependencies ++= Dependencies.PerformanceTest.value,
     kotlinVersion := EswKeys.kotlinVersion,
+    kotlincJvmTarget := "21",
     kotlincOptions ++= KotlincOptions
   )

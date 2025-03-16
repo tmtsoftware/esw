@@ -8,8 +8,8 @@ object ListEitherExt {
 
     def sequence: Either[List[L], List[R]] =
       eithers.partition(_.isLeft) match {
-        case (Nil, success) => Right(for (Right(i) <- success) yield i)
-        case (errs, _)      => Left(for (Left(s) <- errs) yield s)
+        case (Nil, success) => Right(for (case Right(i) <- success) yield i)
+        case (errs, _)      => Left(for (case Left(s) <- errs) yield s)
       }
 
   }

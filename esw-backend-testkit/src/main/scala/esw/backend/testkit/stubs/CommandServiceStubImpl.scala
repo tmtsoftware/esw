@@ -1,18 +1,19 @@
 package esw.backend.testkit.stubs
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.scaladsl.Source
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.Timeout
 import csw.command.api.StateMatcher
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.scaladsl.LocationService
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
-import csw.params.commands.CommandResponse._
+import csw.params.commands.CommandResponse.*
 import csw.params.commands.{CommandResponse, ControlCommand, Result}
 import csw.params.core.generics.KeyType.IntKey
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import csw.prefix.models.Prefix
+import csw.time.core.models.UTCTime
 import esw.ocs.testkit.utils.LocationUtils
 import msocket.api.Subscription
 
@@ -77,4 +78,11 @@ class CommandServiceStubImpl(val locationService: LocationService, _actorSystem:
       controlCommand: ControlCommand
   )(implicit timeout: Timeout): Future[CommandResponse.SubmitResponse] = ???
 
+  override def executeDiagnosticMode(startTime: UTCTime, hint: String): Unit = ???
+
+  override def executeOperationsMode(): Unit = ???
+
+  override def onGoOnline(): Unit = ???
+
+  override def onGoOffline(): Unit = ???
 }

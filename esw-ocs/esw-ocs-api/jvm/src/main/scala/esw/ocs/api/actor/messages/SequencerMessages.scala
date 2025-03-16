@@ -1,12 +1,12 @@
 package esw.ocs.api.actor.messages
 
-import akka.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.PekkoLocation
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsPekkoSerializable
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.*
 
@@ -18,7 +18,7 @@ import esw.ocs.api.protocol.*
 object SequencerMessages {
 
   sealed trait EswSequencerMessage       extends SequencerMsg
-  sealed trait EswSequencerRemoteMessage extends EswSequencerMessage with OcsAkkaSerializable
+  sealed trait EswSequencerRemoteMessage extends EswSequencerMessage with OcsPekkoSerializable
   // Messages which are handled in all states
   sealed trait CommonMessage       extends EswSequencerMessage
   sealed trait CommonRemoteMessage extends CommonMessage with EswSequencerRemoteMessage
@@ -53,7 +53,7 @@ object SequencerMessages {
   final case class Shutdown(replyTo: ActorRef[Ok.type])                                              extends CommonRemoteMessage
   final case class GetSequence(replyTo: ActorRef[Option[StepList]])                                  extends CommonRemoteMessage
   final case class GetSequencerState(replyTo: ActorRef[InternalSequencerState[SequencerMsg]])        extends CommonRemoteMessage
-  final case class GetSequenceComponent(replyTo: ActorRef[AkkaLocation])                             extends CommonRemoteMessage
+  final case class GetSequenceComponent(replyTo: ActorRef[PekkoLocation])                            extends CommonRemoteMessage
   final case class SubscribeSequencerState(subscriber: ActorRef[SequencerStateSubscriptionResponse]) extends CommonRemoteMessage
 
   final private[esw] case class UnsubscribeSequencerState(subscriber: ActorRef[SequencerStateSubscriptionResponse])

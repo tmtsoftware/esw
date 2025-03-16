@@ -1,6 +1,6 @@
 package esw.ocs.dsl.epics
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.params.events.Event
 import csw.params.events.EventKey
 import csw.params.events.EventName
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
 @Suppress("DANGEROUS_CHARACTERS")
 class ParamVariableTest {
     @Test
-    fun `make should create ParamVariable and publish a initial event | ESW-291`() = runBlocking {
+    fun `make_should_create_ParamVariable_and_publish_a_initial_event_|_ESW-291`() = runBlocking {
         TestSetup().run {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())
@@ -36,7 +36,7 @@ class ParamVariableTest {
     }
 
     @Test
-    fun `getParam should return the values of given Key from Parameters of Event | ESW-132, ESW-142, ESW-291`() = runBlocking {
+    fun `getParam_should_return_the_values_of_given_Key_from_Parameters_of_Event_|_ESW-132,_ESW-142,_ESW-291`() = runBlocking {
         TestSetup().run {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())
@@ -48,7 +48,7 @@ class ParamVariableTest {
     }
 
     @Test
-    fun `first should return first value of given Key from Parameter of the Event | ESW-132, ESW-142, ESW-291`() = runBlocking {
+    fun `first_should_return_first_value_of_given_Key_from_Parameter_of_the_Event_|_ESW-132,_ESW-142,_ESW-291`() = runBlocking {
         TestSetup().run {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())
@@ -62,7 +62,7 @@ class ParamVariableTest {
     }
 
     @Test
-    fun `setParam should publish new event with the new value of the parameter | ESW-132, ESW-142`() = runBlocking {
+    fun `setParam_should_publish_new_event_with_the_new_value_of_the_parameter_|_ESW-132,_ESW-142`() = runBlocking {
         TestSetup().run {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())

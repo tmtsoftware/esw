@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: coursier/setup-action@v1.2.0-M2
+      - uses: coursier/setup-action@v1.2.0
         with:
-          jvm: temurin:1.17
-          apps: sbt sbtn
+          jvm: temurin:1.21
+          apps: sbt
       - uses: coursier/cache-action@v6
 
       - name: Install Redis
@@ -31,40 +31,41 @@ jobs:
         run: |
           curl -s https://get.sdkman.io | bash
           source "/home/runner/.sdkman/bin/sdkman-init.sh"
-          sdk install kotlin 1.6.10
+          sdk install kotlin 2.1.0
           sudo ln -s $(which kotlinc) /usr/local/bin/kotlinc
 
       - name: Build
         run: |
-          sbtn clean
-          sbtn scalafmtCheck
-          sbt -DenableFatalWarnings=true makeSite
+          sbt -Dsbt.log.noformat=true clean
+          sbt -Dsbt.log.noformat=true scalafmtCheck
+          sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true makeSite
+          sbt -Dsbt.log.noformat=true publishLocal
 
       - name: Unit Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests test:test
+        run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true -DdisableIntegrationTests Test/test
 
       - name: Integration Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test:test
+        run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/Test/test
 
       - name: Coverage Report
         run: |
           sbt -DenableCoverage=true coverageReport
-          sbtn coverageAggregate
+          sbt coverageAggregate
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: Coverage Report
-          path: target/scala-2.13/scoverage-report
+          path: target/scala-3.6.4/scoverage-report
 
       - name: Multi-Jvm Tests
-        run: sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test
+        run: sbt -Dsbt.log.noformat=true -DgenerateStoryReport=true esw-integration-test/MultiJvm/test
 
       - name: Generate RTM
         if: always()
         continue-on-error: true
         run: |
-          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:0.3.0 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/branch-6.0.x/apps.json rtm:b7997a9 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
 
       - name: Upload RTM
         if: always()

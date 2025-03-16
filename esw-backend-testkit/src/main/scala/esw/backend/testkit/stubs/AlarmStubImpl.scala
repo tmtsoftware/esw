@@ -1,6 +1,6 @@
 package esw.backend.testkit.stubs
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.alarm.models.{AlarmSeverity, Key}
 import esw.gateway.api.AlarmApi
 

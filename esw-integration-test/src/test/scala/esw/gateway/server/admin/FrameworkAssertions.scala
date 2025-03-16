@@ -1,12 +1,12 @@
 package esw.gateway.server.admin
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.ActorRef
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.ActorRef
 import csw.command.client.messages.ComponentCommonMessage.GetSupervisorLifecycleState
 import csw.command.client.messages.ContainerCommonMessage.GetContainerLifecycleState
 import csw.command.client.messages.{ComponentMessage, ContainerMessage}
 import csw.command.client.models.framework.{ContainerLifecycleState, SupervisorLifecycleState}
-import csw.logging.client.internal.JsonExtensions._
+import csw.logging.client.internal.JsonExtensions.*
 import csw.logging.models.Level
 import org.scalatest.concurrent.Eventually
 import play.api.libs.json.{JsObject, JsString}

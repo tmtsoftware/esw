@@ -9,19 +9,19 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      CSW_VERSION: "5.0.1"
-      ESW_OCS_ENG_UI_VERSION: "0.3.1"
+      CSW_VERSION: "f3455fc"
+      ESW_OCS_ENG_UI_VERSION: "1cc4bac"
     steps:
       - uses: actions/checkout@v4
-      - uses: coursier/setup-action@v1.2.0-M2
+      - uses: coursier/setup-action@v1.2.0
         with:
-          jvm: temurin:1.17
+          jvm: temurin:1.21
           apps: sbt sbtn
       - uses: coursier/cache-action@v6
 
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.x"
+          node-version: "22.14.0"
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Redis
@@ -31,7 +31,7 @@ jobs:
         run: |
           curl -s https://get.sdkman.io | bash
           source "/home/runner/.sdkman/bin/sdkman-init.sh"
-          sdk install kotlin 1.6.10
+          sdk install kotlin
           sudo ln -s $(which kotlinc) /usr/local/bin/kotlinc
 
       - run: npm install -g junit-merge
@@ -51,18 +51,18 @@ jobs:
           sbt -DenableFatalWarnings=true makeSite
 
       - name: Tests
-        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true Test/test
 
       - name: Coverage Report
         run: |
-          sbt -DenableCoverage=true coverageReport
+          sbt -Dsbt.log.noformat=true -DenableCoverage=true coverageReport
           sbtn coverageAggregate
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: Coverage Report
-          path: target/scala-2.13/scoverage-report
+          path: target/scala-3.6.4/scoverage-report
 
       - name: Delete js targets
         continue-on-error: true
@@ -75,7 +75,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:0.3.0 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+          cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/branch-6.0.x/apps.json rtm:b7997a9 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
 
       - name: Upload RTM
         if: always()

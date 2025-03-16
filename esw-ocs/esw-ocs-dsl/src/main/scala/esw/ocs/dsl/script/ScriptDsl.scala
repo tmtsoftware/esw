@@ -1,6 +1,6 @@
 package esw.ocs.dsl.script
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.logging.api.javadsl.ILogger
 import csw.params.commands.{CommandName, Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
@@ -13,8 +13,9 @@ import esw.ocs.impl.script.ScriptApi
 import java.util.Optional
 import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
-import scala.async.Async.{async, await}
-import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
+import cps.compat.FutureAsync.*
+
+import scala.jdk.FutureConverters.*
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
@@ -76,11 +77,11 @@ private[esw] class ScriptDsl(
       case command                                                      => defaultCommandHandler(command)
     }
 
-    result.toScala.map(_ => ())
+    result.asScala.map(_ => ())
   }
 
   private def executeHandler[T](f: FunctionHandlers[T, CompletionStage[Void]], arg: T): Future[Done] =
-    Future.sequence(f.execute(arg).map(_.toScala)).map(_ => Done)
+    Future.sequence(f.execute(arg).map(_.asScala)).map(_ => Done)
 
   override def executeGoOnline(): Future[Done] =
     executeHandler(onlineHandlers, ()).map { _ =>
@@ -108,7 +109,7 @@ private[esw] class ScriptDsl(
   override def executeStop(): Future[Done] = executeHandler(stopHandlers, ())
 
   override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
-    Future.sequence(diagnosticHandlers.execute((startTime, hint)).map(_.toScala)).map(_ => Done)
+    Future.sequence(diagnosticHandlers.execute((startTime, hint)).map(_.asScala)).map(_ => Done)
 
   override def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ())
 
@@ -130,7 +131,7 @@ private[esw] class ScriptDsl(
         case _ => Optional.empty[SequenceCommand]
       }
     }
-    future.toJava
+    future.asJava
   }
 
   protected final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit =

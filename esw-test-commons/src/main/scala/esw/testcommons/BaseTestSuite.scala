@@ -1,6 +1,6 @@
 package esw.testcommons
 
-import akka.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.ActorSystem
 import csw.prefix.models.Subsystem
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.*
@@ -38,7 +38,7 @@ trait BaseTestSuite
     def leftValue: L  = futureEither.futureValue.leftValue
   }
 
-  def future[T](delay: FiniteDuration, value: => T)(implicit system: ActorSystem[_]): Future[T] = {
+  def future[T](delay: FiniteDuration, value: => T)(implicit system: ActorSystem[?]): Future[T] = {
     import system.executionContext
     val scheduler = system.scheduler
     val p         = Promise[T]()

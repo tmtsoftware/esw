@@ -1,6 +1,6 @@
 package esw.gateway.server
 
-import akka.Done
+import org.apache.pekko.Done
 import com.typesafe.config.ConfigFactory
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey

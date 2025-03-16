@@ -1,7 +1,7 @@
 package esw.backend.testkit.stubs
 
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.backend.auth.MockedAuth
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
@@ -110,7 +110,7 @@ class SequenceManagerStubImpl extends SequenceManagerApi {
 
 class SequenceManagerStub(val locationService: LocationService)(implicit val actorSystem: ActorSystem[SpawnProtocol.Command])
     extends LocationUtils {
-  private var seqManagerWiring: Option[SequenceManagerWiring] = _
+  private var seqManagerWiring: Option[SequenceManagerWiring] = scala.compiletime.uninitialized
 
   def spawnMockSm(): SequenceManagerWiring = {
     val wiring: SequenceManagerWiring =

@@ -3,9 +3,9 @@ package esw.ocs.testkit.utils
 import java.nio.file
 import java.nio.file.Paths
 
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.http.scaladsl.model.Uri
-import akka.http.scaladsl.model.Uri.Path
+import org.apache.pekko.actor.CoordinatedShutdown.UnknownReason
+import org.apache.pekko.http.scaladsl.model.Uri
+import org.apache.pekko.http.scaladsl.model.Uri.Path
 import com.typesafe.config.ConfigFactory
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.ComponentType

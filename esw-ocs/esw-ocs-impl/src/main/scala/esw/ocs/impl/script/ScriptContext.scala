@@ -1,6 +1,6 @@
 package esw.ocs.impl.script
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.Config
 import csw.alarm.api.javadsl.IAlarmService
 import csw.event.api.javadsl.IEventService
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionStage
  * @param obsMode - obsMode of the sequencer
  * @param jLogger - java typed Logger
  * @param sequenceOperatorFactory - sequenceOperatorFactory
- * @param actorSystem - An Akka ActorSystem
+ * @param actorSystem - An Pekko ActorSystem
  * @param eventService - an java instance of EventService
  * @param alarmService - an java instance of AlarmService
  * @param sequencerApiFactory - a Factory method to create an instance of sequencerApi

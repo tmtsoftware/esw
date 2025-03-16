@@ -1,37 +1,39 @@
-import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
-import sbt.Def.{setting => dep}
-import sbt._
+import EswKeys.scalaVersion
+import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport.*
+import sbt.Def.setting as dep
+import sbt.*
 
 import java.io.FileReader
 import java.util.Properties
 import scala.util.Using
 
 object Libs {
-  private val MSocketVersion = "0.6.0"
 
-  val `case-app`    = "com.github.alexarchambault" %% "case-app"    % "2.0.6"
-  val enumeratum    = dep("com.beachape" %%% "enumeratum" % "1.7.0") // MIT License
-  val `mockito`     = "org.scalatestplus"          %% "mockito-3-4" % "3.2.10.0"
-  val `scala-async` = "org.scala-lang.modules"     %% "scala-async" % "1.0.1" // BSD 3-clause "New" or "Revised" License
-  val scalatest     = dep("org.scalatest" %%% "scalatest" % "3.2.11") // Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2" // BSD 3-clause "New" or "Revised" License
-  val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
-  val `msocket-http`      = "com.github.tmtsoftware.msocket" %% "msocket-http"      % MSocketVersion
-  val caffeine            = "com.github.ben-manes.caffeine"   % "caffeine"          % "3.0.5"
-  val `jupiter-interface` = "net.aichler"                     % "jupiter-interface" % "0.9.1"
-  val `tmt-test-reporter` = "com.github.tmtsoftware"         %% "rtm"               % "0.3.0"
+  val `case-app`          = "com.github.alexarchambault"   %% "case-app"          % "2.1.0-M30"
+  val `enumeratum`        = dep("com.beachape" %%% "enumeratum" % "1.7.5") // MIT License
+  val `mockito`           = "org.scalatestplus"            %% "mockito-3-4"       % "3.2.10.0"
+  val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.23")
+  val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.19") // Apache License 2.0
+  val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.2.0"
+  val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
+  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "d45709a"
 
-  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.6.RELEASE"
-  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.6.0"
+  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.11.RELEASE"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "2268e39" // Apache 2.0
 
-  val `ammonite` = ("com.lihaoyi" % "ammonite" % "2.5.1" cross CrossVersion.full)
-    .exclude("com.lihaoyi", "sourcecode_3")
-    .exclude("com.lihaoyi", "fansi_3")
-    .exclude("com.lihaoyi", "pprint_3")
+  // Note: CrossVersion.full: version has to match exact scala version (_3.3.0 instead of _3)
+  val `ammonite` = ("com.lihaoyi" % "ammonite_3.6.3" % "3.0.2")
 
-  val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.1.12"
-  val `slf4j-api`     = "org.slf4j"        % "slf4j-api"    % "1.7.33"
+  val `hdr-histogram` = "org.hdrhistogram" % "HdrHistogram" % "2.2.2"
+//  val `slf4j-api`     = "org.slf4j"          % "slf4j-api"    % "2.0.7"
+  val `play-json`        = "org.playframework" %% "play-json"        % "3.0.3" // Apache 2.0
+}
 
+object MSocket {
+    val Version = "0.7.0"
+
+  val `msocket-api`  = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % Version)
+  val `msocket-http` = "com.github.tmtsoftware.msocket" %% "msocket-http" % Version
 }
 
 object Csw {
@@ -64,41 +66,46 @@ object Csw {
   val `csw-services`        = Org %% "csw-services"        % Version
 }
 
-object Akka {
-  private val Version     = "2.6.18"
-  val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
-  val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
-  val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
-  val `akka-remote`       = "com.typesafe.akka" %% "akka-remote"       % Version
+object Pekko {
+  val Version = "1.1.3" // all pekko is Apache License 2.0
+  val Org     = "org.apache.pekko"
 
-  val `akka-actor-testkit-typed` = "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
-  val `akka-stream-testkit`      = "com.typesafe.akka" %% "akka-stream-testkit"      % Version
-  val `akka-multi-node-testkit`  = "com.typesafe.akka" %% "akka-multi-node-testkit"  % Version
+  val `pekko-actor-typed`  = Org %% "pekko-actor-typed"  % Version
+  val `pekko-stream-typed` = Org %% "pekko-stream-typed" % Version
+  val `pekko-stream`       = Org %% "pekko-stream"       % Version
+  val `pekko-remote`       = Org %% "pekko-remote"       % Version
+
+  val `pekko-actor-testkit-typed` = Org %% "pekko-actor-testkit-typed" % Version
+  val `pekko-stream-testkit`      = Org %% "pekko-stream-testkit"      % Version
+  val `pekko-multi-node-testkit`  = Org %% "pekko-multi-node-testkit"  % Version
 }
 
-object AkkaHttp {
-  private val Version = "10.2.7" // all akka is Apache License 2.0
+object PekkoHttp {
+  val Version = "1.1.0"
+  val Org     = "org.apache.pekko"
 
-  val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
-  val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
-  val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
+  val `pekko-http`            = Org %% "pekko-http"            % Version
+  val `pekko-http-testkit`    = Org %% "pekko-http-testkit"    % Version
+  val `pekko-http-spray-json` = Org %% "pekko-http-spray-json" % Version
 
-  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.1.2"
+  val `pekko-http-cors` = Org %% "pekko-http-cors" % Version
 }
 
 object Borer {
-  private val Version = "1.7.2"
-  private val Org     = "io.bullet"
+  val Version = "1.16.0"
+  val Org = "io.bullet"
+  //  val Org = "com.github.tmtsoftware.borer"
 
-  val `borer-core`        = dep(Org %%% "borer-core" % Version)
-  val `borer-derivation`  = dep(Org %%% "borer-derivation" % Version)
-  val `borer-compat-akka` = Org %% "borer-compat-akka" % Version
+  val `borer-core`         = dep(Org %%% "borer-core" % Version)
+  val `borer-derivation`   = dep(Org %%% "borer-derivation" % Version)
+  val `borer-compat-pekko` = Org %% "borer-compat-pekko" % Version
 }
 
 object Kotlin {
-  val CoroutinesVersion = "1.6.0"
+  val CoroutinesVersion = "1.10.1"
 
-  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % EswKeys.kotlinVersion
+  val `kotlin-stdlib`     = "org.jetbrains.kotlin"  % "kotlin-stdlib"      % EswKeys.kotlinVersion
+  val `kotlin-reflect`  = "org.jetbrains.kotlin"  % "kotlin-reflect"          % EswKeys.kotlinVersion
   val `coroutines-core` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-core" % CoroutinesVersion
 
   // core/jvm — additional core features available on Kotlin/JVM:
@@ -109,8 +116,15 @@ object Kotlin {
   // JDK8 - CompletionStage.await, Guava ListenableFuture.await, and Google Play Services Task.await;
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % CoroutinesVersion
 
-  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.1.0"
-  val mockk      = "io.mockk"  % "mockk"                      % "1.12.2"
+  val kotlintest = "io.kotest" % "kotest-assertions-core-jvm" % "5.9.1"
+  val mockk      = "io.mockk"  % "mockk-jvm"                  % "1.13.13"
+}
+
+object Http4k {
+  val Version                = "5.23.0.0"
+  val `http4k-core`          = "org.http4k" % "http4k-core"          % Version
+  val `http4k-server-jetty`  = "org.http4k" % "http4k-server-jetty"  % Version
+  val `http4k-client-okhttp` = "org.http4k" % "http4k-client-okhttp" % Version
 }
 
 object BuildProperties {

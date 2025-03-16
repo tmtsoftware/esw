@@ -1,20 +1,20 @@
 package esw.sm.app
 
-import akka.Done
-import akka.actor.CoordinatedShutdown
-import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern.*
-import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
-import akka.http.scaladsl.server.Route
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.actor.CoordinatedShutdown
+import org.apache.pekko.actor.typed.SpawnProtocol.Spawn
+import org.apache.pekko.actor.typed.scaladsl.AskPattern.*
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
+import org.apache.pekko.http.scaladsl.server.Route
+import org.apache.pekko.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.aas.http.SecurityDirectives
 import csw.config.api.scaladsl.ConfigClientService
 import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
-import csw.location.api.AkkaRegistrationFactory
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.PekkoRegistrationFactory
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, Metadata}
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -41,7 +41,7 @@ import msocket.http.post.PostRouteFactory
 import msocket.jvm.metrics.LabelExtractor
 
 import java.nio.file.Path
-import scala.async.Async.{async, await}
+import cps.compat.FutureAsync.*
 import scala.concurrent.{Await, Future}
 
 class SequenceManagerWiring(
@@ -53,7 +53,7 @@ class SequenceManagerWiring(
 ) {
   private[sm] lazy val smActorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
-  lazy val actorRuntime = new ActorRuntime(smActorSystem)
+  final lazy val actorRuntime = new ActorRuntime(smActorSystem)
   import actorRuntime.*
   private implicit val timeout: Timeout = CommonTimeouts.Wiring
   private val prefix                    = Prefix(ESW, "sequence_manager")
@@ -104,19 +104,19 @@ class SequenceManagerWiring(
   private lazy val simulationConfig = ConfigFactory.parseString(simulationConfigS)
   private lazy val config =
     if (simulation) defaultConfig.withValue("auth-config", simulationConfig.getValue("auth-config")) else defaultConfig
-  private lazy val connection = AkkaConnection(ComponentId(prefix, ComponentType.Service))
+  private lazy val connection = PekkoConnection(ComponentId(prefix, ComponentType.Service))
   private lazy val locationMetadata =
     agentPrefix
       .map(Metadata().withAgentPrefix(_))
       .getOrElse(Metadata.empty)
       .withPid(ProcessHandle.current().pid())
 
-  private lazy val registration = AkkaRegistrationFactory.make(connection, sequenceManagerRef, locationMetadata)
+  private lazy val registration = PekkoRegistrationFactory.make(connection, sequenceManagerRef, locationMetadata)
 
   // not marked private, it is overridden in backend-testkit for sequence manager stub wiring
   lazy val sequenceManager: SequenceManagerApi =
-    SequenceManagerApiFactory.makeAkkaClient(
-      AkkaLocation(registration.connection, registration.actorRefURI, registration.metadata)
+    SequenceManagerApiFactory.makePekkoClient(
+      PekkoLocation(registration.connection, registration.actorRefURI, registration.metadata)
     )
 
   private[esw] lazy val securityDirectives = SecurityDirectives(config, locationService)
@@ -130,7 +130,7 @@ class SequenceManagerWiring(
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
   private lazy val httpServerBinding = httpService.startAndRegisterServer(locationMetadata)
 
-  def start(): Either[RegistrationError, AkkaLocation] = {
+  def start(): Either[RegistrationError, PekkoLocation] = {
     logger.info(s"Starting Sequence Manager with prefix: $prefix")
     if (simulation) logger.info("Starting Sequence Manager in simulation mode")
 

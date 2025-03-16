@@ -1,7 +1,7 @@
 package esw.ocs.testkit.utils
 
-import akka.actor.typed.ActorSystem
-import akka.util.Timeout
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.util.Timeout
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.*
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
@@ -39,7 +39,7 @@ trait BaseTestSuite
     def leftValue: L  = futureEither.futureValue.leftValue
   }
 
-  def future[T](delay: FiniteDuration, value: => T)(implicit system: ActorSystem[_]): Future[T] = {
+  def future[T](delay: FiniteDuration, value: => T)(implicit system: ActorSystem[?]): Future[T] = {
     import system.executionContext
     val scheduler = system.scheduler
     val p         = Promise[T]()

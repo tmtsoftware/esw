@@ -1,11 +1,11 @@
 package esw.ocs.dsl.script.utils
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import org.apache.pekko.actor.testkit.typed.scaladsl.TestProbe
+import org.apache.pekko.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.extensions.ActorExtension.*
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Metadata}
+import csw.location.api.models.Connection.PekkoConnection
+import csw.location.api.models.{PekkoLocation, ComponentId, ComponentType, Metadata}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.utils.location.EswLocationError.LocationNotFound
@@ -22,9 +22,9 @@ class CommandUtilTest extends BaseTestSuite {
   private val locationServiceUtil = mock[LocationServiceUtil]
   private val prefix              = Prefix(ESW, "trombone")
   private val componentType       = ComponentType.Assembly
-  private val connection          = AkkaConnection(ComponentId(prefix, componentType))
+  private val connection          = PekkoConnection(ComponentId(prefix, componentType))
   private val testRef             = TestProbe[ComponentMessage]().ref
-  private val location            = AkkaLocation(connection, testRef.toURI, Metadata.empty)
+  private val location            = PekkoLocation(connection, testRef.toURI, Metadata.empty)
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
@@ -32,12 +32,12 @@ class CommandUtilTest extends BaseTestSuite {
   }
 
   private val commandUtil = new CommandUtil(locationServiceUtil)
-  "jResolveAkkaLocation" must {
-    "return completion stage for akka location" in {
+  "jResolvePekkoLocation" must {
+    "return completion stage for pekko location" in {
       when(locationServiceUtil.resolve(connection, CommonTimeouts.ResolveLocation))
         .thenReturn(Future.successful(Right(location)))
 
-      val completableLocation = commandUtil.jResolveAkkaLocation(prefix, componentType)
+      val completableLocation = commandUtil.jResolvePekkoLocation(prefix, componentType)
 
       completableLocation.toCompletableFuture.get(10, TimeUnit.SECONDS) shouldBe location
       verify(locationServiceUtil).resolve(connection, CommonTimeouts.ResolveLocation)
@@ -48,7 +48,7 @@ class CommandUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(Left(LocationNotFound("Error while resolving location"))))
 
       val message = intercept[ExecutionException](
-        commandUtil.jResolveAkkaLocation(prefix, componentType).toCompletableFuture.get(10, TimeUnit.SECONDS)
+        commandUtil.jResolvePekkoLocation(prefix, componentType).toCompletableFuture.get(10, TimeUnit.SECONDS)
       ).getLocalizedMessage
       "esw.commons.utils.location.EswLocationError$LocationNotFound: Error while resolving location" shouldBe message
       verify(locationServiceUtil).resolve(connection, CommonTimeouts.ResolveLocation)

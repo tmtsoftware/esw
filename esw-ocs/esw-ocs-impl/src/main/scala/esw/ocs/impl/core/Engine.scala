@@ -1,12 +1,12 @@
 package esw.ocs.impl.core
 
-import akka.Done
-import akka.stream.Materializer
-import akka.stream.scaladsl.Source
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.Source
 import esw.ocs.api.protocol.{PullNextResult, Unhandled}
 import esw.ocs.impl.script.ScriptApi
 
-import scala.async.Async._
+import cps.compat.FutureAsync.*
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -34,7 +34,8 @@ private[ocs] class Engine(script: ScriptApi) {
       pullNextResponse match {
         case PullNextResult(step) =>
           script.execute(step.command).onComplete {
-            case _: Success[_] => sequenceOperator.stepSuccess()
+            case _: Success[_] =>
+              sequenceOperator.stepSuccess()
             case Failure(e) =>
               val message = if (e.getCause != null) e.getCause.getMessage else e.getMessage
               sequenceOperator.stepFailure(message)

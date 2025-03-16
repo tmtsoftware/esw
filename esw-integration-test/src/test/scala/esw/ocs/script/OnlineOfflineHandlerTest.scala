@@ -14,7 +14,7 @@ class OnlineOfflineHandlerTest extends EswTestKit(EventServer) {
 
   private val ocsSubsystem               = ESW
   private val ocsObsMode                 = ObsMode("onlineFlag")
-  private var ocsSequencer: SequencerApi = _
+  private var ocsSequencer: SequencerApi = scala.compiletime.uninitialized
 
   override def beforeEach(): Unit = {
     ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObsMode)

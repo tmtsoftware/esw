@@ -9,7 +9,9 @@ class SequencerAppCommandTest extends AnyWordSpec with EitherValues with Matcher
   "subsystemParser" must {
     "return error if invalid subsystem is provided | ESW-102, ESW-136" in {
       val subsystem = "Invalid"
-      SequencerAppCommand.subsystemParser.parse(subsystem).left.value.message should ===(s"Subsystem [$subsystem] is invalid")
+      SequencerAppCommand.subsystemParser.parse(subsystem, 0, 0).left.value.message should ===(
+        s"Subsystem [$subsystem] is invalid"
+      )
     }
   }
 }

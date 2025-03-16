@@ -1,6 +1,6 @@
 package esw.ocs.dsl.highlevel
 
-import akka.Done
+import org.apache.pekko.Done
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.IRegistrationResult
 import csw.location.api.models.*
@@ -38,7 +38,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     fun clearMocks() = clearAllMocks()
 
     @Test
-    fun `register should call underlying register method from LocationService | ESW-277`() = runBlocking {
+    fun `register_should_call_underlying_register_method_from_LocationService_|_ESW-277`() = runBlocking {
         every { locationService.register(httpRegistration) } answers { completedFuture(registrationResult) }
         every { registrationResult.location() } answers { httpLocation }
         every { registrationResult.unregister() } answers { completedFuture(Done.done()) }
@@ -52,7 +52,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     }
 
     @Test
-    fun `unregister should call underlying unregister method from LocationService | ESW-277`() = runBlocking {
+    fun `unregister_should_call_underlying_unregister_method_from_LocationService_|_ESW-277`() = runBlocking {
         every { locationService.unregister(httpConnection) } answers { completedFuture(Done.done()) }
 
         unregister(httpConnection)
@@ -60,7 +60,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     }
 
     @Test
-    fun `findLocation should call underlying find method from LocationService | ESW-277`() = runBlocking {
+    fun `findLocation_should_call_underlying_find_method_from_LocationService_|_ESW-277`() = runBlocking {
         every { locationService.find(httpConnection) } answers { completedFuture(Optional.of(httpLocation)) }
 
         findLocation(httpConnection) shouldBe httpLocation
@@ -68,7 +68,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     }
 
     @Test
-    fun `resolveLocation should call underlying resolve method from LocationService | ESW-277`() = runBlocking {
+    fun `resolveLocation_should_call_underlying_resolve_method_from_LocationService_|_ESW-277`() = runBlocking {
         val timeoutK = 1.seconds
         val timeoutJ = timeoutK.toJavaDuration()
         every { locationService.resolve(httpConnection, timeoutJ) } answers { completedFuture(Optional.of(httpLocation)) }
@@ -79,7 +79,7 @@ class LocationServiceDslTest : LocationServiceDsl {
 
 
     @Test
-    fun `listLocations should call underlying list method from LocationService | ESW-277`() = runBlocking {
+    fun `listLocations_should_call_underlying_list_method_from_LocationService_|_ESW-277`() = runBlocking {
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.list() } answers { completedFuture(mockedLocations) }
 
@@ -88,7 +88,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     }
 
     @Test
-    fun `listLocationsBy component type should call underlying list(componentType) method from LocationService | ESW-277`() = runBlocking {
+    fun `listLocationsBy_component_type_should_call_underlying_list(componentType)_method_from_LocationService_|_ESW-277`() = runBlocking {
         val componentType = HCD
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.list(componentType) } answers { completedFuture(mockedLocations) }
@@ -98,7 +98,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     }
 
     @Test
-    fun `listLocationsBy connection type should call underlying list(connectionType) method from LocationService | ESW-277`() = runBlocking {
+    fun `listLocationsBy_connection_type_should_call_underlying_list(connectionType)_method_from_LocationService_|_ESW-277`() = runBlocking {
         val connectionType = HttpType
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.list(connectionType) } answers { completedFuture(mockedLocations) }
@@ -108,7 +108,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     }
 
     @Test
-    fun `listLocationsBy hostname should call underlying list(hostname) method from LocationService | ESW-277`() = runBlocking {
+    fun `listLocationsBy_hostname_should_call_underlying_list(hostname)_method_from_LocationService_|_ESW-277`() = runBlocking {
         val hostname = "10.1.1.1"
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.list(hostname) } answers { completedFuture(mockedLocations) }
@@ -118,7 +118,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     }
 
     @Test
-    fun `listLocationsBy prefix should call underlying listByPrefix method from LocationService | ESW-277`() = runBlocking {
+    fun `listLocationsBy_prefix_should_call_underlying_listByPrefix_method_from_LocationService_|_ESW-277`() = runBlocking {
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.listByPrefix(prefix.toString()) } answers { completedFuture(mockedLocations) }
 
@@ -127,7 +127,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     }
 
     @Test
-    fun `onLocationTrackingEvent should call underlying subscribe method from LocationService | ESW-277`() = runBlocking {
+    fun `onLocationTrackingEvent_should_call_underlying_subscribe_method_from_LocationService_|_ESW-277`() = runBlocking {
         val mockedSubscription: Subscription = mockk()
         every { locationService.subscribe(httpConnection, any()) } answers { mockedSubscription }
 

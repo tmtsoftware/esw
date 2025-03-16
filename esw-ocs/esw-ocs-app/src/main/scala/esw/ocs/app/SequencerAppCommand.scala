@@ -42,35 +42,34 @@ object SequencerAppCommand {
       Right(Variation(variation))
     }
 
-  @CommandName("seqcomp")
-  final case class SequenceComponent(
+  final case class SeqcompOptions(
       @HelpMessage("subsystem of the sequence component, ex: tcs")
       @Short("s")
       seqCompSubsystem: Subsystem,
       @HelpMessage("optional argument: name for sequence component, ex: primary, backup etc")
       @Short("n")
-      name: Option[String],
+      name: Option[String] = None,
       @HelpMessage("optional argument: agentPrefix on which sequence component will be spawned, ex: ESW.agent1, IRIS.agent2 etc")
       @Short("a")
-      agentPrefix: Option[Prefix],
+      agentPrefix: Option[Prefix] = None,
       @HelpMessage("simulation mode")
       @Short("simulation")
       simulation: Boolean = false
   ) extends SequencerAppCommand
 
-  final case class Sequencer(
+  final case class SequencerOptions(
       @HelpMessage("subsystem of the sequence component, ex: tcs")
       @Short("s")
       seqCompSubsystem: Subsystem,
       @HelpMessage("optional argument: name for sequence component, ex: primary, backup etc")
       @Short("n")
-      name: Option[String],
+      name: Option[String] = None,
       @HelpMessage("optional argument: agentPrefix on which sequence component will be spawned, ex: ESW.agent1, IRIS.agent2 etc")
       @Short("a")
-      agentPrefix: Option[Prefix],
+      agentPrefix: Option[Prefix] = None,
       @HelpMessage("optional argument: subsystem of sequencer script, ex: tcs, iris etc. Default value: subsystem provided")
       @Short("i")
-      seqSubsystem: Option[Subsystem],
+      seqSubsystem: Option[Subsystem] = None,
       @HelpMessage("component name = obsmode ex: IRIS_ImagerAndIFS , IRIS_ImagerOnly ")
       @Short("m")
       obsMode: ObsMode,
@@ -78,7 +77,7 @@ object SequencerAppCommand {
         "optional variation part of the sequencer prefix ex: Sequencer Prefix(IRIS.IRIS_ImagerAndIFS.IRIS_IFS), IRIS_IFS needs to be provided as variation"
       )
       @Short("v")
-      variation: Option[Variation],
+      variation: Option[Variation] = None,
       @HelpMessage("simulation mode")
       @Short("simulation")
       simulation: Boolean = false

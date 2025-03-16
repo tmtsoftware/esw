@@ -10,14 +10,14 @@ import scala.jdk.CollectionConverters.*
  *
  * @param params - set(in java) of Parameters
  */
-case class Params(params: util.Set[Parameter[_]] = util.Set.of()) extends ParameterSetType[Params] {
+case class Params(params: util.Set[Parameter[?]] = util.Set.of()) extends ParameterSetType[Params] {
 
   /**
    * This method transform the parameter's set from java to scala models.
    *
    * @return set of [[csw.params.core.generics.Parameter]]
    */
-  override def paramSet: Set[Parameter[_]] = params.asScala.toSet
+  override def paramSet: Set[Parameter[?]] = params.asScala.toSet
 
   /**
    * This method is a factory method. which takes a set(scala) of Parameters and returns the [[Params]]
@@ -25,5 +25,5 @@ case class Params(params: util.Set[Parameter[_]] = util.Set.of()) extends Parame
    * @param data - set of Parameters
    * @return [[Params]]
    */
-  override protected def create(data: Set[Parameter[_]]): Params = copy(params = data.asJava)
+  override protected def create(data: Set[Parameter[?]]): Params = copy(params = data.asJava)
 }
