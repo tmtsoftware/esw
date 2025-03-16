@@ -14,7 +14,7 @@ object Libs {
   val `mockito`           = "org.scalatestplus"            %% "mockito-3-4"       % "3.2.10.0"
   val `dotty-cps-async`   = dep("com.github.rssh" %%% "dotty-cps-async" % "0.9.23")
   val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.19") // Apache License 2.0
-  val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.1.8"
+  val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.2.0"
   val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
   val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "d45709a"
 
@@ -92,7 +92,7 @@ object PekkoHttp {
 }
 
 object Borer {
-  val Version = "1.15.0"
+  val Version = "1.16.0"
   val Org = "io.bullet"
   //  val Org = "com.github.tmtsoftware.borer"
 
@@ -102,7 +102,7 @@ object Borer {
 }
 
 object Kotlin {
-  val CoroutinesVersion = "1.9.0"
+  val CoroutinesVersion = "1.10.1"
 
   val `kotlin-stdlib`     = "org.jetbrains.kotlin"  % "kotlin-stdlib"      % EswKeys.kotlinVersion
   val `kotlin-reflect`  = "org.jetbrains.kotlin"  % "kotlin-reflect"          % EswKeys.kotlinVersion
