@@ -18,19 +18,16 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh "cs setup -y"
                 sh "cs update cs"
                 sh "cs version"
-                sh "hostnamectl"
                 sh "echo $HOME"
                 sh "echo $PATH"
                 sh "which cs"
-                sh "cs java --available"
                 sh "cs java --jvm temurin:1.21.0 -version"
                 sh "java -version"
-                sh "./scripts/install_kotlin.sh"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt selfupdate force"
                 sh "kotlin -version"
-                sh "sbt scalafmtCheck"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt scalafmtCheck"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true publishLocal"
@@ -45,8 +42,8 @@ pipeline {
 
             post {
                 always {
-                    sh "sbt -Dsbt.log.noformat=true -DenableCoverage=true coverageReport"
-                    sh "sbt -Dsbt.log.noformat=true coverageAggregate"
+                    sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DenableCoverage=true coverageReport"
+                    sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true coverageAggregate"
                     junit testResults: '**/target/test-reports/*.xml', allowEmptyResults: true
                     publishHTML(target: [
                             allowMissing         : true,
