@@ -26,7 +26,6 @@ pipeline {
                 sh "cs java --jvm temurin:1.21.0 --setup"
                 sh "java -version"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && java -version"
-                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sdk selfupdate force"
                 sh "./scripts/install_kotlin.sh"
                 sh "kotlin -version"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt scalafmtCheck"
