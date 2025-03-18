@@ -25,6 +25,8 @@ pipeline {
                 sh "echo $HOME"
                 sh "echo $PATH"
                 sh "which cs"
+                sh "java -version"
+                sh "kotlin -version"
                 sh "cs java --available"
                 sh "cs java --jvm temurin:1.21.0 -version"
                 sh "sbt scalafmtCheck"
