@@ -26,7 +26,7 @@ pipeline {
                 sh "cs java --jvm temurin:1.21.0 --setup"
                 sh "java -version"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && java -version"
-                sh "./scripts/install_kotlin.sh"
+                // sh "./scripts/install_kotlin.sh"
                 sh "kotlin -version"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt scalafmtCheck"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
@@ -56,7 +56,7 @@ pipeline {
                     ])
 
                     // Generate RTM
-                    sh "scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:d45709a -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
+                    sh "cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:d45709a -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
                     // Upload RTM
                     publishHTML(target: [
                         alwaysLinkToLastBuild: false,
