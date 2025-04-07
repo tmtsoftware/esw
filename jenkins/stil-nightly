@@ -38,14 +38,14 @@ pipeline {
         stage('Test') {
 
             steps {
-                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true Test/test"
             }
 
             post {
                 always {
                     sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DenableCoverage=true coverageReport"
                     sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true coverageAggregate"
-                    junit testResults: '**/target/test-reports/*.xml', allowEmptyResults: true
+                    junit allowEmptyResults: true, testResults: '**/target/test-reports/*.xml'
                     publishHTML(target: [
                             allowMissing         : true,
                             alwaysLinkToLastBuild: false,
@@ -56,7 +56,7 @@ pipeline {
                     ])
 
                     // Generate RTM
-                    sh "cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json rtm:d45709a -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
+                    sh "cs launch --channel https://raw.githubusercontent.com/tmtsoftware/osw-apps/branch-6.0.x/apps.jsonn rtm:d45709a -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt"
                     // Upload RTM
                     publishHTML(target: [
                         alwaysLinkToLastBuild: false,
