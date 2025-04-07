@@ -7,7 +7,7 @@ addSbtPlugin("org.portable-scala"                % "sbt-scalajs-crossproject"  %
 addSbtPlugin("org.scala-js"                      % "sbt-scalajs"               % "1.18.2")
 addSbtPlugin("com.typesafe.sbt"                  % "sbt-multi-jvm"             % "0.4.0")
 addSbtPlugin("com.timushev.sbt"                  % "sbt-rewarn"                % "0.1.3")
-addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"          % "3.0.2")
+//addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"          % "3.0.2")
 addSbtPlugin("com.dwijnand"                      % "sbt-project-graph"        % "0.4.0")
 
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
