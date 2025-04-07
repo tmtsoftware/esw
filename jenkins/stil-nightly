@@ -38,7 +38,7 @@ pipeline {
         stage('Test') {
 
             steps {
-                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && source /var/lib/jenkins/.sdkman/bin/sdkman-init.sh && sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true Test/test"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true Test/test"
             }
 
             post {
