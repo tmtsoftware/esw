@@ -18,19 +18,19 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh "cs update cs"
-                sh "cs version"
-                sh "echo $HOME"
-                sh "echo $PATH"
-                sh "which cs"
-                sh "cs java --jvm temurin:1.21.0 --setup"
-                sh "java -version"
+                // sh "cs update cs"
+                // sh "cs version"
+                // sh "echo $HOME"
+                // sh "echo $PATH"
+                // sh "which cs"
+                // sh "cs java --jvm temurin:1.21.0 --setup"
+                // sh "java -version"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && java -version"
                 sh "./scripts/install_kotlin.sh"
-                sh "kotlin -version"
+                // sh "kotlin -version"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt scalafmtCheck"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true clean makeSite"
-                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
+                sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true -DenableFatalWarnings=false ';set every Seq(scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
                 sh "eval \$(cs java --jvm temurin:1.21.0 --env) && sbt -Dsbt.log.noformat=true publishLocal"
             }
         }

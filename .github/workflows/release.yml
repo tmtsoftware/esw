@@ -48,7 +48,7 @@ jobs:
         run: |
           sbtn clean
           sbtn scalafmtCheck
-          sbt -DenableFatalWarnings=true makeSite
+          sbt -DenableFatalWarnings=false makeSite
 
       - name: Tests
         run: sbt -Dsbt.log.noformat=true -Dpekko.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true Test/test

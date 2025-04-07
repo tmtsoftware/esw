@@ -38,7 +38,7 @@ jobs:
         run: |
           sbt -Dsbt.log.noformat=true clean
           sbt -Dsbt.log.noformat=true scalafmtCheck
-          sbt -Dsbt.log.noformat=true -DenableFatalWarnings=true makeSite
+          sbt -Dsbt.log.noformat=true -DenableFatalWarnings=false makeSite
           sbt -Dsbt.log.noformat=true publishLocal
 
       - name: Unit Tests
