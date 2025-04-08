@@ -1,0 +1,9 @@
+## ESW - TMT Executive Software v0.6.0-M2
+
+This is the v0.6.0-M2 of the TMT Executive Software.
+
+See [CHANGELOG.md](CHANGELOG.md) for details of all releases.
+
+### Documentation
+
+Paradox documentation can be found here: https://tmtsoftware.github.io/esw/0.6.0-M2/
