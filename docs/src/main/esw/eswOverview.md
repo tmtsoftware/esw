@@ -12,7 +12,7 @@ However, the subsystems work together to provide the total functionality needed 
 The OSW software architecture is split into the Technical Architecture and the Functional Architecture.
 ESW is part of the Functional Architecture that provides the software applications and components
 that implement the functionality of the observatory from the point of view of the users. It depends on
-and uses the Technical Architecture provided by the Common Software (CSW) subsystem. [See CSW documentation here.](https://tmtsoftware.github.io/csw/).
+and uses the Technical Architecture provided by the Common Software (CSW) subsystem. [See CSW documentation here](https://tmtsoftware.github.io/csw/).
 
 The ESW subsystems provide the core functionality needed to enable the TMT operations modes including: PI-Directed observing,
 Pre-planned Service Queue, and conditions-based queue scheduled observing. The ESW enables operation of all TMT
@@ -56,7 +56,7 @@ how the observing workflows develop over the next few years.
 In the TMT Software System, OCS provides the sequencing software to carry out the observations planned and scheduled via
 software implemented by the Science Operations Support Subsystem (SOSS). Planning information created during
 Phase 2 and contained in the Observing Database, a part of SOSS, is used to generate
-the Observing Block and the Sequence, which is passed to the ESW OCS for execution.
+the Observation Block and the Sequence, which is passed to the ESW OCS for execution.
 All observation types: science, calibration, and engineering are executed through the ESW.OCS infrastructure.
 This is necessary to have a full understanding of how the telescope
 and instruments are used for time accounting purposes. It is also expected that most if not all
@@ -73,7 +73,7 @@ The Sequencer Component contains the environment for executing scripts called th
 that allows the script code to use the CSW Services to send commands and subscribe to and react to event data.
 
 For most observations (i.e. science, calibration, engineering), a master OCS Sequencer is used to control other
-subsystem Sequencers (such as TCS and IRIS), which in turn control subsystem Assemblies and HCDS in the OMOA hierarchy,
+subsystem Sequencers (such as TCS and IRIS), which in turn control subsystem Assemblies and HCDs in the OMOA hierarchy,
 as shown in the following figure.
 The scripts for science, acquisition, and some engineering purposes used by the OCS master sequencer are a product of ESW.ACQ.
 

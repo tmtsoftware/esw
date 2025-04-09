@@ -91,6 +91,8 @@ script {
     val params = flag.value() // extract the current params value in FSM
     //#command-flag
 
+    fun getCurrentTemperature(): Int = TODO()
+
     val exampleFsm = Fsm(name = "example-fsm", initState = "INIT") {
 
         val condition = true
@@ -116,7 +118,8 @@ script {
             //#after
 
             //#state-transition
-            become(state = "IN-PROGRESS")
+            // argument is the name of the state to transition to
+            become("IN-PROGRESS")
             //#state-transition
 
             //#complete-fsm
@@ -141,5 +144,27 @@ script {
             //#on
         }
         //#state-transition-on-re-evaluation
+
+        //#state-transition-loop
+        state("HIGH") {
+            val currentTemperature = getCurrentTemperature()
+            on(currentTemperature < 20) {
+                // do something
+
+                // transition to LOW state
+                become("LOW")
+            }
+
+            on(currentTemperature >= 20) {
+                // do something
+
+                // remain in this state but re-evaluate
+                become("HIGH")
+            }
+        }
+        //#state-transition-loop
+
     }
+
+
 }

@@ -2,6 +2,7 @@
 
 Scripts have ability to define, include, and run @link:[Finite State Machine (FSM)](https://en.wikipedia.org/wiki/Finite-state_machine). 
 FSM can transition between defined states and can be made reactive to Events and Commands.
+This reaction is called "re-evaluation", which causes the code for the current state to be executed.
 
 ## Define a FSM
 
@@ -41,25 +42,41 @@ Kotlin
 
 
 @@@ warning {title='Caution with Become'}
-State transition should ideally be the **last call in state** or should be **done with proper control flow** so that become is **not called multiple times**.
+State transition should ideally be the **last call in state** or should be **done with proper control flow** so that `become` is **not called multiple times**.
 @@@
 
-Along with changing state, it is also possible to pass *Params* from the current state to the next state. Params can be given to *become* as the last argument, which will 
-then be injected in the next state as a parameter.
+Along with changing state, it is also possible to pass *Params* from the current state to the next state. Params can be given to `become` as the last argument, which will 
+then be injected in the next state as a parameter.  See the example FSM below to see what the code looks like.
 
-In the case where **state transition does not happen** while executing a state, the **FSM will stay in the same state** and any re-evaluation of the FSM after that will execute
-the same state until a state transition happens. The @ref:[reactive variables](#reactive-fsm) plays an important role in this as they are the way to
-re-evaluate the FSM state.
+When a FSM changes state, it will be re-evaluated in the new state.  However, in the case where **state transition does 
+not happen** while executing a state, the **FSM will stay in the same state**, but no re-evaluation automatically occurs.
+Re-evaluation in the same state will only occur if `become` is used on the same state.
+
+In the following example, the FSM is in the "HIGH" state.  It then checks the temperature, and if the temperature is below
+20, it will transition to the low state.  However, if it still higher or equal to 20, it will remain in the HIGH state, 
+but `become` is used to cause it to re-evaluate, checking the temperature again on the next pass. 
+
+Kotlin
+:   @@snip [Fsm.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition-loop }
+
+Note that in this model, you may need to introduce some "sleeps" to prevent the looping from occurring too fast.  The Kotlin
+`delay` method or the `after` DSL (see below) should be used to pause without blocking.
+
+Another way of causing re-evaluation of an FSM is making it a "reactive FSM". The following example shows the use of a 
+reactive variable. Here, The FSM is in LOW state.  
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition-on-re-evaluation }
 
-In the example above, the FSM is in LOW state. If the temperature is below 20, then there won't be any state transition, 
-and the FSM remain in the LOW state. A change in temperature after that will re-evaluate the "LOW" state again and if 
-the temperature is greater than or equal to 20, then current state will change to HIGH. In the example `temperature` is 
-an @ref:[event based variable](#event-based-variables) which enables re-evaluation of the current state on changes in temperature value.
 
-### Complete FSM
+In this example, `temperature` is an @ref:[event based variable](#event-based-variables) which enables re-evaluation of the current state 
+on changes in temperature value.  If the temperature is below 20, then there won't be any state transition, 
+and the FSM remain in the LOW state. A change in temperature after that will re-evaluate the "LOW" state again, and if 
+the temperature is greater than or equal to 20, then current state will change to HIGH. 
+
+Read more about Reactive FSMs @ref:[here](#reactive-fsm).
+
+## Completing an FSM
 
 `completeFsm` **marks the FSM as complete**. Calling it will immediately **stop execution of the FSM** and next steps 
 will be ignored. Therefore, it should be called at the end of a state.
@@ -67,7 +84,7 @@ will be ignored. Therefore, it should be called at the end of a state.
 Kotlin
 :   @@snip [Fsm.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #complete-fsm }
 
-### FSM Helper Constructs
+## FSM Helper Constructs
 
 The following are some useful FSM constructs. 
 
@@ -92,7 +109,7 @@ After creating instance of FSM, it needs to be **explicitly started** by calling
 state** of the FSM, which is provided while defining the instance.
 
 @@@ warning {title='Caution'}
-Calling `start` more than once is not supported and will lead to unpredictable behaviour. 
+Calling `start` more than once is not supported and will lead to unpredictable behavior. 
 @@@
 
 Kotlin
@@ -110,9 +127,8 @@ Calling `await` before calling `start` will start the FSM internally and then wa
 
 ## Reactive FSM
 
-Reactive FSM means that changes of state can be tied to change in Events as well as Commands.
+Reactive FSM means that re-evaluation of an FSM can be tied to change in Events as well as Commands.
 An FSM can be made to react to change in Event and Command parameters with the help of `Event based variables` and `Command flags`.
-This reaction is called "re-evaluation", which causes the code for the current state to be executed again.
 It is necessary to _bind_ an FSM to reactive variables to achieve the reactive behavior.
 
 ### Event-based variables
@@ -130,13 +146,13 @@ The example below shows creating an instance of an EventVariable, and the *getEv
 An EventVariable needs 2 parameters:
 
 - *event key*: specifies which Event to tie the variable to
-- *duration*: (optional) polling period for updating the value of the Event (Significance of duration parameter is explained @ref:[below](#poll).)
+- *duration*: (optional) polling period for updating the value of the Event (the significance of duration parameter is explained @ref:[below](#poll).)
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #event-var }
 
 #### ParamVariable
-A `ParamVariable` will be tied to a specific Parameter Key of an Event published on given EventKey
+A `ParamVariable` will be tied to a specific ParameterKey of an Event published on given EventKey
 The example below shows creating an instance of a ParamVariable and the usage of other helper methods. 
 
 A ParamVariable takes 4 parameters:
@@ -144,7 +160,7 @@ A ParamVariable takes 4 parameters:
 - *initial*: initial value for the Parameter. The value of the parameter in the Event is updated when the ParamVariable is created.
 - *event key*:  specifies the Event with the linked Parameter
 - *param Key*: specifies which Parameter to tie the variable to
-- *duration*: (optional) polling period for updating the value of the Parameter (Significance of duration parameter is explained @ref:[below](#poll).)
+- *duration*: (optional) polling period for updating the value of the Parameter (the significance of duration parameter is explained @ref:[below](#poll).)
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #param-var }
@@ -231,17 +247,17 @@ Key things in above example code are :
 
 - `[[ 1 ]]`: Shows **top-level scope of the FSM which can used to declare variables** in FSM's scope and statements which should be executed while starting the FSM.
 Statements written here will be executed only once when the FSM starts.
-- `[[ 2 ]]`: The scope of the state. Statements written here will be executed on every evaluation of the state. So variables declared here will be reinitialized
+- `[[ 2 ]]`: The scope of the state (OK). Statements written here will be executed on every evaluation of the state. So variables declared here will be reinitialized
 whenever state is re-evaluated. In the above case, *tempLimit* and *currentTemp* will be initialized every time the OK state is evaluated.
-- `[[ 3 ]]`: The code in the entry block is only executed when first transitioning to this state.   Therefore, state will not be published repeatedly.
+- `[[ 3 ]]`: The code in the entry block is only executed when first transitioning to this state.   In this example, an event is published indicating what
+state the FSM is in.  By using the entry block, the state will only be published once, when first entering this state.
 - `[[ 4 ]]`: State transitions from `OK` state to `FINISHED`.
 - `[[ 5 ]]`: State transitions from `OK` state to `ERROR` with a *Params* set containing the delta temperature. The ERROR state shows how to consume Params in a state.
 - `[[ 6 ]]`: Marks the FSM complete. Re-evaluation or state transitions cannot happen after this is executed.
-- `[[ 7 ]]`: Shows the binding `temperatureFsm` to `temperatureVar` and `commandFlag`. After this point, a running FSM will re-evaluate whenever events are published on `temperatureVar`.
+- `[[ 7 ]]`: Shows the binding of`temperatureVar` and `commandFlag` to the `temperatureFsm` FSM. After this point, a running FSM 
+will re-evaluate whenever events are published on `temperatureVar` or the `commandFlag.set()` method is called.
 - `[[ 8 ]]`: Starts **evaluating the initial state** of the FSM.  Until this is called the code in the `Fsm` block only specifies the FSM functionality.  However, 
 note that the initialization code in the top-level scope of the FSM is executed (item `[[ 1 ]]`) on construction.
 - `[[ 9 ]]`: Updates the Params of the `CommandFlag`. In our example, we are using those params to specify the temperature limit.
 - `[[ 10 ]]`: Waits for completion of the FSM. In our example, the script execution will be blocked until the `completeFsm` method 
 is called in `[[ 6 ]]`, which occurs when switching to the FINISHED state. Any code after the `await` call will execute after the FSM is completed.
-
-Example code also demos the use of the @ref:[helper constructs](#fsm-helper-constructs) like `entry`, `on`.

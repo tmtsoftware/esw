@@ -131,6 +131,9 @@ the framework will log the error cause. The Sequencer will not start on this fai
 3. **Handlers Failure** : This failure occurs when any of handlers other than Command Handlers fail (e.g. `OnGoOnline`, `onDiagnosticMode` etc.). In
 this scenario, framework will log the error cause. Sequence execution will continue.  
 
+4. **User Generated Error** : The DSL provides a construct for the developer to cause a error to be generated, which also ends execution of the handler. 
+This construct is `finishWithError` and takes an error message string as an argument.
+
 The Script DSL provides following constructs to handle failures while executing script:
 
 ### Global Error Handler
