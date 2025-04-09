@@ -23,10 +23,10 @@ A **Sequence** is defined in Common Software as a list of Sequence Commands: Set
 a Sequencer can receive and process is a Sequence, which can contain 1 or more Sequence Commands. Note that a Sequence
 with only 1 Sequence Command is still wrapped in a Sequence message.
 
-There is one more term: **Observing Block**. The Observing Block is an SOSS type that is usually defined as the
-"smallest schedulable science entity". The Observing Block describes the observation using high level terms, and
+There is one more term: **Observation Block**. The Observation Block is operational concept that is usually defined as the
+"smallest schedulable science entity". The Observation Block describes the observation using high level terms, and
 may contain a sequence of exposures, such as dither patterns. A Sequence is created
-from the Observing Block, including acquisition and configuration steps, before it is sent to the OCS.
+from the Observation Block, including acquisition and configuration steps, before it is sent to the OCS.
 
 In the OMO architecture, the Sequencer does most of its work in a scripting environment.
 For OCS, "scripting" means that the code of the Script is easier to write and update without requiring installation of a
@@ -113,15 +113,12 @@ If a subsystem is used, it should be capitalized to conform with other subsystem
 The `<modeName>` portion will generally also be part of the instrument configuration set in the observation planning tool.
 There are no restrictions on this name, but shorter is better. Any name can be used for testing.
 
-### Variation
+There are cases in which multiple sequencers may be run for a single subsystem for a given Observing Mode.  In this case,
+a "variation" name can be used to distinguish them.  In the examples below, IRIS_ImagerAndIFS is the Observing Mode, and
+IRIS_IFS and IRIS_IMAGER are the variations.
 
-This is argument to allow the system to run multiple sequencers for a subsystem.
-As an example we need to create 3 IRIS sequencers + 1 top level ESW sequencer for IRIS_ImagerAndIFS Obsmode
-
-* IRIS.IRIS_ImagerAndIFS.IRIS_IFS //Subsystem . obsmode . variation
-* IRIS.IRIS_ImagerAndIFS.IRIS_IMAGER //Subsystem . obsmode . variation
-* IRIS.IRIS_ImagerAndIFS //Subsystem . obsmode
-* ESW.IRIS_ImagerAndIFS //Subsystem . Obsmode
+* IRIS_ImagerAndIFS.IRIS_IFS 
+* IRIS_ImagerAndIFS.IRIS_IMAGER
 
 ## Registering Sequencers in Location Service
 
