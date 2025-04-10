@@ -14,11 +14,9 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" 
 
 resolvers += "jitpack" at "https://jitpack.io"
 
-//libraryDependencies += "com.github.tmtsoftware" % "kotlin-plugin" % "4431819"
-//addSbtPlugin("community.flock.sbt" % "sbt-kotlin-plugin" % "3.0.1")
 addSbtPlugin("org.jetbrains.scala" % "sbt-kotlin-plugin" % "3.1.4")
 
-libraryDependencies += "com.github.tmtsoftware" % "sbt-docs" % "a3206b6"
+libraryDependencies += "com.github.tmtsoftware" % "sbt-docs" % "0.7.0"
 
 resolvers += Resolver.jcenterRepo
 addSbtPlugin("net.aichler" % "sbt-jupiter-interface" % "0.11.1")
