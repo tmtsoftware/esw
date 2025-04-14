@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 ## Upcoming Changes
 n/a
 
-## [ESW v0.6.0] - 
+## [ESW v1.0.0-RC1] - 2025-04-14 
 
 - Replaced akka dependency with pekko
 - Updated to scala-3 and jdk-21
