@@ -16,11 +16,12 @@ pipeline {
             }
         }
 
-        //stage('Paradox Validate Links') {
-            //steps {
+        stage('Paradox Validate Links') {
+            steps {
                 // sh "sbt -Dsbt.log.noformat=true docs/paradoxValidateLinks"
-            //}
-        //}
+                sh "Skipping paradoxValidateLinks"
+            }
+        }
     }
 
     post {
