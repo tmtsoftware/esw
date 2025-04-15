@@ -16,7 +16,7 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 addSbtPlugin("org.jetbrains.scala" % "sbt-kotlin-plugin" % "3.1.4")
 
-libraryDependencies += "com.github.tmtsoftware" % "sbt-docs" % "0.7.0"
+libraryDependencies += "com.github.tmtsoftware" % "sbt-docs" % "0.7.1"
 
 resolvers += Resolver.jcenterRepo
 addSbtPlugin("net.aichler" % "sbt-jupiter-interface" % "0.11.1")
