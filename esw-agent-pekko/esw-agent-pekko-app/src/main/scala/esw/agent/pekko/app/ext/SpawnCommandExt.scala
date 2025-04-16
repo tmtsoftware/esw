@@ -21,7 +21,7 @@ object SpawnCommandExt {
     ): Future[List[String]] = {
       lazy val args = command.commandArgs(List("-a", agentPrefix.toString()))
 
-      command match {
+      val f = command match {
         case SpawnSequenceComponent(_, _, _, version, _) =>
           val scriptsVersion =
             if (version.isEmpty) versionManager.getScriptVersion.map(Some(_))
@@ -35,6 +35,8 @@ object SpawnCommandExt {
         case SpawnContainer(_, _, config) =>
           Future.successful(Coursier.containerApp(config).launch(List("jitpack"), config.appName, command.commandArgs()))
       }
+      f.map(x => println(s"XXX ${x.mkString(" ")}"))
+      f
     }
   }
 
