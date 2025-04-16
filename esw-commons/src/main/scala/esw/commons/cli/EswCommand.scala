@@ -13,7 +13,7 @@ import csw.logging.client.scaladsl.GenericLoggerFactory
 /**
  * This is a base class for all ESW command line applications containing helper utilities.
  */
-abstract class EswCommand[T: Parser: Help] extends Command[T] {
+abstract class EswCommand[T: {Parser, Help}] extends Command[T] {
 
   lazy val log: Logger = GenericLoggerFactory.getLogger
 
