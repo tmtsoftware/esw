@@ -5,7 +5,6 @@ import caseapp.core.app.{Command, CommandsEntryPoint}
 import caseapp.core.help.Help
 import caseapp.core.parser.Parser
 import csw.prefix.models.Subsystem
-import esw.agent.pekko.app.AgentCliCommand
 import esw.backend.testkit.TSSequencerCommands.*
 import esw.commons.cli.EswCommand
 import esw.ocs.api.models.{ObsMode, Variation}
@@ -19,7 +18,7 @@ object SequencerApp extends CommandsEntryPoint {
 
   val StartCommand: Runner[StartOptions] = Runner[StartOptions]()
 
-  class Runner[T <: TSSequencerCommands: Parser: Help] extends EswCommand[T] {
+  class Runner[T <: TSSequencerCommands: {Parser, Help}] extends EswCommand[T] {
     override def run(command: T, args: RemainingArgs): Unit = {
       command match {
         case StartOptions(subsystem: Subsystem, obsMode: ObsMode, variation: Option[Variation]) =>

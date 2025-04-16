@@ -29,7 +29,7 @@ object EswServicesApp extends CommandsEntryPoint {
 
   override def commands: Seq[Command[?]] = List(Start, StartEngUIServices)
 
-  class Runner[T <: cli.Command: Parser: Help] extends EswCommand[T] {
+  class Runner[T <: cli.Command: {Parser, Help}] extends EswCommand[T] {
     override def run(command: T, args: RemainingArgs): Unit = {
       val wiring = new Wiring(command)
       try {

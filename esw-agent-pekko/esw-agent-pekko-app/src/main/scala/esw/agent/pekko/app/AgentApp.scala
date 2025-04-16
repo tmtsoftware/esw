@@ -27,7 +27,7 @@ object AgentApp extends CommandsEntryPoint {
 
   override def commands: Seq[Command[?]] = List(StartCommand)
 
-  class Runner[T <: AgentCliCommand: Parser: Help] extends Command[T] {
+  class Runner[T <: AgentCliCommand: {Parser, Help}] extends Command[T] {
     override def run(command: T, args: RemainingArgs): Unit = {
       command match {
         case StartOptions(prefix, hostConfigPath, isConfigLocal) =>

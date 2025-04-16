@@ -29,7 +29,7 @@ object BackendService extends CommandsEntryPoint {
 
   val StartCommand: Runner[StartOptions] = Runner[StartOptions]()
 
-  class Runner[T <: TSServicesCommands: Parser: Help] extends EswCommand[T] {
+  class Runner[T <: TSServicesCommands: {Parser, Help}] extends EswCommand[T] {
     override def run(command: T, args: RemainingArgs): Unit = {
       command match {
         case StartOptions(services, commandRoles, alarmConf) => run(services, commandRoles, alarmConf)

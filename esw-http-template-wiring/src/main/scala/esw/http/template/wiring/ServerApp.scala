@@ -14,7 +14,7 @@ trait ServerApp extends CommandsEntryPoint {
   def appName: String
   def appVersion: String
 
-  abstract class Runner[T: Parser: Help] extends Command[T] {
+  abstract class Runner[T: {Parser, Help}] extends Command[T] {
     def start(wiring: ServerWiring, metadata: Metadata): Unit = {
       try {
         wiring.actorRuntime.startLogging(progName, appVersion)

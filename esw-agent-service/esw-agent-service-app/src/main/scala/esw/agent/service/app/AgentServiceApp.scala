@@ -27,7 +27,7 @@ object AgentServiceApp extends CommandsEntryPoint {
 
   override def commands: Seq[Command[?]] = List(StartCommand)
 
-  class Runner[T <: AgentServiceAppCommand: Parser: Help] extends EswCommand[T] {
+  class Runner[T <: AgentServiceAppCommand: {Parser, Help}] extends EswCommand[T] {
     override def run(command: T, args: RemainingArgs): Unit = {
       LocationServerStatus.requireUpLocally()
       command match {

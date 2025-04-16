@@ -43,7 +43,7 @@ object SequencerApp extends CommandsEntryPoint {
 
   override def commands: Seq[Command[?]] = List(SequenceComponent, Sequencer)
 
-  class Runner[T <: SequencerAppCommand: Parser: Help] extends EswCommand[T] {
+  class Runner[T <: SequencerAppCommand: {Parser, Help}] extends EswCommand[T] {
     override def run(command: T, args: RemainingArgs): Unit = {
       LocationServerStatus.requireUpLocally()
       run(command)
