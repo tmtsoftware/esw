@@ -35,7 +35,7 @@ object SpawnCommandExt {
         case SpawnContainer(_, _, config) =>
           Future.successful(Coursier.containerApp(config).launch(List("jitpack"), config.appName, command.commandArgs()))
       }
-      f.map(x => println(s"XXX ${x.mkString(" ")}"))
+//      f.map(x => println(s"XXX ${x.mkString(" ")}"))
       f
     }
   }
