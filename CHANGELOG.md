@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 ## Upcoming Changes
 n/a
 
-## [ESW v1.0.0-RC1] - 2025-04-14 
+## [ESW v1.0.0-RC7] - 2025-04-24 
 
 - Replaced akka dependency with pekko
 - Updated to scala-3 and jdk-21
@@ -20,8 +20,8 @@ n/a
 - Updated kotlin version to 2.1.0 (Note: Now the kotlinc option `-Xallow-any-scripts-in-source-roots` is required for *.kts files under a source root)
 
 ### Documentation
-- Reference paradox documentation: https://tmtsoftware.github.io/esw/0.6.0/
-- Scaladoc: https://tmtsoftware.github.io/esw/0.6.0/api/scala/index.html
+- Reference paradox documentation: https://tmtsoftware.github.io/esw/1.0.0-RC7/
+- Scaladoc: https://tmtsoftware.github.io/esw/1.0.0-RC7/api/scala/index.html
 
 ## [ESW v0.5.1] - 2023-03-28
 
