@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CSW_VERSION: "6.0.0"
-      ESW_OCS_ENG_UI_VERSION: "47f9fa1"
+      ESW_OCS_ENG_UI_VERSION: "1.0.0-RC1"
     steps:
       - uses: actions/checkout@v4
       - uses: coursier/setup-action@v1.2.0
