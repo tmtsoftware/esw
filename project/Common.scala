@@ -1,10 +1,11 @@
 import com.typesafe.sbt.site.SitePlugin.autoImport.siteDirectory
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
-import org.tmt.sbt.docs.DocKeys._
-import sbt.Keys._
-import sbt._
+import org.tmt.sbt.docs.DocKeys.*
+import sbt.Keys.*
+import sbt.*
 import sbt.librarymanagement.ScmInfo
 import sbtunidoc.GenJavadocPlugin.autoImport.unidocGenjavadocVersion
+import scoverage.ScoverageKeys.coverageExcludedFiles
 
 object Common {
   private val enableFatalWarnings: Boolean = sys.props.get("enableFatalWarnings").contains("true")
@@ -80,6 +81,8 @@ object Common {
         SettingKey[Boolean]("ide-skip-project"),
         aggregate,              // verify if this needs to be here or our configuration is wrong
         unidocGenjavadocVersion // verify if this needs to be here or our configuration is wrong
-      )
+      ),
+      coverageExcludedFiles :=
+        ".*/AgentPekkoSerializer;.*/AgentWiring;.*/AgentApp;.*/ProcessExecutor;.*/GatewayMain;.*/SequenceManagerApp;.*/SimulationScript;.*/SequencerWiring;.*/SequenceComponentWiring;.*/SequencerApp;.*/EswCommand;.*/Keycloak;.*/AgentServiceApp;.*/BuildInfo;.*/.*Codecs;.*/AgentCliCommand;.*/AgentServiceApi;.*/ComponentNotFoundException;.*/ContainerConfig;.*/EitherExt;.*/EitherOps;.*/Failed;.*/EventApi;.*/StartOptions;.*/StartOptions;.*/ScriptError;.*/UnhandledCommandException;.*/ProvisionVersionFailure;.*/SequenceManagerResponses;.*/Timeouts;.*/ProcessUtils;.*/HostConfig"
     )
 }
