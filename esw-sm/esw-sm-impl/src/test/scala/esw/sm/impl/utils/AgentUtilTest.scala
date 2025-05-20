@@ -150,11 +150,13 @@ class AgentUtilTest extends BaseTestSuite {
 
       val response = agentUtil.provision(provisionConfig).futureValue
       response shouldBe a[ProvisionResponse.SpawningSequenceComponentsFailed]
-      val failureMgs = response.asInstanceOf[ProvisionResponse.SpawningSequenceComponentsFailed].failureResponses.head
+      val instance   = response.asInstanceOf[ProvisionResponse.SpawningSequenceComponentsFailed]
+      val failureMgs = instance.failureResponses.head
       // assert that failure msg has necessary info
       failureMgs.contains(eswPrimaryMachine.prefix.toString()) shouldBe true
       failureMgs.contains(eswSeqComp2Name) shouldBe true
       failureMgs.contains(errorMsg) shouldBe true
+      instance.msg shouldEqual s"Failed to provision: spawning sequence components failed with ${instance.failureResponses}"
 
       verify(locationServiceUtil).listPekkoLocationsBy(Machine)
       verify(agentAllocator).allocate(provisionConfig, machines)
@@ -203,6 +205,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(versionManager.getScriptVersion).thenReturn(Future.failed(FetchingScriptVersionFailed(errorMsg)))
 
       agentUtil.provision(provisionConfig).futureValue should ===(ProvisionVersionFailure(errorMsg))
+      ProvisionVersionFailure(errorMsg).msg should ===(s"Failed to provision: error in fetching version $errorMsg")
     }
   }
 

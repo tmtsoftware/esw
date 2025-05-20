@@ -43,10 +43,10 @@ class AgentWiring(agentSettings: AgentSettings, hostConfigPath: Option[String], 
   private lazy val configUtils         = new ConfigUtils(configClientService)
   private lazy val versionManager      = new VersionManager(agentSettings.versionConfPath, configUtils)
 
-  lazy val processOutput   = new ProcessOutput()
-  lazy val processExecutor = new ProcessExecutor(processOutput)
-  lazy val processManager  = new ProcessManager(locationService, versionManager, processExecutor, agentSettings)
-  lazy val agentActor      = new AgentActor(processManager, configUtils, hostConfigPath, isConfigLocal)
+  lazy val processOutput      = new ProcessOutput()
+  lazy val processExecutor    = new ProcessExecutor(processOutput)
+  lazy val processManager     = new ProcessManager(locationService, versionManager, processExecutor, agentSettings)
+  private lazy val agentActor = new AgentActor(processManager, configUtils, hostConfigPath, isConfigLocal)
 
   lazy val lazyAgentRegistration: Future[RegistrationResult] =
     locationService.register(PekkoRegistrationFactory.make(agentConnection, agentRef))
