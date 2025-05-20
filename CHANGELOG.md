@@ -12,7 +12,11 @@ All notable changes to this project will be documented in this file.
 ## Upcoming Changes
 n/a
 
-## [ESW v1.0.0] - 2025-05-15
+## [ESW v1.0.2] - 2025-05-20
+
+- Changed coverage configuration to only ignore *Codecs.scala, since these contain macros that are not recorded correctly with Scala 3. 
+
+## [ESW v1.0.1] - 2025-05-15
 
 - Re-enabled coverage (was temporarily disabled during development, since values were lower with Scala-3.x)
 - Updated esw-ocs-eng-ui version to 1.0.0

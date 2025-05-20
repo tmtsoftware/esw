@@ -82,7 +82,6 @@ object Common {
         aggregate,              // verify if this needs to be here or our configuration is wrong
         unidocGenjavadocVersion // verify if this needs to be here or our configuration is wrong
       ),
-      coverageExcludedFiles :=
-        ".*/AgentPekkoSerializer;.*/AgentWiring;.*/AgentApp;.*/ProcessExecutor;.*/GatewayMain;.*/SequenceManagerApp;.*/SimulationScript;.*/SequencerWiring;.*/SequenceComponentWiring;.*/SequencerApp;.*/EswCommand;.*/Keycloak;.*/AgentServiceApp;.*/BuildInfo;.*/.*Codecs;.*/AgentCliCommand;.*/AgentServiceApi;.*/ComponentNotFoundException;.*/ContainerConfig;.*/EitherExt;.*/EitherOps;.*/Failed;.*/EventApi;.*/StartOptions;.*/StartOptions;.*/ScriptError;.*/UnhandledCommandException;.*/ProvisionVersionFailure;.*/SequenceManagerResponses;.*/Timeouts;.*/ProcessUtils;.*/HostConfig"
+      coverageExcludedFiles := ".*/.*Codecs"
     )
 }
