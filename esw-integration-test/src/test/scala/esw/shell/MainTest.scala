@@ -6,9 +6,7 @@ import esw.testcommons.BaseTestSuite
 
 class MainTest extends BaseTestSuite {
 
-  // XXX Ignoring for now, since apps.json has not been updated to use this branch
   "verify esw-shell compiles and starts successfully" ignore {
-//    val channel        = "https://raw.githubusercontent.com/tmtsoftware/osw-apps/master/apps.json"
     val channel        = "https://raw.githubusercontent.com/tmtsoftware/osw-apps/branch-6.0.x/apps.json"
     val version        = "0.1.0-SNAPSHOT"
     val commands       = List("cs", "launch", "--channel", channel, s"esw-shell:$version")
