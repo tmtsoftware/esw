@@ -20,19 +20,19 @@ object Command {
       @HelpMessage("Start agent service.")
       agentService: Boolean = false,
       @HelpMessage("Prefix for agent. If provided, this will be used instead of default.")
-      agentPrefix: Option[Prefix],
+      agentPrefix: Option[Prefix] = None,
       @HelpMessage("Path of hostConfig file.")
-      hostConfigPath: Option[String],
+      hostConfigPath: Option[String] = None,
       @ExtraName("g")
       @HelpMessage("Start gateway with default command role config.")
       gateway: Boolean = false,
       @HelpMessage("Command role mapping file path for gateway. If provided, this will be used instead of default.")
-      commandRoleConfig: Option[Path],
+      commandRoleConfig: Option[Path] = None,
       @ExtraName("s")
       @HelpMessage("Start Sequence Manager with default obsMode config.")
       sequenceManager: Boolean = false,
       @HelpMessage("ObsMode config file path for Sequence Manager. If provided, this will be used instead of default.")
-      obsModeConfig: Option[Path],
+      obsModeConfig: Option[Path] = None,
       @HelpMessage("Enable simulation mode for Sequence Manager")
       simulation: Boolean = false
   ) extends Command
