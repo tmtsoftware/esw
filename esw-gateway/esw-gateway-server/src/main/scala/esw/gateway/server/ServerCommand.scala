@@ -16,7 +16,7 @@ object ServerCommand {
         "HTTP server will be bound to this port. " +
           "If a value is not provided, it will be picked up from configuration"
       )
-      port: Option[Int],
+      port: Option[Int] = None,
       @ExtraName("l")
       @HelpMessage("use command role mapping file from local file system else fetch it from config service")
       local: Boolean = false,

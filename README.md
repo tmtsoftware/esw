@@ -1,7 +1,7 @@
 # TMT Executive Software (ESW)
 
 ![dev](https://github.com/tmtsoftware/esw/workflows/dev/badge.svg)
-![nightly](https://github.com/tmtsoftware/esw/workflows/nightly/badge.svg)
+![release](https://github.com/tmtsoftware/esw/workflows/release/badge.svg)
 
 Executive Software (ESW) is a reimplementation/refactoring of the prototype ESW code [here](https://github.com/tmtsoftware/esw-prototype)
 developed during the ESW design phase with changes to make the code and public APIs
@@ -9,16 +9,10 @@ more robust and resilient and to improve its usability and performance for use a
 TMT Observatory.
 
 See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the ESW software.
+See [here](https://tmtsoftware.github.io/esw/api/scala/index.html) for the API documentation for ESW.
 See [here](http://tmtsoftware.github.io/esw-ts/) for a detailed description of the ESW-TS.
 
 Note: This version of esw was tested with jdk 21. 
-There is an issue with jdk-21 and the Blockhound dependency in esw:
-The workaround is to add the VM options: 
-
-* -XX:+AllowRedefinitionToAddDeleteMethods -XX:+EnableDynamicAgentLoading
-
-when running esw applications or tests.
-
 
 ## Version compatibility
 

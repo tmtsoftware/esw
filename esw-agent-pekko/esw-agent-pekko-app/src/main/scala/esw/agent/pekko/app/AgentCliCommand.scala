@@ -26,7 +26,7 @@ object AgentCliCommand {
       prefix: String,
       @HelpMessage("Optional: Path of host config for this agent")
       @Short("h")
-      hostConfigPath: Option[String],
+      hostConfigPath: Option[String] = None,
       @HelpMessage("Optional: Flag for reading host config from local machine")
       @Short("l")
       local: Boolean = false

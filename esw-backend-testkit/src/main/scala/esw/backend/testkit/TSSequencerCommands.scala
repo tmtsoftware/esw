@@ -36,6 +36,6 @@ object TSSequencerCommands {
       obsMode: ObsMode,
       @HelpMessage("variation part of the sequencer")
       @ExtraName("v")
-      variation: Option[Variation]
+      variation: Option[Variation] = None
   ) extends TSSequencerCommands
 }
