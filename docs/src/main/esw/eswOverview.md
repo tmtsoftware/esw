@@ -125,16 +125,6 @@ in the [Sequencer Scripts Repository](https://github.com/tmtsoftware/sequencer-s
 * **ESW Gateway:** This is provided to give access to all CSW and ESW services and components from future
 browser-based user interfaces.
 
-@@@ note {title="What is in ESW Phase 1 Release 1?" }
-
-The first development phase of ESW Phase 1 has focused on the Sequence Component, Sequencer, and Scripts. The
-goal is to get feedback to guide further development in these areas. Additionally, the ESW Gateway is
-provided for testing. The Gateway provides CSW services focused on the needs of user interfaces.
-
-Future development phases will focus on Sequence Manager, Observing Events and user interface support.
-
-@@@
-
 @@@ note
 Executive Software (ESW) is a reimplementation/refactoring of the prototype ESW code [here](https://github.com/tmtsoftware/esw-prototype)
 developed during the ESW design phase, with changes to make the code and public APIs
