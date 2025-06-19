@@ -16,7 +16,7 @@ object Libs {
   val `scalatest`         = dep("org.scalatest" %%% "scalatest" % "3.2.19") // Apache License 2.0
   val `caffeine`          = "com.github.ben-manes.caffeine" % "caffeine"          % "3.2.0"
   val `jupiter-interface` = "net.aichler"                   % "jupiter-interface" % "0.11.1"
-  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "0.4.1"
+  val `tmt-test-reporter` = "com.github.tmtsoftware.rtm"   %% "rtm"               % "0.4.3"
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.11.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "0.7.4" // Apache 2.0
